@@ -1,0 +1,534 @@
+@use "@coreui/coreui/scss/coreui" as * with (
+  $enable-deprecation-messages: false,
+  // Charte SAR : rouge officiel comme couleur primaire (#E52621 — RVB 229/38/33)
+  $primary: #e52621,
+);
+@use "@coreui/chartjs/scss/coreui-chartjs";
+@use "vendors/simplebar";
+
+// =============================================================================
+// SAR FDS — Thème inspiré OpenKM
+// =============================================================================
+
+// Charte SAR — couleurs officielles
+$sar-red:   #e52621; // Rouge SAR (RVB 229/38/33)
+$sar-black: #1d1d1b; // Noir SAR (RVB 29/29/27)
+
+// Palette structurelle (sidebar / header) = noir SAR
+$openkm-navbar-bg: $sar-black;
+$openkm-navbar-border: #333330;
+$openkm-thead-bg: #f7f8fa;
+$openkm-content-bg: #eef0f3;
+$openkm-card-border: #d9dde2;
+$openkm-row-active-bg: #d6e6f7;
+$openkm-row-hover-bg: #eef3f8;
+
+body {
+  background-color: $openkm-content-bg;
+}
+
+$navbar-hauteur: 4rem;
+
+.wrapper {
+  width: 100%;
+  padding-inline: var(--cui-sidebar-occupy-start, 0) var(--cui-sidebar-occupy-end, 0);
+  // La barre supérieure est fixe : sans ce retrait, le haut du contenu
+  // passerait dessous.
+  padding-top: $navbar-hauteur;
+  min-height: 100vh;
+  will-change: auto;
+  @include transition(padding .15s);
+}
+
+// -----------------------------------------------------------------------------
+// BARRE SUPÉRIEURE — logo, nom de l'institution, menu utilisateur
+// -----------------------------------------------------------------------------
+.app-navbar {
+  // Fixée en haut, sur toute la largeur : le menu commence sous elle, et non
+  // à côté. Elle ne défile donc plus — le menu étant lui-même fixe, une barre
+  // qui s'en irait au défilement aurait laissé un vide au-dessus de lui.
+  //
+  // Au-dessus du menu dans l'ordre d'empilement (CoreUI le pose à 1030), pour
+  // que rien ne vienne mordre sur elle.
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 1032;
+  height: $navbar-hauteur;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: 1.25rem;
+  // Même fond que les deux colonnes de navigation : le cadre de l'application
+  // forme un ensemble continu autour du contenu blanc.
+  background-color: #f7f8fa;
+  border-bottom: 1px solid $openkm-card-border;
+}
+
+.app-navbar-marque {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.app-navbar-logo {
+  height: 34px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.app-navbar-nom {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $sar-red;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// --- Zone de droite : outils | session ---
+.app-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.app-navbar-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: #6b7280;
+  transition: color 0.12s ease, background-color 0.12s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: $sar-black;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $sar-red;
+    outline-offset: 1px;
+  }
+}
+
+// Le rouge est réservé à la sortie : sans ça, les deux icônes voisines se
+// ressembleraient et la différence de gravité disparaîtrait.
+.app-navbar-icone-sortie:hover {
+  color: $sar-red;
+}
+
+// Filet séparant l'identité, en texte, des deux actions en icônes.
+.app-navbar-filet {
+  width: 1px;
+  height: 1.4rem;
+  margin-inline: 0.35rem;
+  background-color: $openkm-card-border;
+}
+
+.app-navbar-identite {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  font-size: 0.9rem;
+  color: $sar-black;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.12s ease;
+
+  &:hover {
+    color: $sar-red;
+  }
+}
+
+.app-navbar-identite-role {
+  color: #6b7280;
+}
+
+// Sur écran étroit, le titre de l'institution ne tient pas à côté du logo.
+// Le nom, lui, reste : sans lui il ne resterait que deux icônes muettes.
+@media (max-width: 767.98px) {
+  .app-navbar-nom {
+    display: none;
+  }
+
+  .app-navbar-identite {
+    max-width: 9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+  }
+
+  .app-navbar-identite-role {
+    display: none;
+  }
+}
+
+// Le menu commence sous la barre supérieure, qui traverse l'écran (CoreUI le
+// cale à `top: 0` par défaut). `bottom: 0` étant déjà posé par la classe
+// `sidebar-fixed`, la hauteur suit d'elle-même.
+//
+// Même fond que la liste de référentiels de « Données de base » : les deux
+// colonnes de navigation se lisent comme un seul et même bandeau.
+.sidebar {
+  --cui-sidebar-bg: #f7f8fa;
+  --cui-sidebar-border-color: #{$openkm-card-border};
+
+  &.sidebar-fixed {
+    top: $navbar-hauteur;
+  }
+}
+
+// Les entrées reprennent exactement l'apparence de la liste de référentiels
+// de la page « Données de base » : même pastille noire à l'état actif,
+// même icône rouge, même rayon.
+//
+// À déclarer sur .sidebar-nav et non sur .sidebar : CoreUI pose ces variables
+// sur .sidebar-nav, donc une valeur héritée du parent serait écrasée par la
+// déclaration de l'enfant et l'état actif retomberait sur le gris par défaut.
+.sidebar-nav {
+  --cui-sidebar-nav-link-color: #2b2b2b;
+  --cui-sidebar-nav-link-icon-color: #6b7280;
+  --cui-sidebar-nav-link-hover-color: #2b2b2b;
+  --cui-sidebar-nav-link-hover-bg: rgba(0, 0, 0, 0.05);
+  --cui-sidebar-nav-link-hover-icon-color: #6b7280;
+  --cui-sidebar-nav-link-active-color: #ffffff;
+  --cui-sidebar-nav-link-active-bg: #{$sar-black};
+  --cui-sidebar-nav-link-active-icon-color: #{$sar-red};
+  --cui-sidebar-nav-link-border-radius: 0.375rem;
+  --cui-sidebar-nav-link-padding-x: 0.6rem;
+  --cui-sidebar-nav-link-padding-y: 0.5rem;
+  --cui-sidebar-nav-link-icon-width: 1rem;
+  --cui-sidebar-nav-link-icon-height: 1rem;
+  --cui-sidebar-nav-link-icon-margin: 0.6rem;
+  --cui-sidebar-nav-title-color: #6b7280;
+  --cui-sidebar-nav-title-padding-x: 1.2rem;
+  --cui-sidebar-nav-title-padding-y: 0;
+
+  .nav-link {
+    margin-inline: 0.6rem;
+    font-size: 0.875rem;
+    transition: background-color 0.12s ease, color 0.12s ease;
+  }
+
+  // « Synthèse », « Fichiers » et les futurs regroupements : même intitulé de
+  // section que les familles de la liste de référentiels.
+  .nav-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.4rem;
+  }
+
+  // Le premier intitulé n'a pas d'entrée au-dessus de lui pour l'écarter du
+  // bord : CoreUI ne pose sa marge haute que sur les suivants. Sans ce
+  // rattrapage, « Synthèse » se colle au haut de la colonne alors que
+  // « Fichiers » respire.
+  .nav-title:first-child {
+    margin-top: 0.4rem;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// PIED DU MENU — paramètres et déconnexion
+// -----------------------------------------------------------------------------
+// Les deux mêmes actions que dans la barre supérieure, reprises ici en icônes
+// seules, sur une ligne. Le filet du haut les détache de la navigation : elles
+// ne mènent pas à une section du dossier, elles concernent la session.
+//
+// Centrées dans la colonne : sans intitulé, elles ne s'alignent sur rien —
+// les caler à gauche sous la liste ne ferait qu'un rappel de colonne bancal,
+// alors que le centrage les pose comme un pied à part entière.
+.app-sidebar-pied {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.7rem;
+  border-top: 1px solid $openkm-card-border;
+}
+
+// Même carré que les icônes de la barre supérieure : ce sont les mêmes
+// commandes, elles gardent la même cible et le même rayon.
+.app-sidebar-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: #6b7280;
+  text-decoration: none;
+  transition: background-color 0.12s ease, color 0.12s ease;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: $sar-black;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $sar-red;
+    outline-offset: 1px;
+  }
+}
+
+// Pastille noire et icône rouge, comme l'entrée courante du menu.
+.app-sidebar-action-actif {
+  background-color: $sar-black;
+  color: $sar-red;
+
+  &:hover {
+    background-color: $sar-black;
+    color: $sar-red;
+  }
+}
+
+// Le rouge est réservé à la sortie : sans ça, les deux voisines se
+// ressembleraient et la différence de gravité disparaîtrait.
+.app-sidebar-action-sortie:hover {
+  color: $sar-red;
+}
+
+// Le même trait que celui qui sépare l'identité des outils, en haut.
+.app-sidebar-filet {
+  width: 1px;
+  height: 1.4rem;
+  flex: 0 0 auto;
+  margin-inline: 0.35rem;
+  background-color: $openkm-card-border;
+}
+
+// -----------------------------------------------------------------------------
+// CARTES
+// -----------------------------------------------------------------------------
+.card {
+  border-color: $openkm-card-border;
+
+  .card-header {
+    background-color: var(--cui-tertiary-bg);
+    border-bottom-color: $openkm-card-border;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// INTERACTIONS — hover, transitions, feedback
+// -----------------------------------------------------------------------------
+
+// Toolbar icônes (style OpenKM) : tint bleu subtil au survol
+.btn-light.border-0 {
+  transition: background-color 0.12s ease, color 0.12s ease;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(46, 74, 98, 0.08);
+    color: $openkm-navbar-bg;
+  }
+
+  &:disabled {
+    opacity: 0.35;
+  }
+}
+
+// En-têtes de colonnes triables : hover doux
+.sortable-header {
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+}
+
+// Lignes de table cliquables : highlight progressif
+.table-hover > tbody > tr {
+  transition: background-color 0.1s ease;
+}
+
+// Property table dans le panneau détail : hover discret par ligne
+.property-table tbody tr {
+  transition: background-color 0.1s ease;
+
+  &:hover td {
+    background-color: rgba(46, 74, 98, 0.03);
+  }
+}
+
+// Conteneur de plein écran (visualiseur PDF natif via iframe).
+// Invisible au repos (taille nulle), occupe tout l'écran en plein écran.
+.fds-fs-overlay {
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+.fds-fs-overlay:fullscreen {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+
+// Avatar (navbar / profil) : recadre la photo proprement (cover, centrée) pour
+// éviter toute déformation quand l'image n'est pas carrée.
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+// Champs de saisie "ligne" (formulaire produit) : aucune bordure, juste un
+// trait en bas — discret au repos, accentué au focus (style soulignement).
+.fds-line-input.form-control {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+  box-shadow: inset 0 -1px 0 rgba(46, 74, 98, 0.15);
+  transition: box-shadow 0.15s ease;
+  resize: none;
+  overflow: hidden;
+
+  &:hover {
+    box-shadow: inset 0 -1px 0 rgba(46, 74, 98, 0.35);
+  }
+
+  &:focus {
+    background: transparent;
+    box-shadow: inset 0 -2px 0 $sar-red;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// CHIPS / TAGS — style OpenKM (mots-clés bleu clair)
+// -----------------------------------------------------------------------------
+.keyword-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.6rem;
+  background-color: rgba(29, 29, 27, 0.06);
+  color: $sar-black;
+  border: 1px solid rgba(29, 29, 27, 0.15);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+// -----------------------------------------------------------------------------
+// MENU CONTEXTUEL clic-droit (style OpenKM images 11, 12, 14, 16)
+// -----------------------------------------------------------------------------
+.row-context-menu {
+  position: fixed;
+  z-index: 1080;
+  min-width: 220px;
+  background-color: white;
+  border: 1px solid $openkm-card-border;
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 0.25rem 0;
+  font-size: 0.875rem;
+
+  .row-context-menu-header {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid $openkm-card-border;
+    font-weight: 600;
+    color: var(--cui-emphasis-color);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+
+  .row-context-menu-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0.45rem 0.75rem;
+    background: none;
+    border: none;
+    color: var(--cui-body-color);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+
+    &:hover {
+      background-color: rgba(74, 144, 226, 0.1);
+      color: $openkm-navbar-bg;
+    }
+
+    &.text-danger:hover {
+      background-color: rgba(220, 53, 69, 0.08);
+    }
+  }
+
+  .row-context-menu-divider {
+    height: 1px;
+    background-color: $openkm-card-border;
+    margin: 0.25rem 0;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// PAGINATION INDICATOR — style OpenKM (image 03)
+// -----------------------------------------------------------------------------
+.pagination-page-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  background-color: $sar-red;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 3px;
+}
+
+// -----------------------------------------------------------------------------
+// TABLES — style OpenKM (data grid)
+// -----------------------------------------------------------------------------
+.table-sm {
+  > :not(caption) > * > * {
+    padding: 0.5rem 0.5rem;
+  }
+}
+
+.table > thead {
+  background-color: $openkm-thead-bg;
+
+  th {
+    border-bottom: 1px solid $openkm-card-border;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    color: var(--cui-secondary-color);
+  }
+}
+
+.table > tbody > tr.table-active,
+.table > tbody > tr.table-active > * {
+  --cui-table-bg-state: #{$openkm-row-active-bg};
+  --cui-table-color-state: var(--cui-emphasis-color);
+}
+
+.table-hover > tbody > tr:hover:not(.table-active) > * {
+  --cui-table-bg-state: #{$openkm-row-hover-bg};
+}

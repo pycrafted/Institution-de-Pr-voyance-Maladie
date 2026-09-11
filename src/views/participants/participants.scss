@@ -1,0 +1,101 @@
+// Page Participants — barre d'onglets, formulaire de création en pleine page,
+// et champs radio. Reprend le rouge SAR et les tons de « Données de base ».
+$prt-rouge: #e52621;
+$prt-bordure: #d9dde2;
+$prt-texte-doux: #6b7280;
+$prt-noir: #1d1d1b;
+
+// --- En-tête : titre + onglets ---------------------------------------------
+.prt-entete {
+  padding: 1.5rem 1.75rem 0;
+}
+
+.prt-titre {
+  margin: 0 0 1rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: $prt-noir;
+}
+
+.prt-onglets {
+  display: flex;
+  gap: 2.5rem;
+  border-bottom: 1px solid $prt-bordure;
+}
+
+.prt-onglet {
+  position: relative;
+  border: 0;
+  background: transparent;
+  padding: 0.75rem 0.25rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $prt-texte-doux;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    color: $prt-noir;
+  }
+}
+
+.prt-onglet-actif {
+  color: $prt-noir;
+
+  // Le filet rouge de l'onglet retenu.
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: $prt-rouge;
+  }
+}
+
+// --- Formulaire de création en pleine page ---------------------------------
+.prt-formulaire-plein {
+  padding: 0.5rem 1.75rem 2rem;
+}
+
+.prt-formulaire-titre {
+  margin: 0.5rem 0 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: $prt-noir;
+}
+
+// --- Champs radio (sexe, type de contrat) ----------------------------------
+.ddb-radios {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-top: 0.3rem;
+}
+
+.ddb-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+
+  input {
+    accent-color: $prt-rouge;
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}
+
+// Astérisque rouge des champs obligatoires, comme la maquette.
+.ddb-requis {
+  color: $prt-rouge;
+}
+
+// Bandeau de synthèse au-dessus de la barre d'outils (totaux).
+.ddb-bandeau-stats {
+  padding: 0.25rem 0 0.75rem;
+  color: $prt-texte-doux;
+  font-size: 0.95rem;
+}

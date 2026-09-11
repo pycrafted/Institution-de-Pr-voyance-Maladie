@@ -1,0 +1,41 @@
+// =============================================================================
+// Écran d'attente des sections non développées
+// =============================================================================
+
+$av-rouge: #e52621;
+$av-noir: #1d1d1b;
+$av-bordure: #d9dde2;
+$av-texte-doux: #6b7280;
+
+.av-carte {
+  border-color: $av-bordure;
+}
+
+.av-corps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 3rem 1.5rem;
+  min-height: 45vh;
+  justify-content: center;
+}
+
+.av-pastille {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  background-color: rgba(29, 29, 27, 0.05);
+  color: $av-rouge;
+  margin-bottom: 1rem;
+}
+
+.av-titre {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $av-noir;
+  margin: 0;
+}

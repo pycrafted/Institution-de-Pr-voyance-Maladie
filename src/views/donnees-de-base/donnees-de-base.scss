@@ -1,0 +1,1183 @@
+// =============================================================================
+// Données de base — liste verticale des référentiels + tableau
+// =============================================================================
+// Fichier local à la section : il ne dépend d'aucune variable de style.scss
+// pour rester déplaçable tel quel.
+
+$ddb-rouge: #e52621;
+$ddb-noir: #1d1d1b;
+$ddb-bordure: #d9dde2;
+$ddb-rail-bg: #f7f8fa;
+$ddb-texte-doux: #6b7280;
+// Le bleu des lignes survolées et le vert du bouton « Enregistrer », tous deux
+// assombris d'un cran : un aplat de 2 rem se voit, un filet de 2 px non. Le
+// vert d'origine (#8bc34a) tombait à 1,9 pour 1 sur fond blanc, c'est-à-dire
+// à la limite du visible ; ces deux-ci passent 3 pour 1 et se répondent.
+$ddb-bleu: #3f86dd;
+$ddb-vert: #679f2e;
+$ddb-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+.ddb-carte {
+  border-color: $ddb-bordure;
+  overflow: hidden;
+}
+
+.ddb-grille {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  min-height: calc(100vh - 12rem);
+}
+
+// -----------------------------------------------------------------------------
+// Colonne gauche — les référentiels
+// -----------------------------------------------------------------------------
+.ddb-rail {
+  background-color: $ddb-rail-bg;
+  border-right: 1px solid $ddb-bordure;
+  // Aligne le haut de la liste sur le titre du référentiel, à droite.
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ddb-rail-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+}
+
+.ddb-rail-famille-titre {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $ddb-texte-doux;
+  padding: 0 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.ddb-rail-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: #2b2b2b;
+  font-size: 0.875rem;
+  text-align: left;
+  transition: background-color 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ddb-rouge;
+    outline-offset: 1px;
+  }
+}
+
+.ddb-rail-item-actif {
+  background-color: $ddb-noir;
+  color: #fff;
+
+  &:hover {
+    background-color: $ddb-noir;
+  }
+
+  .ddb-rail-item-icone {
+    color: $ddb-rouge;
+  }
+}
+
+.ddb-rail-item-icone {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: $ddb-texte-doux;
+}
+
+.ddb-rail-item-libelle {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// -----------------------------------------------------------------------------
+// Colonne droite — le référentiel sélectionné
+// -----------------------------------------------------------------------------
+.ddb-contenu {
+  padding: 1.5rem;
+  min-width: 0;
+}
+
+.ddb-referentiel-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+// Le bouton de création reste à droite même quand la liste tait son titre
+// (`sansTitre`) : seul enfant d'un en-tête en `space-between`, il partirait
+// sinon à gauche. Avec un titre, la règle ne change rien.
+.ddb-referentiel-entete .ddb-bouton-nouveau {
+  margin-left: auto;
+}
+
+.ddb-referentiel-titre {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $ddb-noir;
+  margin: 0;
+}
+
+// --- Bouton de création : même recette que les outils, filet rouge ---
+// L'aplat rouge plein a laissé place au filet, comme l'import et l'export.
+// L'intitulé garde le rouge, lui : c'est l'action principale de l'écran, et
+// trois boutons blancs à texte noir ne diraient plus lequel des trois compte.
+.ddb-bouton-nouveau {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: 0 0 auto;
+  border: 2px solid $ddb-rouge;
+  border-radius: 0.375rem;
+  background-color: #fff;
+  padding: calc(0.5rem - 1px) calc(1rem - 1px);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $ddb-rouge;
+  white-space: nowrap;
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background-color: rgba(229, 38, 33, 0.06);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ddb-rouge;
+    outline-offset: 2px;
+  }
+}
+
+.ddb-bouton-nouveau-icone {
+  width: 0.85rem;
+  height: 0.85rem;
+  flex: 0 0 auto;
+}
+
+.ddb-barre-outils {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+// Groupe de droite de la barre d'outils, poussé en bout de ligne. Il réunit
+// les outils (Import, Export) et, selon le référentiel, le bouton de création
+// (`barreCompacte` : « Export Excel » accolé à « Nouvelle demande ») ou le
+// sélecteur de segments (`segmentsADroite` : Tous / Actifs / Suspendus). Un
+// seul groupe, pour qu'ils restent serrés à l'écart d'un groupe et non de la
+// barre.
+.ddb-barre-actions-droite {
+  margin-left: auto;
+}
+
+// Barre à champs soulignés (`champsSoulignes`) : recherche et filtres sans
+// cadre, un simple trait dessous — le trait des champs de formulaire
+// (cf. .ddb-champ), et l'allure de l'application d'origine.
+//
+// Tout s'aligne en bas de ligne : les traits de la recherche et du filtre, et
+// le pied des segments et des boutons. Le filtre porte son étiquette
+// au-dessus, qui rend la ligne plus haute ; centrés, les boutons flotteraient
+// alors au-dessus de la recherche au lieu de partager sa ligne.
+.ddb-barre-soulignee {
+  align-items: flex-end;
+
+  .ddb-recherche {
+    flex: 0 1 17rem;
+
+    // Pas de loupe : le mot « Rechercher » du champ suffit.
+    .input-group-text {
+      display: none;
+    }
+
+    .form-control {
+      border: 0;
+      border-bottom: 1px solid #d5d9de;
+      border-radius: 0;
+      background-color: transparent;
+      padding: 0.35rem 0;
+      font-size: 1rem;
+      box-shadow: none;
+
+      &:focus {
+        border-bottom-color: $ddb-noir;
+      }
+    }
+  }
+
+  .ddb-filtre-groupe {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    width: 17rem;
+    max-width: 100%;
+  }
+
+  .ddb-filtre-etiquette {
+    font-size: 0.8rem;
+    color: $ddb-texte-doux;
+  }
+
+  .ddb-filtre {
+    width: 100%;
+    max-width: none;
+    border: 0;
+    border-bottom: 1px solid #d5d9de;
+    border-radius: 0;
+    background-color: transparent;
+    background-position: right 0.2rem center;
+    padding: 0.35rem 1.5rem 0.35rem 0;
+    font-size: 1rem;
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: none;
+      border-bottom-color: $ddb-noir;
+    }
+  }
+}
+
+// Total accolé au titre (barre compacte). Deux classes : le bandeau est aussi
+// stylé par participants.scss, chargé après cette feuille, dont la marge basse
+// l'emporterait sinon. Son aspect est fixé ici plutôt que laissé à cette
+// feuille-là, que les pages ne chargent pas toutes : le total changerait
+// sinon d'allure selon les écrans visités avant.
+.ddb-referentiel-entete .ddb-stats-titre {
+  padding: 0;
+  color: $ddb-texte-doux;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+// Accolé au titre, le total retient l'espace libre à sa droite : sans cela,
+// l'en-tête en `space-between` l'enverrait à l'autre bout de la ligne.
+.ddb-referentiel-entete .ddb-stats-titre {
+  margin-right: auto;
+}
+
+// --- Sélecteur segmenté : partage la table d'un référentiel ---
+// Un seul bloc bordé, segments accolés, l'actif en noir SAR — même pastille
+// que l'entrée active du rail et que la page courante de la pagination.
+.ddb-segments {
+  display: inline-flex;
+  flex: 0 0 auto;
+  border: 1px solid $ddb-bordure;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.ddb-segment {
+  border: 0;
+  border-right: 1px solid $ddb-bordure;
+  background: transparent;
+  padding: 0.45rem 0.95rem;
+  font-size: 0.85rem;
+  color: #2b2b2b;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease;
+
+  &:last-child {
+    border-right: 0;
+  }
+
+  &:hover:not(.ddb-segment-actif) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ddb-rouge;
+    outline-offset: -2px;
+  }
+}
+
+.ddb-segment-actif {
+  background-color: $ddb-noir;
+  color: #fff;
+  font-weight: 600;
+}
+
+.ddb-recherche {
+  max-width: 24rem;
+  flex: 1 1 16rem;
+
+  .form-control,
+  .input-group-text {
+    border-color: $ddb-bordure;
+    background-color: #fff;
+  }
+}
+
+// --- Filtre par dimension : même hauteur et même filet que la recherche ---
+// Le chevron est dessiné en fond, comme sur les listes du formulaire, pour ne
+// pas dépendre du rendu natif du navigateur.
+.ddb-filtre {
+  flex: 0 0 auto;
+  max-width: 14rem;
+  appearance: none;
+  border: 1px solid $ddb-bordure;
+  border-radius: 0.375rem;
+  background-color: #fff;
+  padding: 0.42rem 1.9rem 0.42rem 0.8rem;
+  font-size: 0.85rem;
+  color: #2b2b2b;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236b7280'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 0.7rem;
+
+  &:focus-visible {
+    outline: 2px solid $ddb-rouge;
+    outline-offset: 1px;
+  }
+}
+
+// --- Outils de barre : import, export ---
+// À la suite des autres contrôles et non repoussés au bord droit : sur une
+// barre qui ne porte qu'une recherche, l'écart devenait un trou au milieu de
+// la carte. La barre se lit comme une seule série de contrôles, et le vide
+// se range à la fin — là où il ne sépare plus rien.
+.ddb-barre-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.ddb-outil {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  border: 1px solid $ddb-bordure;
+  border-radius: 0.375rem;
+  background-color: #fff;
+  padding: 0.42rem 0.8rem;
+  font-size: 0.85rem;
+  color: #2b2b2b;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ddb-rouge;
+    outline-offset: 1px;
+  }
+}
+
+.ddb-outil-icone {
+  width: 0.9rem;
+  height: 0.9rem;
+  flex: 0 0 auto;
+  color: $ddb-texte-doux;
+}
+
+// Le filet distingue les deux gestes — entrer des données, en sortir — sans
+// que le bouton devienne un aplat qui concurrencerait le rouge de l'écran.
+//
+// Deux pixels, avec un retrait interne réduit d'autant : sans ce rattrapage,
+// les deux boutons dépasseraient d'un pixel en haut et en bas et ne
+// s'aligneraient plus sur la recherche et le sélecteur voisins.
+.ddb-outil-import,
+.ddb-outil-export {
+  border-width: 2px;
+  padding: calc(0.42rem - 1px) calc(0.8rem - 1px);
+}
+
+.ddb-outil-import {
+  border-color: $ddb-bleu;
+}
+
+.ddb-outil-export {
+  border-color: $ddb-vert;
+}
+
+.ddb-switch {
+  font-size: 0.85rem;
+  color: $ddb-texte-doux;
+  margin: 0;
+  white-space: nowrap;
+}
+
+// -----------------------------------------------------------------------------
+// Barre d'actions groupées
+// -----------------------------------------------------------------------------
+// Elle remplace la barre d'outils dès qu'une ligne est cochée : les actions
+// destructrices n'occupent l'écran que lorsqu'elles ont une cible.
+.ddb-barre-selection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background-color: $ddb-noir;
+  color: #fff;
+  border-radius: 0.375rem;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.ddb-selection-compte {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ddb-selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.ddb-action-lot {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #fff;
+  font-size: 0.82rem;
+  padding: 0.32rem 0.8rem;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 1px;
+  }
+}
+
+// La désactivation retire des lignes de la circulation : seule action de la
+// barre à porter le rouge SAR.
+.ddb-action-lot-danger:hover {
+  background-color: $ddb-rouge;
+  border-color: $ddb-rouge;
+}
+
+.ddb-action-lot-annuler {
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  padding: 0.32rem 0.6rem;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Tableau
+// -----------------------------------------------------------------------------
+.ddb-tableau-conteneur {
+  border: 1px solid $ddb-bordure;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.ddb-tableau {
+  margin: 0;
+
+  thead th {
+    background-color: $ddb-noir;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 0;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    font-size: 0.875rem;
+    border-color: #eceff2;
+  }
+}
+
+.ddb-ligne {
+  cursor: pointer;
+}
+
+// Une ligne cochée reste repérable après défilement ou changement de page.
+.ddb-ligne-selectionnee > td {
+  background-color: rgba(29, 29, 27, 0.05);
+}
+
+.ddb-cellule-case {
+  text-align: center;
+
+  input[type='checkbox'] {
+    accent-color: $ddb-noir;
+    width: 0.95rem;
+    height: 0.95rem;
+    cursor: pointer;
+    vertical-align: middle;
+  }
+}
+
+.ddb-ligne-inactive {
+  color: $ddb-texte-doux;
+
+  td span {
+    text-decoration: line-through;
+    text-decoration-color: rgba(0, 0, 0, 0.25);
+  }
+
+  .badge {
+    text-decoration: none;
+  }
+}
+
+.ddb-mono {
+  font-family: $ddb-mono;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.ddb-action {
+  border: 0;
+  background: transparent;
+  padding: 0.25rem 0.4rem;
+  color: $ddb-texte-doux;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.06);
+    color: $ddb-noir;
+  }
+}
+
+.ddb-action-danger:hover {
+  color: $ddb-rouge;
+}
+
+.ddb-action-succes:hover {
+  color: #2e7d32;
+}
+
+.ddb-etat-vide {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $ddb-texte-doux;
+  font-size: 0.9rem;
+}
+
+// Seule la pagination y subsiste : elle garde sa place à droite, où le
+// compteur la tenait jusqu'ici.
+.ddb-pied {
+  margin-top: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+// -----------------------------------------------------------------------------
+// Pagination
+// -----------------------------------------------------------------------------
+.ddb-pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-left: auto;
+}
+
+.ddb-page {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 0.375rem;
+  background: transparent;
+  color: #2b2b2b;
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+  transition: background-color 0.12s ease, color 0.12s ease;
+
+  &:hover:not(:disabled):not(.ddb-page-active) {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ddb-rouge;
+    outline-offset: 1px;
+  }
+}
+
+.ddb-page-active {
+  background-color: $ddb-noir;
+  color: #fff;
+  font-weight: 600;
+}
+
+.ddb-page-fleche {
+  color: $ddb-texte-doux;
+
+  &:disabled {
+    opacity: 0.35;
+  }
+}
+
+.ddb-page-trou {
+  min-width: 1.25rem;
+  text-align: center;
+  color: $ddb-texte-doux;
+  font-size: 0.82rem;
+  user-select: none;
+}
+
+// -----------------------------------------------------------------------------
+// Panneau de saisie
+// -----------------------------------------------------------------------------
+.ddb-panneau {
+  width: 25rem !important;
+  max-width: 100vw;
+}
+
+// Les fiches à onglets portent des lignes à deux champs : il leur faut de la
+// largeur, sinon « NINEA » et « Délai de règlement » se chevauchent.
+.ddb-panneau-large {
+  width: 32rem !important;
+}
+
+// --- Bandeau noir, repris du template ---
+.ddb-panneau-entete {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background-color: $ddb-noir;
+  color: #fff;
+  padding: 0.95rem 1.35rem;
+  flex: 0 0 auto;
+}
+
+.ddb-panneau-titre {
+  flex: 1 1 auto;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.ddb-panneau-fermer {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 0.25rem;
+  line-height: 0;
+  border-radius: 0.25rem;
+  transition: color 0.12s ease, background-color 0.12s ease;
+
+  &:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+}
+
+// --- Corps ---
+.ddb-formulaire {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+// --- Onglets de la fiche ---
+// Même vocabulaire que les onglets du template : intitulé sobre, soulignement
+// rouge sur l'onglet courant.
+.ddb-onglets {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0 1.35rem;
+  border-bottom: 1px solid $ddb-bordure;
+  overflow-x: auto;
+}
+
+.ddb-onglet {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  padding: 0.85rem 0.75rem;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: $ddb-texte-doux;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color 0.12s ease, border-color 0.12s ease;
+
+  &:hover {
+    color: $ddb-noir;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ddb-rouge;
+    outline-offset: -2px;
+  }
+}
+
+.ddb-onglet-actif {
+  color: $ddb-noir;
+  border-bottom-color: $ddb-rouge;
+}
+
+// Un onglet dont un champ est en faute se signale, sinon l'erreur resterait
+// invisible tant qu'on ne l'ouvre pas.
+.ddb-onglet-erreur:not(.ddb-onglet-actif) {
+  color: $ddb-rouge;
+}
+
+.ddb-formulaire-champs {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.1rem;
+  padding: 2rem 1.35rem 1rem;
+}
+
+// --- Sections d'une fiche ---
+.ddb-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2.1rem;
+}
+
+.ddb-section-titre {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $ddb-noir;
+  margin: 0.5rem 0 -0.6rem;
+}
+
+// Une ligne porte un ou deux champs ; le nombre de colonnes est posé en ligne
+// par le composant, d'après la déclaration du référentiel.
+.ddb-ligne-champs {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.ddb-formulaire-pied {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 1.35rem 1.75rem;
+}
+
+// --- Verrou de sécurité de la fiche ---
+// Les deux conteneurs de champs sont des <fieldset> : leur attribut « disabled »
+// neutralise d'un coup tout ce qu'ils contiennent. En contrepartie, il faut
+// effacer leur habillage par défaut — bordure, marges, et surtout la largeur
+// minimale intrinsèque qui empêcherait les grilles de rétrécir.
+.ddb-formulaire-champs,
+.ddb-formulaire-entete-champs {
+  border: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.ddb-formulaire-entete-champs {
+  padding: 0;
+}
+
+// Barre posée en tête d'une fiche existante. Rouge tant qu'elle protège :
+// la couleur dit « attention » avant même qu'on ait lu la phrase.
+.ddb-verrou {
+  flex: 0 0 auto;
+  display: flex;
+  margin: 1.35rem 1.35rem 0;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid rgba(229, 38, 33, 0.35);
+  border-radius: 0.25rem;
+  background-color: rgba(229, 38, 33, 0.07);
+}
+
+.ddb-verrou-bascule {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: $ddb-rouge;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    accent-color: $ddb-rouge;
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+}
+
+.ddb-verrou-icone {
+  flex: 0 0 auto;
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+// Déverrouillée, la barre s'apaise : l'alerte n'a plus lieu d'être, mais la
+// case reste à portée pour reverrouiller.
+.ddb-verrou-ouvert {
+  border-color: $ddb-bordure;
+  background-color: $ddb-rail-bg;
+
+  .ddb-verrou-bascule {
+    color: $ddb-texte-doux;
+  }
+}
+
+// Champ neutralisé par le verrou. La valeur reste pleinement lisible — on
+// ouvre d'abord une fiche pour la consulter — mais le trait de saisie passe en
+// pointillé : on voit qu'il n'y a rien à écrire là. Sans les deux dernières
+// déclarations, WebKit pâlirait la valeur de lui-même.
+.ddb-champ:disabled {
+  border-bottom-style: dotted;
+  cursor: not-allowed;
+  opacity: 1;
+  -webkit-text-fill-color: $ddb-noir;
+}
+
+.ddb-formulaire-champs:disabled,
+.ddb-formulaire-entete-champs:disabled {
+  .ddb-case,
+  .ddb-radio,
+  .ddb-etat-choix,
+  .ddb-photo-bouton {
+    cursor: not-allowed;
+  }
+}
+
+// --- Photo d'identité ---
+// Cadre au format 3/4, celui d'une photo d'identité : une vignette carrée
+// recadrerait tous les visages de travers.
+.ddb-photo {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.ddb-photo-cadre {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 120px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid $ddb-bordure;
+  border-radius: 0.25rem;
+  background-color: $ddb-rail-bg;
+}
+
+.ddb-photo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ddb-photo-silhouette {
+  width: 2rem;
+  height: 2rem;
+  color: #c3c8cf;
+}
+
+.ddb-photo-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding-top: 0.15rem;
+}
+
+.ddb-photo-bouton {
+  border: 1px solid $ddb-bordure;
+  border-radius: 0.375rem;
+  background-color: #fff;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  color: #2b2b2b;
+  white-space: nowrap;
+  transition: background-color 0.12s ease, color 0.12s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ddb-rouge;
+    outline-offset: 1px;
+  }
+}
+
+// Retirer une photo est le seul geste destructeur du bloc.
+.ddb-photo-bouton-retirer:hover {
+  color: $ddb-rouge;
+}
+
+.ddb-photo-aide {
+  font-size: 0.72rem;
+  color: $ddb-texte-doux;
+}
+
+// --- Case à cocher du formulaire : elle porte son propre libellé ---
+.ddb-case {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: $ddb-noir;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    accent-color: $ddb-rouge;
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+}
+
+// --- Champ figé : calculé par l'application, montré pour information ---
+.ddb-groupe-fige {
+  .ddb-champ {
+    color: $ddb-texte-doux;
+    cursor: default;
+  }
+
+  .ddb-champ-enveloppe {
+    // Trait pointillé : la valeur se lit, elle ne se saisit pas.
+    border-bottom-style: dotted;
+  }
+}
+
+// --- Champ : label au-dessus, valeur soulignée ---
+.ddb-groupe label {
+  display: block;
+  font-size: 0.75rem;
+  color: $ddb-texte-doux;
+  margin-bottom: 0.35rem;
+  transition: color 0.15s ease;
+}
+
+.ddb-champ {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #d5d9de;
+  border-radius: 0;
+  background-color: transparent;
+  padding: 0 0 0.45rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: $ddb-noir;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: #b6bcc3;
+  }
+
+  &:focus {
+    border-bottom-color: $ddb-rouge;
+    // Épaissit le trait sans décaler la mise en page.
+    box-shadow: 0 1px 0 0 $ddb-rouge;
+  }
+
+  // Chasse fixe pour les codes et numéros de compte, taille inchangée.
+  &.ddb-mono {
+    font-size: 1rem;
+  }
+}
+
+// Indicatif figé devant un numéro : il fait partie du trait souligné, mais
+// n'est ni saisissable ni enregistré.
+.ddb-champ-enveloppe.ddb-champ-prefixe {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  border-bottom: 1px solid #d5d9de;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-bottom-color: $ddb-rouge;
+    box-shadow: 0 1px 0 0 $ddb-rouge;
+  }
+
+  // Le trait est porté par l'enveloppe, plus par le champ lui-même.
+  .ddb-champ {
+    border-bottom: 0;
+
+    &:focus {
+      box-shadow: none;
+    }
+  }
+}
+
+.ddb-prefixe {
+  flex: 0 0 auto;
+  font-family: $ddb-mono;
+  font-size: 1rem;
+  color: $ddb-texte-doux;
+  padding-bottom: 0.45rem;
+  user-select: none;
+}
+
+// Liste déroulante : même trait souligné que les champs libres, avec le
+// chevron dessiné en fond pour ne pas dépendre du rendu natif du navigateur.
+.ddb-champ-liste {
+  appearance: none;
+  padding-right: 1.5rem;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%236b7280'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.1rem center;
+  background-size: 0.7rem;
+
+  // Une valeur vide se lit comme un placeholder.
+  &:invalid,
+  &:has(option[value='']:checked) {
+    color: #b6bcc3;
+  }
+
+  option {
+    color: $ddb-noir;
+  }
+}
+
+.ddb-groupe:focus-within label {
+  color: $ddb-rouge;
+}
+
+.ddb-groupe-erreur {
+  .ddb-champ {
+    border-bottom-color: $ddb-rouge;
+  }
+
+  label {
+    color: $ddb-rouge;
+  }
+}
+
+.ddb-champ-erreur {
+  display: block;
+  font-size: 0.72rem;
+  color: $ddb-rouge;
+  margin-top: 0.35rem;
+}
+
+.ddb-bouton-enregistrer {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  border-radius: 0.25rem;
+  background-color: #8bc34a;
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.5rem;
+  transition: background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #7cb342;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #7cb342;
+    outline-offset: 2px;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Écrans étroits — le rail passe au-dessus du tableau
+// -----------------------------------------------------------------------------
+@media (max-width: 991.98px) {
+  .ddb-grille {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .ddb-rail {
+    border-right: 0;
+    border-bottom: 1px solid $ddb-bordure;
+  }
+
+  .ddb-rail-liste {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+  }
+
+  .ddb-contenu {
+    padding: 1rem;
+  }
+}
+
+// --- Bascule d'état Actif / Suspendu (adhérents) ---------------------------
+// Deux positions segmentées, à la manière de la maquette d'origine : vert
+// lorsque « Actif » est retenu, rouge lorsque « Suspendu » l'est.
+.ddb-etat {
+  display: inline-flex;
+  width: fit-content;
+  border: 1px solid $ddb-bordure;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.ddb-etat-choix {
+  border: 0;
+  background: #fff;
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $ddb-texte-doux;
+  cursor: pointer;
+
+  & + & {
+    border-left: 1px solid $ddb-bordure;
+  }
+}
+
+.ddb-etat-actif {
+  background: $ddb-vert;
+  color: #fff;
+}
+
+.ddb-etat-suspendu {
+  background: $ddb-rouge;
+  color: #fff;
+}
