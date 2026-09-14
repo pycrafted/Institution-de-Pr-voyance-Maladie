@@ -7,7 +7,7 @@
  * liste, qui ne montre que les demandes en attente.
  *
  * La fiche est celle d'un fournisseur, reprise de sa config : mêmes onglets
- * Contact et Références. Une demande ne peut donc rien porter qu'un
+ * Contact et Références professionnelles. Une demande ne peut donc rien porter qu'un
  * fournisseur ne sache recevoir. S'y ajoutent la date de la demande et
  * l'adresse électronique ; le fixe et le portable, eux, ne se saisissent
  * qu'une fois, dans l'onglet Contact.

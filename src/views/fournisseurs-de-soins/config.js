@@ -332,7 +332,8 @@ export const FOURNISSEURS_DE_SOINS = {
    * commerce, autorisation, banque — à l'intérieur d'un bloc « Références
    * professionnelles ». Des onglets dans un panneau déjà à onglets obligent à
    * deux niveaux de navigation pour saisir une fiche : ils deviennent ici les
-   * sections d'un même onglet « Références », qui se parcourt d'un défilement.
+   * sections d'un même onglet « Références professionnelles », qui se parcourt d'un
+   * défilement.
    */
   formulaire: [
     {
@@ -356,7 +357,7 @@ export const FOURNISSEURS_DE_SOINS = {
       ],
     },
     {
-      libelle: 'Références',
+      libelle: 'Références professionnelles',
       sections: [
         {
           titre: 'Carte médecin / pharmacien',
