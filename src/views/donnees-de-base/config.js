@@ -305,6 +305,15 @@ export const REFERENTIELS = [
     icone: cilHospital,
     nouveau: 'Nouvelle spécialité',
     modifier: 'Modifier la spécialité',
+
+    // Rang sur deux chiffres, à la suite du plus grand code existant (00, 01…
+    // 31 → 32) : proposé dès la création, modifiable.
+    genererCode: (valeurs, entrees) =>
+      String(entrees.reduce((max, e) => Math.max(max, Number(e.code) || 0), -1) + 1).padStart(
+        2,
+        '0',
+      ),
+
     colonnes: [
       {
         nom: 'code',
@@ -324,6 +333,9 @@ export const REFERENTIELS = [
         majuscules: true,
       },
       {
+        // Proposé d'après le code — 4000 + code, soit 400032 pour la
+        // spécialité 32, la règle que suivent les spécialités existantes — et
+        // modifiable. Il suit le code tant qu'on ne l'a pas retouché.
         nom: 'compte',
         libelle: 'Compte',
         libelleForm: 'Compte de la spécialité',
@@ -331,6 +343,8 @@ export const REFERENTIELS = [
         mono: true,
         requis: true,
         maxLength: 6,
+        valeurProposee: (valeurs) =>
+          valeurs.code ? `4000${String(valeurs.code).padStart(2, '0')}` : '',
       },
     ],
   },
