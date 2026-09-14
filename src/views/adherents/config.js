@@ -68,7 +68,9 @@ export const ADHERENTS = {
       libelleForm: 'Régime',
       largeur: '90px',
       options: TYPES_ADHERENT,
-      // « CMM » et non « MSS - CMM » : le code est une clé interne.
+      // Comme l'application d'origine : le tableau montre le code enregistré
+      // (« MSS »), la liste déroulante le libellé (« CMM »), sans « MSS - CMM ».
+      afficherCode: true,
       libelleSeul: true,
       requis: true,
     },
