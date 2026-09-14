@@ -41,6 +41,23 @@ export const ADHERENTS = {
   // des fournisseurs de soins qui porte aussi l'import.
   outils: ['export'],
 
+  // Cases à cocher, comme pour les fournisseurs de soins : suspendre ou
+  // réactiver d'un geste une sélection d'adhérents — un, deux ou tous, par la
+  // case d'en-tête.
+  selection: true,
+  actionsLot: [
+    { libelle: 'Réactiver', champs: { actif: true }, message: 'réactivés' },
+    {
+      libelle: 'Suspendre',
+      champs: { actif: false },
+      message: 'suspendus',
+      danger: true,
+      // Suspendre un adhérent le met hors circuit : sur plusieurs à la fois,
+      // on confirme.
+      confirmer: (n) => `Suspendre ${n} adhérent${n > 1 ? 's' : ''} ?`,
+    },
+  ],
+
   // Quatre colonnes seulement : de quoi identifier la collectivité et
   // retrouver son compte. Cotisations, seuils et point focal se lisent dans la
   // fiche — quinze colonnes défilant à l'horizontale ne se lisent pas.
