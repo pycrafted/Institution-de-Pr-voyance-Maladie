@@ -71,7 +71,7 @@ export const ADHERENTS = {
     {
       nom: 'type',
       libelle: 'Type',
-      libelleForm: 'Régime',
+      libelleForm: 'Type',
       largeur: '90px',
       options: TYPES_ADHERENT,
       // Comme l'application d'origine : le tableau montre le code enregistré
