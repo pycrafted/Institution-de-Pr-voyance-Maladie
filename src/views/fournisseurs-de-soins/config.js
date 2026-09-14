@@ -161,7 +161,7 @@ export const FOURNISSEURS_DE_SOINS = {
       largeur: '150px',
       mono: true,
       type: 'tel',
-      prefixe: '+221',
+      amorce: '+221 ',
     },
     {
       nom: 'mobile',
@@ -170,7 +170,7 @@ export const FOURNISSEURS_DE_SOINS = {
       largeur: '150px',
       mono: true,
       type: 'tel',
-      prefixe: '+221',
+      amorce: '+221 ',
     },
     {
       // État de la convention, présenté comme chez les adhérents : une colonne
@@ -212,7 +212,7 @@ export const FOURNISSEURS_DE_SOINS = {
       libelleForm: 'Téléphone fixe',
       mono: true,
       type: 'tel',
-      prefixe: '+221',
+      amorce: '+221 ',
     },
     {
       nom: 'contactMobile',
@@ -220,7 +220,7 @@ export const FOURNISSEURS_DE_SOINS = {
       libelleForm: 'Téléphone mobile',
       mono: true,
       type: 'tel',
-      prefixe: '+221',
+      amorce: '+221 ',
     },
 
     // --- Pièces professionnelles ------------------------------------------
