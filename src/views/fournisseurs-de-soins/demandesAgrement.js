@@ -122,7 +122,6 @@ export const DEMANDES_AGREMENT = {
       libelle: 'Email',
       libelleForm: 'Email',
       type: 'email',
-      placeholder: 'contact@clinique.sn',
     },
     ...champsFiche,
   ],

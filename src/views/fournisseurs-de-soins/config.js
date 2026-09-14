@@ -138,7 +138,6 @@ export const FOURNISSEURS_DE_SOINS = {
       nom: 'libelle',
       libelle: 'Raison sociale',
       libelleForm: 'Raison sociale',
-      placeholder: 'CLINIQUE DU CAP',
       requis: true,
       majuscules: true,
     },
@@ -154,7 +153,6 @@ export const FOURNISSEURS_DE_SOINS = {
       nom: 'adresse',
       libelle: 'Adresse',
       libelleForm: 'Adresse',
-      placeholder: 'AVENUE PASTEUR - DAKAR',
     },
     {
       nom: 'telephone',
@@ -164,7 +162,6 @@ export const FOURNISSEURS_DE_SOINS = {
       mono: true,
       type: 'tel',
       prefixe: '+221',
-      placeholder: '33 889 02 70',
     },
     {
       nom: 'mobile',
@@ -174,7 +171,6 @@ export const FOURNISSEURS_DE_SOINS = {
       mono: true,
       type: 'tel',
       prefixe: '+221',
-      placeholder: '77 450 12 08',
     },
     {
       // État de la convention, présenté comme chez les adhérents : une colonne
@@ -198,20 +194,17 @@ export const FOURNISSEURS_DE_SOINS = {
       nom: 'contactNom',
       libelle: 'Contact',
       libelleForm: 'Nom',
-      placeholder: 'NDIAYE',
       majuscules: true,
     },
     {
       nom: 'contactPrenoms',
       libelle: 'Prénoms contact',
       libelleForm: 'Prénoms',
-      placeholder: 'Awa',
     },
     {
       nom: 'contactFonction',
       libelle: 'Fonction contact',
       libelleForm: 'Fonction',
-      placeholder: 'Responsable administratif',
     },
     {
       nom: 'contactTelephone',
@@ -220,7 +213,6 @@ export const FOURNISSEURS_DE_SOINS = {
       mono: true,
       type: 'tel',
       prefixe: '+221',
-      placeholder: '33 889 02 70',
     },
     {
       nom: 'contactMobile',
@@ -229,7 +221,6 @@ export const FOURNISSEURS_DE_SOINS = {
       mono: true,
       type: 'tel',
       prefixe: '+221',
-      placeholder: '77 450 12 08',
     },
 
     // --- Pièces professionnelles ------------------------------------------
@@ -240,7 +231,6 @@ export const FOURNISSEURS_DE_SOINS = {
       libelle: 'Carte professionnelle',
       libelleForm: 'Numéro de carte',
       mono: true,
-      placeholder: 'CO/2412',
     },
     {
       nom: 'carteDate',
@@ -254,7 +244,6 @@ export const FOURNISSEURS_DE_SOINS = {
       nom: 'carteAutorite',
       libelle: 'Autorité carte',
       libelleForm: 'Autorité',
-      placeholder: 'ORDRE DES MÉDECINS',
       majuscules: true,
     },
     {
@@ -262,7 +251,6 @@ export const FOURNISSEURS_DE_SOINS = {
       libelle: 'Registre du commerce',
       libelleForm: 'Numéro R.C.',
       mono: true,
-      placeholder: 'SN-DKR-2019-B-1234',
     },
     {
       nom: 'rcDate',
@@ -270,13 +258,12 @@ export const FOURNISSEURS_DE_SOINS = {
       libelleForm: 'Date d’immatriculation',
       type: 'date',
     },
-    { nom: 'ninea', libelle: 'NINEA', libelleForm: 'NINEA', mono: true, placeholder: '004561234' },
+    { nom: 'ninea', libelle: 'NINEA', libelleForm: 'NINEA', mono: true },
     {
       nom: 'autorisationNumero',
       libelle: 'Autorisation Santé',
       libelleForm: 'Numéro d’autorisation',
       mono: true,
-      placeholder: 'MSAS/DES/912',
     },
     {
       nom: 'autorisationDate',
@@ -290,7 +277,6 @@ export const FOURNISSEURS_DE_SOINS = {
       nom: 'banqueNom',
       libelle: 'Banque',
       libelleForm: 'Nom banque',
-      placeholder: 'CBAO',
       majuscules: true,
     },
     {
@@ -299,7 +285,6 @@ export const FOURNISSEURS_DE_SOINS = {
       libelleForm: 'Code banque',
       mono: true,
       maxLength: 5,
-      placeholder: 'SN012',
     },
     {
       nom: 'guichetCode',
@@ -307,7 +292,6 @@ export const FOURNISSEURS_DE_SOINS = {
       libelleForm: 'Code guichet',
       mono: true,
       maxLength: 5,
-      placeholder: '01001',
     },
     {
       nom: 'compteBancaire',
@@ -315,7 +299,6 @@ export const FOURNISSEURS_DE_SOINS = {
       libelleForm: 'Compte bancaire',
       mono: true,
       maxLength: 12,
-      placeholder: '000123456789',
     },
     {
       nom: 'cleRib',
@@ -323,7 +306,6 @@ export const FOURNISSEURS_DE_SOINS = {
       libelleForm: 'Clé RIB',
       mono: true,
       maxLength: 2,
-      placeholder: '76',
     },
   ],
 
