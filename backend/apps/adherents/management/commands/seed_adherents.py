@@ -1,98 +1,49 @@
 """
 Peuple le référentiel des adhérents.
 
-Reprend à l'identique les quatre collectivités que le frontend portait en dur
-(cf. l'ancien générateur ``adherents()`` de services/referentiels.js) : deux
-groupes IPM — personnel MOO et cadres — et les deux mutuelles CMM.
+Crée les quatre collectivités de l'application d'origine — deux groupes IPM,
+personnel MOO et cadres, et les deux mutuelles CMM — avec ce qu'on en sait de
+façon sûre : code, type, libellé et compte, tels que les montre la liste de
+l'application d'origine.
+
+Rien d'autre : adresse, téléphone, cotisations, seuils et point focal se
+saisissent à l'écran, avec les vraies valeurs. Des coordonnées inventées — un
+point focal au nom et à l'e-mail plausibles — passeraient pour vraies.
 
 Idempotente : relancer la commande ne crée pas de doublon et ne réécrit pas une
-ligne déjà modifiée en base.
+ligne déjà présente en base.
 """
 
 from django.core.management.base import BaseCommand
 
 from adherents.models import Adherent
 
-# Communs aux quatre lignes : ce sont des collectivités internes, pas des
-# tiers, elles partagent donc le siège de la SAR.
-ADRESSE = 'KM 18, ROUTE DE RUFISQUE — MBAO, DAKAR'
-TELEPHONE = '33 839 61 00'
-
+# Code, type et libellé. Les types sont ceux de l'application d'origine : la
+# mutuelle y est enregistrée « MSS » et affichée « CMM ».
 ADHERENTS = [
-    {
-        'code': '01',
-        'type': 'IPM',
-        'libelle': 'IPM SAR PERSONNEL MOO',
-        'cotisation_ipm_salariale': '8500',
-        'cotisation_ipm_patronale': '8500',
-        'cotisation_mss': '',
-        'focal_nom': 'Awa NDIAYE',
-        'focal_telephone': '77 512 40 18',
-        'focal_email': 'a.ndiaye@sar.sn',
-        'regul_systematique': True,
-        'seuil_endettement': '250000',
-        'seuil_consommation': '1500000',
-    },
-    {
-        'code': '02',
-        'type': 'IPM',
-        'libelle': 'IPM SAR PERSONNEL CADRES',
-        'cotisation_ipm_salariale': '8500',
-        'cotisation_ipm_patronale': '8500',
-        'cotisation_mss': '',
-        'focal_nom': 'Cheikh DIOP',
-        'focal_telephone': '77 640 22 05',
-        'focal_email': 'c.diop@sar.sn',
-        'regul_systematique': True,
-        'seuil_endettement': '400000',
-        'seuil_consommation': '2500000',
-    },
-    {
-        'code': '03',
-        'type': 'MSS',
-        'libelle': 'CMM CR-SAR',
-        'cotisation_ipm_salariale': '',
-        'cotisation_ipm_patronale': '',
-        'cotisation_mss': '5000',
-        'focal_nom': 'Mariama SALL',
-        'focal_telephone': '76 318 74 90',
-        'focal_email': 'm.sall@sar.sn',
-        'regul_systematique': False,
-        'seuil_endettement': '150000',
-        'seuil_consommation': '900000',
-    },
-    {
-        'code': '04',
-        'type': 'MSS',
-        'libelle': 'CMM NCR-SAR',
-        'cotisation_ipm_salariale': '',
-        'cotisation_ipm_patronale': '',
-        'cotisation_mss': '5000',
-        'focal_nom': 'Ibrahima FAYE',
-        'focal_telephone': '78 204 11 36',
-        'focal_email': 'i.faye@sar.sn',
-        'regul_systematique': False,
-        'seuil_endettement': '150000',
-        'seuil_consommation': '900000',
-    },
+    ('01', 'IPM', 'IPM SAR PERSONNEL MOO'),
+    ('02', 'IPM', 'IPM SAR PERSONNEL CADRES'),
+    ('03', 'MSS', 'CMM CR-SAR'),
+    ('04', 'MSS', 'CMM NCR-SAR'),
 ]
 
 
 class Command(BaseCommand):
-    help = 'Crée les adhérents de départ (IPM SAR, CMM).'
+    help = 'Crée les adhérents de départ (IPM SAR, CMM), sans coordonnées inventées.'
 
     def handle(self, *args, **options):
         crees = 0
-        for ligne in ADHERENTS:
-            # Le compte suit le code : 01 → 463001.
-            valeurs = {
-                **ligne,
-                'compte': f'463{ligne["code"].zfill(3)}',
-                'adresse': ADRESSE,
-                'telephone': TELEPHONE,
-            }
-            code = valeurs.pop('code')
-            _, cree = Adherent.objects.get_or_create(code=code, defaults=valeurs)
+        for code, type_, libelle in ADHERENTS:
+            _, cree = Adherent.objects.get_or_create(
+                code=code,
+                defaults={
+                    'type': type_,
+                    'libelle': libelle,
+                    # Le compte suit le code : 01 → 463001.
+                    'compte': f'463{code.zfill(3)}',
+                    'regul_systematique': False,
+                },
+            )
             crees += 1 if cree else 0
 
         self.stdout.write(
