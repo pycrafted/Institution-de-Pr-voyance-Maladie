@@ -301,10 +301,13 @@ const Referentiel = ({ referentiel }) => {
         await modifierEntree(cle, cible.id, valeurs)
         toast.success(`${nommer(valeurs)} mis à jour`)
       } else {
-        // Les codes séquentiels sont attribués ici, une fois le type connu.
-        const complet = referentiel.genererCode
-          ? { ...valeurs, code: referentiel.genererCode(valeurs, entrees) }
-          : valeurs
+        // Les codes séquentiels sont attribués ici, une fois le type connu —
+        // sauf si le formulaire en montrait déjà un (adhérents) : on garde
+        // alors celui que l'utilisateur a vu, et le compte qui en découle.
+        const complet =
+          referentiel.genererCode && !valeurs.code
+            ? { ...valeurs, code: referentiel.genererCode(valeurs, entrees) }
+            : valeurs
         await creerEntree(cle, complet)
         toast.success(`${nommer(valeurs)} ajouté`)
         // L'entrée est ajoutée en fin de liste : on efface la recherche et on

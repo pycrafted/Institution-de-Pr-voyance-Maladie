@@ -321,11 +321,17 @@ export const CorpsFormulaire = ({ referentiel, entree, entrees, valeursDefaut, o
   )
 
   const [ongletActif, setOngletActif] = useState(0)
-  const [valeurs, setValeurs] = useState(() =>
-    entree
-      ? { ...valeursVides(colonnes), ...entree }
-      : { ...valeursVides(colonnes), ...valeursDefaut },
-  )
+  const [valeurs, setValeurs] = useState(() => {
+    if (entree) return { ...valeursVides(colonnes), ...entree }
+    const depart = { ...valeursVides(colonnes), ...valeursDefaut }
+    // Un code montré en lecture seule (adhérents) se lit dès l'ouverture, comme
+    // dans l'application d'origine : on l'attribue ici plutôt qu'à
+    // l'enregistrement, et c'est lui qui sera gardé.
+    if (referentiel.genererCode && parNom.code?.lectureSeule) {
+      depart.code = referentiel.genererCode(depart, entrees || [])
+    }
+    return depart
+  })
   const [erreurs, setErreurs] = useState({})
   const [envoi, setEnvoi] = useState(false)
 

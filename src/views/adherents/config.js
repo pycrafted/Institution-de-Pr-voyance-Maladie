@@ -28,6 +28,9 @@ export const TYPES_ADHERENT = [
   { valeur: 'MSS', libelle: 'CMM' },
 ]
 
+/** Le compte suit le code : adhérent 05 → compte 463005. */
+const compteDuCode = (code) => (code ? `463${String(code).padStart(3, '0')}` : '')
+
 export const ADHERENTS = {
   cle: 'adherents',
   libelle: 'Adhérents',
@@ -56,11 +59,10 @@ export const ADHERENTS = {
       libelleForm: 'Code adhérent',
       largeur: '80px',
       mono: true,
-      // Engendré à la création, jamais saisi : montré en lecture seule à la
-      // modification (le code existe alors), masqué à la création où il n'a pas
-      // encore de valeur — un champ vide et non saisissable n'aurait aucun sens.
+      // Attribué par l'application, jamais saisi. Comme dans l'application
+      // d'origine, il se lit dès l'ouverture d'un « Nouvel adhérent » : le
+      // formulaire le reçoit prérempli, et c'est lui qui est enregistré.
       lectureSeule: true,
-      visible: (valeurs) => Boolean(valeurs.code),
     },
     {
       nom: 'type',
@@ -78,39 +80,40 @@ export const ADHERENTS = {
       nom: 'libelle',
       libelle: 'Libellé',
       libelleForm: 'Libellé adhérent',
-      placeholder: 'IPM SAR PERSONNEL MOO',
       requis: true,
       majuscules: true,
     },
     {
+      // Calculé et non saisi : le compte suit toujours le code (05 → 463005),
+      // il se lit donc prérempli dès la création, comme dans l'application
+      // d'origine, et ne peut pas s'en écarter par une faute de frappe.
       nom: 'compte',
       libelle: 'Compte',
       libelleForm: 'Compte',
-      placeholder: '463005',
       largeur: '110px',
       mono: true,
-      requis: true,
-      unique: true,
-      maxLength: 6,
+      lectureSeule: true,
+      valeur: (valeurs) => compteDuCode(valeurs.code),
     },
     {
       // État de l'adhérent : Actif ou Suspendu. Un adhérent suspendu reste
       // enregistré, simplement mis hors circuit. Affiché en colonne dans le
       // tableau ; dans le formulaire, seulement en modification — un nouvel
-      // adhérent est forcément actif, la bascule n'y aurait aucun sens.
+      // adhérent est forcément actif, la bascule n'y aurait aucun sens. La
+      // modification se reconnaît à l'identifiant de la fiche en base, et non
+      // au code, désormais présent dès la création.
       nom: 'actif',
       libelle: 'Etat',
       libelleForm: 'Etat',
       type: 'etat',
       defaut: true,
       largeur: '110px',
-      visible: (valeurs) => Boolean(valeurs.code),
+      visible: (valeurs) => Boolean(valeurs.id),
     },
     {
       nom: 'adresse',
       libelle: 'Adresse',
       libelleForm: 'Adresse adhérent',
-      placeholder: 'KM 18, ROUTE DE RUFISQUE — MBAO, DAKAR',
     },
     {
       nom: 'telephone',
@@ -119,7 +122,6 @@ export const ADHERENTS = {
       mono: true,
       type: 'tel',
       prefixe: '+221',
-      placeholder: '33 839 61 00',
     },
     {
       // La case porte son propre libellé : l'abréviation de la maquette
@@ -140,21 +142,18 @@ export const ADHERENTS = {
       libelle: 'Cot. IPM Participant',
       libelleForm: 'Cotisation IPM Participant',
       type: 'number',
-      placeholder: '8500',
     },
     {
       nom: 'cotisationIpmPatronale',
       libelle: 'Cot. IPM SAR',
       libelleForm: 'Cotisation IPM SAR',
       type: 'number',
-      placeholder: '8500',
     },
     {
       nom: 'cotisationMss',
       libelle: 'Cot. Mutuelle',
       libelleForm: 'Cotisation Mutuelle',
       type: 'number',
-      placeholder: '5000',
     },
 
     // --- Plafonds de gestion ----------------------------------------------
@@ -163,14 +162,12 @@ export const ADHERENTS = {
       libelle: 'Seuil endettement',
       libelleForm: 'Seuil endettement (FCFA)',
       type: 'number',
-      placeholder: '250000',
     },
     {
       nom: 'seuilConsommation',
       libelle: 'Seuil consommation',
       libelleForm: 'Seuil consommation (FCFA)',
       type: 'number',
-      placeholder: '1500000',
     },
 
     // --- Point focal : l'interlocuteur de l'IPM chez l'adhérent ------------
@@ -178,7 +175,6 @@ export const ADHERENTS = {
       nom: 'focalNom',
       libelle: 'Point focal',
       libelleForm: 'Prénom & nom',
-      placeholder: 'Awa NDIAYE',
     },
     {
       nom: 'focalTelephone',
@@ -187,19 +183,18 @@ export const ADHERENTS = {
       mono: true,
       type: 'tel',
       prefixe: '+221',
-      placeholder: '77 512 40 18',
     },
     {
       nom: 'focalEmail',
       libelle: 'Email point focal',
       libelleForm: 'Email',
       type: 'email',
-      placeholder: 'a.ndiaye@sar.sn',
     },
   ],
 
-  // Un seul onglet, quatre sections : la fiche tient sur une colonne, la
-  // découper en onglets obligerait à naviguer pour saisir quinze champs.
+  // Un seul onglet, disposé comme l'application d'origine : identité et
+  // coordonnées, puis les trois cotisations et les deux seuils en rangées, et
+  // le point focal pour finir.
   formulaire: [
     {
       libelle: 'Adhérent',
@@ -209,22 +204,16 @@ export const ADHERENTS = {
             ['code', 'compte', 'type', 'actif'],
             ['libelle'],
             ['adresse'],
-            ['telephone'],
-            ['regulSystematique'],
+            ['telephone', 'regulSystematique'],
+            // Mutuelle, puis part participant (salariale), puis part SAR
+            // (patronale) : l'ordre de l'application d'origine.
+            ['cotisationMss', 'cotisationIpmSalariale', 'cotisationIpmPatronale'],
+            ['seuilEndettement', 'seuilConsommation'],
           ],
         },
         {
-          titre: 'Cotisations',
-          // SAR (part patronale) puis Participant (part salariale).
-          lignes: [['cotisationIpmPatronale', 'cotisationIpmSalariale'], ['cotisationMss']],
-        },
-        {
-          titre: 'Seuils',
-          lignes: [['seuilEndettement', 'seuilConsommation']],
-        },
-        {
           titre: 'Point focal',
-          lignes: [['focalNom'], ['focalTelephone'], ['focalEmail']],
+          lignes: [['focalNom'], ['focalTelephone', 'focalEmail']],
         },
       ],
     },
