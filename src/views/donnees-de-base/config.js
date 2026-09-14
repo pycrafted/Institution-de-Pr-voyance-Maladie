@@ -47,6 +47,8 @@
  *   dependDe    nom d'un champ dont ce champ dépend ; le modifier remet
  *               celui-ci à zéro
  *   calcule     engendré par l'application : absent du formulaire de saisie
+ *   valeurProposee (valeurs) => valeur : prérempli à la création d'après les
+ *               autres champs (code compris), mais modifiable ensuite
  *   requis      obligatoire à la saisie ; accepte (valeurs) => bool
  *   unique      doit être unique dans le référentiel
  *   majuscules  la saisie est mise en majuscules

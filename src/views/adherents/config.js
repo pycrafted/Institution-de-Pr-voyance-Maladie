@@ -84,16 +84,18 @@ export const ADHERENTS = {
       majuscules: true,
     },
     {
-      // Calculé et non saisi : le compte suit toujours le code (05 → 463005),
-      // il se lit donc prérempli dès la création, comme dans l'application
-      // d'origine, et ne peut pas s'en écarter par une faute de frappe.
+      // Proposé d'après le code (05 → 463005) et prérempli dès la création,
+      // comme dans l'application d'origine — mais modifiable : la comptabilité
+      // peut avoir à le corriger.
       nom: 'compte',
       libelle: 'Compte',
       libelleForm: 'Compte',
       largeur: '110px',
       mono: true,
-      lectureSeule: true,
-      valeur: (valeurs) => compteDuCode(valeurs.code),
+      requis: true,
+      unique: true,
+      maxLength: 6,
+      valeurProposee: (valeurs) => compteDuCode(valeurs.code),
     },
     {
       // État de l'adhérent : Actif ou Suspendu. Un adhérent suspendu reste

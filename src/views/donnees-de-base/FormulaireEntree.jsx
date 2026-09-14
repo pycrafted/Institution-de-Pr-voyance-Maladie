@@ -346,6 +346,11 @@ export const CorpsFormulaire = ({ referentiel, entree, entrees, valeursDefaut, o
     if (referentiel.genererCode && parNom.code?.lectureSeule) {
       depart.code = referentiel.genererCode(depart, entrees || [])
     }
+    // Valeurs proposées d'après la saisie de départ — le compte d'un adhérent
+    // suit son code : préremplies, mais librement modifiables ensuite.
+    colonnes.forEach((col) => {
+      if (col.valeurProposee && !depart[col.nom]) depart[col.nom] = col.valeurProposee(depart)
+    })
     return depart
   })
   const [erreurs, setErreurs] = useState({})
