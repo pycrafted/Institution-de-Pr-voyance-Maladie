@@ -17,8 +17,10 @@
  *
  *   segments    { champ, valeurs } : un sélecteur segmenté partage la table
  *               selon ce champ ; le formulaire hérite du segment ouvert
- *   genererCode (valeurs, entrees) => string : calcule le champ marqué
- *               `calcule` au moment de la création
+ *   genererCode (valeurs, entrees) => string : numérote le code. Si la colonne
+ *               code est montrée dans le formulaire, le numéro y est proposé
+ *               dès la création, modifiable ; si elle est `calcule`, il est
+ *               attribué à l'enregistrement
  *   selection   cases à cocher et actions groupées sur le tableau
  *   taillePage  nombre de lignes par page (10 par défaut)
  *   fiche       `false` retire l'œil de consultation ; présent partout sinon
@@ -168,8 +170,11 @@ export const REFERENTIELS = [
         libelle: 'Code',
         largeur: '110px',
         mono: true,
-        // Engendré à l'enregistrement : absent du formulaire de saisie.
-        calcule: true,
+        // Numéroté par l'application et prérempli à la création (le rang
+        // suivant), mais modifiable ; unique, à la taille du code en base.
+        requis: true,
+        unique: true,
+        maxLength: 6,
       },
       {
         nom: 'libelle',
@@ -230,8 +235,11 @@ export const REFERENTIELS = [
         libelle: 'Code',
         largeur: '90px',
         mono: true,
-        // Engendré à l'enregistrement : absent du formulaire de saisie.
-        calcule: true,
+        // Numéroté par l'application et prérempli à la création (le rang
+        // suivant), mais modifiable ; unique, à la taille du code en base.
+        requis: true,
+        unique: true,
+        maxLength: 2,
       },
       {
         nom: 'libelle',
@@ -266,8 +274,11 @@ export const REFERENTIELS = [
         libelle: 'Code',
         largeur: '90px',
         mono: true,
-        // Engendré à l'enregistrement : absent du formulaire de saisie.
-        calcule: true,
+        // Numéroté par l'application et prérempli à la création (le rang
+        // suivant), mais modifiable ; unique, à la taille du code en base.
+        requis: true,
+        unique: true,
+        maxLength: 2,
       },
       {
         nom: 'libelle',
@@ -433,8 +444,11 @@ export const REFERENTIELS = [
         libelle: 'Code',
         largeur: '110px',
         mono: true,
-        // Engendré à l'enregistrement : absent du formulaire de saisie.
-        calcule: true,
+        // Numéroté par l'application et prérempli à la création (le rang
+        // suivant), mais modifiable ; unique, à la taille du code en base.
+        requis: true,
+        unique: true,
+        maxLength: 7,
       },
       {
         nom: 'libelle',

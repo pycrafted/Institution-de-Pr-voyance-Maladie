@@ -335,7 +335,23 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
  * composant, ce qui réinitialise la saisie sans effet.
  */
 export const CorpsFormulaire = ({ referentiel, entree, entrees, valeursDefaut, onEnregistrer }) => {
-  const { colonnes } = referentiel
+  // Un code numéroté par l'application (`genererCode`) et montré dans le
+  // formulaire devient une proposition : prérempli à la création, modifiable,
+  // et recalculé tant qu'on n'y a pas touché — le code d'une entité suit son
+  // type (DEP015 → SRV016).
+  const colonnes = useMemo(
+    () =>
+      referentiel.colonnes.map((col) =>
+        col.nom === 'code' &&
+        referentiel.genererCode &&
+        !col.calcule &&
+        !col.lectureSeule &&
+        !col.valeurProposee
+          ? { ...col, valeurProposee: referentiel.genererCode }
+          : col,
+      ),
+    [referentiel],
+  )
   const onglets = useMemo(() => structure(referentiel), [referentiel])
   const parNom = useMemo(
     () => Object.fromEntries(colonnes.map((col) => [col.nom, col])),
