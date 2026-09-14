@@ -51,3 +51,23 @@ export const champVisible = (col, valeurs) =>
 /** `requis` peut dépendre de la saisie en cours (un service exige un parent). */
 export const champRequis = (col, valeurs) =>
   typeof col.requis === 'function' ? col.requis(valeurs) : Boolean(col.requis)
+
+/**
+ * Report des valeurs proposées après une saisie. Un champ proposé d'après
+ * d'autres (`valeurProposee` — le compte d'un adhérent suit son code) suit
+ * leurs changements tant que l'utilisateur ne l'a pas retouché, c'est-à-dire
+ * tant qu'il porte encore la proposition calculée sur les valeurs d'avant.
+ * Retouché à la main, il n'est plus jamais écrasé.
+ */
+export const reporterPropositions = (colonnes, avant, apres, entrees = []) => {
+  const suivant = { ...apres }
+  colonnes.forEach((col) => {
+    if (!col.valeurProposee) return
+    // Le champ lui-même vient d'être saisi : c'est la saisie qui compte.
+    if (apres[col.nom] !== avant[col.nom]) return
+    // Retouché auparavant : il ne porte plus la proposition, on n'y touche pas.
+    if (avant[col.nom] !== col.valeurProposee(avant, entrees)) return
+    suivant[col.nom] = col.valeurProposee(suivant, entrees)
+  })
+  return suivant
+}

@@ -54,15 +54,19 @@ export const ADHERENTS = {
 
   colonnes: [
     {
+      // Proposé par l'application — le numéro suivant — et prérempli dès
+      // l'ouverture d'un « Nouvel adhérent », comme dans l'application
+      // d'origine ; mais modifiable, comme le compte qui en découle.
       nom: 'code',
       libelle: 'Code',
       libelleForm: 'Code adhérent',
       largeur: '80px',
       mono: true,
-      // Attribué par l'application, jamais saisi. Comme dans l'application
-      // d'origine, il se lit dès l'ouverture d'un « Nouvel adhérent » : le
-      // formulaire le reçoit prérempli, et c'est lui qui est enregistré.
-      lectureSeule: true,
+      requis: true,
+      unique: true,
+      // Deux caractères : la taille du code en base.
+      maxLength: 2,
+      valeurProposee: (valeurs, entrees) => ADHERENTS.genererCode(valeurs, entrees),
     },
     {
       nom: 'type',

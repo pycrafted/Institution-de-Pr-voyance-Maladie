@@ -20,7 +20,13 @@ import { cilLockLocked, cilLockUnlocked, cilUser, cilX } from '@coreui/icons'
 
 import { erreursDeChamps, messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
-import { champRequis, champVisible, optionsDe, texteOption } from './optionsChamp'
+import {
+  champRequis,
+  champVisible,
+  optionsDe,
+  reporterPropositions,
+  texteOption,
+} from './optionsChamp'
 
 /**
  * Forme d'une adresse électronique : de quoi arrêter une faute de frappe avant
@@ -340,16 +346,14 @@ export const CorpsFormulaire = ({ referentiel, entree, entrees, valeursDefaut, o
   const [valeurs, setValeurs] = useState(() => {
     if (entree) return { ...valeursVides(colonnes), ...entree }
     const depart = { ...valeursVides(colonnes), ...valeursDefaut }
-    // Un code montré en lecture seule (adhérents) se lit dès l'ouverture, comme
-    // dans l'application d'origine : on l'attribue ici plutôt qu'à
-    // l'enregistrement, et c'est lui qui sera gardé.
-    if (referentiel.genererCode && parNom.code?.lectureSeule) {
-      depart.code = referentiel.genererCode(depart, entrees || [])
-    }
-    // Valeurs proposées d'après la saisie de départ — le compte d'un adhérent
-    // suit son code : préremplies, mais librement modifiables ensuite.
+    // Valeurs proposées à l'ouverture — le code d'un adhérent (le numéro
+    // suivant), puis son compte, qui en découle : préremplies comme dans
+    // l'application d'origine, mais modifiables. Dans l'ordre des colonnes,
+    // pour qu'une proposition puisse s'appuyer sur la précédente.
     colonnes.forEach((col) => {
-      if (col.valeurProposee && !depart[col.nom]) depart[col.nom] = col.valeurProposee(depart)
+      if (col.valeurProposee && !depart[col.nom]) {
+        depart[col.nom] = col.valeurProposee(depart, entrees || [])
+      }
     })
     return depart
   })
@@ -392,7 +396,9 @@ export const CorpsFormulaire = ({ referentiel, entree, entrees, valeursDefaut, o
       aVider.forEach((nom) => {
         suivant[nom] = ''
       })
-      return suivant
+      // Un champ proposé d'après celui-ci — le compte d'après le code — le
+      // suit, tant qu'on ne l'a pas retouché.
+      return reporterPropositions(colonnes, v, suivant, entrees || [])
     })
     setErreurs((e) => ({
       ...e,
