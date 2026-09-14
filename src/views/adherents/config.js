@@ -211,7 +211,8 @@ export const ADHERENTS = {
       libelleForm: 'Téléphone',
       mono: true,
       type: 'tel',
-      prefixe: '+221',
+      // Même règle que le téléphone fixe : indicatif posé, mais modifiable.
+      amorce: '+221 ',
     },
     {
       nom: 'focalEmail',

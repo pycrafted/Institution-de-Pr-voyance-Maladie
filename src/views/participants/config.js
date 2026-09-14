@@ -497,7 +497,7 @@ const listeParticipants = (extra) => ({
   // Bandeau : total et nombre d'ayants droit de la vue affichée.
   stats: (entrees) => {
     const c = statsBeneficiaires(entrees.map((e) => e.matricule))
-    return `Total Participants: ${entrees.length} - Époux(se): ${c.EPOUSE + c.EPOUX} - Enfant: ${c.ENFANT}`
+    return `Total Participants: ${entrees.length} | Époux(se): ${c.EPOUSE + c.EPOUX} | Enfant: ${c.ENFANT}`
   },
   colonnes: [...PARTICIPANTS.colonnes, ...COLONNES_LISTE],
   colonnesTableau: [
