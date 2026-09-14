@@ -261,8 +261,23 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
     )
   }
 
+  // Libellé flottant, comme l'application d'origine : dans le champ tant qu'il
+  // est vide, au-dessus dès qu'on y entre ou qu'il porte une valeur. Un champ
+  // qui affiche toujours quelque chose — l'indicatif « +221 », le « jj/mm/aaaa »
+  // d'une date — garde son libellé au-dessus : il n'y aurait pas la place dedans.
+  const flottant = !col.prefixe && col.type !== 'date'
+  const vide = valeur === '' || valeur === null || valeur === undefined
+  const classes = [
+    'ddb-groupe',
+    flottant && 'ddb-groupe-flottant',
+    flottant && vide && 'ddb-groupe-vide',
+    erreur && 'ddb-groupe-erreur',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
   return (
-    <div className={`ddb-groupe${erreur ? ' ddb-groupe-erreur' : ''}`}>
+    <div className={classes}>
       <label htmlFor={identifiant}>
         {col.libelleForm || col.libelle}
         {requis && <span className="ddb-requis"> *</span>}
@@ -276,7 +291,8 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
           onChange={(e) => onChanger(col, e.target.value)}
           autoFocus={autoFocus}
         >
-          <option value="">{requis ? 'Choisir…' : '— Aucun —'}</option>
+          {/* Vide : c'est le libellé, posé dans le champ, qui dit quoi choisir. */}
+          <option value="">{flottant ? '' : requis ? 'Choisir…' : '— Aucun —'}</option>
           {optionsDe(col, valeurs, entrees).map((option) => (
             <option key={option.valeur} value={option.valeur}>
               {texteOption(option, col)}

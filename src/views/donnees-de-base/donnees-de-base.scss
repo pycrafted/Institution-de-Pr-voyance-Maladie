@@ -991,6 +991,45 @@ $ddb-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
   transition: color 0.15s ease;
 }
 
+// --- Libellé flottant -------------------------------------------------------
+// Comme l'application d'origine : tant qu'un champ est vide, son libellé tient
+// la place de la valeur, à la taille du texte saisi ; dès qu'on y entre ou
+// qu'il porte une valeur, il rétrécit et remonte au-dessus. Un champ vide se
+// lit ainsi sans exemple grisé, et le formulaire n'aligne pas une colonne de
+// petits libellés au-dessus de traits vides.
+//
+// Tout passe par `transform` : le libellé bouge sans rien déplacer autour de
+// lui, le formulaire ne saute pas à la première frappe.
+.ddb-groupe-flottant {
+  > label {
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transform-origin: left top;
+    transition:
+      color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  // Vide et hors focus : le libellé descend sur la ligne de saisie (sa propre
+  // hauteur plus la marge) et grandit à la taille du texte (0,75 → 1 rem).
+  // Largeur ramenée à 75 % avant agrandissement, pour que « Cotisation M… »
+  // se coupe au bord du champ et non au-delà. Il laisse passer le clic : on
+  // tape dans le champ en cliquant sur son libellé.
+  &.ddb-groupe-vide:not(:focus-within) > label {
+    max-width: 75%;
+    color: #9aa1a9;
+    transform: translateY(calc(100% + 0.35rem)) scale(1.3333);
+    pointer-events: none;
+  }
+
+  // Un champ obligatoire resté vide et signalé garde son libellé en rouge.
+  &.ddb-groupe-erreur.ddb-groupe-vide:not(:focus-within) > label {
+    color: $ddb-rouge;
+  }
+}
+
 .ddb-champ {
   display: block;
   width: 100%;
