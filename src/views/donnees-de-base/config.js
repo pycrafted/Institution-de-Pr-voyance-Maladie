@@ -39,6 +39,8 @@
  *   mono        rendu en chasse fixe (codes, numéros de compte)
  *   type        type HTML de l'input : 'tel', 'email', 'number'…
  *   prefixe     affixe figé devant la saisie (indicatif téléphonique)
+ *   amorce      texte de départ posé dans le champ vide, modifiable (« +221 »
+ *               qu'on peut remplacer) ; laissé seul, il n'est pas enregistré
  *   options     le champ devient une liste déroulante. Tableau de chaînes,
  *               tableau de { valeur, libelle }, ou fonction
  *               (valeurs, entrees) => options pour une liste qui dépend de la

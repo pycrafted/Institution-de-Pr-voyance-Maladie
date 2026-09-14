@@ -147,7 +147,10 @@ export const ADHERENTS = {
       libelleForm: 'Téléphone fixe',
       mono: true,
       type: 'tel',
-      prefixe: '+221',
+      // L'indicatif du Sénégal est posé dans le champ, mais modifiable : un
+      // adhérent peut avoir un numéro à l'étranger. Laissé seul, sans numéro,
+      // il n'est pas enregistré.
+      amorce: '+221 ',
     },
     {
       // La case porte son propre libellé : l'abréviation de la maquette
@@ -186,13 +189,13 @@ export const ADHERENTS = {
     {
       nom: 'seuilEndettement',
       libelle: 'Seuil endettement',
-      libelleForm: 'Seuil endettement (FCFA)',
+      libelleForm: 'Seuil endettement',
       type: 'number',
     },
     {
       nom: 'seuilConsommation',
       libelle: 'Seuil consommation',
-      libelleForm: 'Seuil consommation (FCFA)',
+      libelleForm: 'Seuil consommation',
       type: 'number',
     },
 

@@ -344,16 +344,25 @@ export const CorpsFormulaire = ({ referentiel, entree, entrees, valeursDefaut, o
 
   const [ongletActif, setOngletActif] = useState(0)
   const [valeurs, setValeurs] = useState(() => {
-    if (entree) return { ...valeursVides(colonnes), ...entree }
-    const depart = { ...valeursVides(colonnes), ...valeursDefaut }
-    // Valeurs proposées à l'ouverture — le code d'un adhérent (le numéro
-    // suivant), puis son compte, qui en découle : préremplies comme dans
-    // l'application d'origine, mais modifiables. Dans l'ordre des colonnes,
-    // pour qu'une proposition puisse s'appuyer sur la précédente.
+    const depart = entree
+      ? { ...valeursVides(colonnes), ...entree }
+      : { ...valeursVides(colonnes), ...valeursDefaut }
+    if (!entree) {
+      // Valeurs proposées à l'ouverture — le code d'un adhérent (le numéro
+      // suivant), puis son compte, qui en découle : préremplies comme dans
+      // l'application d'origine, mais modifiables. Dans l'ordre des colonnes,
+      // pour qu'une proposition puisse s'appuyer sur la précédente.
+      colonnes.forEach((col) => {
+        if (col.valeurProposee && !depart[col.nom]) {
+          depart[col.nom] = col.valeurProposee(depart, entrees || [])
+        }
+      })
+    }
+    // Amorce — le « +221 » d'un téléphone : posée dans tout champ vide, à la
+    // création comme en modification, et modifiable comme le reste. Laissée
+    // seule, elle n'est pas enregistrée (cf. `soumettre`).
     colonnes.forEach((col) => {
-      if (col.valeurProposee && !depart[col.nom]) {
-        depart[col.nom] = col.valeurProposee(depart, entrees || [])
-      }
+      if (col.amorce && !depart[col.nom]) depart[col.nom] = col.amorce
     })
     return depart
   })
@@ -448,7 +457,9 @@ export const CorpsFormulaire = ({ referentiel, entree, entrees, valeursDefaut, o
         candidat[col.nom] = col.valeur ? col.valeur(valeurs) : valeurs[col.nom] || ''
         return
       }
-      const valeur = String(valeurs[col.nom] ?? '').trim()
+      const saisie = String(valeurs[col.nom] ?? '').trim()
+      // Une amorce laissée seule — « +221 » sans numéro — n'est pas une saisie.
+      const valeur = col.amorce && saisie === col.amorce.trim() ? '' : saisie
       // Un champ masqué ne doit rien laisser derrière lui : une direction qui
       // était un service ne garde pas son ancien rattachement.
       candidat[col.nom] = champVisible(col, valeurs) ? valeur : ''
