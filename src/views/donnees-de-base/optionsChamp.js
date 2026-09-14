@@ -21,9 +21,16 @@ export const optionsDe = (col, valeurs = {}, entrees = []) => {
   )
 }
 
-/** Texte d'une option dans une liste déroulante : « 571000 - CAISSE LOCALE ». */
-export const texteOption = (option) =>
-  option.libelle === option.valeur ? option.valeur : `${option.valeur} - ${option.libelle}`
+/**
+ * Texte d'une option dans une liste déroulante : « 571000 - CAISSE LOCALE ».
+ * Une colonne `libelleSeul` n'affiche que l'intitulé — quand le code est une
+ * clé interne que l'utilisateur n'a pas à voir (le régime « MSS » se lit
+ * « CMM »).
+ */
+export const texteOption = (option, col) =>
+  col?.libelleSeul || option.libelle === option.valeur
+    ? option.libelle
+    : `${option.valeur} - ${option.libelle}`
 
 /**
  * Intitulé à afficher pour une valeur enregistrée, hors saisie : dans un

@@ -17,9 +17,16 @@
  * se partage entre part SAR et part participant ; la cotisation Mutuelle est
  * unique.
  *
- * Déclarés comme de simples chaînes, donc affichés tels quels.
+ * Codes de l'application d'origine : la mutuelle y est enregistrée « MSS » et
+ * affichée « CMM ». On garde ce code — nos données restent compatibles avec
+ * l'ancienne base — mais l'écran ne montre que le libellé, partout : l'original
+ * affichait « MSS » dans son tableau et « CMM » dans sa liste, deux noms pour
+ * une même chose.
  */
-export const TYPES_ADHERENT = ['IPM', 'CMM']
+export const TYPES_ADHERENT = [
+  { valeur: 'IPM', libelle: 'IPM' },
+  { valeur: 'MSS', libelle: 'CMM' },
+]
 
 export const ADHERENTS = {
   cle: 'adherents',
@@ -61,6 +68,8 @@ export const ADHERENTS = {
       libelleForm: 'Régime',
       largeur: '90px',
       options: TYPES_ADHERENT,
+      // « CMM » et non « MSS - CMM » : le code est une clé interne.
+      libelleSeul: true,
       requis: true,
     },
     {

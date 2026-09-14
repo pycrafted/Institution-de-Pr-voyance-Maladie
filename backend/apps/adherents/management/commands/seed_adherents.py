@@ -49,7 +49,7 @@ ADHERENTS = [
     },
     {
         'code': '03',
-        'type': 'CMM',
+        'type': 'MSS',
         'libelle': 'CMM CR-SAR',
         'cotisation_ipm_salariale': '',
         'cotisation_ipm_patronale': '',
@@ -63,7 +63,7 @@ ADHERENTS = [
     },
     {
         'code': '04',
-        'type': 'CMM',
+        'type': 'MSS',
         'libelle': 'CMM NCR-SAR',
         'cotisation_ipm_salariale': '',
         'cotisation_ipm_patronale': '',

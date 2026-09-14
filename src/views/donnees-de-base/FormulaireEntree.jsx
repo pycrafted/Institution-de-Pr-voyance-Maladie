@@ -252,7 +252,7 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
           <input
             id={identifiant}
             className={`ddb-champ${col.mono ? ' ddb-mono' : ''}`}
-            value={option ? texteOption(option) : brute || ''}
+            value={option ? texteOption(option, col) : brute || ''}
             readOnly
             tabIndex={-1}
           />
@@ -279,7 +279,7 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
           <option value="">{requis ? 'Choisir…' : '— Aucun —'}</option>
           {optionsDe(col, valeurs, entrees).map((option) => (
             <option key={option.valeur} value={option.valeur}>
-              {texteOption(option)}
+              {texteOption(option, col)}
             </option>
           ))}
         </select>

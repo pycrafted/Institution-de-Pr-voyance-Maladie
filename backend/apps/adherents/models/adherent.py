@@ -6,10 +6,10 @@ catégorie de personnel de la SAR, ou une mutuelle. Les personnes couvertes,
 elles, sont les participants et relèveront de leur propre module.
 
 Deux régimes cohabitent : l'IPM, dont la cotisation se partage entre part SAR
-et part participant, et la mutuelle CMM, dont la cotisation est unique. Les
-champs sans objet pour un régime restent vides — d'où les CharField sur les
-montants plutôt que des entiers : l'écran d'origine les traite comme du texte,
-et une cotisation absente n'est pas une cotisation nulle.
+et part participant, et la mutuelle CMM (code « MSS »), dont la cotisation est
+unique. Les champs sans objet pour un régime restent vides — d'où les CharField
+sur les montants plutôt que des entiers : l'écran d'origine les traite comme du
+texte, et une cotisation absente n'est pas une cotisation nulle.
 
 Le socle commun (code, libellé, activation, horodatage) vient du module
 Données de base : un adhérent se consulte, se complète et se désactive
@@ -20,9 +20,12 @@ from django.db import models
 
 from donnees_de_base.models.base import Referentiel
 
+# Régimes, sous les codes de l'application d'origine : la mutuelle y est
+# enregistrée « MSS » et affichée « CMM ». Reprendre ce code garde nos données
+# compatibles avec l'ancienne base, pour le jour où on en reprendra le contenu.
 TYPES_ADHERENT = [
     ('IPM', 'IPM'),
-    ('CMM', 'CMM'),
+    ('MSS', 'CMM'),
 ]
 
 
