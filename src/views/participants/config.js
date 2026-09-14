@@ -482,9 +482,18 @@ const listeParticipants = (extra) => ({
   // La création se fait par l'onglet dédié, pas par un bouton de la liste.
   sansCreation: true,
   // Seul le sélecteur Société, comme la maquette (pas de filtre catégorie).
+  // Son étiquette se pose au-dessus, comme « Spécialité » chez les fournisseurs.
   filtres: [
-    { champ: 'adherent', libelle: 'Société', options: () => depuisReferentiel('adherents') },
+    {
+      champ: 'adherent',
+      etiquette: 'Société',
+      libelle: 'Toutes les sociétés',
+      options: () => depuisReferentiel('adherents'),
+    },
   ],
+  // Recherche et filtre soulignés, sans cadre ni loupe, comme sur les
+  // fournisseurs de soins.
+  champsSoulignes: true,
   // Bandeau : total et nombre d'ayants droit de la vue affichée.
   stats: (entrees) => {
     const c = statsBeneficiaires(entrees.map((e) => e.matricule))
@@ -523,6 +532,8 @@ export const FAMILLES = {
   libelle: 'Familles',
   sansCreation: true,
   outils: ['export'],
+  // Recherche soulignée, comme les autres onglets de la page.
+  champsSoulignes: true,
   taillePage: 12,
   nommer: (e) => `${e.prenoms || ''} ${e.nom || ''}`.trim(),
 

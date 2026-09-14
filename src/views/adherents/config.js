@@ -41,6 +41,9 @@ export const ADHERENTS = {
   // des fournisseurs de soins qui porte aussi l'import.
   outils: ['export'],
 
+  // Recherche soulignée, sans cadre ni loupe, comme sur les fournisseurs.
+  champsSoulignes: true,
+
   // Cases à cocher, comme pour les fournisseurs de soins : suspendre ou
   // réactiver d'un geste une sélection d'adhérents — un, deux ou tous, par la
   // case d'en-tête.
