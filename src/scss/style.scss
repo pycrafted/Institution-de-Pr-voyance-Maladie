@@ -1,33 +1,77 @@
-@use "@coreui/coreui/scss/coreui" as * with (
+@use '@coreui/coreui/scss/coreui' as * with (
   $enable-deprecation-messages: false,
-  // Charte SAR : rouge officiel comme couleur primaire (#E52621 — RVB 229/38/33)
+  // Charte SAR : rouge officiel comme couleur primaire (#E52621 - RVB 229/38/33)
   $primary: #e52621,
+  // Police Satoshi, celle d'OpsDigital (cf. @font-face ci-dessous).
+  $font-family-sans-serif: (
+      'Satoshi',
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      'Helvetica Neue',
+      Arial,
+      sans-serif,
+    ),
+  $font-size-base: 0.9375rem
 );
-@use "@coreui/chartjs/scss/coreui-chartjs";
-@use "vendors/simplebar";
+@use '@coreui/chartjs/scss/coreui-chartjs';
+@use 'vendors/simplebar';
 
 // =============================================================================
-// SAR FDS — Thème inspiré OpenKM
+// IPM - thème inspiré d'OpsDigital (TailAdmin), aux couleurs SAR
 // =============================================================================
+// Menu latéral sombre, barre supérieure blanche légèrement ombrée, fond
+// gris-bleu très clair, cartes blanches arrondies à ombre douce. Les couleurs
+// restent celles de la charte : rouge et noir SAR.
 
-// Charte SAR — couleurs officielles
-$sar-red:   #e52621; // Rouge SAR (RVB 229/38/33)
-$sar-black: #1d1d1b; // Noir SAR (RVB 29/29/27)
+// Satoshi (Indian Type Foundry, licence Fontshare), en police variable : un
+// seul fichier porte toutes les graisses, de 300 à 900.
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../assets/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
 
-// Palette structurelle (sidebar / header) = noir SAR
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../assets/fonts/Satoshi-VariableItalic.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+// Charte SAR - couleurs officielles
+$sar-red: #e52621; // Rouge SAR (RVB 229/38/33)
+// Noir SAR rafraîchi : un charbon un peu plus profond et plus neutre pour le
+// menu sombre - plus moderne, même emplacement.
+$sar-black: #17181d;
+// Noir SAR éclairci : l'entrée active du menu sombre.
+$sar-graphite: #2c2d33;
+
+// Neutres rafraîchis : fond de page plus aéré, filets plus doux, encre plus
+// profonde. Hues inchangées (bleu-ardoise), pour ne pas dépayser.
 $openkm-navbar-bg: $sar-black;
-$openkm-navbar-border: #333330;
-$openkm-thead-bg: #f7f8fa;
-$openkm-content-bg: #eef0f3;
-$openkm-card-border: #d9dde2;
-$openkm-row-active-bg: #d6e6f7;
-$openkm-row-hover-bg: #eef3f8;
+$openkm-navbar-border: $sar-graphite;
+$openkm-thead-bg: #f8fafc;
+$openkm-content-bg: #f4f6fa;
+$openkm-card-border: #e8ecf2;
+$openkm-row-active-bg: #fdecec;
+$openkm-row-hover-bg: #f7f9fc;
+$texte-doux: #64748b;
+// L'ombre des cartes d'OpsDigital (« shadow-default »).
+$ombre-carte: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
 
 body {
   background-color: $openkm-content-bg;
+  color: #11151d;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-$navbar-hauteur: 4rem;
+$navbar-hauteur: 4.25rem;
 
 .wrapper {
   width: 100%;
@@ -37,32 +81,32 @@ $navbar-hauteur: 4rem;
   padding-top: $navbar-hauteur;
   min-height: 100vh;
   will-change: auto;
-  @include transition(padding .15s);
+  @include transition(padding 0.15s);
+}
+
+// Le contenu respire davantage, comme les pages d'OpsDigital.
+.wrapper .body {
+  padding-top: 0.75rem !important;
 }
 
 // -----------------------------------------------------------------------------
-// BARRE SUPÉRIEURE — logo, nom de l'institution, menu utilisateur
+// BARRE SUPÉRIEURE - logo, nom de l'institution, utilisateur
 // -----------------------------------------------------------------------------
 .app-navbar {
-  // Fixée en haut, sur toute la largeur : le menu commence sous elle, et non
-  // à côté. Elle ne défile donc plus — le menu étant lui-même fixe, une barre
-  // qui s'en irait au défilement aurait laissé un vide au-dessus de lui.
-  //
-  // Au-dessus du menu dans l'ordre d'empilement (CoreUI le pose à 1030), pour
-  // que rien ne vienne mordre sur elle.
+  // Fixée en haut, à droite du menu, qui occupe toute la hauteur de l'écran
+  // (cf. DefaultLayout : la barre suit le menu, elle reçoit donc sa largeur).
   position: fixed;
-  inset: 0 0 auto 0;
+  inset: 0 0 auto var(--cui-sidebar-occupy-start, 0);
   z-index: 1032;
   height: $navbar-hauteur;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
-  padding-inline: 1.25rem;
-  // Même fond que les deux colonnes de navigation : le cadre de l'application
-  // forme un ensemble continu autour du contenu blanc.
-  background-color: #f7f8fa;
+  padding-inline: 1.25rem 1.5rem;
+  background-color: #fff;
   border-bottom: 1px solid $openkm-card-border;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  @include transition(left 0.15s);
 }
 
 .app-navbar-marque {
@@ -73,15 +117,17 @@ $navbar-hauteur: 4rem;
   text-decoration: none;
 }
 
+// Le logo SAR, suivi du nom de l'institution.
 .app-navbar-logo {
-  height: 34px;
+  height: 36px;
   flex: 0 0 auto;
   object-fit: contain;
 }
 
 .app-navbar-nom {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: $sar-red;
   line-height: 1.2;
   overflow: hidden;
@@ -89,28 +135,106 @@ $navbar-hauteur: 4rem;
   white-space: nowrap;
 }
 
-// --- Zone de droite : outils | session ---
+// --- Zone de droite : utilisateur | outils ---
 .app-navbar-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
   flex: 0 0 auto;
+  // Poussé en bout de barre : entre la marque et lui, le fil d'Ariane.
+  margin-left: auto;
+}
+
+// Bouton du menu : il fixe le rail déplié, ou rappelle le menu sur petit écran.
+.app-navbar-menu {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #64748b;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+
+  svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  &:hover {
+    background-color: #f1f5f9;
+    color: $sar-black;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $sar-red;
+    outline-offset: 1px;
+  }
+}
+
+// Fil d'Ariane : « Accueil / Fichiers / Paramètres », comme à l'origine. Il
+// s'efface sur les écrans étroits, où la marque et l'identité priment.
+.app-navbar-fil {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  padding-left: 1rem;
+  border-left: 1px solid $openkm-card-border;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+
+  a {
+    color: #64748b;
+    text-decoration: none;
+
+    &:hover {
+      color: $sar-red;
+    }
+  }
+}
+
+.app-navbar-fil-separateur {
+  color: #cbd5e1;
+}
+
+.app-navbar-fil-courant {
+  font-weight: 600;
+  color: $sar-black;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1199.98px) {
+  .app-navbar-fil {
+    display: none;
+  }
 }
 
 .app-navbar-icone {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 2.35rem;
+  height: 2.35rem;
   border: 0;
-  border-radius: 0.375rem;
+  border-radius: 50%;
   background: transparent;
-  color: #6b7280;
-  transition: color 0.12s ease, background-color 0.12s ease;
+  color: $texte-doux;
+  transition:
+    color 0.12s ease,
+    background-color 0.12s ease;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: $openkm-content-bg;
     color: $sar-black;
   }
 
@@ -120,166 +244,31 @@ $navbar-hauteur: 4rem;
   }
 }
 
-// Le rouge est réservé à la sortie : sans ça, les deux icônes voisines se
-// ressembleraient et la différence de gravité disparaîtrait.
+// Le rouge est réservé à la sortie.
 .app-navbar-icone-sortie:hover {
   color: $sar-red;
 }
 
-// Filet séparant l'identité, en texte, des deux actions en icônes.
 .app-navbar-filet {
   width: 1px;
-  height: 1.4rem;
-  margin-inline: 0.35rem;
+  height: 1.6rem;
+  margin-inline: 0.5rem;
   background-color: $openkm-card-border;
 }
 
+// Utilisateur : nom et rôle, puis l'avatar à ses initiales - comme le menu
+// utilisateur d'OpsDigital.
 .app-navbar-identite {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.15rem;
-  font-size: 0.9rem;
-  color: $sar-black;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.25rem 0.9rem 0.25rem 0.3rem;
+  border-radius: 999px;
   text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.12s ease;
+  transition: background-color 0.14s ease;
 
   &:hover {
-    color: $sar-red;
-  }
-}
-
-.app-navbar-identite-role {
-  color: #6b7280;
-}
-
-// Sur écran étroit, le titre de l'institution ne tient pas à côté du logo.
-// Le nom, lui, reste : sans lui il ne resterait que deux icônes muettes.
-@media (max-width: 767.98px) {
-  .app-navbar-nom {
-    display: none;
-  }
-
-  .app-navbar-identite {
-    max-width: 9rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
-  }
-
-  .app-navbar-identite-role {
-    display: none;
-  }
-}
-
-// Le menu commence sous la barre supérieure, qui traverse l'écran (CoreUI le
-// cale à `top: 0` par défaut). `bottom: 0` étant déjà posé par la classe
-// `sidebar-fixed`, la hauteur suit d'elle-même.
-//
-// Même fond que la liste de référentiels de « Données de base » : les deux
-// colonnes de navigation se lisent comme un seul et même bandeau.
-.sidebar {
-  --cui-sidebar-bg: #f7f8fa;
-  --cui-sidebar-border-color: #{$openkm-card-border};
-
-  &.sidebar-fixed {
-    top: $navbar-hauteur;
-  }
-}
-
-// Les entrées reprennent exactement l'apparence de la liste de référentiels
-// de la page « Données de base » : même pastille noire à l'état actif,
-// même icône rouge, même rayon.
-//
-// À déclarer sur .sidebar-nav et non sur .sidebar : CoreUI pose ces variables
-// sur .sidebar-nav, donc une valeur héritée du parent serait écrasée par la
-// déclaration de l'enfant et l'état actif retomberait sur le gris par défaut.
-.sidebar-nav {
-  --cui-sidebar-nav-link-color: #2b2b2b;
-  --cui-sidebar-nav-link-icon-color: #6b7280;
-  --cui-sidebar-nav-link-hover-color: #2b2b2b;
-  --cui-sidebar-nav-link-hover-bg: rgba(0, 0, 0, 0.05);
-  --cui-sidebar-nav-link-hover-icon-color: #6b7280;
-  --cui-sidebar-nav-link-active-color: #ffffff;
-  --cui-sidebar-nav-link-active-bg: #{$sar-black};
-  --cui-sidebar-nav-link-active-icon-color: #{$sar-red};
-  --cui-sidebar-nav-link-border-radius: 0.375rem;
-  --cui-sidebar-nav-link-padding-x: 0.6rem;
-  --cui-sidebar-nav-link-padding-y: 0.5rem;
-  --cui-sidebar-nav-link-icon-width: 1rem;
-  --cui-sidebar-nav-link-icon-height: 1rem;
-  --cui-sidebar-nav-link-icon-margin: 0.6rem;
-  --cui-sidebar-nav-title-color: #6b7280;
-  --cui-sidebar-nav-title-padding-x: 1.2rem;
-  --cui-sidebar-nav-title-padding-y: 0;
-
-  .nav-link {
-    margin-inline: 0.6rem;
-    font-size: 0.875rem;
-    transition: background-color 0.12s ease, color 0.12s ease;
-  }
-
-  // « Synthèse », « Fichiers » et les futurs regroupements : même intitulé de
-  // section que les familles de la liste de référentiels.
-  .nav-title {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    margin-bottom: 0.4rem;
-  }
-
-  // Le premier intitulé n'a pas d'entrée au-dessus de lui pour l'écarter du
-  // bord : CoreUI ne pose sa marge haute que sur les suivants. Sans ce
-  // rattrapage, « Synthèse » se colle au haut de la colonne alors que
-  // « Fichiers » respire.
-  .nav-title:first-child {
-    margin-top: 0.4rem;
-  }
-}
-
-// -----------------------------------------------------------------------------
-// PIED DU MENU — paramètres et déconnexion
-// -----------------------------------------------------------------------------
-// Les deux mêmes actions que dans la barre supérieure, reprises ici en icônes
-// seules, sur une ligne. Le filet du haut les détache de la navigation : elles
-// ne mènent pas à une section du dossier, elles concernent la session.
-//
-// Centrées dans la colonne : sans intitulé, elles ne s'alignent sur rien —
-// les caler à gauche sous la liste ne ferait qu'un rappel de colonne bancal,
-// alors que le centrage les pose comme un pied à part entière.
-.app-sidebar-pied {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.5rem 0.7rem;
-  border-top: 1px solid $openkm-card-border;
-}
-
-// Même carré que les icônes de la barre supérieure : ce sont les mêmes
-// commandes, elles gardent la même cible et le même rayon.
-.app-sidebar-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 0.375rem;
-  background: transparent;
-  color: #6b7280;
-  text-decoration: none;
-  transition: background-color 0.12s ease, color 0.12s ease;
-
-  svg {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: $sar-black;
+    background-color: $openkm-content-bg;
   }
 
   &:focus-visible {
@@ -288,51 +277,269 @@ $navbar-hauteur: 4rem;
   }
 }
 
-// Pastille noire et icône rouge, comme l'entrée courante du menu.
-.app-sidebar-action-actif {
-  background-color: $sar-black;
-  color: $sar-red;
+// Pastille d'avatar : initiales sur un dégradé rouge SAR.
+.app-navbar-avatar {
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(140deg, #ff5a52, $sar-red);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 6px rgba(229, 38, 33, 0.3);
+}
 
-  &:hover {
-    background-color: $sar-black;
-    color: $sar-red;
+.app-navbar-identite-texte {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.app-navbar-identite-nom {
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $sar-black;
+}
+
+.app-navbar-identite-role {
+  font-size: 0.75rem;
+  color: $texte-doux;
+}
+
+.app-navbar-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background-color: $sar-black;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  box-shadow:
+    0 0 0 2px #fff,
+    0 0 0 3px $openkm-card-border;
+}
+
+// Sur écran étroit, le titre de l'institution et le nom ne tiennent plus :
+// il reste le logo, l'avatar et les deux icônes.
+@media (max-width: 767.98px) {
+  .app-navbar-nom,
+  .app-navbar-identite-texte {
+    display: none;
+  }
+
+  .app-navbar-identite {
+    padding: 0.2rem;
   }
 }
 
-// Le rouge est réservé à la sortie : sans ça, les deux voisines se
-// ressembleraient et la différence de gravité disparaîtrait.
-.app-sidebar-action-sortie:hover {
-  color: $sar-red;
+// -----------------------------------------------------------------------------
+// MENU LATÉRAL - sombre, comme OpsDigital
+// -----------------------------------------------------------------------------
+// Sur toute la hauteur de l'écran ; la barre supérieure commence à sa droite.
+.sidebar {
+  --cui-sidebar-bg: #{$sar-black};
+  --cui-sidebar-color: rgba(255, 255, 255, 0.72);
+  --cui-sidebar-border-width: 0;
+  --cui-sidebar-border-color: transparent;
+  // Léger dégradé vertical : un peu de profondeur, sans quitter le charbon SAR.
+  background-image: linear-gradient(180deg, #1e2027 0%, #{$sar-black} 100%);
+
+  &.sidebar-fixed {
+    top: 0;
+  }
+
+  // Le filet clair de CoreUI (`border-end`) n'a pas lieu d'être sur un menu
+  // sombre.
+  &.border-end {
+    border-right: 0 !important;
+  }
 }
 
-// Le même trait que celui qui sépare l'identité des outils, en haut.
-.app-sidebar-filet {
-  width: 1px;
-  height: 1.4rem;
-  flex: 0 0 auto;
-  margin-inline: 0.35rem;
-  background-color: $openkm-card-border;
+// À déclarer sur .sidebar-nav et non sur .sidebar : CoreUI pose ces variables
+// sur .sidebar-nav, une valeur héritée du parent serait écrasée.
+.sidebar-nav {
+  --cui-sidebar-nav-link-color: rgba(255, 255, 255, 0.7);
+  --cui-sidebar-nav-link-icon-color: rgba(255, 255, 255, 0.68);
+  --cui-sidebar-nav-link-hover-color: #fff;
+  --cui-sidebar-nav-link-hover-bg: rgba(255, 255, 255, 0.06);
+  --cui-sidebar-nav-link-hover-icon-color: rgba(255, 255, 255, 0.85);
+  --cui-sidebar-nav-link-active-color: #fff;
+  // L'entrée courante s'éclaircit au lieu de se peindre : sur un menu sombre,
+  // un voile blanc à 10 % suffit à dire « vous êtes ici », et ne fait pas
+  // concurrence au contenu. Le rouge de marque est réservé aux actions.
+  --cui-sidebar-nav-link-active-bg: rgba(255, 255, 255, 0.1);
+  --cui-sidebar-nav-link-active-icon-color: #fff;
+  --cui-sidebar-nav-link-border-radius: 0.5rem;
+  --cui-sidebar-nav-link-padding-x: 0.85rem;
+  --cui-sidebar-nav-link-padding-y: 0.62rem;
+  --cui-sidebar-nav-link-icon-width: 1.05rem;
+  --cui-sidebar-nav-link-icon-height: 1.05rem;
+  --cui-sidebar-nav-link-icon-margin: 0.75rem;
+  // Sections dépliantes (« Fichiers », « Documents ») : le chevron se lit sur
+  // le noir, le groupe ouvert ne se colore pas, ses pages se décalent d'un cran.
+  --cui-sidebar-nav-group-bg: transparent;
+  --cui-sidebar-nav-group-indicator-color: rgba(255, 255, 255, 0.45);
+  --cui-sidebar-nav-group-indicator-hover-color: #fff;
+  --cui-sidebar-nav-group-toggle-show-color: #fff;
+  // Le décalage des pages d'une section : plus léger qu'avant, la puce disant
+  // désormais le retrait. Sans cela, « Fournisseurs de Soins » ne tiendrait
+  // plus sur sa ligne.
+  --cui-sidebar-nav-group-items-padding-x: 0.55rem;
+  --cui-sidebar-nav-title-color: rgba(255, 255, 255, 0.38);
+  --cui-sidebar-nav-title-padding-x: 1.6rem;
+  --cui-sidebar-nav-title-padding-y: 0;
+
+  padding-top: 0.5rem;
+
+  .nav-link {
+    position: relative;
+    margin-inline: 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition:
+      background-color 0.14s ease,
+      color 0.14s ease,
+      transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+
+    // Léger glissement au survol : l'entrée répond au pointeur.
+    &:hover {
+      transform: translateX(2px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-link {
+      transition: background-color 0.14s ease, color 0.14s ease;
+      &:hover {
+        transform: none;
+      }
+    }
+  }
+
+  .nav-link + .nav-link,
+  .nav-item + .nav-item {
+    margin-top: 0.15rem;
+  }
+
+  // L'entrée courante : un voile clair et un liseré d'un pixel, rien de plus.
+  // Ni barre de couleur au bord du menu, ni pastille contrastée : ce sont deux
+  // signaux pour une seule information, et ils tirent l'œil vers la colonne
+  // alors que le travail se fait à droite.
+  .nav-link.active {
+    font-weight: 600;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+  }
+
+  // Au doigt levé : l'enfoncement se voit le temps du clic, sans déplacement.
+  .nav-link:active {
+    background-color: rgba(255, 255, 255, 0.14);
+  }
+
+  // Les pages d'une section portent une puce ronde ; les sections, elles, ont
+  // une icône. Un coup d'œil suffit alors à distinguer ce qui ouvre un écran
+  // de ce qui déplie une liste.
+  .nav-group-items .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding-inline: 0.7rem;
+
+    &::before {
+      content: '';
+      flex: 0 0 auto;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: currentcolor;
+      opacity: 0.38;
+      transition:
+        opacity 0.12s ease,
+        transform 0.12s ease;
+    }
+
+    &:hover::before {
+      opacity: 0.7;
+    }
+
+    // La page ouverte : sa puce est pleine et légèrement plus grosse.
+    &.active::before {
+      opacity: 1;
+      transform: scale(1.25);
+    }
+  }
+
+  .nav-title {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    margin-top: 1.4rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .nav-title:first-child {
+    margin-top: 0.75rem;
+  }
 }
 
 // -----------------------------------------------------------------------------
-// CARTES
+// CARTES - blanches, arrondies, ombre douce
 // -----------------------------------------------------------------------------
 .card {
-  border-color: $openkm-card-border;
+  --cui-card-border-color: #{$openkm-card-border};
+  --cui-card-border-radius: 0.75rem;
+  --cui-card-inner-border-radius: calc(0.75rem - 1px);
+  box-shadow: $ombre-carte;
 
   .card-header {
-    background-color: var(--cui-tertiary-bg);
+    background-color: #fff;
     border-bottom-color: $openkm-card-border;
   }
 }
 
 // -----------------------------------------------------------------------------
-// INTERACTIONS — hover, transitions, feedback
+// FENÊTRES MODALES - mêmes arrondis et ombre que les cartes
 // -----------------------------------------------------------------------------
+.modal-content {
+  border: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1.25rem 3rem rgba(16, 24, 40, 0.18);
+}
 
-// Toolbar icônes (style OpenKM) : tint bleu subtil au survol
+.modal-header {
+  border-bottom-color: $openkm-card-border;
+}
+
+.modal-title {
+  font-weight: 700;
+  color: $sar-black;
+}
+
+.modal-footer {
+  border-top-color: $openkm-card-border;
+}
+
+// -----------------------------------------------------------------------------
+// INTERACTIONS - hover, transitions, feedback
+// -----------------------------------------------------------------------------
 .btn-light.border-0 {
-  transition: background-color 0.12s ease, color 0.12s ease;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
 
   &:hover:not(:disabled) {
     background-color: rgba(46, 74, 98, 0.08);
@@ -344,7 +551,6 @@ $navbar-hauteur: 4rem;
   }
 }
 
-// En-têtes de colonnes triables : hover doux
 .sortable-header {
   transition: background-color 0.12s ease;
 
@@ -353,12 +559,10 @@ $navbar-hauteur: 4rem;
   }
 }
 
-// Lignes de table cliquables : highlight progressif
 .table-hover > tbody > tr {
   transition: background-color 0.1s ease;
 }
 
-// Property table dans le panneau détail : hover discret par ligne
 .property-table tbody tr {
   transition: background-color 0.1s ease;
 
@@ -368,7 +572,6 @@ $navbar-hauteur: 4rem;
 }
 
 // Conteneur de plein écran (visualiseur PDF natif via iframe).
-// Invisible au repos (taille nulle), occupe tout l'écran en plein écran.
 .fds-fs-overlay {
   width: 0;
   height: 0;
@@ -381,8 +584,6 @@ $navbar-hauteur: 4rem;
   background: #fff;
 }
 
-// Avatar (navbar / profil) : recadre la photo proprement (cover, centrée) pour
-// éviter toute déformation quand l'image n'est pas carrée.
 .avatar-img {
   width: 100%;
   height: 100%;
@@ -390,8 +591,6 @@ $navbar-hauteur: 4rem;
   object-position: center;
 }
 
-// Champs de saisie "ligne" (formulaire produit) : aucune bordure, juste un
-// trait en bas — discret au repos, accentué au focus (style soulignement).
 .fds-line-input.form-control {
   border: none;
   border-radius: 0;
@@ -414,7 +613,7 @@ $navbar-hauteur: 4rem;
 }
 
 // -----------------------------------------------------------------------------
-// CHIPS / TAGS — style OpenKM (mots-clés bleu clair)
+// CHIPS / TAGS
 // -----------------------------------------------------------------------------
 .keyword-chip {
   display: inline-flex;
@@ -430,7 +629,7 @@ $navbar-hauteur: 4rem;
 }
 
 // -----------------------------------------------------------------------------
-// MENU CONTEXTUEL clic-droit (style OpenKM images 11, 12, 14, 16)
+// MENU CONTEXTUEL clic-droit
 // -----------------------------------------------------------------------------
 .row-context-menu {
   position: fixed;
@@ -438,8 +637,8 @@ $navbar-hauteur: 4rem;
   min-width: 220px;
   background-color: white;
   border: 1px solid $openkm-card-border;
-  border-radius: 4px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
   padding: 0.25rem 0;
   font-size: 0.875rem;
 
@@ -468,7 +667,7 @@ $navbar-hauteur: 4rem;
     transition: background-color 0.1s ease;
 
     &:hover {
-      background-color: rgba(74, 144, 226, 0.1);
+      background-color: $openkm-row-hover-bg;
       color: $openkm-navbar-bg;
     }
 
@@ -485,7 +684,7 @@ $navbar-hauteur: 4rem;
 }
 
 // -----------------------------------------------------------------------------
-// PAGINATION INDICATOR — style OpenKM (image 03)
+// PAGINATION INDICATOR
 // -----------------------------------------------------------------------------
 .pagination-page-indicator {
   display: inline-flex;
@@ -498,11 +697,11 @@ $navbar-hauteur: 4rem;
   color: white;
   font-size: 0.75rem;
   font-weight: 600;
-  border-radius: 3px;
+  border-radius: 0.375rem;
 }
 
 // -----------------------------------------------------------------------------
-// TABLES — style OpenKM (data grid)
+// TABLES - en-tête clair, lignes aérées (TailAdmin)
 // -----------------------------------------------------------------------------
 .table-sm {
   > :not(caption) > * > * {
@@ -517,9 +716,9 @@ $navbar-hauteur: 4rem;
     border-bottom: 1px solid $openkm-card-border;
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.03em;
-    color: var(--cui-secondary-color);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    color: #475569;
   }
 }
 
@@ -531,4 +730,43 @@ $navbar-hauteur: 4rem;
 
 .table-hover > tbody > tr:hover:not(.table-active) > * {
   --cui-table-bg-state: #{$openkm-row-hover-bg};
+}
+
+// =============================================================================
+// Refonte 2026 - finitions globales (barres de défilement, focus)
+// =============================================================================
+
+// Barres de défilement fines et discrètes, sur tout le site.
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c3ccd8 transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #c3ccd8;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #9aa6b6;
+  background-clip: padding-box;
+}
+
+// Anneau de focus clavier cohérent sur les éléments interactifs qui n'en ont
+// pas déjà un (accessibilité + rendu moderne).
+.ddb-ligne:focus-visible,
+.ddb-segment:focus-visible,
+.ddb-filtre:focus-visible,
+.ddb-action:focus-visible,
+.ddb-outil:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(229, 38, 33, 0.22);
+  border-radius: 8px;
 }

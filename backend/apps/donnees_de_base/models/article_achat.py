@@ -1,5 +1,5 @@
 """
-Article d'achat — bien ou fourniture acheté.
+Article d'achat - bien ou fourniture acheté.
 
 Reprend l'écran de l'application d'origine : un code engendré (ART0001…), une
 désignation, un prix unitaire, et un compte de rattachement facultatif choisi

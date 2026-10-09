@@ -3,7 +3,7 @@
  *
  * Le fichier suit la description du référentiel (config.js) : une colonne par
  * champ, titrée de son libellé de tableau. C'est ce qui rend l'aller-retour
- * sûr — un fichier exporté, retouché puis réimporté retrouve chaque colonne
+ * sûr - un fichier exporté, retouché puis réimporté retrouve chaque colonne
  * par son titre.
  *
  * La bibliothèque (SheetJS) n'est chargée qu'au premier clic : elle pèse
@@ -39,7 +39,7 @@ const versDate = (iso) => {
 
 /**
  * Date saisie à la main dans une cellule texte : « 15/03/2024 » ou déjà
- * « 2024-03-15 ». Toute autre forme passe telle quelle — le serveur dira
+ * « 2024-03-15 ». Toute autre forme passe telle quelle - le serveur dira
  * pourquoi il la refuse, sur la bonne ligne.
  */
 const versIso = (texte) => {
@@ -74,13 +74,17 @@ const valeurExport = (col, entree, entrees) => {
 const nomOnglet = (libelle) => libelle.replace(/[[\]:*?/\\]/g, ' ').slice(0, 31)
 
 /**
- * Exporte les lignes données — celles de la vue affichée, filtres compris —
+ * Exporte les lignes données - celles de la vue affichée, filtres compris -
  * avec tous les champs de la fiche, pas seulement ceux du tableau. Renvoie le
  * nombre de lignes écrites.
  */
 export async function exporterExcel(referentiel, lignes, entrees) {
   const XLSX = await chargerXlsx()
-  const { colonnes } = referentiel
+  // Un bouton du formulaire n'est pas une donnée : pas de colonne à l'export.
+  // Les actes d'un document, liste de lignes, ne tiennent pas dans une cellule.
+  const colonnes = referentiel.colonnes.filter(
+    (col) => col.type !== 'bouton' && col.type !== 'actes',
+  )
   const titres = colonnes.map((col) => col.libelle)
   const donnees = lignes.map((entree) =>
     Object.fromEntries(colonnes.map((col) => [col.libelle, valeurExport(col, entree, entrees)])),
@@ -115,7 +119,7 @@ const FAUX = new Set(['suspendu', 'inactif', 'non', 'faux', 'false', '0'])
 
 /**
  * Valeur d'une cellule traduite pour l'API. `undefined` : la cellule ne dit
- * rien d'exploitable, le champ n'est pas envoyé — une mise à jour le laisse
+ * rien d'exploitable, le champ n'est pas envoyé - une mise à jour le laisse
  * alors tel qu'il était.
  */
 const convertir = (col, valeur, entrees) => {
@@ -172,9 +176,11 @@ export async function lireExcel(fichier, referentiel, entrees) {
   })
 
   // Colonnes importables : toutes, sauf les champs que l'application calcule
-  // ou fige — le numéro excepté, qui désigne la fiche à mettre à jour.
+  // ou fige - le numéro excepté, qui désigne la fiche à mettre à jour.
   const importables = referentiel.colonnes.filter(
-    (col) => col.nom === 'code' || !(col.calcule || col.lectureSeule),
+    (col) =>
+      col.nom === 'code' ||
+      !(col.calcule || col.lectureSeule || col.type === 'bouton' || col.type === 'actes'),
   )
   const parTitre = new Map()
   importables.forEach((col) => {
@@ -192,7 +198,7 @@ export async function lireExcel(fichier, referentiel, entrees) {
       const valeur = convertir(col, rangee[j], entrees)
       if (valeur !== undefined) ligne[col.nom] = valeur
     })
-    // Une ligne sans rien d'utile — une ligne blanche au milieu du tableau —
+    // Une ligne sans rien d'utile - une ligne blanche au milieu du tableau -
     // n'est ni une création ni une mise à jour.
     if (Object.values(ligne).some((v) => v !== '')) lignes.push({ ...ligne, _ligne: i + 2 })
   })
@@ -200,7 +206,7 @@ export async function lireExcel(fichier, referentiel, entrees) {
 }
 
 /**
- * Rapport d'un import refusé, en clair : « Ligne 7 — Spécialité : … ». Les
+ * Rapport d'un import refusé, en clair : « Ligne 7 - Spécialité : … ». Les
  * noms de champs de l'API sont traduits en titres de colonnes, ceux que
  * l'utilisateur a sous les yeux dans son fichier.
  */
@@ -210,8 +216,8 @@ export const rapportErreurs = (donnees, referentiel, max = 15) => {
     Object.entries(erreurs).map(([champ, detail]) => {
       const texte = [].concat(detail).join(' ')
       return champ === 'non_field_errors'
-        ? `Ligne ${ligne} — ${texte}`
-        : `Ligne ${ligne} — ${titre(champ)} : ${texte}`
+        ? `Ligne ${ligne} - ${texte}`
+        : `Ligne ${ligne} - ${titre(champ)} : ${texte}`
     }),
   )
   const suite = messages.length > max ? `\n… et ${messages.length - max} autre(s).` : ''

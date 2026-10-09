@@ -1,0 +1,442 @@
+/*
+ * Jetons visuels d'IPM Mobile (SPEC_DESIGN §2). Tout le vocabulaire de la
+ * refonte tient ici : une page n'écrit JAMAIS une couleur en dur.
+ *
+ * Trois familles :
+ *   --ipm-*, --st-*, --r-*, --ombre-*, --e-*, --deg-*, --mvt-*
+ *             la charte elle-même (rouge SAR, noir SAR, neutres, rayons,
+ *             ombres, espacements, dégradés, mouvement). C'est ce que les
+ *             écrans et les composants emploient.
+ *   --ion-*   les variables d'Ionic, branchées sur les précédentes pour que
+ *             les composants natifs suivent la charte sans être restylés.
+ *   (bas du fichier) quelques anciens noms conservés en alias, le temps que
+ *             tous les écrans soient repris.
+ *
+ * Contraste : le rouge de marque #E52621 sert de FOND (pastille, tuile,
+ * bouton) ; quand une couleur porte du texte sur fond clair, on emploie la
+ * variante « -texte », choisie pour tenir le niveau AA (4,5:1).
+ */
+
+/* ------------------------------------------------------------------------
+ * Satoshi (Indian Type Foundry, licence Fontshare) : la police du site IPM,
+ * en variable — un seul fichier porte les graisses 300 à 900. Copiée depuis
+ * src/assets/fonts/ du projet IPM ; Vite l'empaquette dans dist/assets/.
+ * --------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../assets/fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('../assets/fonts/Satoshi-VariableItalic.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  /* ====================================================================
+   * Couleurs — mode clair
+   * ================================================================= */
+
+  /* Marque. */
+  --ipm-rouge: #e52621;
+  --ipm-rouge-rgb: 229, 38, 33;
+  --ipm-rouge-fonce: #b3160f;
+  --ipm-rouge-doux: #fdecec;
+  /* Rouge portant du texte sur fond clair (5,7:1 sur blanc). */
+  --ipm-rouge-texte: #c81f1b;
+  --ipm-noir: #1d1d1b;
+  --ipm-noir-rgb: 29, 29, 27;
+  --ipm-graphite: #333330;
+
+  /* Neutres. */
+  --ipm-fond: #f4f5f7;
+  --ipm-surface: #ffffff;
+  --ipm-surface-rgb: 255, 255, 255;
+  --ipm-surface-2: #f0f1f4;
+  --ipm-bordure: #e6e8ec;
+  --ipm-texte: #16181d;
+  --ipm-texte-rgb: 22, 24, 29;
+  --ipm-texte-doux: #6b7280;
+
+  /* Statuts des documents. Chaque teinte a sa version douce (12 %) pour les
+     fonds de pastille, et sa version « -texte » lisible sur fond clair. */
+  --st-valide: #16a34a;
+  --st-valide-doux: rgba(22, 163, 74, 0.12);
+  /* Foncé d'un cran : #15803D sur la pastille verte ne tenait que 4,39:1,
+     et « Valide » est le statut qu'un pharmacien lit au comptoir. */
+  --st-valide-texte: #136b33;
+  --st-traite: #2563eb;
+  --st-traite-doux: rgba(37, 99, 235, 0.12);
+  --st-traite-texte: #1d4ed8;
+  --st-expire: #6b7280;
+  --st-expire-doux: rgba(107, 114, 128, 0.12);
+  --st-expire-texte: #5a6170;
+  --st-annule: #e52621;
+  --st-annule-doux: rgba(229, 38, 33, 0.12);
+  --st-annule-texte: #c81f1b;
+
+  /* ====================================================================
+   * Dégradés — les deux surfaces de marque du damier bento
+   * ================================================================= */
+  --deg-marque: linear-gradient(160deg, #1d1d1b 0%, #33302c 100%);
+  --deg-rouge: linear-gradient(150deg, #e52621 0%, #b3160f 100%);
+  /* Carte de service à venir (§3.4) : le noir de marque en clair. En sombre
+     il se confondrait avec le fond, d'où une déclinaison plus franche. */
+  --deg-tuile-avenir: var(--deg-marque);
+  /* Voile posé sous un bouton fixé en bas d'écran (§3.7). */
+  --deg-pied: linear-gradient(to bottom, rgba(244, 245, 247, 0) 0%, var(--ipm-fond) 45%);
+
+  /* ====================================================================
+   * Rayons (§2). Concentricité : rayon intérieur = extérieur − marge.
+   * ================================================================= */
+  --r-xs: 10px;
+  --r-sm: 14px;
+  --r-md: 18px;
+  --r-lg: 22px;
+  --r-xl: 26px;
+  --r-2xl: 32px;
+  --r-pill: 999px;
+
+  /* ====================================================================
+   * Ombres (§2) — trois niveaux doux, plus l'aura rouge des actions.
+   * ================================================================= */
+  --ombre-1: 0 2px 8px rgba(16, 18, 29, 0.06);
+  --ombre-2: 0 8px 24px rgba(16, 18, 29, 0.08);
+  --ombre-3: 0 16px 40px rgba(16, 18, 29, 0.12);
+  --ombre-rouge: 0 10px 24px rgba(229, 38, 33, 0.3);
+
+  /* ====================================================================
+   * Espacements (§2) — échelle 4/8/12/16/20/24/32 et ses trois usages.
+   * ================================================================= */
+  --e-4: 4px;
+  --e-8: 8px;
+  --e-12: 12px;
+  --e-16: 16px;
+  --e-20: 20px;
+  --e-24: 24px;
+  --e-32: 32px;
+  /* Marge latérale de TOUT le contenu : aucun bloc ne touche le bord. */
+  --gouttiere: 16px;
+  /* Entre deux cartes autonomes d'une même liste (jamais de filet). */
+  --inter-cartes: 12px;
+  /* Entre deux sections d'un écran. */
+  --inter-sections: 28px;
+  /* Bas de page : la barre d'onglets flotte au-dessus du contenu. 12 px
+     d'écart bas + 64 de barre + 12 d'air, PLUS la zone sûre — sur un iPhone
+     13, l'indicateur d'accueil fait 34 px, qu'une valeur fixe oubliait. */
+  --bas-page: calc(88px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  /* Chevauchement bandeau / première carte (§4) : ce qui donne la profondeur. */
+  --chevauchement: 24px;
+  /*
+   * Hauteur du bandeau de marque, hors zone sûre : la même sur tous les
+   * écrans (cf. .ipm-bandeau). Juste ce qu'il faut à la plus haute des
+   * variantes — le détail d'un bon, qui porte en plus sa puce de statut et
+   * sa validité. Le contenu se cale en bas : au-dessus, il ne reste que la
+   * marge d'aération, pas un vide.
+   */
+  --hauteur-bandeau: 124px;
+
+  /* ====================================================================
+   * Typographie (§2) — Satoshi, graisses hautes, interlettrage resserré.
+   * ================================================================= */
+  --t-display: 800 1.875rem/1.15 var(--ion-font-family);
+  --t-titre: 700 1.375rem/1.2 var(--ion-font-family);
+  --t-sous-titre: 600 1.0625rem/1.3 var(--ion-font-family);
+  --t-corps: 500 0.9375rem/1.45 var(--ion-font-family);
+  --t-secondaire: 500 0.84375rem/1.4 var(--ion-font-family);
+  --t-puce: 700 0.75rem/1 var(--ion-font-family);
+  /* Section : 13/700 majuscules, interlettrage .08em, en texte doux. */
+  --t-section: 700 0.8125rem/1.2 var(--ion-font-family);
+
+  /* ====================================================================
+   * Mouvement (§2) — appui, apparition de liste, miroitement.
+   * ================================================================= */
+  --mvt-appui: 120ms;
+  --mvt-appui-echelle: 0.97;
+  --mvt-entree: 200ms;
+  --mvt-decalage: 30ms;
+  --mvt-miroitement: 1.4s;
+  --mvt-courbe: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* ====================================================================
+   * Divers
+   * ================================================================= */
+  /* Liseré posé sur les surfaces quand l'ombre ne suffit pas à les détacher
+     du fond : transparent en clair, visible en sombre. */
+  --ipm-liseret: transparent;
+  /* Teintes d'avatar (§1 : aucune couleur en dur dans un composant). Trois
+     déclinaisons de la charte, pas une palette de messagerie. */
+  --av-1-fond: var(--ipm-rouge-doux);
+  --av-1-texte: var(--ipm-rouge-texte);
+  --av-2-fond: #e8e6e2;
+  --av-2-texte: var(--ipm-graphite);
+  --av-3-fond: var(--ipm-surface-2);
+  --av-3-texte: var(--ipm-texte-doux);
+
+  --ipm-squelette: rgba(22, 24, 29, 0.07);
+  /* Fond autour de la « vue téléphone » sur grand écran : noir dans les deux
+     modes, pour que l'œil reste sur l'écran du téléphone. */
+  --ipm-fond-bureau: #000000;
+  /* Verre de la barre d'onglets flottante (§3.1). À 92 %, un titre contrasté
+     qui défilait dessous restait lisible entre deux libellés d'onglet : le
+     flou de 20 px ne suffit pas, il faut monter l'opacité. */
+  --ipm-verre: rgba(255, 255, 255, 0.98);
+
+  /* ====================================================================
+   * Branchement d'Ionic
+   * ================================================================= */
+
+  /* Satoshi partout, avec repli système (SF sur iOS, Roboto sur Android). */
+  --ion-font-family:
+    'Satoshi', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  /* Rouge SAR : action principale, onglet actif. */
+  --ion-color-primary: #e52621;
+  --ion-color-primary-rgb: 229, 38, 33;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #b3160f;
+  --ion-color-primary-tint: #e83c37;
+
+  /* Bleu : statut « traité », informations. */
+  --ion-color-secondary: #2563eb;
+  --ion-color-secondary-rgb: 37, 99, 235;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #1d4ed8;
+  --ion-color-secondary-tint: #3b73ed;
+
+  /* Noir SAR : bandeaux et boutons sombres (bouton « tertiary » d'Ionic). */
+  --ion-color-tertiary: #1d1d1b;
+  --ion-color-tertiary-rgb: 29, 29, 27;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #1a1a18;
+  --ion-color-tertiary-tint: #333330;
+
+  /* Vert : statut « valide », succès. Nuance foncée pour rester lisible. */
+  --ion-color-success: #15803d;
+  --ion-color-success-rgb: 21, 128, 61;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #127136;
+  --ion-color-success-tint: #2c8d50;
+
+  /* Rouge d'erreur : statut « annulé », erreurs. */
+  --ion-color-danger: #c81f1b;
+  --ion-color-danger-rgb: 200, 31, 27;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #b01b18;
+  --ion-color-danger-tint: #ce3532;
+
+  /* Gris : statut « expiré », textes secondaires. */
+  --ion-color-medium: #6b7280;
+  --ion-color-medium-rgb: 107, 114, 128;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #5e6472;
+  --ion-color-medium-tint: #7a808d;
+
+  /* Fonds et surfaces. */
+  --ion-background-color: #f4f5f7;
+  --ion-background-color-rgb: 244, 245, 247;
+  --ion-text-color: #16181d;
+  --ion-text-color-rgb: 22, 24, 29;
+  --ion-toolbar-background: #f4f5f7;
+  --ion-tab-bar-background: transparent;
+  --ion-item-background: #ffffff;
+  --ion-card-background: #ffffff;
+  --ion-border-color: #e6e8ec;
+
+  /* ====================================================================
+   * Alias d'anciens noms (écrans pas encore repris par la refonte).
+   * Ne PAS employer dans du code neuf : cf. ARCHITECTURE-DEV.md.
+   * ================================================================= */
+  --ipm-surface-douce: var(--ipm-surface-2);
+  --ipm-carte: var(--ipm-surface);
+  --ipm-texte-secondaire: var(--ipm-texte-doux);
+  --ipm-valide: var(--st-valide);
+  --ipm-valide-texte: var(--st-valide-texte);
+  --ipm-valide-fond: var(--st-valide-doux);
+  --ipm-traite: var(--st-traite);
+  --ipm-traite-texte: var(--st-traite-texte);
+  --ipm-traite-fond: var(--st-traite-doux);
+  --ipm-expire: var(--st-expire);
+  --ipm-expire-texte: var(--st-expire-texte);
+  --ipm-expire-fond: var(--st-expire-doux);
+  --ipm-annule: var(--st-annule);
+  --ipm-annule-texte: var(--st-annule-texte);
+  --ipm-annule-fond: var(--st-annule-doux);
+  --ipm-tuile-neutre: var(--ipm-surface-2);
+  --ipm-tuile-neutre-texte: var(--ipm-texte-doux);
+  --ipm-rayon-petit: var(--r-xs);
+  --ipm-rayon: var(--r-md);
+  --ipm-rayon-grand: var(--r-lg);
+  --ipm-rayon-tuile: var(--r-xl);
+  --ipm-rayon-bandeau: var(--r-2xl);
+  --ipm-rayon-pilule: var(--r-pill);
+  --ipm-espace-xs: var(--e-4);
+  --ipm-espace-s: var(--e-8);
+  --ipm-espace-m: var(--e-12);
+  --ipm-espace-l: var(--e-16);
+  --ipm-espace-xl: var(--e-24);
+  --ipm-espace-2xl: var(--e-32);
+  --ipm-gouttiere: var(--gouttiere);
+  --ipm-ombre: var(--ombre-1);
+  --ipm-ombre-douce: var(--ombre-1);
+  --ipm-ombre-carte: var(--ombre-1);
+  --ipm-ombre-flottante: var(--ombre-3);
+  --ipm-ombre-tuile: var(--ombre-2);
+}
+
+/*
+ * Sombre : mêmes noms, redéfinis. Les valeurs doivent rester alignées sur le
+ * <meta name="theme-color"> d'index.html, sinon la barre d'état tranche avec
+ * le haut de l'écran.
+ *
+ * La palette d'Ionic se pose sur « :root.ios » et « :root.md », plus
+ * spécifiques que « :root » : sans ces deux sélecteurs, ses fonds (#000 sur
+ * iOS, #121212 et #1f1f1f sur Android) l'emportaient et les surfaces se
+ * fondaient dans le fond. À spécificité égale, ce fichier, importé après elle
+ * (main.tsx), a le dernier mot.
+ */
+/* Posée par theme/apparence.ts (classe « ion-palette-dark » sur <html>),
+   comme la palette d'Ionic : c'est l'employé qui choisit, pas le téléphone. */
+:root.ion-palette-dark {
+  color-scheme: dark;
+}
+:root.ion-palette-dark,
+:root.ion-palette-dark.ios,
+:root.ion-palette-dark.md {
+  /* Le rouge de marque ne change pas (charte) ; seule sa variante texte
+     s'éclaircit pour rester lisible sur fond sombre. */
+  --ipm-rouge: #e52621;
+  --ipm-rouge-rgb: 229, 38, 33;
+  --ipm-rouge-fonce: #b3160f;
+  --ipm-rouge-doux: rgba(229, 38, 33, 0.18);
+  --ipm-rouge-texte: #ff7a75;
+  --ipm-noir: #1d1d1b;
+  --ipm-graphite: #333330;
+
+  --ipm-fond: #111110;
+  --ipm-surface: #1c1a18;
+  --ipm-surface-rgb: 28, 26, 24;
+  --ipm-surface-2: #242220;
+  --ipm-bordure: #2e2b28;
+  --ipm-texte: #f5f4f2;
+  --ipm-texte-rgb: 245, 244, 242;
+  --ipm-texte-doux: #a3a099;
+
+  --st-valide: #22c55e;
+  --st-valide-doux: rgba(34, 197, 94, 0.16);
+  --st-valide-texte: #4ade80;
+  --st-traite: #3b82f6;
+  --st-traite-doux: rgba(59, 130, 246, 0.18);
+  --st-traite-texte: #7cb0fb;
+  --st-expire: #8e8c87;
+  --st-expire-doux: rgba(163, 160, 153, 0.16);
+  --st-expire-texte: #a3a099;
+  --st-annule: #e52621;
+  --st-annule-doux: rgba(229, 38, 33, 0.2);
+  --st-annule-texte: #ff7a75;
+
+  /* Bandeau de marque en sombre : #1D1D1B → #2A2724 (§2). */
+  --deg-marque: linear-gradient(160deg, #1d1d1b 0%, #2a2724 100%);
+  /* La carte « à venir », elle, s'éclaircit : le noir de marque sur le fond
+     #111110 ne fait que 1,12:1 — les trois cartes disparaissaient. */
+  --deg-tuile-avenir: linear-gradient(160deg, #3a3633 0%, #2a2724 100%);
+  --deg-pied: linear-gradient(to bottom, rgba(17, 17, 16, 0) 0%, var(--ipm-fond) 45%);
+
+  /* Mêmes tailles d'ombre, en noir franc : sur fond sombre, une ombre
+     colorée ne se voit pas. */
+  --ombre-1: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --ombre-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --ombre-3: 0 16px 40px rgba(0, 0, 0, 0.45);
+  --ombre-rouge: 0 10px 24px rgba(229, 38, 33, 0.3);
+
+  /* Sur fond sombre, une ombre ne détache plus rien : c'est ce liseré qui
+     dessine le bord des cartes et des surfaces. */
+  --ipm-liseret: rgba(255, 255, 255, 0.07);
+  --av-2-fond: #33302c;
+  --av-2-texte: #e8e6e2;
+
+  --ipm-squelette: rgba(245, 244, 242, 0.08);
+  --ipm-fond-bureau: #000000;
+  --ipm-verre: rgba(28, 26, 24, 0.96);
+
+  --ion-color-primary: #e52621;
+  --ion-color-primary-rgb: 229, 38, 33;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #b3160f;
+  --ion-color-primary-tint: #e83c37;
+
+  --ion-color-secondary: #3b82f6;
+  --ion-color-secondary-rgb: 59, 130, 246;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #3472d8;
+  --ion-color-secondary-tint: #4f8ff7;
+
+  --ion-color-tertiary: #f5f4f2;
+  --ion-color-tertiary-rgb: 245, 244, 242;
+  --ion-color-tertiary-contrast: #1d1d1b;
+  --ion-color-tertiary-contrast-rgb: 29, 29, 27;
+  --ion-color-tertiary-shade: #d8d7d5;
+  --ion-color-tertiary-tint: #f6f5f3;
+
+  --ion-color-success: #22c55e;
+  --ion-color-success-rgb: 34, 197, 94;
+  --ion-color-success-contrast: #000000;
+  --ion-color-success-contrast-rgb: 0, 0, 0;
+  --ion-color-success-shade: #1ead52;
+  --ion-color-success-tint: #38cb6e;
+
+  --ion-color-danger: #ff7a75;
+  --ion-color-danger-rgb: 255, 122, 117;
+  --ion-color-danger-contrast: #000000;
+  --ion-color-danger-contrast-rgb: 0, 0, 0;
+  --ion-color-danger-shade: #e06b67;
+  --ion-color-danger-tint: #ff8a86;
+
+  --ion-color-medium: #a3a099;
+  --ion-color-medium-rgb: 163, 160, 153;
+  --ion-color-medium-contrast: #000000;
+  --ion-color-medium-contrast-rgb: 0, 0, 0;
+  --ion-color-medium-shade: #8f8d87;
+  --ion-color-medium-tint: #acaaa3;
+
+  --ion-background-color: #111110;
+  --ion-background-color-rgb: 17, 17, 16;
+  --ion-text-color: #f5f4f2;
+  --ion-text-color-rgb: 245, 244, 242;
+  --ion-toolbar-background: #111110;
+  --ion-tab-bar-background: transparent;
+  --ion-item-background: #1c1a18;
+  --ion-card-background: #1c1a18;
+  --ion-border-color: #2e2b28;
+}
+
+/*
+ * Fenêtres (assistant « Nouveau bon ») : iOS les surélève d'un cran plus
+ * clair que le fond. On garde les neutres de la charte, et des surfaces un
+ * cran plus claires encore pour qu'elles se détachent de la fenêtre.
+ */
+:root.ion-palette-dark.ios ion-modal {
+  --ion-background-color: #1c1a18;
+  --ion-toolbar-background: #242220;
+  --ion-toolbar-border-color: #2e2b28;
+  --ion-item-background: #2a2724;
+  --ion-card-background: #2a2724;
+  --ipm-surface: #2a2724;
+  --ipm-surface-2: #333029;
+  --ipm-carte: #2a2724;
+  --ipm-bordure: #3a3733;
+}

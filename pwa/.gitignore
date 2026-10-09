@@ -1,0 +1,20 @@
+# Dépendances et productions : jamais versionnées.
+node_modules/
+dist/
+dev-dist/
+coverage/
+*.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Le .gitignore racine ignore tout package-lock.json ; celui d'IPM Mobile
+# DOIT être versionné : il fige les empreintes d'intégrité des paquets
+# (installés derrière un pare-feu qui intercepte le TLS de npm).
+!package-lock.json
+
+.env.local
+.env.*.local

@@ -1,0 +1,258 @@
+// ---------------------------------------------------------------------------
+// Champ « actes » du formulaire (cf. ChampActes, FormulaireEntree.jsx) : la
+// ligne de saisie de l'application d'origine - « - Rechercher acte - »,
+// quantité, Tarif, ⊕ pour ajouter, ⊗ pour effacer -, puis les actes ajoutés.
+// ---------------------------------------------------------------------------
+
+.ddb-actes-saisie {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.75rem 6.5rem auto auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.ddb-actes-nombre {
+  text-align: right;
+}
+
+.ddb-actes-bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0.5rem;
+  color: #fff;
+  cursor: pointer;
+
+  .icon {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.ddb-actes-ajouter {
+  background: #e0313f;
+}
+
+.ddb-actes-effacer {
+  background: #f08a94;
+}
+
+.ddb-actes-liste {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+
+  li {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr) 3.5rem 6rem 1.75rem;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--cui-border-color, #dee2e6);
+  }
+}
+
+.ddb-actes-rang {
+  color: var(--cui-secondary-color, #6c757d);
+}
+
+.ddb-actes-droite {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ddb-actes-retirer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--cui-secondary-color, #6c757d);
+  cursor: pointer;
+
+  &:hover {
+    color: #c8102e;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Champ « médicaments » du bon de pharmacie (cf. ChampMedicaments) : le bouton
+// « Saisir les médicaments » ouvre un sélecteur sur le catalogue (on choisit,
+// on ne tape pas) ; les médicaments retenus restent listés dessous.
+// ---------------------------------------------------------------------------
+
+// Le bouton actif (le .ddb-bouton-etape de base est pensé pour l'état grisé).
+.ddb-bouton-etape-ouvert,
+.ddb-groupe .ddb-bouton-etape:not(:disabled) {
+  cursor: pointer;
+  border-style: solid;
+  color: var(--cui-body-color, #1d1d1b);
+
+  &:hover {
+    border-color: #e0313f;
+    color: #c8102e;
+  }
+}
+
+// Compteur de médicaments choisis, dans le bouton.
+.ddb-medic-compteur {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  border-radius: 0.75rem;
+  background: #e0313f;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+// Médicaments retenus.
+.ddb-medic-liste {
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+}
+
+.ddb-medic-ligne {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) 3.25rem 1.5rem;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--cui-border-color, #dee2e6);
+}
+
+.ddb-medic-rang {
+  color: var(--cui-secondary-color, #6c757d);
+}
+
+.ddb-medic-nom {
+  min-width: 0;
+}
+
+.ddb-medic-code {
+  color: var(--cui-secondary-color, #6c757d);
+}
+
+.ddb-medic-exclu {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.35rem;
+  background: #fff1c2;
+  color: #8a6d00;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.ddb-medic-qte {
+  text-align: right;
+}
+
+// Ligne d'acte : comme un médicament, avec en plus le tarif saisi.
+.ddb-acte-ligne {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) 3rem 6rem 1.5rem;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--cui-border-color, #dee2e6);
+  font-size: 0.8125rem;
+}
+
+.ddb-acte-tarif {
+  text-align: right;
+}
+
+.ddb-medic-retirer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--cui-secondary-color, #6c757d);
+  cursor: pointer;
+
+  &:hover {
+    color: #c8102e;
+  }
+}
+
+// Sélecteur ouvert : recherche + liste du catalogue.
+.ddb-medic-selecteur {
+  margin-top: 0.75rem;
+  border: 1px solid var(--cui-border-color, #dee2e6);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.ddb-medic-recherche {
+  border: 0;
+  border-bottom: 1px solid var(--cui-border-color, #dee2e6);
+  border-radius: 0;
+}
+
+.ddb-medic-catalogue {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.ddb-medic-choix {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: 0;
+  border-bottom: 1px solid var(--cui-border-color, #f1f3f5);
+  background: transparent;
+  text-align: left;
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--cui-tertiary-bg, #f8f9fa);
+  }
+
+  .ddb-medic-choix-icone {
+    width: 0.8rem;
+    height: 0.8rem;
+    color: #e0313f;
+    flex: 0 0 auto;
+  }
+}
+
+.ddb-medic-choix-nom {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.ddb-medic-vide {
+  padding: 0.75rem;
+  color: var(--cui-secondary-color, #6c757d);
+  font-size: 0.8125rem;
+  text-align: center;
+}

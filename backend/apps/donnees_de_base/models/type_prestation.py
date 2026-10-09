@@ -1,4 +1,4 @@
-"""Type de prestation — acte médical remboursable, porteur d'un compte 6020xx."""
+"""Type de prestation - acte médical remboursable, porteur d'un compte 6020xx."""
 
 from django.db import models
 

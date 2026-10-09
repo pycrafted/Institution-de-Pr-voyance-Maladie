@@ -8,16 +8,12 @@ import 'simplebar-react/dist/simplebar.min.css'
 import { CBadge, CNavLink, CSidebarNav } from '@coreui/react'
 
 export const AppSidebarNav = ({ items }) => {
-  const navLink = (name, icon, badge, indent = false) => {
+  // Une entrée sans icône n'affiche rien à sa place : les pages d'une section
+  // ne portent ni icône ni puce, seul leur retrait les range sous elle.
+  const navLink = (name, icon, badge) => {
     return (
       <>
-        {icon
-          ? icon
-          : indent && (
-              <span className="nav-icon">
-                <span className="nav-icon-bullet"></span>
-              </span>
-            )}
+        {icon}
         {name && name}
         {badge && (
           <CBadge color={badge.color} className="ms-auto" size="sm">
@@ -28,7 +24,7 @@ export const AppSidebarNav = ({ items }) => {
     )
   }
 
-  const navItem = (item, index, indent = false) => {
+  const navItem = (item, index) => {
     const { component, name, badge, icon, ...rest } = item
     const Component = component
     return (
@@ -39,10 +35,10 @@ export const AppSidebarNav = ({ items }) => {
             {...(rest.href && { target: '_blank', rel: 'noopener noreferrer' })}
             {...rest}
           >
-            {navLink(name, icon, badge, indent)}
+            {navLink(name, icon, badge)}
           </CNavLink>
         ) : (
-          navLink(name, icon, badge, indent)
+          navLink(name, icon, badge)
         )}
       </Component>
     )
@@ -51,11 +47,11 @@ export const AppSidebarNav = ({ items }) => {
   const navGroup = (item, index) => {
     const { component, name, icon, items, to, ...rest } = item
     const Component = component
+    // Les sections s'ouvrent au clic, jamais d'elles-mêmes : le menu se
+    // présente replié, quelle que soit la page ouverte.
     return (
       <Component compact as="div" key={index} toggler={navLink(name, icon)} {...rest}>
-        {items?.map((item, index) =>
-          item.items ? navGroup(item, index) : navItem(item, index, true),
-        )}
+        {items?.map((item, index) => (item.items ? navGroup(item, index) : navItem(item, index)))}
       </Component>
     )
   }

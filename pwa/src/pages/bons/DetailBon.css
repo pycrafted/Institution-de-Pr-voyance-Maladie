@@ -1,0 +1,108 @@
+/*
+ * Écran « Détail du bon » (pages/DetailBon.tsx). Préfixe detail-bon,
+ * notation BEM.
+ *
+ * Le bandeau, les cartes, les boutons et les cercles d'icône viennent de la
+ * charte (components/composants.css) : il ne reste ici que la mise en page
+ * de l'écran. Aucune couleur en dur (§1).
+ */
+
+/* --- Bandeau rouge : numéro, statut, validité ---------------------------- */
+
+/* Le numéro est le repère du pharmacien : chiffres tabulaires, un peu
+   espacés, dans le titre du bandeau compact (22/700). */
+.detail-bon__numero {
+  letter-spacing: 0.02em;
+}
+
+/* Statut et validité, sous le bandeau et non dedans (cf. DetailBon.tsx). */
+.detail-bon__validite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--e-8);
+  margin-top: var(--e-16);
+  padding-inline: var(--gouttiere);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte);
+}
+.detail-bon__jusquau {
+  color: var(--ipm-texte-doux);
+}
+.detail-bon__reste {
+  font-weight: 700;
+}
+
+/* --- Contenu ------------------------------------------------------------- */
+
+.detail-bon__explication {
+  margin: var(--e-16) 0 0;
+  padding-inline: var(--gouttiere);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+
+/* Aperçu du PDF : une carte à part entière (§5), un cran plus détachée du
+   fond que les cartes de liste. */
+.ipm-carte.detail-bon__apercu {
+  margin: var(--e-16) var(--gouttiere) 0;
+  overflow: hidden;
+  box-shadow: var(--ombre-2);
+}
+
+.detail-bon__apercu-attente,
+.detail-bon__apercu-erreur {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-12);
+  padding: var(--e-24);
+  text-align: center;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.detail-bon__apercu-attente {
+  /* Hauteur d'une page A4 dans la carte : l'écran ne « saute » pas à l'arrivée du PDF. */
+  aspect-ratio: 595 / 842;
+  background: var(--ipm-squelette);
+}
+.detail-bon__apercu-erreur ion-icon {
+  font-size: 34px;
+  color: var(--ipm-texte-doux);
+}
+.detail-bon__apercu-erreur p {
+  margin: 0;
+  max-width: 300px;
+}
+.detail-bon__apercu-titre {
+  font: var(--t-sous-titre);
+  color: var(--ipm-texte);
+}
+
+/* Les deux actions de la charte (§3.7), sous l'aperçu. */
+.detail-bon__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  padding: var(--e-20) var(--gouttiere) 0;
+}
+
+/* Appel direct de la pharmacie, posé à droite de sa carte : le cercle et sa
+   teinte viennent de .ipm-cercle--rouge (composants.css). */
+.detail-bon__appel {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
+  font-size: 22px;
+}
+
+/* Squelettes : la forme de l'écran (l'aperçu, puis ses cartes). */
+.detail-bon__attente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inter-cartes);
+  margin-top: var(--e-16);
+}

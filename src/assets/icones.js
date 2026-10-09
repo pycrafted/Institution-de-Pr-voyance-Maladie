@@ -1,7 +1,7 @@
 /**
  * Icônes maison, au format attendu par CIcon : [viewBox, contenu SVG].
  *
- * CoreUI ne fournit pas d'œil ouvert — `cilLowVision` est un œil barré, qui
+ * CoreUI ne fournit pas d'œil ouvert - `cilLowVision` est un œil barré, qui
  * signifie « masqué » et dirait donc l'inverse de ce qu'on veut ici.
  */
 

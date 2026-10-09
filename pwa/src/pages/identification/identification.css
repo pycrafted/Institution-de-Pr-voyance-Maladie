@@ -1,0 +1,154 @@
+/*
+ * Écran d'identification (pages/Identification.tsx). Préfixe identification__.
+ *
+ * Tout l'habillage (cadre des champs, bouton, carte, bandeau) vient de la
+ * charte : ce fichier ne pose que la mise en page propre à l'écran, et pas
+ * une seule couleur en dur (§1).
+ */
+
+/*
+ * §5 : la carte blanche remonte de 28 px sur le bandeau plein, qui a réservé
+ * sa hauteur (.ipm-bandeau--chevauche). 28 et non 24 : la carte est ici la
+ * seule surface de l'écran, et ce chevauchement un peu plus franc la pose
+ * comme une fiche glissée sous le bandeau.
+ */
+.identification {
+  --identification-chevauchement: 28px;
+}
+
+.identification__chevauchement {
+  margin-top: calc(-1 * var(--identification-chevauchement));
+  padding-inline: var(--gouttiere);
+  position: relative;
+  z-index: 1;
+}
+
+.identification__carte {
+  padding: var(--e-24) var(--e-20) var(--e-20);
+}
+
+.identification__titre {
+  margin: 0;
+  font: var(--t-titre);
+  font-size: 1.625rem;
+  letter-spacing: -0.02em;
+  color: var(--ipm-texte);
+}
+
+.identification__intro {
+  margin: var(--e-8) 0 var(--e-24);
+  font: var(--t-corps);
+  color: var(--ipm-texte-doux);
+}
+
+/* Avis au-dessus du formulaire : session expirée, déconnexion volontaire. */
+.identification__avis {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-8);
+  /* Posé dans la carte : le plus petit rayon de l'échelle, pour ne pas
+     concurrencer le --r-xl de la carte qui l'entoure. */
+  margin: 0 0 var(--e-20);
+  padding: var(--e-12);
+  border-radius: var(--r-xs);
+  font: var(--t-secondaire);
+  background: var(--st-valide-doux);
+  color: var(--st-valide-texte);
+}
+.identification__avis ion-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 18px;
+}
+.identification__avis--attention {
+  background: var(--st-expire-doux);
+  color: var(--ipm-texte-doux);
+}
+
+/* Refus du serveur : identité inconnue, dossier inactif, réseau. */
+.identification__erreur {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-8);
+  margin-bottom: var(--e-16);
+  padding: var(--e-12);
+  border-radius: var(--r-xs);
+  font: var(--t-secondaire);
+  color: var(--ipm-rouge-texte);
+  background: var(--ipm-rouge-doux);
+  animation: identification-secousse 0.4s ease-in-out both;
+}
+.identification__erreur ion-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 18px;
+}
+
+.identification__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--e-4);
+}
+
+/* Lien discret sous le bouton : cible touchable de 44 px sans déplacer le
+   texte (minimum d'Apple). */
+.identification__aide {
+  appearance: none;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding-inline: var(--e-12);
+  background: none;
+  font: var(--t-secondaire);
+  font-weight: 600;
+  color: var(--ipm-texte-doux);
+  cursor: pointer;
+  transition: opacity var(--mvt-appui) var(--mvt-courbe);
+}
+.identification__aide:active {
+  opacity: 0.55;
+}
+.identification__aide ion-icon {
+  font-size: 18px;
+}
+
+.identification__aide-texte {
+  margin: 0 0 var(--e-12);
+}
+
+.identification__pied {
+  padding: var(--e-24) var(--e-32)
+    calc(var(--e-24) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  text-align: center;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.identification__pied p {
+  margin: 0;
+}
+.identification__version {
+  margin-top: 6px !important;
+  opacity: 0.8;
+}
+
+@keyframes identification-secousse {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(7px);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
+}

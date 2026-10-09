@@ -1,0 +1,283 @@
+/*
+ * Écran « Itinéraire » (pages/Itineraire.tsx). Préfixe itineraire, notation
+ * BEM. Plein écran, à la manière des cartes natives du téléphone : la carte
+ * occupe tout, les commandes flottent dessus, l'essentiel tient dans une
+ * feuille en bas. Couleurs par les jetons de la charte (clair et sombre).
+ */
+
+/* La barre d'onglets s'efface tant que la carte est ouverte (cf. la page). */
+.ipm-sans-onglets ion-tab-bar.ipm-onglets {
+  display: none;
+}
+
+.itineraire ion-content {
+  --background: var(--ipm-fond);
+}
+
+/* --- La carte ------------------------------------------------------------ */
+.itineraire__carte,
+.itineraire__leaflet,
+.itineraire__attente-carte {
+  position: absolute;
+  inset: 0;
+}
+.itineraire__leaflet.leaflet-container {
+  background: var(--ipm-surface-2);
+  font: inherit;
+}
+.itineraire__attente-carte {
+  background: var(--ipm-surface-2);
+}
+/* Les fonds d'OpenStreetMap, adoucis pour rester dans le ton de
+   l'application — sans toucher au tracé ni aux épingles, qui gardent leurs
+   couleurs franches. En mode sombre, inversés : une carte blanche éblouit
+   dans le noir d'une rue la nuit. */
+.itineraire .leaflet-tile-pane {
+  filter: saturate(0.75) contrast(0.96) brightness(1.02);
+}
+.ion-palette-dark .itineraire .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.55);
+}
+
+/* La mention des sources, obligatoire, mais discrète — sous la zone sûre. */
+.itineraire .leaflet-top.leaflet-right {
+  top: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + 4px);
+}
+.itineraire .leaflet-control-attribution {
+  margin: 0 8px 0 0;
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-verre);
+  color: var(--ipm-texte-doux);
+  font-size: 10px;
+  line-height: 1.6;
+}
+.itineraire .leaflet-control-attribution a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Le point bleu de l'employé, pulsé comme sur les cartes natives. */
+.itineraire__moi span {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--r-pill);
+  background: #2563eb;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 8px rgba(16, 18, 29, 0.35);
+  box-sizing: border-box;
+}
+.itineraire__moi span::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: #2563eb;
+  opacity: 0.35;
+  animation: itineraire-pouls 2s ease-out infinite;
+  z-index: -1;
+}
+@keyframes itineraire-pouls {
+  from {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+/* L'épingle de la structure : une goutte rouge SAR, point blanc au centre,
+   pointe posée exactement sur la position. */
+.itineraire__epingle {
+  filter: drop-shadow(0 6px 8px rgba(16, 18, 29, 0.3));
+}
+.itineraire__epingle-tete {
+  position: absolute;
+  left: 2px;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50% 50% 50% 0;
+  background: var(--deg-rouge);
+  transform: rotate(-45deg);
+  transform-origin: center;
+}
+.itineraire__epingle-tete span {
+  width: 13px;
+  height: 13px;
+  border-radius: var(--r-pill);
+  background: #ffffff;
+}
+
+/* --- Commandes flottantes ------------------------------------------------ */
+.itineraire__flottant {
+  position: absolute;
+  z-index: 500;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--ipm-verre);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    var(--ombre-2),
+    inset 0 0 0 1px var(--ipm-liseret);
+  color: var(--ipm-texte);
+  font-size: 22px;
+  cursor: pointer;
+}
+.itineraire__retour {
+  top: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + 12px);
+  left: var(--gouttiere);
+}
+/* Au-dessus de la feuille, à droite : sous le pouce. */
+.itineraire__recentrer {
+  right: var(--gouttiere);
+  bottom: calc(var(--hauteur-feuille-itineraire) + 16px);
+  color: #2563eb;
+}
+
+/* --- La feuille du bas --------------------------------------------------- */
+.itineraire {
+  --hauteur-feuille-itineraire: 244px;
+}
+.itineraire__feuille {
+  position: absolute;
+  z-index: 500;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: var(--hauteur-feuille-itineraire);
+  box-sizing: border-box;
+  padding: 8px var(--gouttiere)
+    calc(var(--e-20) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  border-start-start-radius: var(--r-2xl);
+  border-start-end-radius: var(--r-2xl);
+  background: var(--ipm-surface);
+  box-shadow:
+    0 -10px 30px rgba(16, 18, 29, 0.14),
+    inset 0 1px 0 var(--ipm-liseret);
+}
+.itineraire__poignee {
+  display: block;
+  width: 36px;
+  height: 4px;
+  margin: 0 auto var(--e-12);
+  border-radius: var(--r-pill);
+  background: var(--ipm-bordure);
+}
+.itineraire__nom {
+  margin: 0;
+  font: var(--t-titre);
+  letter-spacing: -0.01em;
+  color: var(--ipm-texte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.itineraire__lieu {
+  margin: 2px 0 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Le trajet : le temps en grand, la distance et la marche à côté. */
+.itineraire__resume {
+  min-height: 56px;
+  margin: var(--e-16) 0;
+  display: flex;
+  align-items: center;
+}
+.itineraire__trajet {
+  display: flex;
+  align-items: center;
+  gap: var(--e-16);
+}
+.itineraire__duree {
+  font-size: 1.875rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--st-valide-texte);
+}
+.itineraire__details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.itineraire__mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.itineraire__mode ion-icon {
+  font-size: 16px;
+  color: var(--ipm-texte);
+}
+.itineraire__message {
+  margin: 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.itineraire__message--attente {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-8);
+}
+.itineraire__message--attente ion-spinner {
+  width: 22px;
+  color: var(--ipm-rouge);
+}
+
+/* Le guidage en bouton principal, l'appel en cercle à côté. */
+.itineraire__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+}
+.itineraire__actions .ipm-bouton {
+  flex: 1;
+  min-width: 0;
+}
+.itineraire__appeler {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+  font-size: 22px;
+}
+
+.itineraire__chargement {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: 120px;
+  justify-content: center;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .itineraire__moi span::after {
+    animation: none;
+  }
+}

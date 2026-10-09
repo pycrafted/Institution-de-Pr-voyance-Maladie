@@ -2,7 +2,7 @@
  * Page « Tableau de bord ».
  *
  * Vue de synthèse : elle ne relève ni des fichiers ni de la gestion, elle
- * les résume. La lecture descend en trois paliers — d'abord quatre chiffres
+ * les résume. La lecture descend en trois paliers - d'abord quatre chiffres
  * de tête, puis la courbe qui les explique, enfin le détail par type, par
  * fournisseur et par dossier.
  *
@@ -37,6 +37,7 @@ import {
   cilXCircle,
 } from '@coreui/icons'
 
+import Accueil from './Accueil'
 import Graphique from './Graphique'
 import CarteKpi from './CarteKpi'
 import { PALETTE as p, avecAlpha } from './palette'
@@ -103,7 +104,7 @@ const greffonCurseur = (couleur) => ({
 
 /**
  * Valeur posée sur la tête de chaque barre. Six barres, six étiquettes : à
- * ce compte-là elles se lisent, et l'axe des ordonnées devient inutile — on
+ * ce compte-là elles se lisent, et l'axe des ordonnées devient inutile - on
  * le retire plutôt que de dire deux fois la même chose.
  */
 const greffonEtiquettesBarres = (couleur, suffixe) => ({
@@ -127,9 +128,17 @@ const greffonEtiquettesBarres = (couleur, suffixe) => ({
 // -----------------------------------------------------------------------------
 
 /**
+ * Les agrégats réels - prestations, remboursements, consommation - ne sont pas
+ * encore servis par le backend. Tant que ce drapeau est faux, la page affiche
+ * un état vide plutôt que le jeu de démonstration de donnees.js : le site ne
+ * montre que ce qui est en base.
+ */
+const AGREGATS_DISPONIBLES = false
+
+/**
  * En-tête de carte : un intitulé, éventuellement une action à droite.
  *
- * Volontairement dépourvu de sous-titre — c'est la ligne qu'on ajoute « pour
+ * Volontairement dépourvu de sous-titre - c'est la ligne qu'on ajoute « pour
  * préciser » et qui, répétée sur huit cartes, transforme la page en notice.
  */
 const EnteteCarte = ({ titre, action }) => (
@@ -146,7 +155,7 @@ EnteteCarte.propTypes = {
 
 /**
  * Légende : toujours présente dès deux séries. C'est le canal d'identité
- * fiable — jamais l'appariement de couleurs à l'œil.
+ * fiable - jamais l'appariement de couleurs à l'œil.
  */
 const Legende = ({ entrees }) => (
   <ul className="tdb-legende">
@@ -170,7 +179,7 @@ Legende.propTypes = {
 }
 
 /**
- * Relevé chiffré d'une figure circulaire — anneau, camembert, aire polaire.
+ * Relevé chiffré d'une figure circulaire - anneau, camembert, aire polaire.
  *
  * Il tient lieu de légende ET de jumeau tabulaire : la teinte situe le
  * secteur, le chiffre le renseigne. Sans lui, la seule façon de lire une
@@ -246,11 +255,11 @@ const TableauDeBord = () => {
   )
 
   // --- Graphique principal : deux séries, même unité, un seul axe ---------
-  // Le rouge SAR va à la dépense engagée — la seule ligne de l'écran qu'on
+  // Le rouge SAR va à la dépense engagée - la seule ligne de l'écran qu'on
   // surveille vraiment ; le remboursement, qui la suit, reste en graphite.
   // Deux courbes nues, sans aplat : les deux séries évoluant à quelques
   // points l'une de l'autre, deux lavis superposés se mélangeaient en une
-  // masse qui écrasait l'écart — c'est-à-dire l'information même.
+  // masse qui écrasait l'écart - c'est-à-dire l'information même.
   const donneesActivite = useMemo(() => {
     const courbe = (label, data, teinte) => ({
       label,
@@ -570,6 +579,11 @@ const TableauDeBord = () => {
 
   const maxFournisseur = Math.max(...TOP_FOURNISSEURS.map((f) => f.valeur))
   const totalDossiers = ETAT_DOSSIERS.reduce((s, e) => s + e.valeur, 0)
+
+  // Pas de chiffres inventés : sans agrégats de prestations réels, l'accueil
+  // résume ce que la base contient déjà (cf. Accueil.jsx). La mise en page
+  // ci-dessous est gardée pour le jour où le backend les fournira.
+  if (!AGREGATS_DISPONIBLES) return <Accueil />
 
   return (
     <div className="tdb">

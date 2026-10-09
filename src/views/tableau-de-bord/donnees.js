@@ -3,7 +3,7 @@
  *
  * Aucune donnée réelle ici : la page est une maquette de mise en page et de
  * couleurs. Le jour où le back-end expose les agrégats, on remplace ce
- * fichier par un appel à `services/api.js` — la vue, elle, ne bouge pas.
+ * fichier par un appel à `services/api.js` - la vue, elle, ne bouge pas.
  *
  * Les chiffres sont plausibles pour une IPM sénégalaise de taille moyenne :
  * ordres de grandeur, saisonnalité et écarts réalistes, pour que la maquette
@@ -34,7 +34,7 @@ export const formaterPourcent = (v) => `${fmtDecimal.format(v)} %`
 export const formaterEcart = (v) => `${v > 0 ? '+' : '−'} ${fmtDecimal.format(Math.abs(v))} %`
 
 // -----------------------------------------------------------------------------
-// Filtre de période — une seule barre, au-dessus de tout ce qu'elle cadre
+// Filtre de période - une seule barre, au-dessus de tout ce qu'elle cadre
 // -----------------------------------------------------------------------------
 export const PERIODES = [
   { cle: 'mois', libelle: 'Mois' },
@@ -43,9 +43,9 @@ export const PERIODES = [
 ]
 
 /**
- * Repère de comparaison des écarts. Il n'est plus écrit dans la tuile — la
+ * Repère de comparaison des écarts. Il n'est plus écrit dans la tuile - la
  * période est déjà annoncée par le sélecteur en haut de page, et quatre fois
- * la même mention faisait une rangée bavarde — mais il reste attaché à
+ * la même mention faisait une rangée bavarde - mais il reste attaché à
  * l'écart, où il s'affiche au survol.
  */
 const COMPARAISON = {
@@ -193,7 +193,7 @@ const KPIS = {
 }
 
 // -----------------------------------------------------------------------------
-// Graphique principal — engagé vs remboursé
+// Graphique principal - engagé vs remboursé
 // -----------------------------------------------------------------------------
 // Deux séries, même unité, un seul axe. Comparer un nombre de dossiers à un
 // montant sur deux échelles superposées inventerait une corrélation qui
@@ -283,7 +283,7 @@ export const REPARTITION_PARTICIPANTS = [
 ]
 
 // Radar : deux populations comparées sur les mêmes axes. La forme ne vaut que
-// si les axes partagent une unité — d'où un indice de consommation ramené à
+// si les axes partagent une unité - d'où un indice de consommation ramené à
 // 100, et non des montants qui écraseraient les petites spécialités.
 export const PROFIL_SPECIALITES = {
   axes: ['Généraliste', 'Pédiatrie', 'Gynécologie', 'Cardiologie', 'Dentaire', 'Ophtalmologie'],
@@ -321,7 +321,7 @@ export const TOP_FOURNISSEURS = [
 ]
 
 // Un état, pas une série : couleur réservée, toujours doublée du libellé.
-// Portée : le mois en cours — le filtre de période ne cadre pas cette carte.
+// Portée : le mois en cours - le filtre de période ne cadre pas cette carte.
 export const ETAT_DOSSIERS = [
   { cle: 'valide', libelle: 'Validés', valeur: 1642 },
   { cle: 'encours', libelle: 'En cours d’instruction', valeur: 318 },

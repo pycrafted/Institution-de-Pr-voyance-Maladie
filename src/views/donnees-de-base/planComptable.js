@@ -11,7 +11,8 @@
  */
 
 export const PLAN_COMPTABLE = [
-  // Classe 1 — Capitaux
+  // Comptes réels de l'application d'origine (table `plancompta` / journaux).
+  // Classe 1 - Capitaux (reports à nouveau, un par régime)
   ['101000', 'CAPITAL SOCIAL'],
   ['120001', 'REPORT A NOUVEAU IPM'],
   ['120002', 'REPORT A NOUVEAU CMMC'],
@@ -20,17 +21,10 @@ export const PLAN_COMPTABLE = [
   ['121000', 'REPORT A NOUVEAU CREDITEUR'],
   ['129000', 'REPORT A NOUVEAU DEBITEUR'],
 
-  // Classe 4 — Tiers
+  // Classe 4 - Tiers
   ['401000', 'FOURNISSEURS'],
-  ['422100', 'RETENUES SUR SALAIRES'],
-  ['422200', 'RETENUES SUR PRESTATIONS'],
-  ['431100', 'COTISATIONS IPM'],
-  ['431200', 'COTISATIONS CMMC'],
-  ['431300', 'COTISATIONS CSM'],
-  ['471000', 'OPERATIONS DIVERSES'],
-  ['471200', 'COMPTE D’ATTENTE DE CLOTURE'],
 
-  // Classe 5 — Trésorerie
+  // Classe 5 - Trésorerie (banques B1..B10, caisse, Orange Money)
   ['521100', 'CREDIT DU SENEGAL IPM'],
   ['521200', 'CREDIT DU SENEGAL CMMC'],
   ['521300', 'CREDIT DU SENEGAL CSM'],
@@ -38,19 +32,20 @@ export const PLAN_COMPTABLE = [
   ['521500', 'ECOBANK CMMC'],
   ['521600', 'CREDIT DU SENEGAL CMMCR-SAR'],
   ['521610', 'ECOBANK MSRNC'],
-  ['521620', 'BICIS IPM'],
-  ['521630', 'SGBS IPM'],
   ['521700', 'ECOBANK IPM FONCTIONNEMENT'],
   ['521800', 'ECOBANK CMMC FONCTIONNEMENT'],
   ['521900', 'ECOBANK CSM'],
   ['571000', 'CAISSE LOCALE'],
-  ['571100', 'CAISSE SIEGE'],
-  ['571200', 'CAISSE ANTENNE NORD'],
-  ['585100', 'VIREMENTS INTERNES CAISSES'],
-  ['585200', 'VIREMENTS INTERNES BANQUES'],
+  ['571200', 'ORANGE MONEY'],
 
-  // Classe 6 — Charges
-  ['602000', 'PRESTATIONS'],
-  ['602100', 'REMBOURSEMENTS'],
-  ['602200', 'SINISTRES'],
+  // Classe 7 - Produits (cotisations, salariales et patronales par régime)
+  ['701500', 'COTISATION SALARIALE IPM'],
+  ['701510', 'COTISATION SALARIALE CSM'],
+  ['701530', 'COTISATION SALARIALE CMMC'],
+  ['701651', 'COTISATION CMMCR'],
+  ['701662', 'COTISATION MSRNC-SAR'],
+  ['701900', 'COTISATION PATRONALE IPM'],
+  ['701910', 'COTISATION PATRONALE CSM'],
+  ['701920', 'COTISATION PATRONALE CSM'],
+  ['701930', 'COTISATION PATRONALE CMMC'],
 ].map(([valeur, libelle]) => ({ valeur, libelle }))

@@ -1,0 +1,59 @@
+/*
+ * Écran « Profil » (pages/Profil.tsx). Préfixe profil__.
+ *
+ * L'habillage vient de la charte (en-tête, carte d'identité, cartes de
+ * liste) : ce fichier ne pose que le placement de la carte et quelques
+ * nuances de texte. Aucune couleur en dur (§1).
+ */
+
+/* Se déconnecter : la seule action rouge de l'écran (§5). */
+.profil__deconnexion .ipm-carte-liste__titre {
+  color: var(--st-annule-texte);
+}
+
+.profil__a-propos {
+  margin: 0 0 var(--e-12);
+}
+
+/* --- Mes informations ---------------------------------------------------- */
+/*
+ * Les rubriques dans une seule carte, en deux colonnes : le libellé au-dessus
+ * de sa valeur, sans aucun filet entre elles — c'est l'espace qui sépare, et
+ * la lecture ne bute plus sur une ligne grise toutes les deux lignes. Les
+ * rubriques longues (nom, société, courriel, adresse) prennent la largeur.
+ */
+.profil__infos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-16) var(--e-12);
+  margin-block: 0;
+  padding: var(--e-16);
+}
+.profil__info {
+  min-width: 0;
+}
+.profil__info--large {
+  grid-column: 1 / -1;
+}
+.profil__info-libelle {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ipm-texte-doux);
+}
+.profil__info-valeur {
+  margin: 2px 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--ipm-texte);
+  overflow-wrap: anywhere;
+}
+/* Téléphone et courriel : touchables, sans couleur de lien criarde. */
+.profil__info-lien {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--ipm-bordure);
+}

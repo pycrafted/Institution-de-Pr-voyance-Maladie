@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from ..models import DemandeAgrement
-from ..models.demande_agrement import DemandeDejaTraitee
+from ..models.demande_agrement import DemandeDejaTraitee, NumeroDejaPris
 from ..serializers import DemandeAgrementSerializer, FournisseurDeSoinsSerializer
 from .base import ReferentielViewSet
 
@@ -14,22 +14,27 @@ from .base import ReferentielViewSet
 class DemandeAgrementViewSet(ReferentielViewSet):
     # Seules les demandes en attente sont servies : une demande validée est
     # close. Elle ne peut plus être modifiée, supprimée ni validée une seconde
-    # fois — toute tentative répond 404. Son historique reste consultable dans
+    # fois - toute tentative répond 404. Son historique reste consultable dans
     # l'administration Django.
     queryset = DemandeAgrement.objects.filter(statut=DemandeAgrement.EN_ATTENTE).select_related(
         'specialite'
     )
     serializer_class = DemandeAgrementSerializer
 
-    def perform_create(self, serializer):
-        serializer.save(code=DemandeAgrement.prochain_code())
+    @action(detail=False, methods=['get'], url_path='prochain-numero')
+    def prochain_numero(self, request):
+        """
+        Numéro proposé à la prochaine demande, prérempli dans le formulaire.
+        Le serveur seul peut le calculer : l'écran ne voit ni les fournisseurs
+        ni les demandes déjà validées, qui partagent la série.
+        """
+        return Response({'code': DemandeAgrement.prochain_code()})
 
     @action(detail=True, methods=['post'])
     def valider(self, request, pk=None):
         """
-        Agrée le prestataire : le fournisseur naît avec le numéro suivant de la
-        liste, et la demande sort des demandes en attente. Renvoie le
-        fournisseur créé.
+        Agrée le prestataire : le fournisseur naît avec le numéro de la demande,
+        et la demande sort des demandes en attente. Renvoie le fournisseur créé.
         """
         demande = self.get_object()
         try:
@@ -39,12 +44,19 @@ class DemandeAgrementViewSet(ReferentielViewSet):
                 {'detail': 'Cette demande vient d’être validée par ailleurs.'},
                 status=status.HTTP_409_CONFLICT,
             )
-        except IntegrityError:
-            # Deux validations simultanées ont visé le même numéro de
-            # fournisseur : la transaction a tout annulé, la demande est
-            # toujours en attente et peut être validée de nouveau.
+        except NumeroDejaPris:
             return Response(
-                {'detail': 'Numéro de fournisseur pris entre-temps. Validez de nouveau.'},
+                {
+                    'detail': f'Le numéro {demande.code} est déjà celui d’un fournisseur. '
+                    'Modifiez le numéro de la demande, puis validez-la de nouveau.'
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        except IntegrityError:
+            # Deux validations simultanées ont visé le même numéro : la
+            # transaction a tout annulé, la demande est toujours en attente.
+            return Response(
+                {'detail': 'Ce numéro a été pris entre-temps. Validez de nouveau.'},
                 status=status.HTTP_409_CONFLICT,
             )
         return Response(FournisseurDeSoinsSerializer(fournisseur).data, status=status.HTTP_201_CREATED)

@@ -1,12 +1,12 @@
 /**
- * Tuile d'indicateur — la rangée de tête du tableau de bord.
+ * Tuile d'indicateur - la rangée de tête du tableau de bord.
  *
  * Réduite à l'os, sur le modèle de « Données de base » : un intitulé, un
  * chiffre, un écart. Les versions précédentes portaient en plus un filet
  * coloré par indicateur et la période de comparaison en toutes lettres ;
  * quatre fois de suite, cela faisait une rangée bavarde et bariolée pour
  * quatre nombres. La période est déjà annoncée par le sélecteur au-dessus,
- * elle n'a pas à être répétée dans chaque tuile — elle reste accessible au
+ * elle n'a pas à être répétée dans chaque tuile - elle reste accessible au
  * survol, sans occuper de ligne.
  *
  * Seul l'écart garde une couleur, et seulement parce qu'elle porte un sens :
@@ -23,7 +23,7 @@ import { avecAlpha } from './palette'
 
 /**
  * Courbe de tendance : douze points, tracés d'un trait effacé, le point
- * courant seul en graphite plein. Elle situe la valeur dans son mouvement —
+ * courant seul en graphite plein. Elle situe la valeur dans son mouvement -
  * elle ne se lit pas au chiffre près.
  */
 const Tendance = ({ points, teinte, surface }) => {

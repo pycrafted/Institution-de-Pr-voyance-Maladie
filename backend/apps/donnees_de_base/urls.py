@@ -9,6 +9,7 @@ branchement soit direct.
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    ActeViewSet,
     ArticleAchatViewSet,
     DemandeAgrementViewSet,
     FournisseurDeSoinsViewSet,
@@ -25,6 +26,7 @@ router = DefaultRouter()
 router.register('types-beneficiaires', TypeBeneficiaireViewSet, basename='type-beneficiaire')
 router.register('types-prestations', TypePrestationViewSet, basename='type-prestation')
 router.register('specialites', SpecialiteViewSet, basename='specialite')
+router.register('actes', ActeViewSet, basename='acte')
 router.register('articles-achat', ArticleAchatViewSet, basename='article-achat')
 router.register('journaux-comptables', JournalComptableViewSet, basename='journal-comptable')
 router.register('medicaments', MedicamentViewSet, basename='medicament')

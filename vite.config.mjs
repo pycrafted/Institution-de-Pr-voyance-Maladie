@@ -5,7 +5,15 @@ import autoprefixer from 'autoprefixer'
 
 export default defineConfig(() => {
   return {
-    base: './',
+    // Chemins absolus (« /assets/… ») et non relatifs (« ./assets/… »).
+    // Depuis que l'application navigue en adresses pleines (BrowserRouter,
+    // cf. src/App.jsx), le serveur voit chaque chemin — et un chemin à deux
+    // niveaux, « /documents/bons-pharmacie », faisait résoudre « ./assets/… »
+    // en « /documents/assets/… ». IIS, qui renvoie index.html pour tout ce
+    // qui n'est pas un fichier, répondait alors du HTML là où le navigateur
+    // attendait du JavaScript : la page restait blanche à l'ouverture directe
+    // ou au rechargement. Le site est servi à la racine, « / » est donc juste.
+    base: '/',
     build: {
       outDir: 'build',
     },

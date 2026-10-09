@@ -3,7 +3,7 @@ Fournisseur divers.
 
 Tiers non médical (fournitures, énergie, transport…). Le compte fournisseur
 (401xxx) tient lieu de code : c'est lui qui identifie la ligne. La fiche est
-riche — coordonnées, interlocuteur, domiciliation bancaire — mais la plupart des
+riche - coordonnées, interlocuteur, domiciliation bancaire - mais la plupart des
 champs restent vides en pratique ; une fiche complète est l'exception.
 
 Les champs optionnels sont des CharField (et non des types stricts) : l'écran

@@ -1,10 +1,10 @@
 /**
  * Bloc de droite de la barre supérieure : paramètres, identité, déconnexion.
  *
- * Trois cibles à plat, un clic chacune, aucun menu déroulant — la maquette de
+ * Trois cibles à plat, un clic chacune, aucun menu déroulant - la maquette de
  * référence n'affiche ni chevron ni avatar à côté du nom.
  *
- * Ordre : identité, filet, paramètres, déconnexion — la sortie occupe le
+ * Ordre : identité, filet, paramètres, déconnexion - la sortie occupe le
  * dernier rang, à l'extrémité de la barre.
  */
 
@@ -38,13 +38,27 @@ const AppHeaderActions = () => {
   // Le temps que le profil revienne, la place reste vide : afficher une
   // identité provisoire reviendrait à montrer le nom de quelqu'un d'autre.
   const nom = user ? [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email : ''
-  const role = user ? (user.is_superuser ? 'Admin' : user.role || null) : null
+  // Initiales pour la pastille d'avatar : prénom + nom, sinon la première
+  // lettre de l'e-mail.
+  const initiales = user
+    ? (
+        (user.first_name?.[0] || '') + (user.last_name?.[0] || '') ||
+        user.email?.[0] ||
+        ''
+      ).toUpperCase()
+    : ''
 
   return (
     <div className="app-navbar-actions">
       <Link to="/profil" className="app-navbar-identite">
-        <span className="app-navbar-identite-nom">{nom}</span>
-        {role && <span className="app-navbar-identite-role"> ({role})</span>}
+        {initiales && (
+          <span className="app-navbar-avatar" aria-hidden="true">
+            {initiales}
+          </span>
+        )}
+        <span className="app-navbar-identite-texte">
+          <span className="app-navbar-identite-nom">{nom}</span>
+        </span>
       </Link>
 
       <span className="app-navbar-filet" aria-hidden="true" />

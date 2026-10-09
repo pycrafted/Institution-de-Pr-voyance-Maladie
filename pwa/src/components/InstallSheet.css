@@ -1,0 +1,229 @@
+/*
+ * Feuille d'installation (InstallSheet.tsx). Même forme que la feuille de la
+ * charte (§3.9, components/Feuille) — angles droits, poignée 36×4, fond
+ * surface, hauteur de son contenu, toute la largeur. Aucune couleur en dur :
+ * tout vient des jetons (§1).
+ */
+
+ion-modal.installation-feuille {
+  --height: auto;
+  --background: var(--ipm-surface);
+  --border-radius: 0;
+  --box-shadow: var(--ombre-3);
+  /* Au-delà de 768 px de large, Ionic taille ses fenêtres pour un bureau
+     (600 px, centrées) : dans la colonne de 480 px de l'application, la
+     feuille débordait à gauche et coupait son contenu. */
+  --width: 100%;
+  --min-width: 100%;
+  --max-width: 100%;
+}
+ion-modal.installation-feuille .ion-page {
+  position: relative;
+  display: block;
+  contain: content;
+}
+
+.installation {
+  /* La plus longue des feuilles (étapes illustrées) : au-delà de 85 % de
+     l'écran, elle défile en elle-même plutôt que de sortir par le haut. */
+  max-height: 85vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 0 var(--gouttiere)
+    calc(var(--e-20) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  background: var(--ipm-surface);
+}
+
+/* --- En-tête ------------------------------------------------------------- */
+
+.installation__entete {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  margin-top: var(--e-20);
+}
+.installation__icone {
+  flex-shrink: 0;
+  /* Concentricité : l'icône est l'application elle-même, arrondie comme sur
+     l'écran d'accueil du téléphone. */
+  border-radius: var(--r-sm);
+  box-shadow: var(--ombre-1);
+}
+.installation__titres {
+  flex: 1;
+  min-width: 0;
+}
+.installation__titre {
+  margin: 0;
+  font: var(--t-sous-titre);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ipm-texte);
+}
+.installation__sous-titre {
+  margin: 2px 0 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+
+/* Croix de fermeture : pastille discrète, pas un bouton de barre d'outils. */
+.installation__fermer {
+  appearance: none;
+  border: 0;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-pill);
+  font-size: 18px;
+  color: var(--ipm-texte-doux);
+  background: var(--ipm-surface-2);
+  cursor: pointer;
+}
+
+/* --- Atouts : trois cartes autonomes, jamais une liste à filets ---------- */
+
+.installation__atouts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin: var(--e-20) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.installation__atout {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-12);
+  border: 1px solid var(--ipm-liseret);
+  border-radius: var(--r-sm);
+  font: var(--t-corps);
+  color: var(--ipm-texte);
+  background: var(--ipm-surface-2);
+}
+.installation__cercle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-pill);
+  font-size: 19px;
+}
+
+/* --- Étapes numérotées, chacune avec l'élément d'interface à chercher ---- */
+
+.installation__etapes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin: var(--e-20) 0 0;
+  padding: 0;
+  list-style: none;
+}
+/* Une étape = une carte. §1 interdit le filet entre deux lignes de liste. */
+.installation__etapes li {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-12);
+  border: 1px solid var(--ipm-liseret);
+  border-radius: var(--r-sm);
+  background: var(--ipm-surface-2);
+}
+.installation__numero {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-pill);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--deg-rouge);
+}
+.installation__texte {
+  flex: 1;
+  min-width: 0;
+  font: var(--t-corps);
+  color: var(--ipm-texte);
+}
+.installation__texte small {
+  display: flex;
+  align-items: center;
+  gap: var(--e-4);
+  margin-top: 3px;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.installation__texte small ion-icon {
+  font-size: 1rem;
+}
+
+/* Imitations des éléments de Safari (bleu système ≈ « traité » de la charte). */
+.installation__imitation {
+  flex-shrink: 0;
+  color: var(--st-traite-texte);
+}
+.installation__imitation--bouton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-xs);
+  font-size: 24px;
+  background: var(--st-traite-doux);
+  animation: installation-appel 1.8s ease-in-out infinite;
+}
+.installation__imitation--ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  padding: 6px var(--e-8) 6px 10px;
+  border-radius: var(--r-xs);
+  font-size: 0.75rem;
+  color: var(--ipm-texte);
+  background: var(--ipm-surface);
+}
+.installation__carre {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid currentColor;
+  border-radius: 5px;
+  font-size: 14px;
+}
+.installation__imitation--texte {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.installation__note {
+  margin: var(--e-12) 2px 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+
+/* --- Actions ------------------------------------------------------------- */
+
+.installation__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin-top: var(--e-20);
+}
+
+@keyframes installation-appel {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}

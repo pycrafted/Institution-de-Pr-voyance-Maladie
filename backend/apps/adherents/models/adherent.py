@@ -7,7 +7,7 @@ elles, sont les participants et relèveront de leur propre module.
 
 Deux régimes cohabitent : l'IPM, dont la cotisation se partage entre part SAR
 et part participant, et la mutuelle CMM (code « MSS »), dont la cotisation est
-unique. Les champs sans objet pour un régime restent vides — d'où les CharField
+unique. Les champs sans objet pour un régime restent vides - d'où les CharField
 sur les montants plutôt que des entiers : l'écran d'origine les traite comme du
 texte, et une cotisation absente n'est pas une cotisation nulle.
 
@@ -33,10 +33,11 @@ class Adherent(Referentiel):
     # Code séquentiel sur deux chiffres, attribué par l'application.
     code = models.CharField('Code', max_length=2, unique=True)
 
-    type = models.CharField('Régime', max_length=3, choices=TYPES_ADHERENT)
+    type = models.CharField('Régime', max_length=3, choices=TYPES_ADHERENT, blank=True)
 
-    # Le compte suit le code : 01 → 463001.
-    compte = models.CharField('Compte', max_length=6, unique=True)
+    # Le compte suit le code : 01 → 463001. Laissé vide, il en est déduit
+    # à l'enregistrement (cf. save).
+    compte = models.CharField('Compte', max_length=6, unique=True, blank=True)
 
     adresse = models.CharField('Adresse', max_length=255, blank=True)
     telephone = models.CharField('Téléphone fixe', max_length=30, blank=True)
@@ -65,3 +66,9 @@ class Adherent(Referentiel):
         ordering = ['code']
         verbose_name = 'Adhérent'
         verbose_name_plural = 'Adhérents'
+
+    def save(self, *args, **kwargs):
+        # Laissé vide, le compte suit le code : 05 → 463005.
+        if not self.compte and self.code:
+            self.compte = f'463{self.code.zfill(3)}'
+        super().save(*args, **kwargs)

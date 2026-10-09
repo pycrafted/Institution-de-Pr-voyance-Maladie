@@ -51,7 +51,11 @@ première source de malentendu sur ce projet.
 | **Fournisseur Divers** | Tiers **non médical** : fournitures, énergie, transport. Rien à voir avec le précédent malgré le nom. | Données de base |
 
 Deux régimes cohabitent : **IPM** (cotisation partagée SAR / participant) et
-**CMM**, la mutuelle (cotisation unique).
+**CMM**, la mutuelle (cotisation unique). L'IPM couvre les **salariés en
+activité** (`01 IPM SAR PERSONNEL MOO`, `02 IPM SAR PERSONNEL CADRES`) ; les
+anciens salariés passent aux deux mutuelles (`03 CMM CR-SAR`, `04 CMM
+NCR-SAR`). C'est le **régime de l'adhérent** qui fait d'un participant un
+retraité — il n'y a pas de case à part.
 
 ## 3. Où l'on va
 
@@ -195,23 +199,34 @@ convention » — le vocabulaire de la convention plutôt que celui de l'informa
 
 ---
 
-### Participants — `/participants` 🟡
+### Participants — `/participants` ✅
 
 **Objectif.** Les salariés couverts et leurs familles. Quatre onglets :
 Participants IPM · Participants Retraités · Nouveau Participant IPM · Familles.
 
-**État.** **Aucun backend.** Deux jeux en `localStorage` : `participants` et
-`beneficiaires`.
+**État.** Servi par l'API (`/api/participants/`, `/api/beneficiaires/`). Un
+bénéficiaire porte une clé étrangère vers son participant, et son type vient du
+référentiel « Types de bénéficiaire ».
 
 **Dépend de Données de base** — c'est l'écran le plus couplé : la fiche lit
 `structure` pour la cascade Direction → Département → Service (filtrée sur
 `type` et `parent`), et les types de bénéficiaires pour les familles.
 
-**Pour y arriver.** Plus délicat que Fournisseurs : ce n'est plus une
-nomenclature mais une personne, avec état de contrat (Ouverture / Fermeture /
-Radiation), rattachement à un adhérent, et des ayants droit. ❓ Les
-bénéficiaires doivent-ils devenir un modèle lié au participant par clé
-étrangère, ou rester une table à plat ? (Je penche pour la clé étrangère.)
+**Identifiants**, comme l'application d'origine :
+
+- participant : **quatre chiffres** (`0949`), montrés après le code de la
+  société sur les documents (`01-0949`). Le mobile complète les zéros de tête,
+  pour que l'employé tape son matricule comme il le dit (« 949 ») ;
+- bénéficiaire : société, matricule du participant, **code du type et rang**
+  dans ce type — `01-0949-21` est la première épouse (type 2). Composé par le
+  serveur, jamais saisi ; ni le matricule ni le porteur ne se changent ensuite.
+
+**Un seul cycle de vie** : l'état du dossier (En Attente → Actif → Suspendu →
+Résilié / Radié). L'état du contrat (Ouverture / Fermeture / Radiation) et les
+dates de sortie **s'en déduisent** au serveur — y compris lors d'un changement
+d'état en lot, qui n'envoie que l'état. Pas de désactivation à côté : là où
+l'état est en colonne, il est la seule sortie, et une fiche ne se supprime
+jamais (HTTP 405).
 
 ---
 
@@ -276,6 +291,28 @@ menait qu'à des écrans d'attente*.
 
 Paramètres et Profil ne sont atteignables que par la barre supérieure.
 
+**Taux de prise en charge.** Le barème est un **produit complet** : chaque
+société × chaque nature de prestation × chaque qualité de bénéficiaire. Il
+décide, facture par facture, de la part IPM et de celle du participant. D'où
+deux règles :
+
+- une ligne **ne se supprime pas** (HTTP 405) — une combinaison absente n'est
+  pas « zéro », c'est un trou que personne ne voit ; un taux qui ne s'applique
+  plus se met à 0 ;
+- l'écran montre le barème **entier**, les combinaisons sans taux comprises,
+  marquées « à définir » et réglables d'un clic.
+
+Le **compte** ne se saisit jamais : c'est celui de la nature de prestation
+(602004 pour OPTIQUE), que la charge ira débiter à la comptabilisation.
+
+Un **taux exceptionnel** vise une personne et l'emporte sur celui de sa
+société ; il se retire, lui, sans rien trouer. Il est refusé sur un dossier
+résilié ou radié.
+
+❓ **Le barème n'est encore lu par aucun document** : l'application émet des
+bons et des lettres, elle ne liquide pas de factures. C'est le module qui
+manque pour que ces taux servent.
+
 **Connexion.** Cas différent des autres : le front **appelle réellement** un
 backend qui n'existe pas. `services/api.js` tape `/auth/login/`, `/auth/me/`,
 `/auth/logout/` ; `config/urls.py` ne monte rien de tel. Les journaux le
@@ -300,8 +337,11 @@ en tenir compte, pas seulement ouvrir une session.
 - **Le compte suit le code**, selon des règles par référentiel (voir tableau §4).
 - **Le front nomme en camelCase, la base en snake_case** ; les serializers
   mappent via `source=` pour ne pas polluer le schéma.
-- **Navigation en `HashRouter`** (`/#/participants`) : le serveur ne voit jamais
-  qu'une seule URL, donc aucune règle de repli SPA à configurer sur IIS.
+- **Navigation en `BrowserRouter`** (`/participants`) : les adresses n'ont plus
+  de dièse — elles se mettent en favori et se partagent telles quelles. En
+  contrepartie IIS porte une règle de repli (`deploy/web.config`, « Repli
+  SPA ») qui renvoie `index.html` pour tout chemin qui n'est ni un fichier ni
+  le domaine de Django.
 
 ## 6. Points ouverts
 
@@ -353,5 +393,24 @@ Propriété utile : le script s'arrête si `npm run build` échoue, **avant** le
 
 | Date | Révision |
 |---|---|
+| 2026-10-08 | **Découverte du module « Règlements »** (Traitements → Règlements : le PAIEMENT des factures, après liquidation/compta). 9 captures ajoutées (`docs/lamps/captures/51-59`) et modèle décodé dans `lamps_analyse` : le règlement est porté par `factures` (`etat` P/C/R/T, `delai` → échéance = date + délai, `typereglmt` C/V/E/T, `numreglmt`, `datereglmt`, `montant_reglmt`, `acompte`) + chéquier `table_cheques` (banque, journal, `to_print`). États dérivés : Non Echue/Echue/Reglée/Comptabilisée/Annulée. Modal de paiement multi-factures + **acompte** (paiement partiel) ; Éditions (Factures à Payer/non Payées, Lettres Chèque, Ordre de Virement par banque) ; actions A Payer / Annuler. **À construire côté IPM** (app Règlements + modal + éditions + écritures de paiement, circuit compta à décoder). Doc : `docs/lamps/modele-de-donnees.md` §17. |
+| 2026-10-07 | **« Créer bon manuel » implémenté** (page de traitement d'une facture). Bouton bleu (comme l'original) qui ouvre un modal : **Participant & bénéficiaire** (participant de la société, type bénéf, nom) + **Saisie des actes** acte par acte (même logique 85/87 que la liquidation). Back : nouveau type de document `manuel` (migration `traitements/0004`) + action `creer-bon-manuel` qui crée un `LiquidationBon` (numéro « BMI… », séquence propre) rattaché à la facture et aussitôt liquidé ; il compte dans l'écart et se détache comme un bon rattaché (le crayon « modifier » est masqué pour un manuel - on détache/recrée). Testé de bout en bout (création 201 → bons traités → facture « En cours » → détachement 204). |
+| 2026-10-07 | **Constat (capture facture divers) : « Créer bon manuel » à implémenter.** La page de traitement d'une facture **divers** (99999 FOURNISSEURS DIVERS SOINS) utilise la **même** interface que les soins : en-tête, **Liste des bons en instance** (sans colonne Montant, OK chez nous), écart, et trois boutons **Créer bon manuel · Valider facture · Fermer**. Chez nous, `FactureDetails.jsx` a Valider / Comptabiliser / Fermer **mais pas « Créer bon manuel »** (bleu) - créer un bon directement depuis le traitement, sans document préexistant (surtout pour les divers). **À construire.** Doc enrichie : `docs/lamps/modele-de-donnees.md` §15. |
+| 2026-10-07 | **Sauvegarde des taux de prise en charge** (barème partiel reçu du métier). Le métier n'a envoyé qu'une partie des taux ; ils sont saisis dans `ipm` (720 taux, 180 × 4 sociétés) et **sauvegardés** dans le dépôt : `backend/apps/parametres/data/taux.json` (repérés par codes société / nature de prestation / type de bénéficiaire, stables d'une base à l'autre). Nouvelle commande `python manage.py importer_taux` (idempotente, update_or_create ; option `--fichier`) pour recharger après toute reconstruction, et pour y déposer le **barème complet** quand il arrivera (mêmes champs). Testé : 720 rechargés. |
+| 2026-10-06 | **Stats des tableaux : contenu LAMPS + pastille près du titre** (design uniquement). Pastille « Total : N » remise sur tous les tableaux (défaut dans `Referentiel`, lignes visibles, opt-out `sansStats`), puis affinée d'après les captures LAMPS : contenu détaillé là où l'original le montre - **Participants IPM/Retraités** « Total Participants: N - Epoux(se): N - Enfant: N » (+ légende société quand une société est filtrée), **Familles** « Epoux: N / Epouses: N / Enfants: N / Autres: N », **Fournisseurs de soins** « Total Fournisseurs: N », **Demandes d'agrément** « Total Demandes: N » ; les autres gardent « Total : N ». **Placement : pastille à côté du titre de la card**, comme Données de base (« Structure - Total : 13 »). Pages à onglets (participants, fournisseurs, factures) : `Referentiel` remonte ses stats au parent via la prop `onStats`, qui pose la pastille dans le groupe du titre (H1 + pastille, bouton à droite) ; le compte se met à jour au changement d'onglet. Adhérents : passé en `barreCompacte` pour que sa pastille rejoigne son titre h2 (comme documents/données de base). Classe `.ddb-stats-pastille` + `.prt-titre-groupe`. Helpers `statsBeneficiaires`/`legendeStats` remis dans la config participants. Vérifié Playwright (7 vues) + captures. Déployé front sans redémarrage backend. |
+| 2026-10-06 | **Nomenclatures de présentation rendues distinctes du réel** (anti-fuite en démo ; données uniquement). Après diagnostic comparant `ipm` et `ipm_dev`, plusieurs référentiels étaient encore identiques. Commande `python manage.py distinguer_presentation` (à lancer sur `ipm`) : contenu ET nombre désormais différents de la vraie base pour **médicaments** (240 réels → 25 génériques INN fictifs), **articles d'achat** (12 → 8), **structures** (47 → 49, libellés en noms de code Alpha/Bêta/Orion…), **fournisseurs divers** (16 → 9), **journaux** (32 → 26, libellés « DEMO », code `IF` conservé). Garde ce qui casserait l'app : les 9 codes de structure cités par des participants et le journal `IF`. **Laissés identiques (exception explicite du client) : spécialités, types de prestations, types de bénéficiaire** - codes structurels universels, non confidentiels. Vérifié : 0 libellé commun sur les 5 référentiels traités, app cohérente, API live OK. |
+| 2026-10-06 | **Deux bases de données : présentation et développement.** Mise en place de la séparation demandée par le client. **`ipm`** reste la base de **présentation** (données fictives : participants anonymisés, 14 fournisseurs de soins démo, structures/divers/journaux masqués) et **reste la base déployée** (`.env` `DB_NAME=ipm` inchangé - rien de réel n'est exposé sur .179). Création de **`ipm_dev`** = base de **développement** avec les **vraies données**, construite à neuf (migrate + seeds + imports réels, SANS les commandes d'anonymisation/masquage) : 412 fournisseurs de soins réels (CSV), 4 adhérents réels (CSV), journaux/fournisseurs divers/structures réels (CREDIT DU SENEGAL, SONATEL, QHSE/REXAS, HOPITAL LE DANTEC, IRESSEF...), 47 structures (dont 6 ajoutées manuellement, reconstituées), 240 médicaments, 179 actes, 40 participants. Bascule par `DB_NAME` (`load_dotenv(override=False)` : la variable shell prime ; en déployé, changer `.env` + redémarrer `IPM-Backend`). **Quelle base déployer est un choix** (client) : `ipm_dev` pourra être déployée pendant les phases de dev (accès verrouillé par identifiants) et `ipm` remise pour les présentations ; aujourd'hui = présentation = `ipm`. Les vraies données de `ipm_dev` ne sont jamais poussées sur git. Compte/token copiés depuis `ipm`. Bug latent repéré : `seed_donnees_de_base._fournisseurs_de_soins` plante sur une spécialité '29' inexistante (contourné ; sans effet, les vrais fournisseurs viennent du CSV). |
+| 2026-10-06 | **Masquage des référentiels internes réels** (données uniquement, aucune structure touchée, aucune réduction). Commande `python manage.py masquer_donnees_internes` : remplace par du **fictif** les 3 listes qui exposaient du réel SAR - **Structures** (organigramme : 47 entités renommées, hiérarchie DIR/DEP/SRV et parents conservés), **Fournisseurs divers** (16 : noms + coordonnées fictifs, compte 401xxx gardé), **Journaux comptables** (32 : vrais noms de banques remplacés, CREDIT DU SENEGAL -> BANQUE DU LITTORAL, ECOBANK -> BANQUE DE L'UNION ; libellés comptables génériques conservés). La **nomenclature médicale standard reste intacte** (spécialités, types de prestations, médicaments, articles) : non confidentielle, identique à LAMPS (choix explicite du client). Vérifié : 0 vrai nom résiduel. |
+| 2026-10-06 | **Fournisseurs de soins réduits à un jeu de démonstration** (données uniquement, aucune structure touchée). Après anonymisation, 411 fiches restaient une volumétrie de prod, pas une vitrine : commande `python manage.py fournisseurs_soins_demo` ramène la liste à **14 fiches** fictives lisibles - une par grande spécialité (pharmacie ×2, dentaire, clinique, généraliste, gynéco, pédiatre, optique, ophtalmo, labo, hôpital, imagerie, ORL) + le sentinelle « FOURNISSEURS DIVERS SOINS ». Les fiches encore citées par un document/facture/demande (FK **PROTECT**) sont **toujours conservées** (ici les 2 du seul bon de pharmacie), donc rien n'est cassé. 398 fiches en trop supprimées ; vérifié API (14 servies) + intégrité du bon. Même esprit que le petit échantillon de participants. La vraie base reste dans `lamps_analyse.fournisseurs`. |
+| 2026-10-06 | **Anonymisation des fournisseurs de soins** (données personnelles / établissements réels). Commande `python manage.py anonymiser_fournisseurs_soins` : remplace les 411 vrais prestataires par une **liste fictive cohérente** - nom selon la spécialité (PHARMACIE/HOPITAL/CLINIQUE/LABORATOIRE + quartier de Dakar, CABINET `<spé>` pour les praticiens), adresse / téléphones / contact / banque / numéros officiels inventés, GPS effacé. Le code, la spécialité et le compte comptable sont conservés (les documents qui citent le fournisseur par son code continuent de marcher). Sentinelle « FOURNISSEURS DIVERS SOINS » (99999) et fiche technique spé 98 gardées telles quelles. Appliqué en prod (411/412). La **vraie base reste dans `lamps_analyse.fournisseurs`**. À relancer après tout nouvel import de vrais fournisseurs. |
+| 2026-10-05 | **Anonymisation des participants & familles** (RGPD / données personnelles). Commande `python manage.py anonymiser_participants` : remplace noms et prénoms réels par des **inventés** — prénoms tirés selon le sexe et **distincts dans chaque famille**, noms remappés de façon **cohérente** (les familles qui partageaient un nom le partagent toujours : enfants du père, conjoint, ascendant). Noms en MAJUSCULES (convention app), comparaison insensible à la casse. Appliqué en prod (11 participants, 26 bénéficiaires). Les vrais noms restent dans `lamps_analyse`. À relancer après tout nouvel import de vraies personnes. |
+| 2026-10-05 | **Traitements → Factures — Tranche 4** (comptabilisation ; **cycle complet**). Décodage de la table `compta` : journal **IF**, écriture équilibrée — fournisseur **crédité** sur le compte de sa spécialité (400xxx, tiers = code), chaque bon **débite** la prestation (602xxx = part IPM) et le participant (`4110`+société = 411001…004, tiers = société-matricule = ticket). Modèle **`EcritureCompta`** + `comptabilisation.py` ; actions `comptabiliser` (Traitée→Comptabilisée) et `ecritures`. Bouton « Comptabiliser » (page traitement + liste), affichage des écritures (D=C). Divers : circuit non décodé, à faire. Vérifié API + UI (équilibre 50 000=50 000). **Module Traitements : les 4 tranches livrées** (réception→traitement→liquidation→comptabilisation). |
+| 2026-10-05 | **Traitements → Factures — Tranche 3** (liquidation acte par acte, capture 39). Modal `LiquidationBonModal.jsx` : entête bon + écart, saisie par **prestation** (types-prestations) avec **QP.IPM pré-rempli 85/87 %** sur le frais réel, ajustable (QP.PART, QP.Assur, Frais Exclus, Ajustement, Quantité) ; « Valider » ajoute la ligne, « Enregistrer » → endpoint `liquider` qui remplit `LiquidationBon.actes` (lignesprest) et recalcule les totaux. Ouvert depuis les bons en instance (liquider) ou les bons traités (modifier). Vérifié API + UI (qpipm 43 500 = 87 %, actes persistés). **Tranche 4** : comptabilisation. |
+| 2026-10-05 | **Traitements → Factures — Tranche 2** (traitement d'une facture, capture 38). Modèle **`LiquidationBon`** (ligne « bon traité ») + agrégation des **bons en instance** à travers les 4 modèles de documents (bons du prestataire, même société, non traités). **Moteur de liquidation** (`liquidation.py`) : 85/15 actifs, 87/13 retraités, non-couverts types 5/6. Page **Traitement** (`FactureDetails.jsx`) : rattacher (liquidation auto ajustable), détacher, **Écart** (Montant Net − Σ F.réels), **Valider** (Reçue→En cours→Traitée). Action « Traiter la facture » sur la liste + route `/traitements/factures/:id`. Vérifié API + UI (qpipm 87 % sur société retraitée). **Tranches 3-4** : liquidation acte par acte (capture 39) + comptabilisation. |
+| 2026-10-05 | **Traitements → Factures — Tranche 1** (nouveau module, le cœur de LAMPS, construit par tranches). Nouvelle app Django **`traitements`** + modèle **`Facture`** (tout le cycle de vie : réception → traitement → compta → paiement ; Tranche 1 n'en remplit que la réception). Écran **Liste** à 2 sous-onglets (Fournisseurs de Soins / Fournisseurs Divers), 19 colonnes du cycle de vie (capture 36), filtres Exercice/Société/État(/Spécialité) + bouton **Réceptionner une facture** ; **modal Réception** (capture 37 : Société → Spécialité/Fournisseur → Entête → F.réel−Remise−Ristourne−QP.Agent = **Montant Net** calculé serveur + cases Remb. Ticket / Facture d'avoir). Menu « Traitements » remis. Vérifié API + UI (soins & divers). **À venir (tranches 2-4)** : traitement (rattacher les bons + écart), liquidation acte par acte (85/15), valider + comptabiliser — barème métier attendu pour les grilles optique/dentaire. Détail : `docs/lamps/modele-de-donnees.md` §15. |
+| 2026-10-05 | **Bon Optique** aligné sur LAMPS (4ᵉ et dernier document). Rétro-ingénierie sur `lamps_analyse` : `documents_ipm`/`typedoc='BCI'` (1 337), liquidé en une ligne `lignesprest` `codeprest='04'`. L'écran d'édition réel (capture 27) est le **patron standard** (Participant · Bénéficiaire · Prescripteur · Fournisseur opticien + « Saisir les actes »), **pas** la ligne designation/PU/remise. Les « actes » optique = 4 articles spé 04 (Montures, Verres, Montures & Verres, Traitement). **Éditeur sur-mesure supprimé** → formulaire générique + `selection-actes` (filtré spé 04 de l'opticien) ; articles en JSON (`BonOptique.actes`), montants **calculés** serveur, PDF adapté (migration `documents/0010`). Les **4 documents** partagent le même mécanisme. Détail : `docs/lamps/modele-de-donnees.md` §14. |
+| 2026-10-05 | **LG Hospitalisation** alignée sur LAMPS. Rétro-ingénierie sur `lamps_analyse` : le document est `documents_ipm`/**`typedoc='LHI'`** (143) — **préfixe corrigé `LGH`→`LHI`** (modèle). « Saisir les actes » **implémenté** : même sélecteur que la lettre de garantie, filtré sur la spécialité du **prestataire** (hôpital→actes HOPITAUX spé 03, clinique→spé 08), acte + quantité + **tarif saisi** ; Remise conservée. Saisie **unifiée en JSON** (`LettreHospitalisation.actes`) ; table liée `ActeHospitalisation` supprimée (migration `documents/0009`). Composant générique `selection-actes` étendu (`prestataireDe`). Détail : `docs/lamps/modele-de-donnees.md` §14. |
+| 2026-10-05 | **Lettres de Garantie** alignées sur LAMPS. Rétro-ingénierie sur `lamps_analyse` : la lettre est `documents_ipm`/`typedoc='LGI'` (45 906), `codefourn`=prestataire + `codepresc`=prescripteur + `natprest`, liquidée en lignes `lignesprest` **agrégées par spécialité** (jamais une par acte). Nomenclature `actes` LAMPS (6 197) = 6 018 médicaments (spé 06) + **179 actes hors pharmacie**. Nouveau référentiel **`Acte`** (`donnees_de_base_acte`, 179 importés via `importer_actes`) ; « Saisir les actes » **implémenté** en **sélection** filtrée par spécialité du prestataire (acte + quantité + **tarif saisi**) ; persistance JSON (`LettreGarantie.actes`, migrations `donnees_de_base/0022`, `documents/0008`). Composant générique `type: 'selection-actes'`. Détail : `docs/lamps/modele-de-donnees.md` §14. |
+| 2026-10-05 | **Bons de Pharmacie** alignés sur LAMPS. Rétro-ingénierie sur `lamps_analyse` : le bon est `documents_ipm`/`typedoc='BPI'` (66 429 bons), liquidé en **une** ligne `lignesprest` `codeprest='06'` (jamais une par médicament) ; divers = `99999`/spé 99. « Saisir les médicaments » **implémenté** comme une **sélection** depuis le catalogue (`donnees_de_base_medicament`, 240 réfs, prestation 06) + quantités ; `nb_articles` déduit ; persistance JSON sur le bon (migration `documents/0007`). Détail : `docs/lamps/modele-de-donnees.md` §14. |
 | 2026-09-08 | Captures de l'application d'origine (Fournisseurs de Soins) analysées : découverte du circuit *Demandes d'agrément*, absent du projet ; volumétrie réelle 411 fournisseurs ; rôles utilisateurs dans l'original. |
 | 2026-09-08 | Création. Analyse du dépôt, du serveur en marche et des 15 routes. Faits vérifiés sur l'API vivante : 9 endpoints, 404 sur `fournisseurs-de-soins`, 400 sur l'accès par FQDN, 4 adhérents, 30 spécialités. |

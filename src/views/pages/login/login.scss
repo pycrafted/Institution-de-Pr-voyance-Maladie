@@ -1,295 +1,277 @@
 // =============================================================================
-// Page de connexion IPM
+// Page de connexion IPM - composition de la page de connexion d'OpsDigital
 // =============================================================================
-// Une page de l'application, pas un écran à part : le fond gris du corps, une
-// carte blanche à bord fin, les champs soulignés des panneaux de saisie. Rien
-// ne flotte, rien n'est posé sur une image.
-//
-// La marque coiffe la carte sur fond blanc, séparée du formulaire par un
-// simple filet — exactement la composition de la barre supérieure de
-// l'application : logo, nom de l'institution en rouge SAR, trait dessous.
-// Quelqu'un qui se connecte voit donc déjà l'en-tête qu'il retrouvera une
-// seconde plus tard.
-//
-// Les valeurs sont celles de donnees-de-base.scss et de style.scss ; toute
-// évolution de l'une doit se répercuter ici.
+// Une carte blanche centrée sur fond gris clair : en tête le logo, le titre et
+// l'institution, un filet ; dessous les champs à icône, sur fond gris pâle,
+// et le bouton plein ; en pied de page la mention de la société. Aux couleurs
+// SAR : le rouge tient le rôle du bleu d'OpsDigital.
 
 $cx-rouge: #e52621;
-$cx-noir: #1d1d1b;
-$cx-bordure: #d9dde2;
-$cx-texte-doux: #6b7280;
+$cx-rouge-fonce: #c81f1b;
+$cx-encre: #1c2434;
+$cx-bordure: #e2e8f0;
+$cx-texte-doux: #64748b;
+$cx-texte-pale: #8a99af;
+$cx-fond-champ: #eff4fb;
 
-// --- Deux volets : la raffinerie à gauche, la saisie à droite ---------------
-// La photo occupe la plus grande part — c'est elle qui donne son identité à
-// l'écran — mais le volet de droite garde une largeur suffisante pour que la
-// saisie ne soit jamais tassée contre le bord.
+// La raffinerie de Mbao en fond de page, sous un voile clair dans le blanc de
+// la carte : la photo dit d'emblée de quelle maison relève l'application, et
+// le voile, légèrement flouté, l'adoucit assez pour que le formulaire s'y
+// fonde au lieu de trancher dessus.
+// (Photo ramenée à 1800 px de large et réencodée en JPEG - 244 ko.)
 .cx-page {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(26rem, 1fr);
-}
-
-// --- Volet gauche : la photo ------------------------------------------------
-// La photo d'origine (2262 × 1508, 6,5 Mo) a été ramenée à 1800 px de large et
-// réencodée en JPEG — 244 ko. Un écran de connexion ne justifie pas de faire
-// télécharger six mégaoctets avant d'afficher deux champs.
-//
-// Cadrée à droite : le sujet — les colonnes de distillation — se trouve dans
-// la moitié droite de la prise de vue. Centrée, elle se serait fait couper par
-// le volet de saisie sur les écrans étroits.
-.cx-visuel {
   position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background-color: #f7f9fc;
   background-image: url('../../../assets/raffinerie.jpg');
-  background-repeat: no-repeat;
-  background-position: center right;
+  background-position: center;
   background-size: cover;
+  background-repeat: no-repeat;
+
+  // Voile blanc bleuté - le gris clair des pages et le blanc de la carte -,
+  // plus dense au centre, où se tient le formulaire, que sur les bords.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        ellipse 55% 65% at 50% 50%,
+        rgba(255, 255, 255, 0.5) 0%,
+        rgba(247, 249, 252, 0.38) 55%,
+        rgba(241, 245, 249, 0.22) 100%
+      );
+    backdrop-filter: blur(1.5px);
+    -webkit-backdrop-filter: blur(1.5px);
+    pointer-events: none;
+  }
 }
 
-// Voile sombre en pied de photo : sans lui, la signature blanche tomberait sur
-// l'herbe et la route, où elle se perdrait.
-.cx-visuel::after {
-  content: '';
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 45%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0));
-  pointer-events: none;
-}
-
-// Alignée sur le bord droit de la photo, donc sur la couture avec le volet de
-// saisie : la signature et le formulaire partagent ainsi le même axe, et le
-// regard descend d'un bloc à l'autre sans traverser l'écran.
-.cx-visuel-legende {
-  position: absolute;
+.cx-centre {
+  position: relative;
   z-index: 1;
-  left: 2.5rem;
-  bottom: 2.25rem;
-  right: 2.5rem;
-  text-align: right;
-}
-
-.cx-visuel-societe {
-  color: #fff;
-  font-size: 1.35rem;
-  font-weight: 700;
-  line-height: 1.25;
-  margin: 0;
-}
-
-.cx-visuel-lieu {
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 0.85rem;
-  margin: 0.3rem 0 0;
-}
-
-// --- Volet droit : la saisie ------------------------------------------------
-// Fond blanc plein, sans carte ni ombre : le volet est déjà une surface, y
-// poser une carte reviendrait à encadrer un cadre.
-.cx-panneau {
-  background-color: #fff;
+  width: 100%;
+  max-width: 28rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  gap: 2.25rem;
-  padding: 3rem 2.5rem;
 }
 
-// Tout le contenu du volet s'aligne sur cette largeur : la marque, les champs
-// et le bouton partagent le même bord gauche et le même bord droit.
-.cx-entete,
-.cx-formulaire,
-.cx-pied {
+// --- La carte ---------------------------------------------------------------
+.cx-carte {
   width: 100%;
-  max-width: 22rem;
+  background-color: #fff;
+  border: 1px solid $cx-bordure;
+  border-radius: 0.75rem;
+  box-shadow: 0 20px 40px -16px rgba(16, 24, 40, 0.25);
 }
 
-// Marque en tête, idem .app-navbar : fond blanc, filet dessous. Le filet est
-// tout ce qui la sépare du formulaire — les deux partagent le blanc du volet,
-// comme la barre supérieure et le contenu partagent celui de l'application.
-.cx-entete {
+.cx-carte-entete {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  padding: 2rem 2rem 1.5rem;
   border-bottom: 1px solid $cx-bordure;
-  padding-bottom: 1.1rem;
+  text-align: center;
 }
 
 .cx-logo {
-  height: 30px;
-  flex: 0 0 auto;
+  height: 44px;
+  margin-bottom: 1rem;
   object-fit: contain;
 }
 
-// Rouge SAR, comme dans la barre supérieure. Sur deux lignes si besoin : la
-// carte fait 25 rem, forcer le nom sur une seule le tronquerait.
-//
-// C'est un `h1` : il tient lieu de titre de la page depuis le retrait de
-// « Connexion ». D'où la remise à zéro des marges, qu'un titre porte par
-// défaut et qui décaleraient le logo à côté de lui.
-.cx-institution {
-  color: $cx-rouge;
-  font-size: 0.9rem;
-  font-weight: 700;
-  line-height: 1.3;
+.cx-titre {
   margin: 0;
-  min-width: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: $cx-encre;
 }
 
-// Corps, idem .ddb-formulaire-champs. Le retrait horizontal a disparu : c'est
-// le volet qui l'assure désormais, et le doubler décalait les champs par
-// rapport à la marque au-dessus d'eux.
-.cx-corps {
+.cx-sous-titre {
+  margin: 0.4rem 0 0;
+  font-size: 0.875rem;
+  color: $cx-texte-pale;
+}
+
+// --- Formulaire -------------------------------------------------------------
+.cx-formulaire {
   display: flex;
   flex-direction: column;
-  gap: 2.1rem;
-  padding: 0 0 1rem;
+  gap: 1rem;
+  padding: 1.75rem 2rem 2rem;
 }
 
-// Pied d'action, idem .ddb-formulaire-pied
-.cx-actions {
-  padding-top: 1rem;
-}
-
-// --- Message d'erreur : filet rouge à gauche, pas de pavé coloré ---
+// Message d'erreur : icône d'alerte et texte rouges sur fond rouge pâle.
 .cx-erreur {
-  border-left: 3px solid $cx-rouge;
-  background-color: rgba(229, 38, 33, 0.06);
-  color: #8f1c18;
-  font-size: 0.85rem;
-  line-height: 1.45;
-  padding: 0.7rem 0.85rem;
-  border-radius: 0 0.25rem 0.25rem 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(229, 38, 33, 0.3);
+  border-radius: 0.5rem;
+  background-color: rgba(229, 38, 33, 0.08);
+  color: $cx-rouge;
+
+  svg {
+    flex: 0 0 auto;
+    margin-top: 0.15rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
 }
 
-// --- Champs, idem .ddb-groupe / .ddb-champ ---
 .cx-groupe label {
   display: block;
-  font-size: 0.75rem;
-  color: $cx-texte-doux;
-  margin-bottom: 0.35rem;
-  transition: color 0.15s ease;
-}
-
-.cx-groupe:focus-within label {
-  color: $cx-rouge;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: $cx-encre;
 }
 
 .cx-champ-enveloppe {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border-bottom: 1px solid #d5d9de;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-  &:focus-within {
-    border-bottom-color: $cx-rouge;
-    // Épaissit le trait sans décaler la mise en page.
-    box-shadow: 0 1px 0 0 $cx-rouge;
-  }
+  position: relative;
 }
 
 .cx-champ {
-  flex: 1 1 auto;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  padding: 0 0 0.45rem;
-  font-size: 1rem;
-  line-height: 1.4;
-  color: $cx-noir;
+  display: block;
+  width: 100%;
+  height: 2.9rem;
+  padding: 0 3rem 0 1rem;
+  border: 1px solid $cx-bordure;
+  border-radius: 0.5rem;
+  background-color: $cx-fond-champ;
+  font-size: 0.875rem;
+  color: $cx-encre;
   outline: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 
   &::placeholder {
-    color: #b6bcc3;
+    color: $cx-texte-pale;
+  }
+
+  &:focus {
+    border-color: $cx-rouge;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(229, 38, 33, 0.12);
   }
 }
 
+.cx-champ-erreur {
+  border-color: $cx-rouge;
+}
+
+// Ce que le serveur reproche à ce champ précis : une adresse incomplète, un
+// mot de passe vide.
+.cx-erreur-champ {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: $cx-rouge;
+}
+
+// Icône à droite du champ : l'enveloppe, ou l'œil qui montre le mot de passe.
+.cx-icone {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  display: inline-flex;
+  transform: translateY(-50%);
+  color: $cx-texte-pale;
+  pointer-events: none;
+}
+
 .cx-oeil {
-  flex: 0 0 auto;
+  padding: 0;
   border: 0;
   background: transparent;
-  color: $cx-texte-doux;
-  padding: 0 0 0.4rem;
   line-height: 0;
+  cursor: pointer;
+  pointer-events: auto;
   transition: color 0.12s ease;
 
+  .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
   &:hover {
-    color: $cx-noir;
+    color: $cx-encre;
   }
 
   &:focus-visible {
     outline: 2px solid $cx-rouge;
     outline-offset: 2px;
+    border-radius: 2px;
   }
 }
 
-// --- Action : proportions de .ddb-bouton-enregistrer, en rouge SAR (le vert
-// est réservé à l'enregistrement d'une fiche) et pleine largeur, puisque
-// c'est la seule action de l'écran.
+// --- Action : pleine largeur, rouge plein ------------------------------------
 .cx-bouton {
-  width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 0;
-  border-radius: 0.25rem;
+  width: 100%;
+  height: 3rem;
+  margin-top: 0.5rem;
+  border: 1px solid $cx-rouge;
+  border-radius: 0.5rem;
   background-color: $cx-rouge;
   color: #fff;
   font-size: 0.9rem;
   font-weight: 600;
-  padding: 0.6rem 1.5rem;
-  transition: background-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:hover:not(:disabled) {
-    background-color: #c81f1b;
+    background-color: $cx-rouge-fonce;
+    border-color: $cx-rouge-fonce;
   }
 
   &:disabled {
-    opacity: 0.6;
+    opacity: 0.7;
   }
 
   &:focus-visible {
-    outline: 2px solid $cx-rouge;
-    outline-offset: 2px;
+    outline: none;
+    box-shadow:
+      0 0 0 2px #fff,
+      0 0 0 4px $cx-rouge;
   }
 }
 
-// La mention légale revient sur le blanc du volet : elle reprend donc l'encre
-// douce et perd l'ombre portée qui lui servait à tenir sur la photo.
+// --- Pied de page ------------------------------------------------------------
+// Sur la photo voilée : une encre plus soutenue, détachée d'un halo blanc.
 .cx-pied {
+  margin: 1.5rem 0 0;
   font-size: 0.78rem;
-  color: $cx-texte-doux;
+  font-weight: 600;
+  color: #334155;
   text-align: center;
-  margin: 0;
+  text-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
 }
 
-// -----------------------------------------------------------------------------
-// Écrans étroits — la photo passe en bandeau
-// -----------------------------------------------------------------------------
-// Deux volets côte à côte ne tiennent pas sous 62 rem : la photo passerait
-// sous la barre des 20 rem, où elle ne montrerait plus qu'un bout de ciel. Elle
-// devient un bandeau en tête, assez haut pour rester lisible, et la saisie
-// prend toute la largeur au-dessous.
-@media (max-width: 61.99rem) {
-  .cx-page {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 13rem auto;
+@media (max-width: 575.98px) {
+  .cx-carte-entete {
+    padding: 1.75rem 1.25rem 1.25rem;
   }
 
-  .cx-visuel-legende {
-    left: 1.5rem;
-    right: 1.5rem;
-    bottom: 1.25rem;
-  }
-
-  .cx-visuel-societe {
-    font-size: 1.1rem;
-  }
-
-  .cx-panneau {
-    justify-content: flex-start;
-    padding: 2.25rem 1.5rem 2.5rem;
+  .cx-formulaire {
+    padding: 1.5rem 1.25rem 1.75rem;
   }
 }

@@ -1,0 +1,11 @@
+// ---------------------------------------------------------------------------
+// Lettre de garantie hospitalisation : un champ obligatoire encore vide est
+// cerné de rouge, comme l'écran d'origine borde de rouge Catégorie,
+// Prestataire et Nature prestation tant qu'ils ne sont pas choisis.
+// ---------------------------------------------------------------------------
+
+.ddb-formulaire-lg-hospitalisation .ddb-groupe-requis-vide {
+  .ddb-champ {
+    border-color: rgba(229, 38, 33, 0.55);
+  }
+}

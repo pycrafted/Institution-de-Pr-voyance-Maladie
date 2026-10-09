@@ -74,7 +74,7 @@ class StructureEntiteAdmin(admin.ModelAdmin):
 @admin.register(DemandeAgrement)
 class DemandeAgrementAdmin(admin.ModelAdmin):
     # L'écran ne sert que les demandes en attente : c'est ici que se lit
-    # l'historique des demandes validées — qui, quand, et le fournisseur né.
+    # l'historique des demandes validées - qui, quand, et le fournisseur né.
     list_display = (
         'code',
         'libelle',

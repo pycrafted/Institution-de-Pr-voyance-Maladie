@@ -1,5 +1,6 @@
 """Modèles du module Données de base. Un fichier par référentiel."""
 
+from .acte import Acte
 from .article_achat import ArticleAchat
 from .demande_agrement import DemandeAgrement
 from .fournisseur_de_soins import FournisseurDeSoins
@@ -15,6 +16,7 @@ __all__ = [
     'TypeBeneficiaire',
     'TypePrestation',
     'Specialite',
+    'Acte',
     'ArticleAchat',
     'JournalComptable',
     'Medicament',

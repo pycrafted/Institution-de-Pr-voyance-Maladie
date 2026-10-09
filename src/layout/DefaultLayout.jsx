@@ -21,6 +21,7 @@
 import React from 'react'
 import { AppContent, AppHeader, AppSidebar } from '../components/index'
 import ToastHost from '../components/ToastHost'
+import ApercuPdf from '../components/ApercuPdf'
 
 /**
  * DefaultLayout functional component
@@ -37,17 +38,20 @@ import ToastHost from '../components/ToastHost'
 const DefaultLayout = () => {
   return (
     <>
-      {/* La barre est sortie du wrapper et placée avant le menu : c'est ce qui
-          lui donne toute la largeur de l'écran. CoreUI ne réserve la place du
-          menu qu'aux éléments qui le suivent dans le document — la barre, qui
-          le précède désormais, y échappe, et le wrapper la garde. */}
-      <AppHeader />
+      {/* Le menu d'abord, sur toute la hauteur de l'écran ; la barre supérieure
+          vient après lui, à sa droite, comme dans OpsDigital. CoreUI ne réserve
+          la place du menu qu'aux éléments qui le suivent dans le document : la
+          barre, placée après, la reçoit (--cui-sidebar-occupy-start), comme le
+          wrapper. */}
       <AppSidebar />
+      <AppHeader />
       <div className="wrapper d-flex flex-column">
         <div className="body flex-grow-1 pt-3">
           <AppContent />
         </div>
         <ToastHost />
+        {/* Aperçu des documents imprimés, ouvert par `ouvrirApercu`. */}
+        <ApercuPdf />
       </div>
     </>
   )

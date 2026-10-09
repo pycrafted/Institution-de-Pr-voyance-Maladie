@@ -1,5 +1,6 @@
 """Serializers du module Données de base."""
 
+from .acte import ActeSerializer
 from .article_achat import ArticleAchatSerializer
 from .fournisseur_de_soins import DemandeAgrementSerializer, FournisseurDeSoinsSerializer
 from .fournisseur_divers import FournisseurDiversSerializer
@@ -14,6 +15,7 @@ __all__ = [
     'TypeBeneficiaireSerializer',
     'TypePrestationSerializer',
     'SpecialiteSerializer',
+    'ActeSerializer',
     'ArticleAchatSerializer',
     'JournalComptableSerializer',
     'MedicamentSerializer',

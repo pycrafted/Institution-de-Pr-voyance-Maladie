@@ -23,7 +23,7 @@ export const optionsDe = (col, valeurs = {}, entrees = []) => {
 
 /**
  * Texte d'une option dans une liste déroulante : « 571000 - CAISSE LOCALE ».
- * Une colonne `libelleSeul` n'affiche que l'intitulé — quand le code est une
+ * Une colonne `libelleSeul` n'affiche que l'intitulé - quand le code est une
  * clé interne que l'utilisateur n'a pas à voir (le régime « MSS » se lit
  * « CMM »).
  */
@@ -35,7 +35,7 @@ export const texteOption = (option, col) =>
 /**
  * Intitulé à afficher pour une valeur enregistrée, hors saisie : dans un
  * tableau ou une fiche, `DEP010` doit se lire « Informatique ».
- * Retourne la valeur brute si elle ne correspond à aucune option — une entrée
+ * Retourne la valeur brute si elle ne correspond à aucune option - une entrée
  * ancienne ne doit pas disparaître de l'écran parce que sa cible a été retirée.
  */
 export const libelleValeur = (col, valeur, entree = {}, entrees = []) => {
@@ -54,7 +54,7 @@ export const champRequis = (col, valeurs) =>
 
 /**
  * Report des valeurs proposées après une saisie. Un champ proposé d'après
- * d'autres (`valeurProposee` — le compte d'un adhérent suit son code) suit
+ * d'autres (`valeurProposee` - le compte d'un adhérent suit son code) suit
  * leurs changements tant que l'utilisateur ne l'a pas retouché, c'est-à-dire
  * tant qu'il porte encore la proposition calculée sur les valeurs d'avant.
  * Retouché à la main, il n'est plus jamais écrasé.

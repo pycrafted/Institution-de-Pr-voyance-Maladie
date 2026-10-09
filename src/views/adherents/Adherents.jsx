@@ -1,15 +1,15 @@
 /**
  * Page « Adhérents ».
  *
- * Un adhérent est la collectivité qui cotise — une catégorie de personnel de
- * la SAR, ou une mutuelle — et non une personne : les personnes couvertes sont
+ * Un adhérent est la collectivité qui cotise - une catégorie de personnel de
+ * la SAR, ou une mutuelle - et non une personne : les personnes couvertes sont
  * les participants, qui ont leur propre section.
  *
  * La page ne réécrit rien : elle monte le composant <Referentiel /> de
  * « Données de base », qui sait déjà lister, chercher, paginer, créer,
  * modifier et désactiver à partir d'un simple descripteur. C'est ce qui fait
  * qu'un adhérent se consulte et se saisit exactement comme un fournisseur ou
- * une spécialité — même tableau à en-tête noir, même panneau latéral, mêmes
+ * une spécialité - même tableau à en-tête noir, même panneau latéral, mêmes
  * gestes. Réécrire un écran équivalent aurait garanti l'inverse : deux pages
  * qui se ressemblent de loin et diffèrent de près.
  *

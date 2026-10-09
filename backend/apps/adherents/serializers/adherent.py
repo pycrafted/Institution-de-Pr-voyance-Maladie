@@ -4,7 +4,7 @@ Serializer du référentiel Adhérent.
 Le frontend nomme ses champs en camelCase (« cotisationIpmSalariale »,
 « focalNom »…) ; la base les stocke en snake_case. On mappe les uns sur les
 autres via ``source`` pour préserver le contrat du frontend sans polluer le
-schéma de la base — même parti pris que le fournisseur divers.
+schéma de la base - même parti pris que le fournisseur divers.
 """
 
 from rest_framework import serializers

@@ -1,5 +1,5 @@
 """
-Spécialité — catégorie de fournisseur de soins conventionné, porteuse d'un
+Spécialité - catégorie de fournisseur de soins conventionné, porteuse d'un
 compte 4000xx. C'est ce classement (et non la spécialité médicale académique)
 qui porte le compte comptable.
 """

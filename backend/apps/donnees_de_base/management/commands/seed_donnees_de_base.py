@@ -5,9 +5,13 @@ Reprend les valeurs initiales du frontend (services/referentiels.js) pour que
 l'API serve d'emblée les mêmes données. Idempotent : relançable sans doublon.
 """
 
+import json
+from pathlib import Path
+
 from django.core.management.base import BaseCommand
 
 from donnees_de_base.models import (
+    Acte,
     ArticleAchat,
     FournisseurDeSoins,
     FournisseurDivers,
@@ -29,72 +33,114 @@ TYPES_BENEFICIAIRES = [
     'AUTRE',
 ]
 
-# Actes médicaux remboursables. Compte = 6020 + code (sur deux chiffres).
+# Natures de prestation, reprises à l'identique de LAMPS (plan comptable réel,
+# comptes 602xx). Numérotation avec ses trous d'origine. Compte = 6020 + code.
 TYPES_PRESTATIONS = [
-    'VISITE',
-    'ANALYSES BIO-MEDICALES',
-    'RADIOLOGIE',
-    'SEJOUR HOSPITAL-CLINIQUE',
-    'OPTIQUE',
-    'CONSULTATION DENTAIRE',
-    'PHARMACIE',
-    'CONSULTATION GYNÉCOLOGIE',
-    'ACCOUCHEMENT-MATERNITE',
-    'KINESITHERAPIE',
-    'CONSULTATION SPECIALISTE',
-    'ECHOGRAPHIE',
-    'SCANNER',
-    'IMAGERIE PAR RESONANCE MAGNETIQUE',
-    'ELECTROCARDIOGRAMME',
-    'CHIRURGIE AMBULATOIRE',
-    'CHIRURGIE LOURDE',
-    'PROTHESE DENTAIRE',
-    'ORTHODONTIE',
-    'VERRES CORRECTEURS',
-    'MONTURE OPTIQUE',
-    'LENTILLES DE CONTACT',
-    'SOINS INFIRMIERS',
-    'TRANSPORT SANITAIRE',
-    'EVACUATION SANITAIRE',
-    'HOSPITALISATION DE JOUR',
-    'VACCINATION',
-    'BILAN DE SANTE',
-    'PROTHESE AUDITIVE',
-    'APPAREILLAGE ORTHOPEDIQUE',
+    ('00', 'VISITE'),
+    ('01', 'ANALYSES BIO-MEDICALES'),
+    ('02', 'RADIOLOGIE'),
+    ('03', 'SEJOUR HOSPITAL-CLINIQUE'),
+    ('04', 'OPTIQUE'),
+    ('05', 'CONSULTATION DENTAIRE'),
+    ('06', 'PHARMACIE'),
+    ('07', 'CONSULTATION GYNÉCOLOGIE'),
+    ('08', 'ACCOUCHEMENT-MATERNITE'),
+    ('09', 'CONSULTATION PÉDIATRIE'),
+    ('10', 'CONSULTATION DERMATOLOGIE'),
+    ('11', 'CONSULTATION CARDIOLOGIE'),
+    ('12', 'CONSULTATION GASTROLOGIE-ENDOSCOPIE'),
+    ('13', 'CONSULTATION OPHTALMOLOGIE'),
+    ('14', 'ECHOGRAPHIE'),
+    ('15', 'CONSULTATION O.R.L'),
+    ('16', 'CONSULTATION CHIRURGIE'),
+    ('17', 'TRANSPORT MALADES'),
+    ('18', 'CONSULTATION NEUROLOGIE'),
+    ('19', 'CONSULTATION RHUMATOLOGIE/ORTHOPEDIE'),
+    ('20', 'CONSULTATION UROLOGIE'),
+    ('21', 'CONSULTATION PNEUMO-ALLERGOLOGIE'),
+    ('22', 'SCANNER'),
+    ('23', 'EVACUATION SANITAIRE EXT.'),
+    ('24', 'IRM'),
+    ('25', 'CONSULTATION ONCOLOGIE'),
+    ('26', 'CONSULTATION ORTHOPEDIE'),
+    ('27', 'ENDOCRINOLOGIE'),
+    ('28', 'CONSULTATION PSYCHIATRIE'),
+    ('29', 'NEO NATALOGIE'),
+    ('30', 'SOINS GENERALISTES'),
+    ('31', 'SOINS DENTAIRES'),
+    ('32', 'SOINS / GYNECOLOGIE'),
+    ('33', 'SOINS / PEDIATRIE'),
+    ('34', 'SOINS / DERMATOLOGIE'),
+    ('35', 'SOINS CARDIOLOGIE'),
+    ('36', 'SOINS / GASTROLOGIE - ENDOSCOPIE'),
+    ('37', 'SOINS / OPHTALMOLOGIE'),
+    ('38', 'SOINS / NEUROLOGIE'),
+    ('39', 'SOINS / RHUMATOLOGIE'),
+    ('40', 'SOINS / UROLOGIE'),
+    ('41', 'SOINS / PNEUMO-ALLERGOLOGIE'),
+    ('42', 'SOINS / PSYCHIATRIE'),
+    ('43', 'SOINS / O.R.L.'),
+    ('44', 'ACTES OPERATOIRES'),
+    ('45', 'SEANCES D’ORTHOPHONIE'),
+    ('46', 'SOINS ONCOLOGIE'),
+    ('47', 'SEANCES DE KINESI'),
+    ('48', 'CONSULTATION ORTHOPHONIE'),
+    ('49', 'CONSULTATION ETIOPATHIE'),
+    ('50', 'CONSULTATION PODOLOGIE'),
+    ('51', 'CONSULTATION NEPHROLOGIE'),
+    ('52', 'SEANCES DE DIALYSE'),
+    ('53', 'AUDIOPROTHESISTE'),
+    ('54', 'HEMATOLOGIE'),
+    ('55', 'HOSPITALISATION ADHERENT MUTUELLE'),
+    ('56', 'consultation'),
+    ('57', 'SEANCES DE KINESI'),
+    ('58', 'SEANCES DE REEDUCATION'),
+    ('59', 'MAMMOGRAPHIE'),
+    ('91', 'FACTURES A RECEVOIR IPM'),
+    ('92', 'FACTURES A RECEVOIR CMMC'),
+    ('99', 'SOINS DIVERS'),
 ]
 
-# Catégories de fournisseurs de soins conventionnés. Compte = 4000 + code.
+# Spécialités des fournisseurs de soins, reprises à l'identique de LAMPS
+# (plan comptable réel, comptes 400xx). Compte = 4000 + code.
 SPECIALITES = [
-    'GENERALISTES',
-    'BIOLOGISTES',
-    'RADIOLOGUES',
-    'HOPITAUX',
-    'OPTIQUE MEDICALE',
-    'CHIRURGIENS DENTISTES',
-    'PHARMACIES',
-    'GYNECOLOGUES',
-    'CLINIQUES',
-    'CARDIOLOGUES',
-    'DERMATOLOGUES',
-    'PEDIATRES',
-    'OPHTALMOLOGUES',
-    'OTO-RHINO-LARYNGOLOGISTES',
-    'NEUROLOGUES',
-    'PSYCHIATRES',
-    'RHUMATOLOGUES',
-    'GASTRO-ENTEROLOGUES',
-    'PNEUMOLOGUES',
-    'UROLOGUES',
-    'NEPHROLOGUES',
-    'ENDOCRINOLOGUES',
-    'CHIRURGIENS',
-    'ORTHOPEDISTES',
-    'ANESTHESISTES',
-    'KINESITHERAPEUTES',
-    'SAGES-FEMMES',
-    'INFIRMIERS',
-    'LABORATOIRES D’ANALYSES',
-    'CENTRES DE SANTE',
+    ('00', 'GENERALISTES'),
+    ('01', 'BIOLOGISTES'),
+    ('02', 'RADIOLOGUES'),
+    ('03', 'HOPITAUX'),
+    ('04', 'OPTIQUE MEDICALE'),
+    ('05', 'CHIRURGIENS DENTISTES'),
+    ('06', 'PHARMACIES'),
+    ('07', 'GYNECOLOGUES'),
+    ('08', 'CLINIQUES'),
+    ('09', 'PEDIATRES'),
+    ('10', 'DERMATOLOGUES'),
+    ('11', 'CARDIOLOGUES'),
+    ('12', 'GASTEROLOGUES'),
+    ('13', 'OPHTALMOLOGUES'),
+    ('14', 'ALLERGOLOGUES'),
+    ('15', 'ORL'),
+    ('16', 'CHIRURGIENS'),
+    ('17', 'TRANSPORT DE MALADES'),
+    ('18', 'NEUROLOGUES'),
+    ('19', 'RHUMATOLOGUES/ORTHOPEDISTES'),
+    ('20', 'UROLOGUES'),
+    ('21', 'PNEUMOLOGUES'),
+    ('22', 'ORTHOPHONISTE'),
+    ('23', 'PODOLOGUES'),
+    ('25', 'ONCOLOGUES'),
+    ('26', 'ORTHOPEDISTES'),
+    ('27', 'ENDOCRINOLOGUES'),
+    ('28', 'PSYCHIATRES'),
+    ('40', 'AUTRES FOURNISSEURS'),
+    ('47', 'KINESITHERAPEUTES'),
+    ('49', 'ETHIOPATHES'),
+    ('51', 'NEPHROLOGUES'),
+    ('52', 'DIALYSE'),
+    ('53', 'AUDIOPROTHESISTE'),
+    ('54', 'CENTRES DE SANTE'),
+    ('98', 'VALIDATION IPM'),
+    ('99', 'FOURN. DIVERS SOINS MDX'),
 ]
 
 # Articles d'achat, repris de l'application d'origine : [code, désignation,
@@ -119,16 +165,34 @@ ARTICLES_ACHAT = [
 
 # Journaux comptables : [code, libellé, type, compte]. Type et compte
 # facultatifs (avoirs, clôture…). Codes classés comme des chaînes.
+# Les 32 journaux de l'application d'origine, repris à l'identique de sa table
+# `journaux` (code, libellé, type, compte de rattachement). Beaucoup n'ont ni
+# type ni compte - c'est le cas réel, on ne l'invente pas. Le journal « IF »
+# (imputation facture) est de type RETENUE ; les cotisations portent des
+# comptes de produits 701xxx ; les banques vont de B1 à B10 (521xxx).
 JOURNAUX_COMPTABLES = [
-    ['01', 'JOURNAL CAISSE SIEGE', 'CAISSE', '571100'],
+    ['IF', 'IMPUTATION FACTURE', 'RETENUE', ''],
+    ['RAN', 'REPORT A NOUVEAU', 'REPORT', ''],
+    ['RIB', 'REMBOURSEMENT PAR BANQUE', '', ''],
+    ['RIC', 'REMBOURSEMENT PAR COMPENSE', '', ''],
+    ['OM', 'ORANGE MONEY', 'TRANSFERT', '571200'],
+    ['RP', 'REMBT FRAIS MEDICAUX PARTICIPANT', '', ''],
+    ['SAL', 'JOURNAL DES SALAIRES', '', ''],
+    ['RA', 'JOURNAL DES REMBOURSEMENTS ASSURANCES', '', ''],
     ['02', 'JOURNAL CAISSE LOCALE', 'CAISSE', '571000'],
-    ['03', 'JOURNAL CAISSE ANTENNE NORD', 'CAISSE', '571200'],
-    ['AC', 'JOURNAL DES ACHATS', 'ACHAT', '401000'],
-    ['AV', 'JOURNAL AVOIR', '', ''],
+    ['OD', 'JOURNAL DES OPERATIONS DIVERSES', '', ''],
+    ['FG', 'JOURNAL DES FRAIS GENERAUX', 'ACHAT', ''],
+    ['OP', 'ORDRE DE PAIEMENT', '', ''],
+    ['C500', 'COTISATION SALARIALE IPM', 'COTISATION', '701500'],
+    ['C510', 'COTISATION SALARIALE CSM', 'COTISATION', '701510'],
+    ['C530', 'COTISATION SALARIALE CMMC', 'COTISATION', '701530'],
+    ['C651', 'COTISATION CMMCR', 'COTISATION', '701651'],
+    ['C662', 'COTISATION MSRNC-SAR', 'COTISATION', '701662'],
+    ['C900', 'COTISATION PATRONALE IPM', 'COTISATION', '701900'],
+    ['C910', 'COTISATION PATRONALE CSM', 'COTISATION', '701910'],
+    ['C920', 'COTISATION PATRONALE CSM', 'COTISATION', '701920'],
+    ['C930', 'COTISATION PATRONALE CMMC', 'COTISATION', '701930'],
     ['B1', 'CREDIT DU SENEGAL IPM', 'BANQUE', '521100'],
-    ['B10', 'ECOBANK MSRNC', 'BANQUE', '521610'],
-    ['B11', 'BICIS IPM', 'BANQUE', '521620'],
-    ['B12', 'SGBS IPM', 'BANQUE', '521630'],
     ['B2', 'CREDIT DU SENEGAL CMMC', 'BANQUE', '521200'],
     ['B3', 'CREDIT DU SENEGAL CSM', 'BANQUE', '521300'],
     ['B4', 'ECOBANK IPM', 'BANQUE', '521400'],
@@ -137,19 +201,8 @@ JOURNAUX_COMPTABLES = [
     ['B7', 'ECOBANK IPM FONCTIONNEMENT', 'BANQUE', '521700'],
     ['B8', 'ECOBANK CMMC FONCTIONNEMENT', 'BANQUE', '521800'],
     ['B9', 'ECOBANK CSM', 'BANQUE', '521900'],
-    ['C1', 'JOURNAL DES COTISATIONS IPM', 'COTISATION', '431100'],
-    ['C2', 'JOURNAL DES COTISATIONS CMMC', 'COTISATION', '431200'],
-    ['C3', 'JOURNAL DES COTISATIONS CSM', 'COTISATION', '431300'],
-    ['OD', 'OPERATIONS DIVERSES', '', '471000'],
-    ['R1', 'JOURNAL DES RETENUES SALAIRE', 'RETENUE', '422100'],
-    ['R2', 'JOURNAL DES RETENUES PRESTATIONS', 'RETENUE', '422200'],
-    ['RP', 'JOURNAL DE REPORT A NOUVEAU', 'REPORT', '120001'],
-    ['T1', 'TRANSFERT INTER-CAISSES', 'TRANSFERT', '585100'],
-    ['T2', 'TRANSFERT INTER-BANQUES', 'TRANSFERT', '585200'],
-    ['V1', 'JOURNAL DES PRESTATIONS', 'ACHAT', '602000'],
-    ['V2', 'JOURNAL DES REMBOURSEMENTS', 'ACHAT', '602100'],
-    ['V3', 'JOURNAL DES SINISTRES', 'ACHAT', '602200'],
-    ['ZZ', 'JOURNAL DE CLOTURE', '', '471200'],
+    ['B10', 'ECOBANK MSRNC', 'BANQUE', '521610'],
+    ['AV', 'JOURNAL AVOIR', '', ''],
 ]
 
 # Catalogue pharmaceutique. Les treize premières lignes sont relevées de
@@ -198,6 +251,27 @@ _MEDICAMENTS_PRESENTATIONS = [
 ]
 
 
+def _actes():
+    """
+    Nomenclature des actes (hors pharmacie) relevée dans LAMPS, lue dans le
+    fichier de données partagé avec la commande ``importer_actes``.
+    """
+    fichier = Path(__file__).resolve().parents[2] / 'data' / 'actes.json'
+    with open(fichier, encoding='utf-8-sig') as flux:
+        return [
+            {
+                'code': str(a.get('code', '')).strip(),
+                'libelle': str(a.get('libelle', '')).strip(),
+                'specialite': str(a.get('specialite', '')).strip(),
+                'tarif': int(a.get('tarif') or 0),
+                'exclus': bool(a.get('exclus', False)),
+                'taux': int(a.get('taux') or 0),
+            }
+            for a in json.load(flux)
+            if str(a.get('code', '')).strip()
+        ]
+
+
 def _medicaments():
     """Reproduit à l'identique le catalogue engendré côté frontend."""
     lignes = [list(paire) for paire in _MEDICAMENTS_RELEVES]
@@ -223,40 +297,25 @@ def _medicaments():
     return entrees
 
 
-# Fournisseurs divers : [compte, intitulé, adresse, téléphone]. Le reste de la
-# fiche (email, banque…) est vide au départ, comme dans l'application d'origine.
+# Fournisseurs divers : [compte, intitulé, adresse, téléphone], repris à
+# l'identique de LAMPS (comptes 401xxx du plan comptable réel).
 FOURNISSEURS_DIVERS = [
     ['401001', 'RECEVEUR DES POSTES / DAKAR COLIS POSTAUX', 'AVENUE MALICK SY / DAKAR', ''],
-    ['401003', 'SENEGALAISE DE LIMPRIMERIE', '51 RUE ST MICHEL EX DR. THEZE', '33 821 45 707'],
-    ['401004', 'B.I.C. BUREAUTIQUE', '21 RUE MOUSSE X ESCARFAIT', '33 822 13 08'],
-    ['401005', 'IMPRIMERIE SAINT - PAUL', '4, RUE ELH MBAYE GUEYE X RUE ST-MICHEL', ''],
-    ['401006', 'A2SM INFORMATIQUE', 'KM 3,5 BLD DU CENTENAIRE DAKAR', '33 832 09 44'],
-    ['401007', 'G-DIS/ GALAS DISTRIBUTION INTERNATIONALE ET SERVICES',
-     'USINE BEN TALLY VILLA N2469 BP 10892', ''],
-    ['401008', 'BUROTIC DIFFUSION', 'RUE HUART X A. LE DANTEC BP 3749 - DAKAR', '33 823 71 20'],
-    ['401011', 'SONATEL', '', '33 839 10 10'],
-    ['401012', 'MASTER OFFICE /ESPACE SA', '27, Avenue G. POMPIDOU - DAKAR', '33 889 44 44'],
-    ['401014', 'SDE', 'Centre de Hann, Route du Front de Terre, BP 224', '33 839 37 37'],
-    ['401015', 'SENELEC', '28, rue Vincens, BP 93 Dakar; Sénégal', '33 839 30 30'],
+    ['401003', 'SENEGALAISE DE LIMPRIMERIE', '51 RUE ST MICHEL EX DR. THEZE', ''],
+    ['401004', 'B.I.C. BUREAUTIQUE', '21 RUE MOUSSE X ESCARFAIT', ''],
+    ['401005', 'IMPRIMERIE SAINT - PAUL', '4, RUE ELH MBAYE GUEYE X RUE ST -MICHEL DAKAR', ''],
+    ['401006', 'A2SM INFORMATIQUE', 'KM 3,5 BLD DU CENTENAIRE DAKAR', ''],
+    ['401007', 'G-DIS/ GALAS DISTRIBUTION INTERNATIONALE ET SERVICES', 'USINE BEN TALLY VILLA N2469 BP 10892 HLM5 DAKAR', ''],
+    ['401008', 'BUROTIC DIFFUSION', 'RUE HUART X A. Le DANTEC BP 3749 - DAKAR', ''],
+    ['401011', 'SONATEL', '', ''],
+    ['401012', 'MASTER OFFICE /ESPACE SA', '27, Avenue G. POMPIDOU - DAKAR', ''],
+    ['401014', 'SDE', 'Centre de Hann, Route du Front de Terre, BP : 224 Dakar (Sénégal)', '338393705'],
+    ['401015', 'SENELEC', '28, rue Vincens, BP 93 Dakar; Sénégal', ''],
     ['401017', 'SENEGALAISE DE DISTRIBUTION ET D’IMPRESSION', 'LIBERTE 6 EXT VILLA 35', ''],
     ['401018', 'IMPRIMERIE MBOUP ET FILS', 'GUEDIAWAYE DAKAR', ''],
-    ['401019', 'SIPREX SARL', '48 RUE MOUHAMED V', '33 821 09 91'],
+    ['401019', 'SIPREX SARL', '48 RUE MOUHAMED V', ''],
     ['401020', 'AMERICAN HOSPITAL OF PARIS', '63, boulevard victor hugo', ''],
-    ['401021', 'ORANGE SENEGAL', 'ROUTE DES ALMADIES - DAKAR', '33 859 90 00'],
-    ['401022', 'SENEGALAISE DE L’AUTOMOBILE', 'KM 2,5 BLD DU CENTENAIRE - DAKAR', '33 849 60 60'],
-    ['401023', 'CFAO MOTORS SENEGAL', 'KM 2,5 BLD DU CENTENAIRE - DAKAR', '33 839 99 99'],
-    ['401024', 'ELTON OIL COMPANY', 'ZONE INDUSTRIELLE - DAKAR', '33 869 15 15'],
-    ['401025', 'VIVO ENERGY SENEGAL', '01 PLACE DE L’INDEPENDANCE - DAKAR', '33 839 12 12'],
-    ['401026', 'BUREAU VERITAS SENEGAL', 'ZONE PORTUAIRE - DAKAR', '33 849 44 00'],
-    ['401027', 'DELTA SECURITE', 'SACRE COEUR 3 - DAKAR', '33 867 22 33'],
-    ['401028', 'NETTOYAGE PRO SERVICES', 'GRAND YOFF - DAKAR', '33 855 10 10'],
-    ['401029', 'LIBRAIRIE CLAIRAFRIQUE', '2 RUE SANDINIERY - DAKAR', '33 822 21 69'],
-    ['401030', 'PAPETERIE MODERNE', 'AVENUE LAMINE GUEYE - DAKAR', ''],
-    ['401031', 'POLYKROME', 'ZONE INDUSTRIELLE SODIDA - DAKAR', '33 869 77 77'],
-    ['401032', 'GRAPHIPLUS', 'MERMOZ - DAKAR', ''],
-    ['401033', 'AIR SENEGAL', 'AIBD - DIASS', '33 865 00 00'],
-    ['401034', 'DAKAR DEM DIKK', 'THIAROYE - DAKAR', '33 834 00 00'],
-    ['401035', 'HOTEL TERROU-BI', 'BOULEVARD MARTIN LUTHER KING - DAKAR', '33 839 90 39'],
+    ['401021', 'GUSTAVE ROUSS', '114, RUE EDOUARD-VAILLANT 94805 VILLE JUIF CEDEX-FRANCE', ''],
 ]
 
 
@@ -429,7 +488,8 @@ def _fournisseurs_de_soins():
         contact = i % 4 == 0
         lignes.append(
             {
-                'code': f'{i + 1:03d}',
+                # Quatre chiffres, comme l'application d'origine (« 0001 »).
+                'code': f'{i + 1:04d}',
                 'libelle': libelle,
                 'specialite': specialites[code_specialite],
                 'adresse': adresse,
@@ -474,16 +534,16 @@ class Command(BaseCommand):
             'Types de prestation',
             TypePrestation,
             [
-                {'code': f'{i:02d}', 'libelle': libelle, 'compte': f'6020{i:02d}'}
-                for i, libelle in enumerate(TYPES_PRESTATIONS)
+                {'code': code, 'libelle': libelle, 'compte': f'6020{code}'}
+                for code, libelle in TYPES_PRESTATIONS
             ],
         )
         self._seed(
             'Spécialités',
             Specialite,
             [
-                {'code': f'{i:02d}', 'libelle': libelle, 'compte': f'4000{i:02d}'}
-                for i, libelle in enumerate(SPECIALITES)
+                {'code': code, 'libelle': libelle, 'compte': f'4000{code}'}
+                for code, libelle in SPECIALITES
             ],
         )
         # Purge des anciennes lignes génériques (codes 0001…, sans préfixe ART)
@@ -508,6 +568,7 @@ class Command(BaseCommand):
             ],
         )
         self._seed('Médicaments', Medicament, _medicaments())
+        self._seed('Actes', Acte, _actes())
         self._seed(
             'Fournisseurs divers',
             FournisseurDivers,

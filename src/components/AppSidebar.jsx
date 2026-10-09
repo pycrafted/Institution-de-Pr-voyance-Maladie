@@ -7,8 +7,6 @@
  * - Redux-controlled visibility state
  * - Light color scheme
  * - Fixed positioning, starting below the full-width top bar
- * - Session actions (settings, sign-out) pinned to the bottom, mirroring the
- *   icon pair in the top bar
  *
  * @component
  * @example
@@ -20,9 +18,8 @@
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { CSidebar, CSidebarFooter } from '@coreui/react'
+import { CSidebar } from '@coreui/react'
 import { AppSidebarNav } from './AppSidebarNav'
-import AppSidebarActions from './AppSidebarActions'
 
 // sidebar nav config
 import navigation from '../_nav'
@@ -45,20 +42,16 @@ const AppSidebar = () => {
   return (
     <CSidebar
       className="border-end"
-      colorScheme="light"
+      colorScheme="dark"
       position="fixed"
       visible={sidebarShow}
       onVisibleChange={(visible) => {
         dispatch({ type: 'set', sidebarShow: visible })
       }}
     >
+      {/* Le menu ne porte que la navigation : les réglages et la déconnexion
+          se tiennent dans la barre du haut. */}
       <AppSidebarNav items={navigation} />
-
-      {/* Séparé de la navigation par un filet : ces deux entrées ne mènent pas
-          à une section du dossier, elles concernent la session. */}
-      <CSidebarFooter className="app-sidebar-pied">
-        <AppSidebarActions />
-      </CSidebarFooter>
     </CSidebar>
   )
 }

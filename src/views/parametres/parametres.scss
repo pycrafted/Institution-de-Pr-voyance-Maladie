@@ -1,0 +1,320 @@
+// =============================================================================
+// Paramètres - ce que les autres pages ne portent pas déjà
+// =============================================================================
+// La page reprend le style des listes (donnees-de-base.scss) : barre d'outils,
+// tableau, formulaires à libellé posé sur le cadre. Ne restent ici que les
+// pièces qui lui sont propres - les onglets de tête, le logo de l'IPM, sa
+// fiche d'informations et le plan.
+
+$prm-rouge: #e52621;
+$prm-encre: #11151d;
+$prm-bordure: #e8ecf2;
+$prm-doux: #64748b;
+$prm-pale: #94a3b8;
+$prm-fond: #f8fafc;
+$prm-rayon: 0.5rem;
+$prm-ombre: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
+
+// --- Onglets de la page --------------------------------------------------------
+.prm-onglets {
+  display: flex;
+  gap: 0.35rem;
+  margin: -0.35rem 0 1.5rem;
+  border-bottom: 1px solid $prm-bordure;
+  overflow-x: auto;
+}
+
+.prm-onglet {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  padding: 0.9rem 0.75rem;
+  border-bottom: 2px solid transparent;
+  color: $prm-doux;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    color 0.12s ease,
+    border-color 0.12s ease;
+
+  &:hover {
+    color: $prm-encre;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $prm-rouge;
+    outline-offset: -2px;
+  }
+}
+
+.prm-onglet-actif {
+  color: $prm-encre;
+  border-bottom-color: $prm-rouge;
+}
+
+// --- Formulaires ----------------------------------------------------------------
+// Deux ou trois colonnes de champs, à la façon des fiches des autres pages.
+.prm-colonnes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.35rem 1.5rem;
+  align-items: start;
+}
+
+.prm-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+  min-width: 0;
+}
+
+.prm-trois-colonnes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.35rem 1.5rem;
+}
+
+// Le nom de la société, sous le titre de la saisie exceptionnelle.
+.prm-societe {
+  margin: 0.3rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: $prm-rouge;
+}
+
+// Un bouton seul, aligné à droite.
+.prm-ligne-bouton {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+// Intertitre d'une colonne de saisie : « Contact », « Position Géographique ».
+.prm-sous-entete {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.25rem 0 -0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $prm-encre;
+
+  &::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    background-color: $prm-bordure;
+  }
+}
+
+// --- Informations générales ------------------------------------------------------
+.prm-deux-colonnes {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.prm-identite {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.prm-logo-cadre {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 12rem;
+  height: 9rem;
+  padding: 1.25rem;
+  border: 1px solid $prm-bordure;
+  border-radius: $prm-rayon;
+  background-color: #fff;
+  box-shadow: $prm-ombre;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  .ddb-action {
+    position: absolute;
+    right: 0.4rem;
+    bottom: 0.4rem;
+  }
+}
+
+.prm-donnees {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1.25rem 2rem;
+}
+
+.prm-donnee {
+  margin: 0;
+  min-width: 0;
+}
+
+.prm-donnee-libelle {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $prm-pale;
+  margin-bottom: 0.25rem;
+}
+
+.prm-donnee-valeur {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: $prm-encre;
+  word-break: break-word;
+}
+
+.prm-muet {
+  color: $prm-pale;
+}
+
+.prm-plan {
+  border: 1px solid $prm-bordure;
+  border-radius: $prm-rayon;
+  overflow: hidden;
+  box-shadow: $prm-ombre;
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 420px;
+    border: 0;
+  }
+}
+
+// --- Écran encore vide (onglet sans capture d'origine) ---------------------------
+.prm-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 4rem 1.5rem;
+  text-align: center;
+  color: $prm-doux;
+  background-color: $prm-fond;
+  border: 1px solid $prm-bordure;
+  border-radius: $prm-rayon;
+}
+
+.prm-vide-icone svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  color: $prm-pale;
+}
+
+.prm-vide-titre {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $prm-encre;
+}
+
+.prm-vide-texte {
+  max-width: 26rem;
+  font-size: 0.85rem;
+}
+
+.prm-chargement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3.5rem 1.5rem;
+  color: $prm-doux;
+  font-size: 0.9rem;
+}
+
+/*
+ * Barème incomplet. Le compteur se pose à côté des filtres, la ligne concernée
+ * s'efface : ce n'est pas une erreur, c'est une combinaison qui attend encore
+ * sa décision - et qui, tant qu'elle attend, ne couvre rien.
+ */
+// Titre de la section « Taux exceptionnels » affichée dans la même card.
+.prm-section-titre {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $prm-encre;
+}
+
+.prm-alerte {
+  align-self: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(214, 158, 46, 0.14);
+  color: #8a6116;
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.prm-ligne-a-definir {
+  color: $prm-doux;
+}
+
+.prm-a-definir {
+  color: $prm-doux;
+  font-style: italic;
+}
+
+@media (max-width: 991.98px) {
+  .prm-colonnes,
+  .prm-trois-colonnes,
+  .prm-deux-colonnes,
+  .prm-identite {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .prm-logo-cadre {
+    width: 100%;
+  }
+}
+
+// Dans les panneaux glissants (utilisateurs, taux, infos IPM), plus étroits que
+// la page, les grilles de colonnes s'empilent - sinon les champs y seraient à
+// l'étroit. Les règles ne visent que le panneau, pas la page pleine largeur.
+.ddb-panneau .prm-colonnes,
+.ddb-panneau .prm-identite {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ddb-panneau .prm-trois-colonnes {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+// Gestion des utilisateurs : total à gauche de la barre, case « Compte actif ».
+.prm-total {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.prm-case {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    width: 1rem;
+    height: 1rem;
+    accent-color: #1d1d1b;
+    cursor: pointer;
+  }
+}

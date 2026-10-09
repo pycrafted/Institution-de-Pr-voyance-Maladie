@@ -1,0 +1,175 @@
+// Fiche détaillée d'un fournisseur de soins (cf. FicheFournisseur.jsx) :
+// titre et état en tête, deux colonnes d'informations, plan de l'adresse à
+// droite - la disposition de l'application d'origine.
+$ffs-rouge: #e52621;
+$ffs-vert: #5cb85c;
+$ffs-noir: #1d1d1b;
+$ffs-bordure: #d9dde2;
+$ffs-texte-doux: #6b7280;
+
+.ffs-fiche .modal-content {
+  border: 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.18);
+}
+
+.ffs-entete {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.6rem 1.75rem 0.75rem;
+}
+
+.ffs-titre {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: $ffs-texte-doux;
+}
+
+// Silhouette et lettre d'état : A (actif) sur vert, S (suspendu) sur rouge.
+.ffs-etat {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.2rem;
+  flex: 0 0 auto;
+}
+
+.ffs-etat-icone {
+  width: 2rem;
+  height: 2rem;
+  color: $ffs-texte-doux;
+}
+
+.ffs-etat-lettre {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 0.3rem;
+  background-color: $ffs-vert;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.ffs-etat-suspendu {
+  background-color: $ffs-rouge;
+}
+
+// Deux colonnes d'informations, puis le plan, un peu plus large.
+.ffs-corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 1.25rem 1.75rem;
+  padding: 0.75rem 1.75rem 1.75rem;
+}
+
+.ffs-infos {
+  margin: 0;
+}
+
+.ffs-ligne {
+  display: flex;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: $ffs-noir;
+
+  dt {
+    flex: 0 0 auto;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.ffs-mono {
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.84rem;
+}
+
+.ffs-carte {
+  min-height: 230px;
+  overflow: hidden;
+  border: 1px solid $ffs-bordure;
+  border-radius: 0.25rem;
+  background-color: #f7f8fa;
+
+  iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 230px;
+    border: 0;
+  }
+}
+
+.ffs-pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.75rem 1.25rem;
+  border-top: 1px solid $ffs-bordure;
+}
+
+// Boutons de l'application d'origine (extrait de compte, factures), en rouge
+// atténué car inactifs tant que le module Comptabilité n'existe pas.
+.ffs-actions-compta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.ffs-bouton-compta {
+  border: 0;
+  border-radius: 0.25rem;
+  background-color: $ffs-rouge;
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 0.45rem 1.1rem;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ffs-compta-mention {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: $ffs-texte-doux;
+}
+
+.ffs-fermer {
+  border: 0;
+  border-radius: 0.25rem;
+  background-color: $ffs-noir;
+  color: #fff;
+  font-size: 0.9rem;
+  padding: 0.45rem 1.3rem;
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background-color: #000;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $ffs-rouge;
+    outline-offset: 2px;
+  }
+}
+
+// Écran étroit : informations puis plan, les uns sous les autres.
+@media (max-width: 991.98px) {
+  .ffs-corps {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

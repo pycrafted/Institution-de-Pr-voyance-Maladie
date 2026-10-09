@@ -10,6 +10,16 @@ const FournisseursDeSoins = React.lazy(
 const Adherents = React.lazy(() => import('./views/adherents/Adherents'))
 const Participants = React.lazy(() => import('./views/participants/Participants'))
 const BonsPharmacie = React.lazy(() => import('./views/documents/bons-pharmacie/BonsPharmacie'))
+const LettresGarantie = React.lazy(
+  () => import('./views/documents/lettres-garantie/LettresGarantie'),
+)
+const BonsOptique = React.lazy(() => import('./views/documents/bons-optique/BonsOptique'))
+const Parametres = React.lazy(() => import('./views/parametres/Parametres'))
+const LgHospitalisation = React.lazy(
+  () => import('./views/documents/lg-hospitalisation/LgHospitalisation'),
+)
+const Factures = React.lazy(() => import('./views/traitements/Factures'))
+const Reglements = React.lazy(() => import('./views/traitements/Reglements'))
 const PageAVenir = React.lazy(() => import('./views/a-venir/PageAVenir'))
 
 export const routes = [
@@ -20,6 +30,17 @@ export const routes = [
   { path: '/adherents', name: 'Adhérents', element: Adherents },
   { path: '/participants', name: 'Participants', element: Participants },
   { path: '/documents/bons-pharmacie', name: 'Bons de Pharmacie', element: BonsPharmacie },
+  { path: '/documents/lettres-garantie', name: 'Lettres de Garantie', element: LettresGarantie },
+  { path: '/documents/bons-optique', name: 'Bons Optique', element: BonsOptique },
+  { path: '/parametres', name: 'Paramètres', element: Parametres },
+  {
+    path: '/documents/lg-hospitalisation',
+    name: 'LG Hospitalisation',
+    element: LgHospitalisation,
+  },
+  { path: '/traitements/factures', name: 'Factures', element: Factures },
+  { path: '/traitements/factures/:id', name: 'Traitement facture', element: Factures },
+  { path: '/traitements/reglements', name: 'Règlements', element: Reglements },
 
   // Sections annoncées dans le menu, écran d'attente en attendant leur
   // développement. Retirer l'entrée de pagesAVenir.js et déclarer la vraie

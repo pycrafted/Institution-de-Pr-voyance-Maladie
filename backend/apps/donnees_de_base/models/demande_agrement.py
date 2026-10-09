@@ -3,13 +3,14 @@ Demande d'agrément d'un fournisseur de soins.
 
 Un prestataire n'entre pas directement dans la liste des fournisseurs : il y
 est admis. La demande porte sa fiche complète le temps de l'instruction ; sa
-validation fait naître le fournisseur, qui prend alors le numéro suivant de la
-liste. La demande n'est pas effacée pour autant — elle reste, validée, avec la
-trace de qui l'a acceptée et quand.
+validation fait naître le fournisseur, qui en garde le numéro. La demande
+n'est pas effacée pour autant - elle reste, validée, avec la trace de qui
+l'a acceptée et quand.
 
-Le numéro de demande (« DA0001 ») forme une série distincte de celle des
-fournisseurs : une demande n'est pas encore un fournisseur, et « 070 »
-désignant tantôt l'un tantôt l'autre prêterait à confusion.
+Fournisseurs et demandes partagent une même série de numéros : une demande
+reçoit dès sa création le numéro que portera le fournisseur qu'elle fera
+naître (demande 070 → fournisseur 070). Un numéro ne désigne donc jamais
+deux prestataires différents.
 """
 
 from datetime import date
@@ -27,20 +28,27 @@ class DemandeDejaTraitee(Exception):
     """La demande a été validée entre sa lecture et sa validation."""
 
 
+class NumeroDejaPris(Exception):
+    """Le numéro de la demande a été donné à un fournisseur entre-temps."""
+
+
 class DemandeAgrement(FicheFournisseur):
     EN_ATTENTE = 'en_attente'
     VALIDEE = 'validee'
     STATUTS = [(EN_ATTENTE, 'En attente'), (VALIDEE, 'Validée')]
 
-    PREFIXE = 'DA'
-
     code = models.CharField('Numéro', max_length=10, unique=True)
-    date_demande = models.DateField('Date de la demande', default=date.today)
+    date_demande = models.DateField(
+        'Date de la demande', default=date.today, null=True, blank=True
+    )
 
     specialite = models.ForeignKey(
         Specialite,
         on_delete=models.PROTECT,
         related_name='demandes_agrement',
+        # Facultative, comme sur la fiche du fournisseur qui en naîtra.
+        null=True,
+        blank=True,
         verbose_name='Spécialité',
     )
 
@@ -75,14 +83,8 @@ class DemandeAgrement(FicheFournisseur):
 
     @classmethod
     def prochain_code(cls):
-        """
-        Numéro de la prochaine demande, calculé sur toutes les demandes —
-        validées comprises. L'écran ne voit que celles en attente : s'il
-        calculait lui-même, il reprendrait le numéro d'une demande déjà
-        validée.
-        """
-        rangs = (c[len(cls.PREFIXE) :] for c in cls.objects.values_list('code', flat=True))
-        return f'{cls.PREFIXE}{max((int(r) for r in rangs if r.isdigit()), default=0) + 1:04d}'
+        """Numéro de la prochaine demande : le suivant de la série commune."""
+        return FournisseurDeSoins.prochain_code()
 
     @transaction.atomic
     def valider(self, utilisateur):
@@ -110,8 +112,14 @@ class DemandeAgrement(FicheFournisseur):
         # déjà des numéros propres les garde.
         fiche['telephone'] = self.telephone or self.contact_telephone
         fiche['mobile'] = self.mobile or self.contact_mobile
+        # Le fournisseur garde le numéro de la demande. S'il a été donné
+        # entre-temps à un autre fournisseur, on s'arrête : la transaction rend
+        # la demande à l'attente, le temps d'en changer le numéro.
+        if FournisseurDeSoins.objects.filter(code=self.code).exists():
+            raise NumeroDejaPris(self.code)
+
         fournisseur = FournisseurDeSoins.objects.create(
-            code=FournisseurDeSoins.prochain_code(),
+            code=self.code,
             specialite=self.specialite,
             **fiche,
         )

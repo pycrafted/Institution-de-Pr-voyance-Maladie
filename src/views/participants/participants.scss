@@ -1,26 +1,48 @@
-// Page Participants — barre d'onglets, formulaire de création en pleine page,
-// et champs radio. Reprend le rouge SAR et les tons de « Données de base ».
+// Page Participants - barre d'onglets, formulaire de création dans le panneau
+// glissant, et champs radio. Reprend le rouge SAR et les tons de « Données de base ».
 $prt-rouge: #e52621;
 $prt-bordure: #d9dde2;
 $prt-texte-doux: #6b7280;
-$prt-noir: #1d1d1b;
+$prt-noir: #11151d;
 
 // --- En-tête : titre + onglets ---------------------------------------------
 .prt-entete {
   padding: 1.5rem 1.75rem 0;
 }
 
+// Ligne du titre : « Participants » à gauche, bouton rouge tout à droite.
+.prt-titre-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
 .prt-titre {
-  margin: 0 0 1rem;
+  margin: 0;
   font-size: 1.6rem;
   font-weight: 700;
   color: $prt-noir;
+}
+
+// Titre + pastille du total côte à côte, comme « Structure - Total : 13 » sur
+// Données de base. Le groupe reste à gauche ; le bouton éventuel va à droite.
+.prt-titre-groupe {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .prt-onglets {
   display: flex;
   gap: 2.5rem;
   border-bottom: 1px solid $prt-bordure;
+}
+
+.prt-bouton-nouveau {
+  flex: 0 0 auto;
 }
 
 .prt-onglet {
@@ -42,7 +64,8 @@ $prt-noir: #1d1d1b;
 .prt-onglet-actif {
   color: $prt-noir;
 
-  // Le filet rouge de l'onglet retenu.
+  // Le filet rouge de l'onglet retenu : il se déploie depuis le centre quand on
+  // change d'onglet.
   &::after {
     content: '';
     position: absolute;
@@ -52,27 +75,46 @@ $prt-noir: #1d1d1b;
     height: 3px;
     border-radius: 3px 3px 0 0;
     background: $prt-rouge;
+    transform-origin: center;
+    animation: prt-soulignement 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }
 
-// --- Formulaire de création en pleine page ---------------------------------
-.prt-formulaire-plein {
-  padding: 0.5rem 1.75rem 2rem;
+@keyframes prt-soulignement {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
 }
 
-.prt-formulaire-titre {
-  margin: 0.5rem 0 1.5rem;
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: $prt-noir;
+// Transition de couleur douce entre onglets, et léger survol.
+.prt-onglet {
+  transition: color 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prt-onglet-actif::after {
+    animation: none;
+  }
 }
 
 // --- Champs radio (sexe, type de contrat) ----------------------------------
+// Choix sur une seule ligne par défaut (libellés courts : Homme/Femme,
+// Ouverture/Fermeture…) : la ligne s'aligne proprement avec le champ voisin.
 .ddb-radios {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding-top: 0.3rem;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.35rem 1.35rem;
+  align-items: center;
+  padding-top: 0.45rem;
+}
+
+// Choix côte à côte, sur une seule ligne (type de contrat : CDD  CDI).
+.ddb-radios-en-ligne {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
 }
 
 .ddb-radio {
@@ -88,9 +130,66 @@ $prt-noir: #1d1d1b;
   }
 }
 
+// Un choix radio est lui aussi un <label> : sans ceci, la règle des libellés
+// de champ (`.ddb-groupe label` : bloc, petit texte, marge dessous) l'emportait,
+// et « CDD » ne tenait pas sur la ligne de sa puce. Puce et texte sont ici
+// centrés sur une même ligne, le texte à la taille d'une saisie.
+.ddb-groupe .ddb-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  color: $prt-noir;
+  white-space: nowrap;
+
+  input {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+}
+
 // Astérisque rouge des champs obligatoires, comme la maquette.
 .ddb-requis {
   color: $prt-rouge;
+}
+
+// Champ obligatoire encore vide : trait rouge, comme l'application d'origine
+// qui cerne de rouge ses champs obligatoires. Il redevient gris une fois
+// rempli. Le portable porte son trait sur l'enveloppe du « +221 ». Vaut pour
+// les seuls formulaires à champs obligatoires : la fiche participant, la
+// fiche fournisseur de soins et la demande d'agrément (cette feuille est
+// aussi chargée par la page des fournisseurs de soins).
+.ddb-formulaire-participants .ddb-groupe-requis-vide,
+.ddb-formulaire-fournisseurs-de-soins .ddb-groupe-requis-vide,
+.ddb-formulaire-demandes-agrement .ddb-groupe-requis-vide {
+  // Le cadre entier, depuis que les champs sont encadrés.
+  .ddb-champ,
+  .ddb-champ-enveloppe.ddb-champ-prefixe {
+    border-color: rgba(229, 38, 33, 0.55);
+  }
+}
+
+// --- Fiche participant ouverte dans le panneau latéral ----------------------
+// La fiche est pensée pour la pleine page (« Nouveau Participant IPM »), à
+// trois champs par ligne. Dans le panneau, trois fois moins large, ces lignes
+// débordaient : elles s'y replient sur deux colonnes, le troisième champ
+// passant à la ligne suivante. La fiche gagne en hauteur ce qu'elle perd en
+// largeur, et rien ne dépasse plus à droite.
+.ddb-panneau .ddb-formulaire-participants {
+  // L'en-tête (identité) n'a pas de marge propre : en pleine page, c'est la
+  // page qui la donne. Dans le panneau, il s'aligne sur le cadenas et les
+  // onglets.
+  .ddb-formulaire-entete-champs {
+    padding: 1.75rem 1.35rem 1.5rem;
+  }
+
+  .ddb-ligne-champs[data-colonnes='3'],
+  .ddb-ligne-champs[data-colonnes='4'] {
+    // !important : le nombre de colonnes est posé en ligne par le composant.
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 
 // Bandeau de synthèse au-dessus de la barre d'outils (totaux).

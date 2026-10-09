@@ -1,7 +1,7 @@
 /**
  * Description du référentiel « Adhérents ».
  *
- * Même grammaire que les référentiels de « Données de base » — le fichier
+ * Même grammaire que les référentiels de « Données de base » - le fichier
  * config.js de cette section-là documente chaque option en détail. La page ne
  * réécrit donc aucun composant : elle décrit ses champs et laisse
  * <Referentiel /> faire le reste, ce qui garantit qu'elle se comporte et
@@ -18,8 +18,8 @@
  * unique.
  *
  * Codes de l'application d'origine : la mutuelle y est enregistrée « MSS » et
- * affichée « CMM ». On garde ce code — nos données restent compatibles avec
- * l'ancienne base — mais l'écran ne montre que le libellé, partout : l'original
+ * affichée « CMM ». On garde ce code - nos données restent compatibles avec
+ * l'ancienne base - mais l'écran ne montre que le libellé, partout : l'original
  * affichait « MSS » dans son tableau et « CMM » dans sa liste, deux noms pour
  * une même chose.
  */
@@ -37,6 +37,18 @@ export const ADHERENTS = {
   nouveau: 'Nouvel adhérent',
   modifier: 'Modifier l’adhérent',
 
+  // Barre compacte, comme les données de base : la pastille du total se range à
+  // côté du titre « Adhérents », et le bouton de création rejoint la barre.
+  barreCompacte: true,
+
+  // On modifie en cliquant la ligne (le panneau s'ouvre) : pas de crayon, et la
+  // ligne en cours d'édition se colore en rouge. Comme données de base.
+  modificationParLigne: true,
+
+  // Saisie dans le panneau glissant, comme les autres pages (participants,
+  // fournisseurs…) : le bouton « Nouvel adhérent » l'ouvre pour une création,
+  // le crayon d'une ligne pour une modification.
+
   // La maquette de cette page-ci ne montre que l'export, contrairement à celle
   // des fournisseurs de soins qui porte aussi l'import.
   outils: ['export'],
@@ -45,10 +57,11 @@ export const ADHERENTS = {
   champsSoulignes: true,
 
   // Cases à cocher, comme pour les fournisseurs de soins : suspendre ou
-  // réactiver d'un geste une sélection d'adhérents — un, deux ou tous, par la
+  // réactiver d'un geste une sélection d'adhérents - un, deux ou tous, par la
   // case d'en-tête.
-  selection: true,
   actionsLot: [
+    // Export partiel : seules les lignes cochées partent dans le fichier.
+    { libelle: 'Export Excel', type: 'export' },
     { libelle: 'Réactiver', champs: { actif: true }, message: 'réactivés' },
     {
       libelle: 'Suspendre',
@@ -63,7 +76,7 @@ export const ADHERENTS = {
 
   // Quatre colonnes seulement : de quoi identifier la collectivité et
   // retrouver son compte. Cotisations, seuils et point focal se lisent dans la
-  // fiche — quinze colonnes défilant à l'horizontale ne se lisent pas.
+  // fiche - quinze colonnes défilant à l'horizontale ne se lisent pas.
   colonnesTableau: ['code', 'type', 'libelle', 'compte', 'actif'],
 
   // Le code est séquentiel et attribué par l'application, comme les codes de
@@ -74,7 +87,7 @@ export const ADHERENTS = {
 
   colonnes: [
     {
-      // Proposé par l'application — le numéro suivant — et prérempli dès
+      // Proposé par l'application - le numéro suivant - et prérempli dès
       // l'ouverture d'un « Nouvel adhérent », comme dans l'application
       // d'origine ; mais modifiable, comme le compte qui en découle.
       nom: 'code',
@@ -82,7 +95,6 @@ export const ADHERENTS = {
       libelleForm: 'Code adhérent',
       largeur: '80px',
       mono: true,
-      requis: true,
       unique: true,
       // Deux caractères : la taille du code en base.
       maxLength: 2,
@@ -98,25 +110,22 @@ export const ADHERENTS = {
       // (« MSS »), la liste déroulante le libellé (« CMM »), sans « MSS - CMM ».
       afficherCode: true,
       libelleSeul: true,
-      requis: true,
     },
     {
       nom: 'libelle',
       libelle: 'Libellé',
       libelleForm: 'Libellé adhérent',
-      requis: true,
       majuscules: true,
     },
     {
       // Proposé d'après le code (05 → 463005) et prérempli dès la création,
-      // comme dans l'application d'origine — mais modifiable : la comptabilité
+      // comme dans l'application d'origine - mais modifiable : la comptabilité
       // peut avoir à le corriger.
       nom: 'compte',
       libelle: 'Compte',
       libelleForm: 'Compte',
       largeur: '110px',
       mono: true,
-      requis: true,
       unique: true,
       maxLength: 6,
       valeurProposee: (valeurs) => compteDuCode(valeurs.code),
@@ -124,7 +133,7 @@ export const ADHERENTS = {
     {
       // État de l'adhérent : Actif ou Suspendu. Un adhérent suspendu reste
       // enregistré, simplement mis hors circuit. Affiché en colonne dans le
-      // tableau ; dans le formulaire, seulement en modification — un nouvel
+      // tableau ; dans le formulaire, seulement en modification - un nouvel
       // adhérent est forcément actif, la bascule n'y aurait aucun sens. La
       // modification se reconnaît à l'identifiant de la fiche en base, et non
       // au code, désormais présent dès la création.
@@ -153,29 +162,26 @@ export const ADHERENTS = {
       amorce: '+221 ',
     },
     {
-      // La case porte son propre libellé : l'abréviation de la maquette
-      // d'origine — « Régul. Systèmatique (Frais Mdcx.) » — est écrite en
-      // toutes lettres, une case à cocher se lisant une fois et devant se
-      // comprendre sans décodage.
+      // Libellé repris tel quel de l'application d'origine.
       nom: 'regulSystematique',
-      libelle: 'Régularisation',
-      libelleForm: 'Régularisation systématique des frais médicaux',
+      libelle: 'Régul. Systématique',
+      libelleForm: 'Régul. Systématique (Frais Mdcx.)',
       type: 'booleen',
     },
 
     // --- Cotisations, en francs CFA ---------------------------------------
-    // La part « salariale » est celle du participant, la part « patronale »
-    // celle de la SAR : les libellés le disent en clair, sur le bon champ.
+    // Libellés de l'application d'origine : la part « salariale » est celle du
+    // participant, la part « patronale » celle de la SAR.
     {
       nom: 'cotisationIpmSalariale',
-      libelle: 'Cot. IPM Participant',
-      libelleForm: 'Cotisation IPM Participant',
+      libelle: 'Cot. IPM Salariale',
+      libelleForm: 'Cotisation IPM Salariale',
       type: 'number',
     },
     {
       nom: 'cotisationIpmPatronale',
-      libelle: 'Cot. IPM SAR',
-      libelleForm: 'Cotisation IPM SAR',
+      libelle: 'Cot. IPM Patronale',
+      libelleForm: 'Cotisation IPM Patronale',
       type: 'number',
     },
     {
@@ -188,14 +194,14 @@ export const ADHERENTS = {
     // --- Plafonds de gestion ----------------------------------------------
     {
       nom: 'seuilEndettement',
-      libelle: 'Seuil endettement',
-      libelleForm: 'Seuil endettement',
+      libelle: 'Seuil Endettement',
+      libelleForm: 'Seuil Endettement',
       type: 'number',
     },
     {
       nom: 'seuilConsommation',
-      libelle: 'Seuil consommation',
-      libelleForm: 'Seuil consommation',
+      libelle: 'Seuil Consommation',
+      libelleForm: 'Seuil Consommation',
       type: 'number',
     },
 
@@ -222,23 +228,27 @@ export const ADHERENTS = {
     },
   ],
 
-  // Un seul onglet, disposé comme l'application d'origine : identité et
-  // coordonnées, puis les trois cotisations et les deux seuils en rangées, et
-  // le point focal pour finir.
+  // Disposition aérée, comme la fiche fournisseur : au plus deux champs par
+  // ligne pour que rien ne soit à l'étroit ni tronqué. L'état est isolé sur sa
+  // ligne (la bascule Actif/Suspendu ne s'aligne pas avec des champs de saisie).
   formulaire: [
     {
       libelle: 'Adhérent',
       sections: [
         {
           lignes: [
-            ['code', 'compte', 'type', 'actif'],
+            // L'état (bascule Actif/Suspendu) tout en haut.
+            ['actif'],
+            ['code', 'compte'],
+            ['type', 'regulSystematique'],
             ['libelle'],
             ['adresse'],
-            ['telephone', 'regulSystematique'],
-            // Mutuelle, puis part participant (salariale), puis part SAR
+            ['telephone'],
+            // Mutuelle, puis la part participant (salariale) et la part SAR
             // (patronale) : l'ordre de l'application d'origine.
-            ['cotisationMss', 'cotisationIpmSalariale', 'cotisationIpmPatronale'],
-            ['seuilEndettement', 'seuilConsommation'],
+            ['cotisationMss', 'cotisationIpmSalariale'],
+            ['cotisationIpmPatronale', 'seuilEndettement'],
+            ['seuilConsommation'],
           ],
         },
         {

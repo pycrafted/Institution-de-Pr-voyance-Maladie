@@ -23,3 +23,43 @@ yarn.lock
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Certificats (clés privées) : jamais dans le dépôt.
+pfx/
+
+# ===========================================================================
+# Backend Django
+# ===========================================================================
+# Secrets d'environnement (mot de passe base, SECRET_KEY) ; l'exemple reste.
+backend/.env
+backend/.env.*
+!backend/.env.example
+# Environnement virtuel Python, caches, bases locales et sauvegardes.
+backend/venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.sqlite3.*
+*.bak
+# Modèles PDF (habillage officiel SAR, cachets) : hors dépôt.
+backend/apps/documents/modeles/
+
+# ===========================================================================
+# Données réelles & pièces sensibles - JAMAIS publiées (dépôt public)
+# ===========================================================================
+# Cachet du gérant + en-tête SAR : documents officiels, risque de contrefaçon.
+src/assets/documents/
+# Captures d'écran et doc issues du LAMPS de production (données nominatives).
+docs/lamps/
+# Dumps / exports de base de données.
+*.dump
+*.sql
+# PDF à la racine (modèles et sorties de test parasites).
+/*.pdf
+
+# ===========================================================================
+# PWA (sous-projet ; complété par pwa/.gitignore)
+# ===========================================================================
+pwa/node_modules/
+pwa/dist/
+pwa/dev-dist/

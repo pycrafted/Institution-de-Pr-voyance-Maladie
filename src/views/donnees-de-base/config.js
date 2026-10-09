@@ -74,6 +74,21 @@ import {
 import { PLAN_COMPTABLE } from './planComptable'
 
 /** Natures possibles d'un journal comptable, proposées en liste déroulante. */
+/**
+ * Prochain code libre sur deux chiffres (00–99), en comblant les trous.
+ * L'application d'origine numérote les référentiels sur deux chiffres ; prendre
+ * « le plus grand + 1 » débordait à « 100 » dès que 99 existait (et produisait
+ * un compte à sept chiffres). On rend donc le plus petit code encore libre.
+ */
+export const prochainCodeLibre = (entrees) => {
+  const pris = new Set((entrees || []).map((e) => String(e.code)))
+  for (let n = 0; n < 100; n += 1) {
+    const code = String(n).padStart(2, '0')
+    if (!pris.has(code)) return code
+  }
+  return '' // 00–99 tous pris : on laisse l'utilisateur saisir
+}
+
 export const TYPES_JOURNAL = [
   'CAISSE',
   'TRANSFERT',
@@ -152,7 +167,7 @@ export const REFERENTIELS = [
     /**
      * Codes engendrés : préfixe du segment + rang sur trois chiffres. On repart
      * du plus grand numéro existant pour ne jamais réattribuer un code libéré
-     * par une suppression — un code déjà cité ailleurs ne doit pas resservir.
+     * par une suppression - un code déjà cité ailleurs ne doit pas resservir.
      */
     genererCode: (valeurs, entrees) => {
       const prefixe = valeurs.type
@@ -172,7 +187,6 @@ export const REFERENTIELS = [
         mono: true,
         // Numéroté par l'application et prérempli à la création (le rang
         // suivant), mais modifiable ; unique, à la taille du code en base.
-        requis: true,
         unique: true,
         maxLength: 6,
       },
@@ -180,7 +194,6 @@ export const REFERENTIELS = [
         nom: 'libelle',
         libelle: 'Libellé',
         libelleForm: 'Libellé',
-        requis: true,
         // Seul référentiel dont les libellés ne sont pas en capitales.
       },
       {
@@ -189,7 +202,6 @@ export const REFERENTIELS = [
         libelleForm: 'Type',
         largeur: '110px',
         mono: true,
-        requis: true,
         options: SEGMENTS_STRUCTURE.map((s) => ({ valeur: s.valeur, libelle: s.libelle })),
       },
       {
@@ -200,7 +212,6 @@ export const REFERENTIELS = [
         libelle: 'Rattachement',
         libelleForm: 'Rattaché à',
         visible: (valeurs) => Boolean(typeParent(valeurs.type)),
-        requis: (valeurs) => Boolean(typeParent(valeurs.type)),
         // Changer le type invalide le parent : un département de la DSI n'est
         // pas un rattachement valide pour un service.
         dependDe: 'type',
@@ -224,7 +235,7 @@ export const REFERENTIELS = [
 
     // Rang séquentiel attribué par l'application, comme les autres codes de
     // la section : on repart du plus grand existant, jamais du nombre
-    // d'entrées — un code libéré par une suppression ne doit pas resservir,
+    // d'entrées - un code libéré par une suppression ne doit pas resservir,
     // il est peut-être encore cité dans un dossier.
     genererCode: (valeurs, entrees) =>
       String(entrees.reduce((max, e) => Math.max(max, Number(e.code) || 0), 0) + 1),
@@ -237,7 +248,6 @@ export const REFERENTIELS = [
         mono: true,
         // Numéroté par l'application et prérempli à la création (le rang
         // suivant), mais modifiable ; unique, à la taille du code en base.
-        requis: true,
         unique: true,
         maxLength: 2,
       },
@@ -245,7 +255,6 @@ export const REFERENTIELS = [
         nom: 'libelle',
         libelle: 'Libellé',
         libelleForm: 'Libellé du type',
-        requis: true,
         majuscules: true,
       },
     ],
@@ -261,12 +270,7 @@ export const REFERENTIELS = [
     // Code engendré : simple numéro d'ordre séquentiel sur deux chiffres, à
     // partir du plus grand existant. Le compte, lui, reste saisi : c'est une
     // imputation comptable réelle (OHADA), pas une déduction du code.
-    genererCode: (valeurs, entrees) => {
-      const dernier = entrees
-        .map((e) => Number(e.code) || 0)
-        .reduce((max, n) => Math.max(max, n), -1)
-      return String(dernier + 1).padStart(2, '0')
-    },
+    genererCode: (valeurs, entrees) => prochainCodeLibre(entrees),
 
     colonnes: [
       {
@@ -276,7 +280,6 @@ export const REFERENTIELS = [
         mono: true,
         // Numéroté par l'application et prérempli à la création (le rang
         // suivant), mais modifiable ; unique, à la taille du code en base.
-        requis: true,
         unique: true,
         maxLength: 2,
       },
@@ -284,7 +287,6 @@ export const REFERENTIELS = [
         nom: 'libelle',
         libelle: 'Libellé',
         libelleForm: 'Libellé de la prestation',
-        requis: true,
         majuscules: true,
       },
       {
@@ -293,8 +295,11 @@ export const REFERENTIELS = [
         libelleForm: 'Compte de la prestation',
         largeur: '160px',
         mono: true,
-        requis: true,
         maxLength: 6,
+        // Proposé d'après le code - 6020 + code (602060 pour la nature 60),
+        // comme l'application d'origine - et modifiable.
+        valeurProposee: (valeurs) =>
+          valeurs.code ? `6020${String(valeurs.code).padStart(2, '0')}` : '',
       },
     ],
   },
@@ -308,11 +313,7 @@ export const REFERENTIELS = [
 
     // Rang sur deux chiffres, à la suite du plus grand code existant (00, 01…
     // 31 → 32) : proposé dès la création, modifiable.
-    genererCode: (valeurs, entrees) =>
-      String(entrees.reduce((max, e) => Math.max(max, Number(e.code) || 0), -1) + 1).padStart(
-        2,
-        '0',
-      ),
+    genererCode: (valeurs, entrees) => prochainCodeLibre(entrees),
 
     colonnes: [
       {
@@ -321,7 +322,6 @@ export const REFERENTIELS = [
         libelleForm: 'Code de la spécialité',
         largeur: '90px',
         mono: true,
-        requis: true,
         unique: true,
         maxLength: 2,
       },
@@ -329,19 +329,17 @@ export const REFERENTIELS = [
         nom: 'libelle',
         libelle: 'Spécialité',
         libelleForm: 'Nom de la spécialité',
-        requis: true,
         majuscules: true,
       },
       {
-        // Proposé d'après le code — 4000 + code, soit 400032 pour la
-        // spécialité 32, la règle que suivent les spécialités existantes — et
+        // Proposé d'après le code - 4000 + code, soit 400032 pour la
+        // spécialité 32, la règle que suivent les spécialités existantes - et
         // modifiable. Il suit le code tant qu'on ne l'a pas retouché.
         nom: 'compte',
         libelle: 'Compte',
         libelleForm: 'Compte de la spécialité',
         largeur: '160px',
         mono: true,
-        requis: true,
         maxLength: 6,
         valeurProposee: (valeurs) =>
           valeurs.code ? `4000${String(valeurs.code).padStart(2, '0')}` : '',
@@ -356,9 +354,8 @@ export const REFERENTIELS = [
     nouveau: 'Nouveau médicament',
     modifier: 'Modifier le médicament',
 
-    // Cases à cocher : on agit ici sur plusieurs lignes à la fois — exclure du
+    // Cases à cocher : on agit ici sur plusieurs lignes à la fois - exclure du
     // remboursement, réintégrer ou désactiver une sélection de médicaments.
-    selection: true,
     actionsLot: [
       { libelle: 'Exclure', champs: { exclus: true }, message: 'exclus du remboursement' },
       { libelle: 'Réintégrer', champs: { exclus: false }, message: 'réintégrés' },
@@ -384,7 +381,6 @@ export const REFERENTIELS = [
         libelleForm: 'Code médicament',
         largeur: '110px',
         mono: true,
-        requis: true,
         unique: true,
         maxLength: 7,
       },
@@ -392,7 +388,6 @@ export const REFERENTIELS = [
         nom: 'libelle',
         libelle: 'Libellé',
         libelleForm: 'Libellé médicament',
-        requis: true,
         majuscules: true,
       },
       {
@@ -460,7 +455,6 @@ export const REFERENTIELS = [
         mono: true,
         // Numéroté par l'application et prérempli à la création (le rang
         // suivant), mais modifiable ; unique, à la taille du code en base.
-        requis: true,
         unique: true,
         maxLength: 7,
       },
@@ -468,7 +462,6 @@ export const REFERENTIELS = [
         nom: 'libelle',
         libelle: 'Designation',
         libelleForm: 'Designation de l’article',
-        requis: true,
         // Casse normale, comme à l'écran d'origine (pas de mise en capitales).
       },
       {
@@ -509,16 +502,15 @@ export const REFERENTIELS = [
         libelleForm: 'Code journal',
         largeur: '90px',
         mono: true,
-        requis: true,
         unique: true,
-        maxLength: 3,
+        // Jusqu'à 4 caractères comme l'application d'origine (« C500 », « C662 »).
+        maxLength: 4,
         majuscules: true,
       },
       {
         nom: 'libelle',
         libelle: 'Libellé',
         libelleForm: 'Libellé journal',
-        requis: true,
         majuscules: true,
       },
       {
@@ -536,6 +528,9 @@ export const REFERENTIELS = [
         libelleForm: 'Compte journal',
         largeur: '150px',
         mono: true,
+        // Le tableau montre le numéro (571000), comme l'application d'origine ;
+        // la liste de saisie, elle, propose « 571000 - LIBELLÉ ».
+        afficherCode: true,
         options: PLAN_COMPTABLE,
       },
     ],
@@ -562,7 +557,6 @@ export const REFERENTIELS = [
         libelleForm: 'Compte',
         largeur: '110px',
         mono: true,
-        requis: true,
         unique: true,
         maxLength: 6,
       },
@@ -570,7 +564,6 @@ export const REFERENTIELS = [
         nom: 'libelle',
         libelle: 'Intitulé',
         libelleForm: 'Intitulé',
-        requis: true,
         majuscules: true,
       },
       {
@@ -604,6 +597,8 @@ export const REFERENTIELS = [
         libelle: 'Délai',
         libelleForm: 'Délai de règlement (en jours)',
         type: 'number',
+        // 15 jours par défaut pour les divers, comme l'application d'origine.
+        defaut: 15,
       },
       {
         nom: 'contactNom',

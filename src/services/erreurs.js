@@ -1,7 +1,7 @@
 /**
  * Messages d'erreur montrés aux utilisateurs.
  *
- * Règle de l'application : jamais de message technique à l'écran — ni code
+ * Règle de l'application : jamais de message technique à l'écran - ni code
  * HTTP, ni JSON, ni nom de champ de l'API. Une erreur se dit en français,
  * dit ce qui s'est passé et, autant que possible, quoi faire. Le détail
  * technique part dans la console du navigateur, pour qui doit diagnostiquer.
@@ -11,8 +11,8 @@
  */
 
 /**
- * Erreurs de saisie renvoyées par le serveur — HTTP 400 portant un objet
- * `{ champ: [messages] }` — ramenées à un message par champ, prêtes à être
+ * Erreurs de saisie renvoyées par le serveur - HTTP 400 portant un objet
+ * `{ champ: [messages] }` - ramenées à un message par champ, prêtes à être
  * posées sous les champs du formulaire. `null` s'il ne s'agit pas de cela.
  */
 export function erreursDeChamps(erreur) {

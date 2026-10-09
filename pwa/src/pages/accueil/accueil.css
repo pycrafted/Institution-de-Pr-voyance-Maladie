@@ -1,0 +1,46 @@
+/* Écran d'accueil (pages/Accueil.tsx et pages/accueil/). Préfixes accueil__ et accueil-. */
+
+/* Sélecteur de fichier de la photo : caché, ouvert par le portrait. */
+.accueil__fichier {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/*
+ * Le chevauchement de 24 px (SPEC_DESIGN §4) : la carte d'adhérent remonte
+ * sur le bandeau, qui a réservé la même hauteur sous son texte
+ * (.ipm-bandeau--chevauche). Sans ce décalage, l'accueil redevient une
+ * succession de blocs posés les uns sous les autres.
+ */
+.accueil__chevauchement {
+  margin-top: calc(-1 * var(--chevauchement));
+  padding-inline: var(--gouttiere);
+  position: relative;
+  z-index: 1;
+}
+
+/* --- Derniers bons ------------------------------------------------------ */
+/* La validité restante est la seule information « bonne nouvelle » de la
+   carte : elle passe en vert plutôt qu'en texte doux. */
+.accueil-bon__validite {
+  color: var(--st-valide-texte);
+  font-weight: 600;
+}
+
+/* --- Feuille « Bientôt disponible » ------------------------------------- */
+.accueil__a-venir {
+  margin: 0 0 var(--e-8);
+}
+/* « Bientôt disponible — … » : la réponse à la question qu'on se pose en
+   touchant la carte ; elle se détache du reste. */
+.accueil__a-venir--quand {
+  margin-top: var(--e-12);
+  padding: var(--e-12) var(--e-16);
+  border-radius: var(--r-md);
+  background: var(--ipm-surface-2);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte);
+}

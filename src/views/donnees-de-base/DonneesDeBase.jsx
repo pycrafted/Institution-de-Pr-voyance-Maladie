@@ -24,10 +24,10 @@ const DonneesDeBase = () => {
   /**
    * Toutes les nomenclatures de la page partagent la même barre compacte :
    * total, recherche et outils sur une ligne, le bouton de création poussé à
-   * droite — comme les demandes d'agrément. Posé ici plutôt que dans chacune
+   * droite - comme les demandes d'agrément. Posé ici plutôt que dans chacune
    * des configs : c'est un choix de la page, pas de tel ou tel référentiel.
    *
-   * Le total est celui de la vue — segment et recherche compris. Il ne se
+   * Le total est celui de la vue - segment et recherche compris. Il ne se
    * nomme pas : le titre juste au-dessus dit déjà de quoi il est le compte.
    *
    * Dans le `useMemo` et non à l'appel : un objet neuf à chaque rendu ferait
@@ -45,6 +45,9 @@ const DonneesDeBase = () => {
       // contre le bouton de création.
       segmentsADroite: true,
       stats: (entrees) => `Total : ${entrees.length}`,
+      // On modifie en cliquant la ligne (le panneau s'ouvre) : pas de crayon,
+      // et la ligne en cours d'édition se colore en rouge. Comme les fournisseurs.
+      modificationParLigne: true,
     }
   }, [cleActive])
 

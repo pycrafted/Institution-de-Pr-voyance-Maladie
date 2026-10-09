@@ -1,14 +1,14 @@
 """
 Peuple le référentiel des adhérents.
 
-Crée les quatre collectivités de l'application d'origine — deux groupes IPM,
-personnel MOO et cadres, et les deux mutuelles CMM — avec ce qu'on en sait de
+Crée les quatre collectivités de l'application d'origine - deux groupes IPM,
+personnel MOO et cadres, et les deux mutuelles CMM - avec ce qu'on en sait de
 façon sûre : code, type, libellé et compte, tels que les montre la liste de
 l'application d'origine.
 
 Rien d'autre : adresse, téléphone, cotisations, seuils et point focal se
-saisissent à l'écran, avec les vraies valeurs. Des coordonnées inventées — un
-point focal au nom et à l'e-mail plausibles — passeraient pour vraies.
+saisissent à l'écran, avec les vraies valeurs. Des coordonnées inventées - un
+point focal au nom et à l'e-mail plausibles - passeraient pour vraies.
 
 Idempotente : relancer la commande ne crée pas de doublon et ne réécrit pas une
 ligne déjà présente en base.

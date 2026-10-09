@@ -40,7 +40,10 @@ import ChargeurSar from './ChargeurSar'
  */
 const AppContent = () => {
   return (
-    <CContainer className="px-4 py-3" lg>
+    // Pleine largeur (`fluid`) et non conteneur plafonné (`lg`) : sur un grand
+    // écran, le plafond laissait deux bandes grises vides de part et d'autre de
+    // la carte, pendant que les tableaux se tassaient à l'intérieur.
+    <CContainer className="px-4 py-3" fluid>
       <Suspense fallback={<ChargeurSar />}>
         <Routes>
           {routes.map((route, idx) => {

@@ -7,7 +7,9 @@ Chaque référentiel concret n'a plus qu'à déclarer son ``queryset`` et son
 ``serializer_class``.
 """
 
+from django.core.exceptions import FieldDoesNotExist
 from django.db import transaction
+from django.db.models import Count, Max
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -16,15 +18,77 @@ from rest_framework.response import Response
 class ReferentielViewSet(viewsets.ModelViewSet):
     """CRUD + activation + import, communs à tous les référentiels."""
 
-    # Au-delà, un import sort de l'usage prévu — reprendre une liste de
-    # quelques centaines de fiches — et tiendrait la base occupée le temps de
+    # Au-delà, un import sort de l'usage prévu - reprendre une liste de
+    # quelques centaines de fiches - et tiendrait la base occupée le temps de
     # tout valider ligne à ligne.
     TAILLE_MAX_IMPORT = 2000
+
+    def perform_create(self, serializer):
+        # Aucun champ n'est exigé à la saisie, pas même le code : laissé vide,
+        # il reçoit le suivant de la numérotation du référentiel.
+        if serializer.validated_data.get('code'):
+            serializer.save()
+        else:
+            serializer.save(code=self.get_queryset().model.prochain_code())
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Une fiche ne se supprime pas : elle se désactive.
+
+        Règle de l'application (cf. REGISTRE §5) : les dossiers déjà saisis
+        pointent sur les entrées des référentiels, et un document comptable
+        déjà émis ne s'efface pas. Retirer une ligne ferait perdre le libellé
+        de tout ce qui la désigne - une spécialité effacée, et dix ans de bons
+        n'affichent plus que « 08 ».
+
+        L'action ``basculer-activation`` est la voie prévue : elle retire
+        l'entrée des choix à la saisie sans toucher à l'historique. Le refus
+        est ici, dans le socle, et pas seulement dans l'écran : un appel direct
+        à l'API doit se heurter à la même règle.
+        """
+        return Response(
+            {
+                'detail': 'Une fiche ne se supprime pas : désactivez-la '
+                          '(les fiches qui la portent doivent rester lisibles).'
+            },
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+
+    @action(detail=False, methods=['get'], url_path='etat')
+    def etat(self, request):
+        """
+        État compact du jeu de données : ``{"nombre": …, "dernier_changement": …}``.
+
+        Sert à l'écoute de fond du frontend (cf. src/views/donnees-de-base/
+        ecouteChangements.js) : un bon émis depuis le mobile doit paraître dans
+        le tableau sans que personne ne rafraîchisse la page. Django tourne
+        derrière IIS avec quatre fils seulement - ni WebSocket ni requête
+        maintenue ouverte, qui immobiliseraient un fil par écran ouvert. Reste
+        l'interrogation régulière, qui n'a donc le droit de presque rien coûter.
+
+        D'où une seule requête d'agrégation, sans lecture de ligne ni jointure :
+        les ``select_related`` de la liste ne servent qu'à peupler des fiches et
+        alourdiraient le SQL pour rien, le tri ne veut rien dire sur un compte.
+
+        Les deux valeurs ensemble suffisent à repérer tout changement : une
+        suppression fait baisser le nombre, une création ou une modification
+        fait bouger l'une des deux. Un modèle sans ``modifie_le`` - il n'y en a
+        pas aujourd'hui, mais rien ne l'impose - se contente du nombre plutôt
+        que de faire échouer l'écoute.
+        """
+        queryset = self.get_queryset().select_related(None).order_by()
+        try:
+            queryset.model._meta.get_field('modifie_le')
+        except FieldDoesNotExist:
+            return Response({'nombre': queryset.count(), 'dernier_changement': None})
+
+        resultat = queryset.aggregate(nombre=Count('pk'), dernier_changement=Max('modifie_le'))
+        return Response(resultat)
 
     @action(detail=True, methods=['post'], url_path='basculer-activation')
     def basculer_activation(self, request, pk=None):
         """
-        Désactive (ou réactive) une entrée — équivalent de
+        Désactive (ou réactive) une entrée - équivalent de
         ``basculerActivation`` côté frontend. On ne supprime jamais.
         """
         entree = self.get_object()
@@ -35,7 +99,7 @@ class ReferentielViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['post'], url_path='modifier-en-lot')
     def modifier_en_lot(self, request):
         """
-        Applique les mêmes champs à plusieurs entrées d'un coup — équivalent de
+        Applique les mêmes champs à plusieurs entrées d'un coup - équivalent de
         ``modifierEnLot``. Corps attendu : ``{"ids": [...], "champs": {...}}``.
         """
         ids = request.data.get('ids', [])
@@ -67,7 +131,7 @@ class ReferentielViewSet(viewsets.ModelViewSet):
         mêmes règles qu'une saisie à l'écran.
 
         Tout ou rien : une seule ligne en erreur et la transaction entière est
-        annulée — un fichier à moitié importé serait pire que pas d'import du
+        annulée - un fichier à moitié importé serait pire que pas d'import du
         tout. En ``simulation``, tout est validé puis annulé, pour annoncer le
         bilan avant de demander confirmation.
 
@@ -116,10 +180,10 @@ class ReferentielViewSet(viewsets.ModelViewSet):
             return self._bilan_import(simulation, 0, 0, erreurs)
 
         modele = self.get_queryset().model
-        # Numérotation propre au référentiel (``prochain_code``), s'il en a une :
-        # appelée ligne après ligne dans la transaction, elle voit les fiches
-        # déjà créées par l'import et ne donne jamais deux fois le même numéro.
-        numeroter = getattr(modele, 'prochain_code', None)
+        # Numérotation du référentiel (``prochain_code``) : appelée ligne après
+        # ligne dans la transaction, elle voit les fiches déjà créées par
+        # l'import et ne donne jamais deux fois le même numéro.
+        numeroter = modele.prochain_code
         existants = {e.code: e for e in self.get_queryset().filter(code__in=list(premieres))}
 
         crees = modifies = 0
@@ -130,11 +194,6 @@ class ReferentielViewSet(viewsets.ModelViewSet):
                 instance = existants.get(code)
                 if instance is None:
                     if not code:
-                        if numeroter is None:
-                            erreurs.append(
-                                {'ligne': numero_ligne(i, ligne), 'erreurs': {'code': ['Numéro obligatoire.']}}
-                            )
-                            continue
                         code = numeroter()
                     donnees['code'] = code
 

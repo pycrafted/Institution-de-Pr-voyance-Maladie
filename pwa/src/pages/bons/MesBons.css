@@ -1,0 +1,45 @@
+/*
+ * Écran « Mes documents » (pages/MesBons.tsx). Préfixe mes-documents,
+ * notation BEM.
+ *
+ * Presque tout vient de la charte (bandeau, champ, puces, cartes de liste,
+ * .ipm-pile, .ipm-section) : il ne reste ici que les quelques réglages de
+ * mise en page propres à l'écran. Aucune couleur en dur (§1) : les jetons
+ * de theme/variables.css, et rien d'autre.
+ */
+
+/* Le champ de recherche (§3.8) porte la gouttière commune, et l'air qui le
+   sépare du bandeau. */
+.mes-documents__recherche {
+  padding: var(--e-16) var(--gouttiere) 0;
+}
+
+/* Rangée de puces défilante (§3.6) : sa propre gouttière est déjà dans
+   .ipm-puces, on ne règle ici que l'espace au-dessus. */
+.mes-documents__filtres {
+  margin-top: var(--e-12);
+}
+
+/* La validité restante est la seule bonne nouvelle de la carte : elle passe
+   en vert plutôt qu'en texte doux. */
+.mes-documents__validite {
+  color: var(--st-valide-texte);
+  font-weight: 600;
+}
+
+/* Squelettes de chargement : la forme des cartes à venir, espacées comme
+   elles (SqueletteCarte porte déjà sa gouttière). */
+.mes-documents__squelettes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inter-cartes);
+  margin-top: var(--inter-sections);
+}
+
+/* Décompte discret sous la dernière carte. */
+.mes-documents__total {
+  margin: var(--e-20) var(--gouttiere) 0;
+  text-align: center;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}

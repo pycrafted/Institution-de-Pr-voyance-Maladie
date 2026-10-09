@@ -1,0 +1,79 @@
+/*
+ * Écran « Assistance » (pages/Assistance.tsx). Préfixe assistance,
+ * notation BEM.
+ *
+ * La charte fournit le bandeau, les cartes de liste, .ipm-pile, .ipm-section
+ * et .ipm-carte : il ne reste ici que l'accordéon des questions fréquentes,
+ * qui n'existe pas dans les dix composants imposés (et qui, surtout, ne doit
+ * poser AUCUN filet — SPEC_DESIGN §1). Aucune couleur en dur : les jetons de
+ * theme/variables.css, et rien d'autre.
+ */
+
+/* Le bouton principal (§3.7) sous les trois étapes, à la gouttière commune. */
+.assistance__action {
+  padding: var(--e-20) var(--gouttiere) 0;
+}
+.assistance__note {
+  margin: var(--e-12) 0 0;
+  text-align: center;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+
+/*
+ * Une question = une carte autonome (.ipm-carte), jamais une ligne de liste.
+ * Le dépassement est masqué pour que la réponse qui s'ouvre reste dans les
+ * coins arrondis de la carte.
+ */
+.assistance__question {
+  overflow: hidden;
+}
+
+/* L'en-tête touchable occupe toute la carte : la cible fait sa largeur. */
+.assistance__demande {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  width: 100%;
+  padding: var(--e-16);
+  border: 0;
+  background: none;
+  color: var(--ipm-texte);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  transition: background-color var(--mvt-appui) var(--mvt-courbe);
+}
+.assistance__demande:active {
+  background: var(--ipm-surface-2);
+}
+.assistance__demande-texte {
+  flex: 1;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* Le chevron pivote à l'ouverture : c'est ce mouvement qui fait l'accordéon. */
+.assistance__chevron {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--ipm-texte-doux);
+  transition: transform var(--mvt-entree) var(--mvt-courbe);
+}
+.assistance__chevron--ouvert {
+  transform: rotate(180deg);
+  color: var(--ipm-rouge-texte);
+}
+
+/* La réponse : même gouttière intérieure que l'en-tête, sans filet au-dessus
+   (§1) — c'est l'espace, et non un trait, qui la sépare de la question. */
+.assistance__reponse {
+  padding: 0 var(--e-16) var(--e-16);
+}
+.assistance__reponse p {
+  margin: 0;
+  font: var(--t-corps);
+  color: var(--ipm-texte-doux);
+}

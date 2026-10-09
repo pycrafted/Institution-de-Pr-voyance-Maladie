@@ -1,0 +1,258 @@
+/*
+ * Sensation « application native » (SPEC §3) : rien de ce qui trahit une page
+ * web — sélection de texte, surlignage bleu au toucher, rebond de page,
+ * barres de défilement, anneau de focus à la souris, menu contextuel sur
+ * appui long, zoom par double tapotement.
+ *
+ * Puis les utilitaires de mise en page partagés par les écrans (préfixe
+ * .ipm-). Les couleurs viennent toutes de theme/variables.css.
+ */
+
+html,
+body {
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Satoshi aussi hors des composants Ionic (titres, div, boutons natifs). */
+  font-family: var(--ion-font-family);
+}
+
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  /* Pas de zoom au double tapotement, pas de délai de clic. */
+  touch-action: manipulation;
+  background: var(--ipm-fond);
+}
+
+/* Les champs de saisie, eux, restent sélectionnables. */
+input,
+textarea,
+[contenteditable='true'],
+.selectionnable {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+img,
+svg,
+canvas {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Anneau de focus seulement au clavier, jamais au toucher ni à la souris.
+   Au clavier, il reprend le rouge de la charte. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--ipm-rouge);
+  outline-offset: 2px;
+}
+
+/* Aucune barre de défilement visible. */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+ion-content::part(scroll) {
+  scrollbar-width: none;
+  overscroll-behavior-y: contain;
+}
+
+/* Titres : Satoshi aime les graisses hautes et un interlettrage resserré,
+   comme sur le site IPM. */
+h1,
+h2,
+h3,
+h4 {
+  letter-spacing: -0.01em;
+}
+
+/* ------------------------------------------------------------------------
+ * Grand écran : on centre simplement la « vue téléphone » (pas de design
+ * de bureau). Le transform fait de ion-app le repère des éléments fixes
+ * (modales, toasts, feuilles), qui restent ainsi dans la colonne.
+ * --------------------------------------------------------------------- */
+@media (min-width: 600px) {
+  html,
+  body {
+    background: var(--ipm-fond-bureau);
+  }
+  ion-app {
+    max-width: 480px;
+    margin: 0 auto;
+    transform: translateZ(0);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+  }
+}
+
+/* ------------------------------------------------------------------------
+ * Toolbar Ionic : la refonte lui préfère partout le bandeau de marque
+ * (§1, interdiction du gros titre noir sur fond gris). Quand un écran en
+ * garde une (fenêtres de l'assistant), elle est au moins sans filet.
+ * --------------------------------------------------------------------- */
+ion-toolbar {
+  --border-width: 0 !important;
+}
+
+/* ------------------------------------------------------------------------
+ * Utilitaires de mise en page (préfixe ipm-).
+ * --------------------------------------------------------------------- */
+
+/* Écrans sans en-tête (lancement, identification) : sous l'encoche. */
+.ipm-zone-sure {
+  padding-top: var(--ion-safe-area-top, env(safe-area-inset-top));
+  padding-bottom: var(--ion-safe-area-bottom, env(safe-area-inset-bottom));
+}
+
+/* Marge latérale commune à tout le contenu d'un écran (§1 : 16 px partout). */
+.ipm-gouttiere {
+  padding-inline: var(--gouttiere);
+}
+
+/* Dernier bloc d'un écran à onglets : la barre d'onglets flotte au-dessus. */
+.ipm-bas-page {
+  height: var(--bas-page);
+}
+
+/* Pile de cartes autonomes, espacées — JAMAIS de filet entre deux lignes. */
+.ipm-pile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inter-cartes);
+  padding-inline: var(--gouttiere);
+}
+
+/* Section d'écran : de l'air au-dessus, jamais collée à la précédente. */
+.ipm-section {
+  margin-top: var(--inter-sections);
+}
+
+/* Carte blanche arrondie à ombre douce : la surface de base de la refonte.
+   Le liseré est transparent en clair ; en sombre, c'est lui qui la détache. */
+.ipm-carte {
+  background: var(--ipm-surface);
+  border: 1px solid var(--ipm-liseret);
+  border-radius: var(--r-lg);
+  box-shadow: var(--ombre-1);
+}
+
+/* Carte qui chevauche un bandeau sombre (accueil, identification, profil). */
+.ipm-carte--flottante {
+  box-shadow: var(--ombre-3);
+  border-radius: var(--r-xl);
+}
+
+.ipm-texte-secondaire {
+  color: var(--ipm-texte-doux);
+}
+
+/* Titre de section au-dessus d'une liste (« Derniers bons »). §2 : 13/700
+   majuscules, interlettrage .08em, en texte doux. La gouttière est posée ICI
+   (et non sur l'en-tête de section) : la plupart des écrans emploient le
+   titre seul, et il se retrouvait collé au bord de l'écran. */
+.ipm-titre-section {
+  margin: 0;
+  padding-inline: var(--gouttiere);
+  font: var(--t-section);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ipm-texte-doux);
+}
+
+/* Ligne « titre de section + lien Tout voir ». */
+.ipm-entete-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-12);
+  /* Pas de padding ici : le titre et le lien portent chacun leur gouttière,
+     sinon elle serait doublée. */
+  padding-inline: 0;
+  margin-bottom: var(--e-12);
+}
+
+/* Le lien discret à droite d'un en-tête de section. La marge négative rend
+   la cible touchable sur 44 px (minimum d'Apple) sans déplacer le texte. */
+.ipm-lien-section {
+  appearance: none;
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--gouttiere);
+  margin-block: -12px;
+  background: none;
+  font: var(--t-secondaire);
+  font-weight: 700;
+  color: var(--ipm-rouge-texte);
+  cursor: pointer;
+  transition: opacity var(--mvt-appui) var(--mvt-courbe);
+}
+.ipm-lien-section:active {
+  opacity: 0.55;
+}
+
+/* Chiffres alignés (numéros de bon, montants, matricules, dates). */
+.ipm-chiffres {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Effet d'appui commun à toutes les surfaces touchables (§2, mouvement). */
+.ipm-appui {
+  transition: transform var(--mvt-appui) var(--mvt-courbe);
+}
+.ipm-appui:active {
+  transform: scale(var(--mvt-appui-echelle));
+}
+
+/* Apparition d'une liste : chaque carte entre avec 30 ms de décalage.
+   Le décalage se pose en ligne (style={{ '--rang': i }}), cf. CarteListe.
+
+   L'animation déplace la carte par la propriété `translate`, PAS par
+   `transform` : `animation-fill-mode: both` fige la valeur animée, et une
+   valeur animée de `transform` l'emporte sur `.ipm-appui:active { transform:
+   scale(.97) }` — l'effet d'appui ne se voyait donc jamais sur les surfaces
+   qui cumulent les deux classes. Les deux propriétés se composent. */
+.ipm-entree {
+  animation: ipm-entree var(--mvt-entree) var(--mvt-courbe) both;
+  animation-delay: calc(var(--rang, 0) * var(--mvt-decalage));
+}
+
+@keyframes ipm-entree {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+
+/* Réduction des animations si le téléphone le demande. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

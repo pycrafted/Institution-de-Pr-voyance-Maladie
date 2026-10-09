@@ -1,5 +1,6 @@
 """Vues du module Données de base."""
 
+from .acte import ActeViewSet
 from .article_achat import ArticleAchatViewSet
 from .demande_agrement import DemandeAgrementViewSet
 from .fournisseur_de_soins import FournisseurDeSoinsViewSet
@@ -15,6 +16,7 @@ __all__ = [
     'TypeBeneficiaireViewSet',
     'TypePrestationViewSet',
     'SpecialiteViewSet',
+    'ActeViewSet',
     'ArticleAchatViewSet',
     'JournalComptableViewSet',
     'MedicamentViewSet',

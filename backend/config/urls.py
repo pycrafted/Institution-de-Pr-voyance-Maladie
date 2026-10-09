@@ -15,4 +15,10 @@ urlpatterns = [
     path('api/auth/', include('authentification.urls')),
     path('api/donnees-de-base/', include('donnees_de_base.urls')),
     path('api/', include('adherents.urls')),
+    path('api/', include('participants.urls')),
+    path('api/', include('documents.urls')),
+    path('api/', include('parametres.urls')),
+    path('api/', include('traitements.urls')),
+    # Application IPM Mobile (pwa/) : ses propres jetons, ceux des participants.
+    path('api/mobile/', include('mobile.urls')),
 ]

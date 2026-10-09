@@ -1,0 +1,78 @@
+/*
+ * Écran « Conventionnés » (pages/Conventionnes.tsx). Préfixe conventionnes,
+ * notation BEM.
+ *
+ * Presque tout vient de la charte (bandeau, champ, cartes de liste,
+ * .ipm-pile, .ipm-section, .ipm-cercle--rouge) : il ne reste ici que la mise
+ * en page propre à l'écran. Aucune couleur en dur (SPEC_DESIGN §1) : les
+ * jetons de theme/variables.css, et rien d'autre.
+ */
+
+/* Le champ de recherche (§3.8) porte la gouttière commune et l'air qui le
+   sépare du bandeau — comme sur « Mes documents ». */
+.conventionnes__recherche {
+  padding: var(--e-16) var(--gouttiere) 0;
+}
+
+/* Les puces de spécialité, juste sous la recherche : une rangée qui défile,
+   la liste des spécialités étant plus longue que l'écran n'est large. */
+.conventionnes__filtres {
+  margin-top: var(--e-12);
+}
+
+/* La spécialité, première ligne de détail : c'est elle qui dit à quoi sert
+   la structure (« Cliniques », « Laboratoires d'analyses »…). */
+.conventionnes__specialite {
+  font-weight: 600;
+  color: var(--ipm-texte);
+}
+
+/* Squelettes de chargement : la forme des cartes à venir, espacées comme
+   elles (SqueletteCarte porte déjà sa gouttière). */
+.conventionnes__squelettes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--inter-cartes);
+  margin-top: var(--inter-sections);
+}
+
+/* Une ligne de détail « icône + texte » (adresse, téléphone). L'icône garde
+   sa largeur quand l'adresse passe à la ligne : le texte reste aligné. */
+.conventionnes__ligne {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.conventionnes__ligne ion-icon {
+  flex-shrink: 0;
+  font-size: 14px;
+  /* Centre la petite icône sur la première ligne de texte. */
+  margin-top: 2px;
+}
+
+/*
+ * Les deux boutons de la carte, empilés dans sa colonne de droite : « Appeler »
+ * au-dessus, « S'y rendre » en dessous. Cercles 44 de la charte : ce sont les
+ * SEULES zones touchables de la carte, d'où des cibles pleine taille.
+ */
+.conventionnes__actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+}
+.conventionnes__action {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
+  font-size: 20px;
+}
+/* « S'y rendre » : le noir de marque plein. C'est l'action que la carte
+   promet, et elle se distingue ainsi de l'appel d'un coup d'œil, même en
+   plein soleil — sans ajouter de rouge à l'annuaire. */
+.conventionnes__action--itineraire {
+  background: var(--deg-marque);
+  color: #ffffff;
+  box-shadow: var(--ombre-2);
+}

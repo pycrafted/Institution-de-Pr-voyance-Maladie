@@ -1,0 +1,1323 @@
+/*
+ * Styles des composants imposés par SPEC_DESIGN §3. Préfixe ipm-, notation
+ * BEM. Aucune couleur en dur : tout vient de theme/variables.css.
+ *
+ * Ordre du fichier = ordre de la spec :
+ *   1 barre d'onglets flottante   6 puces de filtre
+ *   2 bandeau de marque           7 boutons
+ *   3 carte d'adhérent            8 champ de saisie
+ *   4 tuile de service + grille   9 feuille
+ *   5 carte de liste             10 état vide
+ * puis les briques partagées (logo, avatar, puce de statut, squelettes,
+ * bandeau hors ligne).
+ */
+
+/* ========================================================================
+ * §3.1 — Barre d'onglets flottante
+ * ===================================================================== */
+
+ion-tab-bar.ipm-onglets {
+  /* Détachée de 12 px des bords et du bas : le contenu passe dessous. */
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  height: 64px;
+  padding: 0;
+  --background: transparent;
+  --border: 0;
+  /* Le fond est posé sur l'hôte : c'est lui qui porte le rayon et l'ombre. */
+  background: var(--ipm-verre);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border-radius: var(--r-xl);
+  /*
+   * Le liseré du mode sombre est posé en ombre INTÉRIEURE, pas en bordure :
+   * Ionic force `box-sizing: content-box !important` sur ion-tab-bar, une
+   * bordure de 1 px portait donc la barre à 66 px au lieu des 64 du §3.1.
+   */
+  box-shadow:
+    var(--ombre-3),
+    inset 0 0 0 1px var(--ipm-liseret);
+  overflow: hidden;
+}
+
+.ipm-onglets ion-tab-button {
+  --background: transparent;
+  --background-focused: transparent;
+  --color: var(--ipm-texte-doux);
+  /* Le rouge de marque porte du texte : sur la pastille rouge douce il ne
+     tient que 3,97:1 en 11 px. La variante « -texte » passe le niveau AA. */
+  --color-selected: var(--ipm-rouge-texte);
+  --ripple-color: transparent;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  max-width: 108px;
+  margin: 8px 4px;
+  /* Concentricité : 26 (barre) − 8 (marge) = 18. */
+  border-radius: var(--r-md);
+  background: transparent;
+  transition:
+    background-color var(--mvt-appui) var(--mvt-courbe),
+    transform var(--mvt-appui) var(--mvt-courbe);
+}
+.ipm-onglets ion-tab-button:active {
+  transform: scale(var(--mvt-appui-echelle));
+}
+.ipm-onglets ion-tab-button.tab-selected {
+  background: var(--ipm-rouge-doux);
+}
+.ipm-onglets ion-tab-button ion-icon {
+  font-size: 24px;
+  margin: 0 0 3px;
+}
+.ipm-onglets ion-tab-button ion-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+/* ========================================================================
+ * §3.2 — Bandeau de marque
+ * ===================================================================== */
+
+.ipm-bandeau {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: var(--deg-marque);
+  /* En sombre, le bandeau et le fond ne sont qu'à 1,12:1 : ce filet marque
+     la limite basse du bandeau, comme l'ombre le fait en clair. */
+  border-bottom: 1px solid var(--ipm-liseret);
+  color: #ffffff;
+  border-end-start-radius: var(--r-2xl);
+  border-end-end-radius: var(--r-2xl);
+  padding: calc(var(--e-16) + var(--ion-safe-area-top, env(safe-area-inset-top))) var(--gouttiere)
+    var(--e-24);
+  /*
+   * MÊME HAUTEUR SUR TOUS LES ÉCRANS. Sans cela, le bandeau mesurait 90 px
+   * sur les pharmacies, 114 au profil, 156 sur un bon et 177 à l'accueil :
+   * en passant d'un onglet à l'autre, le haut de l'écran sautait.
+   * La hauteur est donc posée ici, une fois, et les variantes ne font que
+   * remplir cette boîte par le bas (justify-content: flex-end) — qu'il y ait
+   * un bouton retour, un sous-titre, une puce de validité ou rien du tout.
+   */
+  box-sizing: border-box;
+  min-height: calc(var(--hauteur-bandeau) + var(--ion-safe-area-top, env(safe-area-inset-top)));
+}
+/*
+ * Chevauchement (§4) : la première carte de l'écran remonte de 24 px sur le
+ * bandeau. Ce sont les 24 px du bas de la boîte qui sont recouverts, et non
+ * 24 px ajoutés — sans quoi les écrans à carte seraient plus hauts que les
+ * autres, ce qu'on vient précisément d'éviter. Le texte, lui, reste au-dessus
+ * de la ligne de recouvrement.
+ */
+.ipm-bandeau--chevauche {
+  /* Seule la marge intérieure basse augmente : le texte remonte au-dessus de
+     la ligne que la carte viendra recouvrir. La hauteur, elle, ne bouge pas —
+     c'est tout l'objet de --hauteur-bandeau. */
+  padding-bottom: calc(var(--e-24) + var(--chevauchement));
+}
+
+.ipm-bandeau__haut {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: 44px;
+}
+.ipm-bandeau__haut--compact {
+  gap: var(--e-12);
+}
+.ipm-bandeau__haut--compact .ipm-bandeau__textes {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
+/* Pastille blanche du logo (40), variante pleine. */
+.ipm-bandeau__pastille {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-pill);
+  background: #ffffff;
+  box-shadow: var(--ombre-1);
+}
+
+/* Bouton retour : pastille translucide 40, variante compacte. */
+.ipm-bandeau__retour {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform var(--mvt-appui) var(--mvt-courbe);
+}
+.ipm-bandeau__retour:active {
+  transform: scale(var(--mvt-appui-echelle));
+}
+
+.ipm-bandeau__fin {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+}
+
+.ipm-bandeau__textes {
+  /* La marge ne sert qu'à séparer le bloc de titre de la rangée du haut
+     (avatar, actions) ; sans cette rangée, elle ne ferait qu'ajouter du vide. */
+  margin-top: var(--e-16);
+  min-width: 0;
+}
+.ipm-bandeau__haut + .ipm-bandeau__textes {
+  margin-top: var(--e-16);
+}
+.ipm-bandeau > .ipm-bandeau__textes:first-child {
+  margin-top: 0;
+}
+/* Variante pleine avec pastille : titre à gauche, pastille à droite, sur la
+   même ligne, centrée sur le bloc de texte. */
+.ipm-bandeau__ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+}
+.ipm-bandeau__ligne .ipm-bandeau__textes {
+  flex: 1;
+  margin-top: 0;
+}
+.ipm-bandeau__titre {
+  margin: 0;
+  /* §3.2 : 26/800 sur l'accueil. */
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: #ffffff;
+}
+.ipm-bandeau--compact .ipm-bandeau__titre {
+  /* Même écriture que « Bonjour <Prénom> » sur l'accueil (26/800) : un titre
+     d'écran qui rapetisse d'un onglet à l'autre se remarque autant qu'un
+     bandeau qui change de hauteur. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ipm-bandeau__sous-titre {
+  margin: 4px 0 0;
+  font-size: 0.84375rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/*
+ * Haut d'un écran d'onglet : plus de titre du tout (accueil, documents,
+ * conventionnés, profil). Il ne reste que la place de l'encoche du téléphone
+ * et un peu d'air avant le premier contenu — c'est le contenu lui-même
+ * (carte d'adhérent, recherche, liste) qui dit où l'on est, et la barre
+ * d'onglets du bas qui le nomme.
+ */
+.ipm-zone-sure {
+  height: calc(var(--e-16) + var(--ion-safe-area-top, env(safe-area-inset-top)));
+}
+
+/* ========================================================================
+ * §3.2 bis — En-tête d'écran (components/EnteteEcran.tsx)
+ *
+ * Le titre posé sur le fond de la page, sans surface colorée. Mêmes cotes de
+ * titre que le bandeau (26/800) : le haut des écrans garde la même taille de
+ * l'un à l'autre. La hauteur de la zone sûre du téléphone (encoche) est
+ * reprise ici : sans bandeau, c'est l'en-tête qui la porte.
+ * ===================================================================== */
+
+.ipm-entete {
+  padding: calc(var(--e-16) + var(--ion-safe-area-top, env(safe-area-inset-top))) var(--gouttiere)
+    var(--e-12);
+}
+.ipm-entete__ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: 44px;
+}
+.ipm-entete__textes {
+  flex: 1;
+  min-width: 0;
+}
+.ipm-entete__titre {
+  margin: 0;
+  /* §3.2 : 26/800, comme le titre du bandeau qu'il remplace. */
+  font-size: 1.625rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--ipm-texte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ipm-entete__sous-titre {
+  margin: 2px 0 0;
+  font-size: 0.84375rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ipm-texte-doux);
+}
+.ipm-entete__fin {
+  margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+}
+/* Bouton retour : la pastille du bandeau, en surface claire — c'est elle qui
+   le détache du fond, faute de fond coloré derrière. */
+.ipm-entete__retour {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  box-shadow:
+    var(--ombre-1),
+    inset 0 0 0 1px var(--ipm-liseret);
+  color: var(--ipm-texte);
+  font-size: 22px;
+  cursor: pointer;
+  transition: transform var(--mvt-appui) var(--mvt-courbe);
+}
+.ipm-entete__retour:active {
+  transform: scale(var(--mvt-appui-echelle));
+}
+
+/* ========================================================================
+ * §3.3 — Carte d'adhérent
+ * ===================================================================== */
+
+.ipm-carte-adherent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  /* Proportions d'une carte bancaire. */
+  aspect-ratio: 1.586;
+  padding: var(--e-20);
+  border: 0;
+  border-radius: var(--r-xl);
+  /* Le rouge de marque : c'est la pièce que l'employé présente, et le seul
+     endroit de l'application où la couleur occupe une grande surface (les
+     actions gardent le rouge, le reste des écrans est neutre). */
+  background: var(--deg-rouge);
+  box-shadow: var(--ombre-3);
+  color: #ffffff;
+  text-align: start;
+  overflow: hidden;
+  cursor: default;
+}
+/* Filigrane : deux cercles blancs à 8 %, comme le guillochage d'une carte. */
+.ipm-carte-adherent__filigrane {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.08) 0 34%, transparent 34.5%),
+    radial-gradient(circle at 74% 96%, rgba(255, 255, 255, 0.08) 0 26%, transparent 26.5%),
+    radial-gradient(circle at 104% 74%, rgba(255, 255, 255, 0.08) 0 20%, transparent 20.5%);
+}
+
+/* --- Carte d'identité d'adhérent (accueil et profil) ---------------------
+   Même habillage que la carte d'adhérent ; seule la disposition change :
+   photo d'identité à gauche, champs nommés à droite, comme la carte que
+   l'organisation remet à ses employés. Hauteur libre (et non le format
+   bancaire) : ce sont les champs qui la dictent. */
+.ipm-carte-identite {
+  aspect-ratio: auto;
+  justify-content: flex-start;
+  gap: var(--e-16);
+  padding: var(--e-16) var(--e-20) var(--e-20);
+}
+.ipm-carte-identite__entete {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-12);
+}
+/* Intitulé du document, à droite du logo : ce qui fait d'une carte rouge une
+   pièce qu'on présente. Blanc plein, la hiérarchie par la taille. */
+.ipm-carte-identite__intitule {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: #ffffff;
+}
+/* Sceau de l'émetteur, au coin opposé à l'intitulé : le logo en blanc,
+   posé directement sur le rouge, comme le reste des inscriptions. */
+.ipm-carte-identite__sceau {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+/* Filigrane : le logo, très grand et presque transparent, posé en biais dans
+   le coin bas droit, derrière les champs. Il ne gêne pas la lecture (7 %). */
+.ipm-carte-identite__embleme {
+  position: absolute;
+  right: -46px;
+  bottom: -30px;
+  opacity: 0.07;
+  transform: rotate(-14deg);
+  pointer-events: none;
+  line-height: 0;
+}
+
+.ipm-carte-identite__organisme {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+.ipm-carte-identite__corps {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-16);
+}
+/* Le portrait : un simple conteneur, ou un bouton au profil (changer sa
+   photo). Il porte la pastille d'appareil photo, hors du cadre qui rogne. */
+.ipm-carte-identite__portrait {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 0;
+}
+button.ipm-carte-identite__portrait {
+  cursor: pointer;
+}
+.ipm-carte-identite__crayon {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-pill);
+  background: #ffffff;
+  color: var(--ipm-rouge);
+  font-size: 14px;
+  box-shadow: var(--ombre-1);
+}
+
+/* Photo d'identité : un rectangle aux proportions d'une photo de pièce
+   (4:5 environ), et non un rond — c'est ce qui dit « carte d'identité ». */
+.ipm-carte-identite__photo {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 96px;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: var(--ombre-1);
+}
+.ipm-carte-identite__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ipm-carte-identite__initiales {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+
+/* Les champs : libellé en petites capitales au-dessus, valeur en dessous —
+   la lecture d'une pièce d'identité, où l'œil cherche d'abord le nom du
+   champ. Blanc plein partout : sur le rouge, 75 % ne tient pas le niveau AA. */
+.ipm-carte-identite__champs {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--e-8) var(--e-12);
+  margin: 0;
+}
+.ipm-carte-identite__champ {
+  min-width: 0;
+}
+/* Le nom, le prénom et la société ont besoin de la largeur entière ; le
+   matricule et la date de naissance tiennent côte à côte. */
+.ipm-carte-identite__champ:nth-child(1),
+.ipm-carte-identite__champ:nth-child(2),
+.ipm-carte-identite__champ:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+.ipm-carte-identite__champ dt {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ffffff;
+}
+.ipm-carte-identite__champ dd {
+  margin: 1px 0 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #ffffff;
+  /* Une pièce d'identité ne tronque pas : « 01/01/… » ne se lit pas au
+     comptoir. Une valeur longue (société) passe donc sur deux lignes, et ne
+     se coupe qu'au-delà. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+/* Petits téléphones (iPhone SE…) : deux colonnes de champs ne tiennent plus à
+   côté de la photo. Un champ par ligne, et une photo un peu plus petite. */
+@media (max-width: 359px) {
+  .ipm-carte-identite__champs {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .ipm-carte-identite__photo {
+    width: 64px;
+    height: 80px;
+  }
+  .ipm-carte-identite__corps {
+    gap: var(--e-12);
+  }
+}
+
+/* ========================================================================
+ * §3.4 — Carte de service (grande, deux colonnes) et raccourci rond
+ * ===================================================================== */
+
+/*
+ * DEUX colonnes de GRANDES cartes, une par type de document (§4.3). Le
+ * `minmax(0, 1fr)` est indispensable : `1fr` vaut `minmax(auto, 1fr)`, et le
+ * mot « hospitalisation », insécable, imposait alors sa largeur minimale à
+ * toute sa colonne — les cartes n'étaient plus égales sous 400 px.
+ */
+.ipm-grille-services {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-12);
+  padding-inline: var(--gouttiere);
+}
+/* §3.4 : une seule colonne sous 340 px de large, et pas avant. */
+@media (max-width: 339px) {
+  .ipm-grille-services {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.ipm-tuile {
+  position: relative;
+  appearance: none;
+  /* Liseré invisible en clair, visible en sombre : sur le fond #111110,
+     l'ombre ne dessine plus aucun bord. */
+  border: 1px solid var(--ipm-liseret);
+  box-sizing: border-box;
+  width: 100%;
+  /* ≈ 150 de haut sur un téléphone courant (§3.4). */
+  aspect-ratio: 1 / 0.95;
+  display: flex;
+  flex-direction: column;
+  /* Contenu centré, comme sur la référence : icône, libellé, mention. */
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-12);
+  padding: var(--e-16) var(--e-12);
+  border-radius: var(--r-xl);
+  text-align: center;
+  cursor: pointer;
+  box-shadow: var(--ombre-2);
+}
+/*
+ * Document ouvert : une carte de surface, comme le reste de l'application.
+ * Le rouge n'y tient plus que le cercle de l'icône et la mention — il
+ * signale ce qui se demande, au lieu de peindre la moitié de l'accueil.
+ */
+.ipm-tuile--ouverte {
+  background: var(--ipm-surface);
+  color: var(--ipm-texte);
+}
+/* Document à venir : la même carte, éteinte d'un cran. */
+.ipm-tuile--avenir {
+  background: var(--ipm-surface-2);
+  color: var(--ipm-texte-doux);
+  box-shadow: none;
+}
+
+.ipm-tuile__cercle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 62px;
+  height: 62px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+}
+.ipm-tuile--avenir .ipm-tuile__cercle {
+  background: var(--ipm-surface);
+  color: var(--ipm-texte-doux);
+}
+.ipm-tuile__icone {
+  font-size: 30px;
+}
+.ipm-tuile__libelle {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.2;
+  /* Deux lignes au plus ; « LG hospitalisation » ne doit pas déborder. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* « Disponible » / « Bientôt », sous le libellé (§3.4). */
+.ipm-tuile__mention {
+  margin-top: -6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ipm-rouge-texte);
+}
+.ipm-tuile--avenir .ipm-tuile__mention {
+  color: var(--ipm-texte-doux);
+}
+/* Puce « Bientôt » au coin de la carte à venir. */
+.ipm-tuile__puce {
+  position: absolute;
+  top: var(--e-12);
+  inset-inline-end: var(--e-12);
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte-doux);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* --- Raccourci rond (seconde famille, §3.4) ----------------------------- */
+
+.ipm-raccourcis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--e-8);
+  padding-inline: var(--gouttiere);
+}
+.ipm-raccourci {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--ipm-texte);
+  cursor: pointer;
+}
+.ipm-raccourci__cercle {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-1);
+  color: var(--ipm-rouge-texte);
+  /* Sur fond sombre l'ombre ne détache rien : un liseré s'en charge. */
+  border: 1px solid var(--ipm-liseret);
+  box-sizing: border-box;
+}
+.ipm-raccourci__icone {
+  font-size: 24px;
+}
+.ipm-raccourci__libelle {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* ========================================================================
+ * §3.5 — Carte de liste
+ * ===================================================================== */
+
+.ipm-carte-liste {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  width: 100%;
+  padding: 14px 16px;
+  /* Même raison que la carte de service : en sombre, le bord vient du liseré. */
+  border: 1px solid var(--ipm-liseret);
+  box-sizing: border-box;
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-1);
+  color: var(--ipm-texte);
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+}
+div.ipm-carte-liste {
+  cursor: default;
+}
+
+/* --- Groupe : plusieurs lignes dans UNE SEULE carte -----------------------
+   Variante de la pile, pour une liste qui se lit comme un tout — la famille
+   du participant, par exemple : cinq cartes séparées donnaient cinq objets
+   là où il n'y en a qu'un, la famille.
+   Les lignes perdent donc leur fond, leur ombre et leur rayon ; c'est le
+   groupe qui les porte. Un filet très fin les sépare, mais EN RETRAIT sous
+   les avatars, comme une liste groupée iOS : il ne traverse pas la carte,
+   et l'écran ne redevient pas un tableau (§1). */
+.ipm-groupe {
+  margin-inline: var(--gouttiere);
+  border: 1px solid var(--ipm-liseret);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-1);
+  overflow: hidden;
+}
+.ipm-groupe .ipm-carte-liste {
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+/* Aucun filet entre deux lignes : c'est l'espace qui sépare (demande de
+   l'utilisateur), comme dans « Mes informations » du profil. */
+/* L'appui teinte la ligne au lieu de la réduire : dans un groupe, une ligne
+   qui rapetisse décollerait de ses voisines. */
+.ipm-groupe .ipm-carte-liste.ipm-appui:active {
+  transform: none;
+  background: var(--ipm-surface-2);
+}
+
+.ipm-carte-liste__cercle {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
+  font-size: 22px;
+}
+/* Cercles teintés du statut — partagés avec les états vides et le profil. */
+.ipm-cercle--valide {
+  background: var(--st-valide-doux);
+  color: var(--st-valide-texte);
+}
+.ipm-cercle--traite {
+  background: var(--st-traite-doux);
+  color: var(--st-traite-texte);
+}
+.ipm-cercle--expire {
+  background: var(--st-expire-doux);
+  color: var(--st-expire-texte);
+}
+.ipm-cercle--annule {
+  background: var(--st-annule-doux);
+  color: var(--st-annule-texte);
+}
+.ipm-cercle--rouge {
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+}
+.ipm-cercle--neutre {
+  background: var(--ipm-surface-2);
+  color: var(--ipm-texte-doux);
+}
+
+.ipm-carte-liste__corps {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.ipm-carte-liste__titre {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ipm-carte-liste__details {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ipm-texte-doux);
+}
+.ipm-carte-liste__fin {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.ipm-carte-liste__meta {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ipm-texte-doux);
+  white-space: nowrap;
+}
+.ipm-carte-liste__chevron {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--ipm-texte-doux);
+  margin-inline-start: -4px;
+}
+
+/* ========================================================================
+ * §3.6 — Puces de filtre
+ * ===================================================================== */
+
+.ipm-puces {
+  display: flex;
+  gap: var(--e-8);
+  /* Rangée défilante qui part du bord de la gouttière et y revient. */
+  padding: 2px var(--gouttiere);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  /* Sans elle, l'accrochage aligne la première puce sur le bord du
+     conteneur et non sur la gouttière : dès que la rangée déborde (une
+     vingtaine de spécialités sur « Conventionnés »), la puce « Tous » se
+     retrouvait collée au bord de l'écran. */
+  scroll-padding-inline: var(--gouttiere);
+  -webkit-overflow-scrolling: touch;
+}
+.ipm-puce {
+  appearance: none;
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte);
+  font-size: 0.84375rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--mvt-appui) var(--mvt-courbe),
+    color var(--mvt-appui) var(--mvt-courbe),
+    transform var(--mvt-appui) var(--mvt-courbe);
+}
+.ipm-puce:active {
+  transform: scale(var(--mvt-appui-echelle));
+}
+.ipm-puce--active {
+  background: var(--ipm-rouge);
+  border-color: var(--ipm-rouge);
+  color: #ffffff;
+}
+.ipm-puce__nombre {
+  font-size: 0.75rem;
+  font-weight: 700;
+  opacity: 0.7;
+}
+
+/* ========================================================================
+ * §3.7 — Boutons
+ * ===================================================================== */
+
+.ipm-bouton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-8);
+  width: 100%;
+  height: 54px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: var(--r-pill);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+.ipm-bouton--compact {
+  width: auto;
+  min-width: 160px;
+}
+.ipm-bouton--principal {
+  color: #ffffff;
+}
+.ipm-bouton--principal.ipm-bouton--rouge {
+  background: var(--deg-rouge);
+  box-shadow: var(--ombre-rouge);
+}
+.ipm-bouton--principal.ipm-bouton--noir {
+  background: var(--deg-marque);
+  box-shadow: var(--ombre-2);
+}
+.ipm-bouton--secondaire {
+  background: var(--ipm-surface);
+  border: 1px solid var(--ipm-bordure);
+  color: var(--ipm-texte);
+}
+.ipm-bouton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.ipm-bouton:disabled:active {
+  transform: none;
+}
+.ipm-bouton__icone {
+  font-size: 20px;
+}
+.ipm-bouton__roue {
+  width: 20px;
+  height: 20px;
+}
+
+/* Bouton posé en bas d'écran : un voile dégradé efface le contenu dessous. */
+.ipm-pied-boutons {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  padding: var(--e-24) var(--gouttiere)
+    calc(var(--e-16) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  background: var(--deg-pied);
+}
+
+/* ========================================================================
+ * §3.8 — Champ de saisie
+ * ===================================================================== */
+
+.ipm-champ {
+  display: block;
+  margin-bottom: var(--e-16);
+}
+.ipm-champ__libelle {
+  display: block;
+  margin: 0 0 6px 2px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ipm-texte-doux);
+}
+.ipm-champ__cadre {
+  display: flex;
+  align-items: center;
+  gap: var(--e-8);
+  height: 56px;
+  padding: 0 16px;
+  border-radius: var(--r-md);
+  background: var(--ipm-surface-2);
+  /* Bordure toujours présente mais transparente : l'erreur la colore sans
+     rien déplacer. La saisie, elle, ne surligne rien : ni bordure ni anneau
+     autour du champ touché, comme dans les réglages d'un téléphone. */
+  border: 2px solid transparent;
+  transition: border-color var(--mvt-appui) var(--mvt-courbe);
+}
+.ipm-champ__cadre input,
+.ipm-champ__cadre textarea,
+.ipm-champ__cadre input:focus-visible {
+  outline: none;
+}
+.ipm-champ--erreur .ipm-champ__cadre {
+  border-color: var(--ipm-rouge);
+  background: var(--ipm-rouge-doux);
+}
+.ipm-champ__icone {
+  flex-shrink: 0;
+  font-size: 20px;
+  color: var(--ipm-texte-doux);
+}
+.ipm-champ__saisie {
+  --background: transparent;
+  --color: var(--ipm-texte);
+  --placeholder-color: var(--ipm-texte-doux);
+  --placeholder-opacity: 1;
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --highlight-height: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.ipm-champ__erreur {
+  margin: 6px 0 0 2px;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--ipm-rouge-texte);
+}
+.ipm-champ__aide {
+  margin: 6px 0 0 2px;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--ipm-texte-doux);
+}
+
+/* ========================================================================
+ * §3.9 — Feuille
+ * ===================================================================== */
+
+ion-modal.ipm-feuille {
+  --background: var(--ipm-surface);
+  /* Angles droits : la feuille est un bandeau posé sur le bas de l'écran,
+     pas une carte de plus. */
+  --border-radius: 0;
+  --box-shadow: var(--ombre-3);
+  /* Hauteur du contenu, et toute la largeur. Au-delà de 768 px de large,
+     Ionic taille ses fenêtres pour un bureau (600 px, centrées) : dans la
+     colonne de 480 px de l'application, la feuille débordait à gauche et
+     coupait son texte. */
+  --height: auto;
+  --width: 100%;
+  --min-width: 100%;
+  --max-width: 100%;
+}
+/* Le conteneur qu'Ionic place autour du contenu est, par défaut, posé en
+   absolu sur toute la fenêtre : il faut le remettre dans le flux pour que la
+   feuille prenne la hauteur de ce qu'elle contient. */
+ion-modal.ipm-feuille .ion-page {
+  position: relative;
+  display: block;
+  contain: content;
+}
+.ipm-feuille__contenu {
+  /* Au-delà de 85 % de l'écran, le contenu défile dans la feuille. */
+  max-height: 85vh;
+  overflow-y: auto;
+  padding-bottom: calc(var(--e-24) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  background: var(--ipm-surface);
+  text-align: center;
+}
+.ipm-feuille__poignee {
+  width: 36px;
+  height: 4px;
+  margin: 10px auto 0;
+  border-radius: var(--r-pill);
+  background: var(--ipm-bordure);
+}
+/* L'icône de ce dont parle la feuille, en cercle teinté : c'est elle qu'on
+   voit d'abord, comme dans les feuilles natives. */
+.ipm-feuille__icone {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin: var(--e-20) auto 0;
+  border-radius: var(--r-pill);
+  font-size: 26px;
+}
+.ipm-feuille__titre {
+  margin: var(--e-16) var(--gouttiere) 0;
+  font: var(--t-titre);
+  letter-spacing: -0.01em;
+  color: var(--ipm-texte);
+}
+.ipm-feuille__poignee + .ipm-feuille__titre {
+  margin-top: var(--e-20);
+}
+.ipm-feuille__corps {
+  padding: var(--e-8) var(--gouttiere) 0;
+  font: var(--t-corps);
+  line-height: 1.5;
+  color: var(--ipm-texte-doux);
+}
+/* Le bouton de la feuille, en bas, toute la largeur, détaché du texte. */
+.ipm-feuille__corps > .ipm-bouton {
+  width: 100%;
+  margin-top: var(--e-20);
+}
+
+/* Feuille de choix (components/FeuilleChoix) : la question, puis les boutons
+   empilés sur toute la largeur. */
+.ipm-feuille-choix__message {
+  margin: 0;
+}
+.ipm-feuille-choix__boutons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  margin-top: var(--e-20);
+}
+.ipm-feuille-choix__boutons > .ipm-bouton {
+  width: 100%;
+}
+/* Une action qui détruit (retirer sa photo) : claire, mais au texte rouge,
+   pour qu'on ne la confonde pas avec « Annuler ». */
+.ipm-bouton--texte-danger {
+  color: var(--ipm-rouge-texte);
+}
+
+/* ========================================================================
+ * §3.10 — État vide
+ * ===================================================================== */
+
+.ipm-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px var(--e-32);
+}
+.ipm-vide--compact {
+  padding: var(--e-24) var(--e-32);
+}
+.ipm-vide__illustration {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 108px;
+  height: 108px;
+  margin-bottom: var(--e-20);
+}
+/* Halo : le disque, en très pâle et plus large. */
+.ipm-vide__halo {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-pill);
+  opacity: 0.35;
+  background: var(--ipm-surface-2);
+}
+.ipm-vide__disque {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: var(--r-pill);
+  font-size: 34px;
+  color: #ffffff;
+  background: var(--deg-marque);
+  box-shadow: var(--ombre-2);
+  animation: ipm-entree 0.4s var(--mvt-courbe) both;
+}
+.ipm-vide--rouge .ipm-vide__disque {
+  background: var(--deg-rouge);
+}
+.ipm-vide--rouge .ipm-vide__halo {
+  background: var(--ipm-rouge-doux);
+  opacity: 1;
+}
+.ipm-vide--valide .ipm-vide__disque {
+  background: var(--st-valide);
+}
+.ipm-vide--valide .ipm-vide__halo {
+  background: var(--st-valide-doux);
+  opacity: 1;
+}
+.ipm-vide--traite .ipm-vide__disque {
+  background: var(--st-traite);
+}
+.ipm-vide--traite .ipm-vide__halo {
+  background: var(--st-traite-doux);
+  opacity: 1;
+}
+.ipm-vide--annule .ipm-vide__disque {
+  background: var(--deg-rouge);
+}
+.ipm-vide--annule .ipm-vide__halo {
+  background: var(--st-annule-doux);
+  opacity: 1;
+}
+.ipm-vide--neutre .ipm-vide__disque {
+  background: var(--ipm-surface-2);
+  color: var(--ipm-texte-doux);
+  box-shadow: none;
+}
+.ipm-vide__titre {
+  margin: 0 0 var(--e-8);
+  font: var(--t-sous-titre);
+  color: var(--ipm-texte);
+}
+.ipm-vide__message {
+  margin: 0;
+  max-width: 300px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ipm-texte-doux);
+}
+.ipm-vide__action {
+  margin-top: var(--e-24);
+}
+
+/* ========================================================================
+ * Briques partagées
+ * ===================================================================== */
+
+/* --- Logo SAR ----------------------------------------------------------- */
+.ipm-logo {
+  display: block;
+  height: auto;
+}
+/* Le logo est d'une seule couleur pleine : ce filtre le rend blanc franc,
+   sans second fichier à charger ni à précacher. */
+.ipm-logo--blanc {
+  filter: brightness(0) invert(1);
+}
+
+/* --- Avatar ------------------------------------------------------------- */
+.ipm-avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+/* Les trois teintes de la charte (jetons --av-*, cf. variables.css). */
+.ipm-avatar--1 {
+  background: var(--av-1-fond);
+  color: var(--av-1-texte);
+}
+.ipm-avatar--2 {
+  background: var(--av-2-fond);
+  color: var(--av-2-texte);
+}
+.ipm-avatar--3 {
+  background: var(--av-3-fond);
+  color: var(--av-3-texte);
+}
+/* Sur une surface de marque, les teintes douces deviendraient illisibles. */
+.ipm-avatar--marque {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #ffffff;
+}
+
+/* --- Puce de statut ----------------------------------------------------- */
+.ipm-statut {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: var(--r-pill);
+  font-weight: 700;
+  white-space: nowrap;
+  line-height: 1;
+}
+.ipm-statut--petit {
+  padding: 5px 10px;
+  font: var(--t-puce);
+}
+.ipm-statut--grand {
+  padding: 7px 13px;
+  font-size: 0.875rem;
+}
+.ipm-statut ion-icon {
+  font-size: 1.1em;
+}
+.ipm-statut--valide {
+  background: var(--st-valide-doux);
+  color: var(--st-valide-texte);
+}
+.ipm-statut--traite {
+  background: var(--st-traite-doux);
+  color: var(--st-traite-texte);
+}
+.ipm-statut--expire {
+  background: var(--st-expire-doux);
+  color: var(--st-expire-texte);
+}
+.ipm-statut--annule {
+  background: var(--st-annule-doux);
+  color: var(--st-annule-texte);
+}
+/* Posée sur un bandeau de marque : verre translucide et texte blanc. */
+.ipm-statut--marque {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+/* --- Squelettes --------------------------------------------------------- */
+.ipm-squelette-avatar {
+  --border-radius: var(--r-pill);
+  width: 44px;
+  height: 44px;
+}
+.ipm-squelette-carte {
+  margin: 0 var(--gouttiere);
+  padding: var(--e-16);
+}
+ion-skeleton-text {
+  --background-rgb: var(--ion-text-color-rgb);
+  border-radius: 6px;
+}
+/* §2 : miroitement de 1,4 s, le jeton plutôt que la durée par défaut d'Ionic. */
+ion-skeleton-text.skeleton-text-animated::after {
+  animation-duration: var(--mvt-miroitement);
+}
+
+/* --- Bandeau hors ligne -------------------------------------------------- */
+.ipm-hors-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: var(--e-12) var(--gouttiere) 0;
+  padding: 8px 14px;
+  border-radius: var(--r-pill);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--ipm-graphite);
+  animation: ipm-entree var(--mvt-entree) var(--mvt-courbe) both;
+}
+.ipm-hors-ligne ion-icon {
+  font-size: 1rem;
+}

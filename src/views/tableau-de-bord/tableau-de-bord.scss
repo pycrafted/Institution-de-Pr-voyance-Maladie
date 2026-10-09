@@ -1,5 +1,5 @@
 // =============================================================================
-// Tableau de bord — synthèse de l'activité
+// Tableau de bord - synthèse de l'activité
 // =============================================================================
 // Fichier local à la section, comme « Données de base » : il ne dépend
 // d'aucune variable de style.scss pour rester déplaçable tel quel.
@@ -8,7 +8,7 @@
 //   · carte blanche cernée d'un filet #d9dde2, rayon 0.375rem ;
 //   · pastille noire SAR sur l'élément actif d'un sélecteur segmenté ;
 //   · en-tête de tableau noir, intitulés capitales 0.72rem ;
-//   · rouge SAR en accent unique — jamais deux accents dans une même carte ;
+//   · rouge SAR en accent unique - jamais deux accents dans une même carte ;
 //   · beaucoup de vide : une ligne de tableau respire sur 2.4rem, un intitulé
 //     de carte n'a rien sous lui.
 //
@@ -17,9 +17,9 @@
 
 $tdb-rouge: #e52621;
 $tdb-noir: #1d1d1b;
-$tdb-bordure: #d9dde2;
-$tdb-doux: #6b7280;
-$tdb-surface-douce: #f7f8fa;
+$tdb-bordure: #e2e8f0;
+$tdb-doux: #64748b;
+$tdb-surface-douce: #f8fafc;
 $tdb-rayon: 0.375rem;
 $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
@@ -30,7 +30,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // -----------------------------------------------------------------------------
-// En-tête de page — titre, période, actions
+// En-tête de page - titre, période, actions
 // -----------------------------------------------------------------------------
 // Le titre est seul sur sa ligne, comme « Structure » : ni sous-titre, ni
 // rappel de la période, que le sélecteur juste à côté annonce déjà.
@@ -52,31 +52,31 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // --- Sélecteur segmenté : identique à celui de « Données de base » ---
+// Un rail gris, le segment retenu en noir SAR.
 .tdb-segments {
   display: inline-flex;
   flex: 0 0 auto;
+  gap: 0.2rem;
+  padding: 0.2rem;
   border: 1px solid $tdb-bordure;
-  border-radius: $tdb-rayon;
-  overflow: hidden;
-  background-color: #fff;
+  border-radius: 0.5rem;
+  background-color: #f1f5f9;
 }
 
 .tdb-segment {
   border: 0;
-  border-right: 1px solid $tdb-bordure;
+  border-radius: 0.35rem;
   background: transparent;
-  padding: 0.42rem 0.95rem;
-  font-size: 0.85rem;
-  color: #2b2b2b;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: #475569;
   white-space: nowrap;
   transition: background-color 0.12s ease, color 0.12s ease;
 
-  &:last-child {
-    border-right: 0;
-  }
-
   &:hover:not(.tdb-segment-actif) {
-    background-color: rgba(0, 0, 0, 0.05);
+    background-color: rgba(255, 255, 255, 0.7);
+    color: $tdb-noir;
   }
 
   &:focus-visible {
@@ -89,6 +89,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   background-color: $tdb-noir;
   color: #fff;
   font-weight: 600;
+  box-shadow: 0 2px 6px -2px rgba(29, 29, 27, 0.5);
 }
 
 // Variante d'en-tête de carte : le sélecteur y est secondaire, il s'efface.
@@ -107,7 +108,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // Quatre tuiles blanches identiques, sans filet coloré ni aplat : ce sont
-// quatre nombres, pas quatre catégories — rien n'a besoin d'être distingué
+// quatre nombres, pas quatre catégories - rien n'a besoin d'être distingué
 // par une teinte. Ce que le gabarit d'origine résolvait en couleur, la
 // disposition le dit déjà.
 .tdb-kpi {
@@ -315,7 +316,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 // Conteneur positionné, hauteur fixée en ligne par le composant, canevas en
 // flux : c'est la seule combinaison où Chart.js observe le redimensionnement
 // du parent et se redessine. Un canevas sorti du flux (absolu) reste figé à
-// la taille de son premier rendu — le graphique s'écrase dès qu'on replie le
+// la taille de son premier rendu - le graphique s'écrase dès qu'on replie le
 // menu ou qu'on rétrécit la fenêtre.
 //
 // La hauteur est posée sur le conteneur, jamais sur le canevas : elle inclut
@@ -331,7 +332,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // -----------------------------------------------------------------------------
-// Pied du graphique principal — quatre agrégats jaugés
+// Pied du graphique principal - quatre agrégats jaugés
 // -----------------------------------------------------------------------------
 .tdb-synthese {
   display: grid;
@@ -407,7 +408,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // -----------------------------------------------------------------------------
-// Relevé — la légende chiffrée d'une figure circulaire
+// Relevé - la légende chiffrée d'une figure circulaire
 // -----------------------------------------------------------------------------
 // Deux colonnes seulement : l'intitulé et la valeur. Le pourcentage y
 // figurait aussi, alors que la taille du secteur le donne déjà ; il reste
@@ -444,7 +445,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // -----------------------------------------------------------------------------
-// Figures circulaires — radar, camembert, aire polaire
+// Figures circulaires - radar, camembert, aire polaire
 // -----------------------------------------------------------------------------
 // Contrairement à l'anneau, qui a la place de poser son relevé à côté de lui,
 // ces trois-là partagent une rangée : la figure passe au-dessus, le relevé
@@ -565,7 +566,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // -----------------------------------------------------------------------------
-// Tableaux — même grammaire que « Données de base »
+// Tableaux - même grammaire que « Données de base »
 // -----------------------------------------------------------------------------
 .tdb-tableau-conteneur {
   border: 1px solid $tdb-bordure;
@@ -578,15 +579,17 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   margin: 0;
   border-collapse: collapse;
 
+  // En-tête clair, comme les tableaux des listes.
   thead th {
-    background-color: $tdb-noir;
-    color: #fff;
-    font-size: 0.72rem;
-    font-weight: 600;
+    background-color: #f7f9fc;
+    color: #475569;
+    font-size: 0.7rem;
+    font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     text-align: left;
-    padding: 0.7rem 0.9rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid $tdb-bordure;
     white-space: nowrap;
   }
 
@@ -595,18 +598,19 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
     &:hover td,
     &:hover th {
-      background-color: #eef3f8;
+      background-color: #f8fafc;
     }
   }
 
   tbody th,
   tbody td {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 400;
-    color: #2b2b2b;
+    color: #1c2434;
     text-align: left;
-    padding: 0.72rem 0.9rem;
-    border-top: 1px solid #eceff2;
+    padding: 0.8rem 1rem;
+    border-top: 1px solid #eef2f6;
+    white-space: nowrap;
   }
 
   tbody tr:first-child th,
@@ -639,8 +643,8 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 // Le jumeau tabulaire du graphique occupe la même hauteur que lui : basculer
 // d'une vue à l'autre ne doit pas faire sauter la page.
 //
-// Les colonnes de chiffres sont bornées, sinon la première — qui ne contient
-// qu'un nom de mois — s'octroie la moitié du cadre et les nombres partent
+// Les colonnes de chiffres sont bornées, sinon la première - qui ne contient
+// qu'un nom de mois - s'octroie la moitié du cadre et les nombres partent
 // flotter chacun dans son désert.
 .tdb-tableau-jumeau {
   min-height: 300px;
@@ -715,4 +719,237 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   .tdb-anneau > .tdb-canevas {
     width: 100%;
   }
+}
+
+// -----------------------------------------------------------------------------
+// Accueil (cf. Accueil.jsx) - tuiles chiffrées, anneau, classements
+// -----------------------------------------------------------------------------
+.tdb-entete-filtre {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.tdb-entete-etiquette {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: $tdb-doux;
+}
+
+.tdb-tuiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+// Carte de statistique d'OpsDigital : la pastille ronde de l'icône, puis le
+// chiffre et son intitulé, la précision à droite.
+.tdb-tuile {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 1.5rem 1.6rem;
+  background-color: #fff;
+  border: 1px solid $tdb-bordure;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #cbd5e1;
+    box-shadow: 0 16px 28px -10px rgba(16, 24, 40, 0.16);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $tdb-rouge;
+    outline-offset: 2px;
+  }
+}
+
+.tdb-tuile-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.9rem;
+  height: 2.9rem;
+  border-radius: 50%;
+  background-color: #eff2f7;
+  color: $tdb-noir;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+}
+
+// La tuile des documents porte le rouge SAR : c'est l'activité de la caisse.
+.tdb-tuile-accent .tdb-tuile-icone {
+  background-color: rgba(229, 38, 33, 0.1);
+  color: $tdb-rouge;
+}
+
+.tdb-tuile-bas {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.tdb-tuile-valeur {
+  margin: 0 0 0.2rem;
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: #1c2434;
+}
+
+.tdb-tuile-libelle {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: $tdb-doux;
+}
+
+.tdb-tuile-note {
+  flex: 0 0 auto;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  background-color: #f1f5f9;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #475569;
+  white-space: nowrap;
+}
+
+.tdb-tuile-accent .tdb-tuile-note {
+  background-color: rgba(229, 38, 33, 0.08);
+  color: #b91c1c;
+}
+
+.tdb-carte-titre {
+  font-size: 1.02rem;
+  letter-spacing: -0.005em;
+}
+
+// Anneau et total au centre.
+.tdb-anneau-centre {
+  position: relative;
+  flex: 0 0 auto;
+  width: 178px;
+}
+
+.tdb-anneau-total {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  color: $tdb-doux;
+  pointer-events: none;
+
+  strong {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1c2434;
+    line-height: 1.1;
+  }
+}
+
+.tdb-etats-sur {
+  font-weight: 500;
+  color: $tdb-doux;
+}
+
+.tdb-carte-vide {
+  margin: auto 0;
+  padding: 1.5rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  color: $tdb-doux;
+}
+
+.tdb-lien-discret {
+  color: #1c2434;
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    color: $tdb-rouge;
+  }
+}
+
+.tdb-tableau-conteneur {
+  overflow-x: auto;
+}
+
+.tdb-chargement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 4rem 1.5rem;
+  background-color: #fff;
+  border: 1px solid $tdb-bordure;
+  border-radius: 0.75rem;
+  color: $tdb-doux;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1399.98px) {
+  .tdb-tuiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 575.98px) {
+  .tdb-tuiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// État vide : aucune donnée réelle à montrer (cf. TableauDeBord.jsx). Une
+// carte, comme partout ailleurs, et le pictogramme d'un graphique en tête.
+.tdb-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4rem 1.5rem;
+  text-align: center;
+  background-color: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
+
+  &::before {
+    content: '';
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1.25rem;
+    border-radius: 50%;
+    background: #f1f5f9
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 3v18h18'/%3E%3Cpath d='M7 15l4-4 3 3 5-6'/%3E%3C/svg%3E")
+      center / 1.6rem no-repeat;
+  }
+}
+
+.tdb-vide-titre {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $tdb-noir;
+}
+
+.tdb-vide-texte {
+  max-width: 28rem;
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
 }

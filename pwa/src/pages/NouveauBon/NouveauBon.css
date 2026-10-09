@@ -1,0 +1,446 @@
+/*
+ * Assistant « Nouveau bon » (pages/NouveauBon/). Préfixe nouveau-bon__,
+ * notation BEM. Aucune couleur, aucun rayon, aucune ombre en dur : seulement
+ * les jetons de theme/variables.css, pour que le mode sombre suive (§1).
+ *
+ * Tout ce qui est une carte, une pile, une gouttière, une puce, un bouton ou
+ * un champ vient de la charte (composants.css) : ce fichier ne décrit que ce
+ * qui est propre à l'assistant — la fenêtre, la progression, le glissement
+ * d'une étape à l'autre, le compteur d'articles et l'écran de succès.
+ */
+
+/* --- La fenêtre ----------------------------------------------------------- */
+/* L'assistant s'ouvre en modal plein écran : il lui faut le fond de l'app, et
+   non le blanc par défaut d'IonModal.
+   Les dimensions sont imposées, car au-delà de 768 px de large Ionic présente
+   ses modales en carte flottante centrée, taillée pour un écran de bureau.
+   Or l'application n'a pas de version de bureau : sur grand écran, elle se
+   réduit à une colonne de 480 px (cf. theme/global.css), dans laquelle cette
+   carte laisserait voir l'accueil au-dessus et la barre d'onglets en dessous.
+   L'assistant occupe donc toujours toute la hauteur, sur téléphone comme dans
+   la colonne — c'est aussi ce que fait une application native : demander un
+   bon prend l'écran entier. */
+ion-modal.ipm-modal-nouveau-bon {
+  --background: var(--ipm-fond);
+  --width: 100%;
+  --min-width: 100%;
+  --max-width: 100%;
+  --height: 100%;
+  --min-height: 100%;
+  --max-height: 100%;
+  --border-radius: 0;
+  --box-shadow: none;
+}
+.nouveau-bon {
+  --background: var(--ipm-fond);
+}
+/* Colonne d'au moins un écran : le pied collant (§3.7) se pose ainsi en bas
+   même quand l'étape ne remplit pas la hauteur. */
+.nouveau-bon__page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.nouveau-bon__etape {
+  flex: 1;
+}
+
+/* --- Bandeau compact : « Annuler » et barre de progression ---------------- */
+/* « Annuler » reprend la pastille translucide du bouton retour du bandeau
+   (classe .ipm-bandeau__retour, §3.2) : seule sa forme change, de rond à
+   pilule, pour laisser la place au mot. Le verre blanc n'est donc pas
+   redéclaré ici. */
+.nouveau-bon__annuler {
+  width: auto;
+  padding: 0 16px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.nouveau-bon__annuler:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.nouveau-bon__annuler:disabled:active {
+  transform: none;
+}
+
+/* §5 : hauteur 4, pilule, rouge de marque sur un rail de verre blanc — le
+   même blanc translucide que les pastilles du bandeau, faute de jeton pour
+   une transparence posée sur la surface de marque. */
+.nouveau-bon__progression {
+  height: 4px;
+  margin-top: var(--e-20);
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+.nouveau-bon__progression-jauge {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background: var(--ipm-rouge);
+  /* La jauge occupe toute la largeur et se rétracte : une transformation
+     s'anime sans repeindre la mise en page. */
+  transform-origin: left center;
+  transform: scaleX(var(--avancement, 0));
+  transition: transform 0.35s var(--mvt-courbe);
+}
+
+/* --- Introduction de chaque étape ---------------------------------------- */
+.nouveau-bon__intro {
+  padding-top: var(--e-24);
+  padding-bottom: var(--e-16);
+}
+.nouveau-bon__titre {
+  margin: 0;
+  font: var(--t-titre);
+  letter-spacing: -0.01em;
+  color: var(--ipm-texte);
+}
+.nouveau-bon__titre:focus {
+  outline: none;
+}
+.nouveau-bon__consigne {
+  margin: 6px 0 0;
+  font: var(--t-corps);
+  color: var(--ipm-texte-doux);
+}
+/* L'introduction tient déjà lieu d'air : la première section de l'étape ne
+   reprend pas les 28 px qui séparent deux sections d'un écran. */
+.nouveau-bon__intro + .ipm-section {
+  margin-top: var(--e-12);
+}
+
+/* Aide sous une carte (étape 4) : alignée sur le contenu, pas sur le bord. */
+.nouveau-bon__aide {
+  margin: var(--e-8) 2px 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+
+/* --- Glissement d'une étape à l'autre (sens du parcours) ----------------- */
+.nouveau-bon__etape--avant {
+  animation: nouveau-bon-depuis-droite 0.34s var(--mvt-courbe) both;
+}
+.nouveau-bon__etape--arriere {
+  animation: nouveau-bon-depuis-gauche 0.34s var(--mvt-courbe) both;
+}
+@keyframes nouveau-bon-depuis-droite {
+  from {
+    opacity: 0;
+    translate: 28% 0;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+@keyframes nouveau-bon-depuis-gauche {
+  from {
+    opacity: 0;
+    translate: -28% 0;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+
+/* --- Alerte (refus du serveur) -------------------------------------------- */
+.nouveau-bon__alerte {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-8);
+  margin: var(--e-12) 0 0;
+  padding: var(--e-12) 14px;
+  border-radius: var(--r-md);
+  font: var(--t-secondaire);
+  color: var(--ipm-rouge-texte);
+  background: var(--ipm-rouge-doux);
+  animation: nouveau-bon-secousse 0.4s ease-out both;
+}
+.nouveau-bon__alerte ion-icon {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+}
+@keyframes nouveau-bon-secousse {
+  0%,
+  100% {
+    translate: 0;
+  }
+  25% {
+    translate: -6px;
+  }
+  50% {
+    translate: 5px;
+  }
+  75% {
+    translate: -3px;
+  }
+}
+
+/* --- Choix fait : liseré rouge et coche sur la carte ---------------------- */
+.nouveau-bon__carte--choisie {
+  border-color: var(--ipm-rouge);
+  box-shadow: var(--ombre-2);
+}
+.nouveau-bon__coche {
+  font-size: 22px;
+  color: var(--ipm-rouge);
+  animation: nouveau-bon-coche 0.3s var(--mvt-courbe) both;
+}
+@keyframes nouveau-bon-coche {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+/* --- Listes recherchables (spécialités, prescripteurs, pharmacies) -------- */
+.nouveau-bon__recherche {
+  padding-bottom: var(--e-4);
+}
+/* Le champ de la charte pose 16 px sous lui : le compte des résultats les
+   reprend à son compte. */
+.nouveau-bon__recherche .ipm-champ {
+  margin-bottom: 0;
+}
+.nouveau-bon__compte {
+  margin: var(--e-12) 2px var(--e-4);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.nouveau-bon__recherche + .nouveau-bon__liste {
+  margin-top: var(--e-12);
+}
+/* Intercalaire alphabétique : un titre de section, jamais un filet gris. */
+.nouveau-bon__groupe + .nouveau-bon__groupe {
+  margin-top: var(--e-20);
+}
+.nouveau-bon__groupe > .ipm-titre-section {
+  margin-bottom: var(--e-8);
+}
+
+/* --- Étape 4 : date et compteur d'articles -------------------------------- */
+.nouveau-bon__carte-date {
+  padding: var(--e-16) var(--e-8) var(--e-8);
+}
+.nouveau-bon__date-choisie {
+  margin: 0 var(--e-8);
+  font: var(--t-sous-titre);
+  text-align: center;
+  color: var(--ipm-texte);
+}
+.nouveau-bon__date-choisie::first-letter {
+  text-transform: uppercase;
+}
+/* Les puces de la charte portent la gouttière de l'écran : dans une carte,
+   elles se contentent de se centrer. */
+.nouveau-bon__raccourcis {
+  justify-content: center;
+  padding-inline: var(--e-8);
+  margin-top: var(--e-12);
+}
+.nouveau-bon__roues {
+  --background: transparent;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 350px;
+}
+.nouveau-bon__compteur {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--e-12);
+}
+.nouveau-bon__compteur-bouton {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.nouveau-bon__compteur-bouton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.nouveau-bon__compteur-bouton:disabled:active {
+  transform: none;
+}
+.nouveau-bon__compteur-valeur {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 96px;
+}
+.nouveau-bon__compteur-valeur:focus {
+  outline: none;
+}
+.nouveau-bon__compteur-chiffre {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ipm-texte);
+}
+.nouveau-bon__compteur-unite {
+  margin-top: var(--e-4);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+
+/* --- Étape 5 : récapitulatif ---------------------------------------------- */
+/* La carte de liste met son titre sur une ligne : ici il en porte deux, la
+   rubrique au-dessus de la valeur. Mise en page seulement — couleurs, rayon
+   et ombre restent ceux de la charte. */
+.nouveau-bon__recap .ipm-carte-liste__titre {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: normal;
+}
+.nouveau-bon__rubrique {
+  font: var(--t-puce);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ipm-texte-doux);
+}
+.nouveau-bon__valeur {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nouveau-bon__info {
+  display: flex;
+  gap: var(--e-12);
+  margin-top: var(--e-12);
+  padding: 14px 16px;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.nouveau-bon__info ion-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 1.25rem;
+  color: var(--ipm-texte-doux);
+}
+.nouveau-bon__info p {
+  margin: 0;
+}
+.nouveau-bon__info strong {
+  color: var(--ipm-texte);
+}
+
+/* --- Pied : l'explication du hors-ligne, au-dessus du bouton -------------- */
+.nouveau-bon__hors-ligne {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-8);
+  margin: 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.nouveau-bon__hors-ligne ion-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 1.125rem;
+}
+
+/* --- Succès : disque vert, coche dessinée, numéro sur une carte ----------- */
+.nouveau-bon__succes {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--e-32);
+  text-align: center;
+  background: var(--ipm-fond);
+  animation: nouveau-bon-fondu 0.2s ease-out both;
+}
+.nouveau-bon__succes-disque {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  margin-bottom: var(--e-24);
+  border-radius: var(--r-pill);
+  background: var(--st-valide-doux);
+  animation: nouveau-bon-rebond 0.5s 0.05s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.nouveau-bon__succes-dessin {
+  width: 64px;
+  height: 64px;
+  fill: none;
+  stroke: var(--st-valide);
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nouveau-bon__succes-coche {
+  stroke-dasharray: 70;
+  stroke-dashoffset: 70;
+  animation: nouveau-bon-trace 0.35s 0.35s ease-out forwards;
+}
+.nouveau-bon__succes-titre {
+  margin: 0;
+  font: var(--t-titre);
+  color: var(--ipm-texte);
+  animation: nouveau-bon-monte 0.35s 0.35s ease-out both;
+}
+.nouveau-bon__succes-carte {
+  margin-top: var(--e-20);
+  padding: var(--e-16) var(--e-24);
+  animation: nouveau-bon-monte 0.35s 0.45s ease-out both;
+}
+.nouveau-bon__succes-numero {
+  margin: 0;
+  font: var(--t-sous-titre);
+  font-weight: 700;
+  color: var(--ipm-texte);
+}
+.nouveau-bon__succes-validite {
+  margin: var(--e-4) 0 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+@keyframes nouveau-bon-fondu {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes nouveau-bon-trace {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes nouveau-bon-rebond {
+  from {
+    opacity: 0;
+    scale: 0.4;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes nouveau-bon-monte {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}

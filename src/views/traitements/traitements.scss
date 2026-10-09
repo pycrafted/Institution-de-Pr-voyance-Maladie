@@ -1,0 +1,327 @@
+// Page de traitement d'une facture (FactureDetails.jsx). Reprend les tons de
+// « Données de base » ; la carte d'en-tête rappelle le bandeau orange de
+// l'application d'origine.
+$trt-rouge: #e52621;
+$trt-bordure: #d9dde2;
+$trt-doux: #6b7280;
+$trt-encre: #11151d;
+
+.trt-chargement {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 2rem 1.75rem;
+  color: $trt-doux;
+}
+
+.trt-traitement {
+  padding: 1.5rem 1.75rem 2rem;
+}
+
+// En-tête : carte facture à gauche, actions + bons en instance à droite.
+.trt-entete {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (max-width: 991.98px) {
+  .trt-entete {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.trt-carte-facture {
+  border: 1px solid $trt-bordure;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.trt-carte-titre {
+  background: #f6a823;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+}
+
+.trt-infos {
+  margin: 0;
+  padding: 0.5rem 1rem 0.75rem;
+}
+
+.trt-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f1f3f5;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  dt {
+    color: $trt-doux;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  dd {
+    margin: 0;
+    font-weight: 600;
+    color: $trt-encre;
+    text-align: right;
+  }
+}
+
+.trt-net {
+  color: $trt-rouge;
+  font-weight: 700;
+}
+
+.trt-colonne-droite {
+  min-width: 0;
+}
+
+.trt-boutons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.trt-bloc {
+  margin-top: 0.25rem;
+}
+
+.trt-bloc-titre {
+  background: $trt-encre;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.6rem 1rem;
+  border-radius: 0.4rem 0.4rem 0 0;
+}
+
+.trt-bloc-traites {
+  margin-top: 2rem;
+}
+
+.trt-total td {
+  background: #f8f9fa;
+  border-top: 2px solid $trt-bordure;
+}
+
+.trt-ecart {
+  margin-top: 0.75rem;
+  text-align: right;
+  color: $trt-encre;
+  font-size: 0.95rem;
+}
+
+.trt-ecart-non-nul {
+  color: $trt-rouge;
+}
+
+// --- Modal de liquidation acte par acte (LiquidationBonModal, capture 39) ---
+.trt-liq-haut {
+  display: grid;
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 767.98px) {
+  .trt-liq-haut {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.trt-liq-entete,
+.trt-liq-saisie {
+  border: 1px solid $trt-bordure;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.trt-liq-entete-titre {
+  background: $trt-rouge;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.6rem 1rem;
+}
+
+.trt-liq-entete .trt-infos {
+  margin: 0;
+  padding: 0.25rem 1rem 0.5rem;
+}
+
+.trt-liq-grille {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  padding: 1rem;
+
+  // L'acte prend toute la largeur.
+  > .ddb-groupe:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+.trt-liq-ajouter {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 1rem 1rem;
+}
+
+.trt-liq-tableau {
+  margin-top: 1.25rem;
+}
+
+.trt-liq-pied {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid $trt-bordure;
+}
+
+.trt-liq-totaux {
+  color: $trt-rouge;
+  font-weight: 600;
+}
+
+.trt-liq-actions {
+  display: flex;
+  align-items: center;
+}
+
+// Bouton « Créer bon manuel » : bleu, comme l'application d'origine (il crée un
+// bon au traitement, action à part des boutons Valider/Fermer).
+.trt-bouton-manuel {
+  border-color: #3f86dd;
+  color: #3f86dd;
+
+  &:hover {
+    background-color: rgba(63, 134, 221, 0.09);
+    border-color: #3f86dd;
+    color: #2f6fc0;
+  }
+
+  .ddb-outil-icone {
+    color: inherit;
+  }
+}
+
+// --- Modal « Règlement Facture » (§17, captures 52-54) ----------------------
+// En-tête commun : mode / N° / date / mois, encadré comme l'application d'origine.
+.trt-reg-entete {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  border: 1px solid $trt-bordure;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.trt-reg-requis {
+  color: $trt-rouge;
+}
+
+// Une ligne par facture : titre + Acompte, puis le montant.
+.trt-reg-factures {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.trt-reg-facture {
+  border: 1px solid $trt-bordure;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.trt-reg-facture-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.trt-reg-facture-titre {
+  font-weight: 700;
+  color: $trt-encre;
+}
+
+.trt-reg-acompte-case {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: $trt-doux;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.trt-reg-recap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid $trt-bordure;
+  color: $trt-encre;
+  font-weight: 600;
+
+  strong {
+    color: $trt-rouge;
+    font-variant-numeric: tabular-nums;
+    margin-left: 0.25rem;
+  }
+}
+
+.trt-reg-libelle-bloc {
+  margin-top: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: $trt-doux;
+    font-size: 0.85rem;
+  }
+}
+
+.trt-reg-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid $trt-bordure;
+}
+
+// Bouton « Edition » dans l'en-tête de la page des règlements.
+.trt-bouton-edition {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+@media (max-width: 767.98px) {
+  .trt-reg-entete {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 479.98px) {
+  .trt-reg-entete {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

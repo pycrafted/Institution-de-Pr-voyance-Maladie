@@ -4,20 +4,26 @@ Vues d'authentification.
 Trois points d'entrée et rien de plus : ouvrir une session, la fermer, et dire
 qui elle désigne. Ce sont les trois chemins que ``src/services/api.js`` appelle.
 
-``LoginView`` est la seule vue de l'API ouverte sans jeton — il faut bien un
+``LoginView`` est la seule vue de l'API ouverte sans jeton - il faut bien un
 moyen d'en obtenir un. Tout le reste exige ``IsAuthenticated``, fixé
 globalement dans ``config/settings.py`` : aucune vue ne doit rouvrir l'accès
 de son côté.
 """
 
 from django.contrib.auth import authenticate, get_user_model
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import LoginSerializer, UtilisateurSerializer
+from .serializers import (
+    LoginSerializer,
+    UtilisateurEditionSerializer,
+    UtilisateurListeSerializer,
+    UtilisateurSerializer,
+)
 
 User = get_user_model()
 
@@ -80,3 +86,26 @@ class MoiView(APIView):
 
     def get(self, request):
         return Response(UtilisateurSerializer(request.user).data)
+
+
+class UtilisateursViewSet(viewsets.ModelViewSet):
+    """
+    Gestion des comptes (onglet « Gestion des utilisateurs » des Paramètres) :
+    lister, créer, modifier, activer/désactiver, supprimer. Réservé aux
+    administrateurs - gérer les accès n'est pas un droit ordinaire.
+    """
+
+    queryset = get_user_model().objects.order_by('first_name', 'last_name', 'email')
+    permission_classes = [IsAdminUser]
+
+    def get_serializer_class(self):
+        if self.action in ('create', 'update', 'partial_update'):
+            return UtilisateurEditionSerializer
+        return UtilisateurListeSerializer
+
+    def perform_destroy(self, instance):
+        # On ne supprime pas le compte avec lequel on est connecté : on se
+        # retrouverait déconnecté, et sans personne pour rétablir l'accès.
+        if instance.pk == self.request.user.pk:
+            raise ValidationError('Vous ne pouvez pas supprimer votre propre compte.')
+        instance.delete()

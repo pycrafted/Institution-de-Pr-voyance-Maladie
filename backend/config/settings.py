@@ -2,7 +2,7 @@
 Configuration Django du backend IPM.
 
 Développement modulaire : chaque module métier est une application Django rangée
-sous ``apps/``. On démarre avec ``donnees_de_base`` — le module qui porte tous
+sous ``apps/``. On démarre avec ``donnees_de_base`` - le module qui porte tous
 les référentiels (types de bénéficiaires, prestations, spécialités…). Les modules
 suivants (adhérents, participants, prestations…) s'ajouteront de la même façon,
 sans toucher au cœur.
@@ -56,6 +56,11 @@ INSTALLED_APPS = [
     'authentification',
     'donnees_de_base',
     'adherents',
+    'participants',
+    'documents',
+    'parametres',
+    'traitements',
+    'mobile',
 ]
 
 MIDDLEWARE = [
@@ -89,14 +94,33 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # ---------------------------------------------------------------------------
-# Base de données — SQLite en local, suffisant pour le développement.
+# Base de données - SQLite en local, suffisant pour le développement.
 # ---------------------------------------------------------------------------
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Base pilotée par l'environnement (backend/.env, hors Git). Dès que `DB_NAME`
+# est défini, l'application utilise **notre PostgreSQL** ; sinon elle retombe sur
+# SQLite (pratique en développement). En production, `.env` porte les variables
+# PostgreSQL, et c'est donc exclusivement Postgres qui sert les données.
+if os.getenv('DB_NAME'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER', 'ipm'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+            # Connexions réutilisées (waitress sert plusieurs requêtes) : évite
+            # d'ouvrir une session PostgreSQL à chaque appel.
+            'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '60')),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ---------------------------------------------------------------------------
 # Django REST Framework
@@ -104,7 +128,7 @@ DATABASES = {
 REST_FRAMEWORK = {
     # L'API porte des données de santé et d'état civil nominatives : elle est
     # fermée par défaut, et le reste dans tous les environnements. La seule
-    # vue ouverte est la connexion (cf. apps/authentification/views.py) —
+    # vue ouverte est la connexion (cf. apps/authentification/views.py) -
     # aucune autre ne doit redescendre à AllowAny de son côté.
     'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.TokenAuthentication'],
     'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.IsAuthenticated'],
@@ -112,7 +136,7 @@ REST_FRAMEWORK = {
 }
 
 # ---------------------------------------------------------------------------
-# CORS — le frontend Vite tourne sur http://localhost:3000
+# CORS - le frontend Vite tourne sur http://localhost:3000
 # ---------------------------------------------------------------------------
 CORS_ALLOWED_ORIGINS = os.getenv(
     'DJANGO_CORS_ORIGINS',

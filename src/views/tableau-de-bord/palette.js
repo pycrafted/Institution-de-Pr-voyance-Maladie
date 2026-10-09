@@ -2,14 +2,14 @@
  * Palette de visualisation du tableau de bord.
  *
  * Elle suit la règle de « Données de base » : du noir, du blanc, un rouge.
- * Cette page-là ne montre que deux couleurs — le noir des en-têtes et de
- * l'élément actif, le rouge SAR d'un bouton et d'une icône — et c'est
+ * Cette page-là ne montre que deux couleurs - le noir des en-têtes et de
+ * l'élément actif, le rouge SAR d'un bouton et d'une icône - et c'est
  * précisément ce qui la rend calme. Un tableau de bord bariolé à côté d'elle
  * casserait l'application en deux.
  *
  * D'où la composition ici :
  *   · une **rampe graphite** pour les figures à plusieurs parts. Une seule
- *     teinte, cinq clartés — les secteurs se distinguent par la valeur, pas
+ *     teinte, cinq clartés - les secteurs se distinguent par la valeur, pas
  *     par la couleur ;
  *   · un **graphite plein** pour toute marque à série unique ;
  *   · le **rouge SAR** réservé à la série principale d'une comparaison, aux
@@ -21,7 +21,7 @@
  */
 
 // -----------------------------------------------------------------------------
-// Rampe graphite — figures à plusieurs parts
+// Rampe graphite - figures à plusieurs parts
 // -----------------------------------------------------------------------------
 // Elle descend du gris vers le presque-noir, ses deux extrémités choisies pour
 // rester au-dessus du fond blanc des cartes.
@@ -63,7 +63,7 @@ const CHROME = {
 // Rabattues par rapport aux verts et ambres d'usage : à côté du gris de la
 // page, une saturation pleine ferait tache. Elles restent au-dessus de 3:1
 // sur leur fond, et ne circulent jamais sans l'icône et le libellé qui les
-// accompagnent — la couleur seule ne dit rien.
+// accompagnent - la couleur seule ne dit rien.
 //
 // Le rejet reprend le rouge SAR : c'est déjà la couleur du danger partout
 // ailleurs dans l'application.
@@ -77,7 +77,7 @@ const ETATS = {
 }
 
 /**
- * Convertit une teinte en rgba — sert aux aplats d'aire (~10 % d'opacité :
+ * Convertit une teinte en rgba - sert aux aplats d'aire (~10 % d'opacité :
  * un lavis, jamais un bloc saturé) et aux pistes de jauges.
  *
  * @param {string} hex couleur au format #rrggbb

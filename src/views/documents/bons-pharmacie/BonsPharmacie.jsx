@@ -8,7 +8,7 @@
  * « Données de base », qui sait déjà lister, chercher, filtrer, paginer,
  * créer, modifier et exporter à partir d'un simple descripteur. C'est ce qui
  * fait qu'un bon se consulte et se saisit exactement comme un adhérent ou un
- * fournisseur — même tableau à en-tête noir, même panneau latéral, mêmes
+ * fournisseur - même tableau à en-tête noir, même panneau latéral, mêmes
  * gestes. Réécrire un écran équivalent aurait garanti l'inverse : deux pages
  * qui se ressemblent de loin et diffèrent de près.
  *
