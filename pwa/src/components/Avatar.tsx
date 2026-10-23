@@ -22,6 +22,12 @@ function indiceTeinte(nom: string): number {
 
 interface Props {
   nom: string
+  /**
+   * Portrait de la personne (data URI). Quand il existe, il REMPLACE les
+   * initiales : une photo se reconnaît d'un coup d'oeil, deux lettres non.
+   * La teinte de la pastille ne sert alors à rien et n'est pas posée.
+   */
+  photo?: string | null
   /** Diamètre en pixels (40 par défaut, 44 dans le bandeau, 64 au profil). */
   taille?: number
   /**
@@ -33,21 +39,21 @@ interface Props {
   className?: string
 }
 
-/** Pastille ronde aux initiales (bénéficiaires, profil, bandeau de l'accueil). */
-export default function Avatar({ nom, taille = 40, ton = 'douce', className }: Props) {
+/** Pastille ronde : le portrait s'il existe, sinon les initiales. */
+export default function Avatar({ nom, photo, taille = 40, ton = 'douce', className }: Props) {
   const style: CSSProperties = {
     width: taille,
     height: taille,
     fontSize: taille * 0.38,
   }
-  const teinte = ton === 'douce' ? ` ipm-avatar--${indiceTeinte(nom)}` : ''
+  const teinte = photo || ton !== 'douce' ? '' : ` ipm-avatar--${indiceTeinte(nom)}`
   return (
     <span
       className={`ipm-avatar ipm-avatar--${ton}${teinte}${className ? ` ${className}` : ''}`}
       style={style}
       aria-hidden="true"
     >
-      {initiales(nom)}
+      {photo ? <img className="ipm-avatar__photo" src={photo} alt="" /> : initiales(nom)}
     </span>
   )
 }

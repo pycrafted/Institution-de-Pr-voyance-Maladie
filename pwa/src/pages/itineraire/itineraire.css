@@ -260,8 +260,7 @@
   place-items: center;
   width: 54px;
   height: 54px;
-  border-radius: var(--r-pill);
-  background: var(--ipm-rouge-doux);
+  background: transparent;
   color: var(--ipm-rouge-texte);
   font-size: 22px;
 }

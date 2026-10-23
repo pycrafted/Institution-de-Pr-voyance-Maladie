@@ -1,12 +1,14 @@
 /**
- * Écran « Profil » (onglet /profil, SPEC_DESIGN §5) : « Ma famille » en une
- * seule carte groupée, puis les réglages en cartes d'action (§3.5).
+ * Écran « Profil » (onglet /profil, SPEC_DESIGN §5) : « Mes informations » en
+ * une seule carte groupée, puis les réglages en cartes d'action (§3.5).
  *
  * Ce qui a disparu, et pourquoi : les 13 `IonItem` répartis dans 4 `IonList`
  * et leurs filets gris — les interdictions de §1 —, puis la carte d'adhérent
  * elle-même. Elle est déjà sur l'accueil, avec le portrait qu'on y change :
- * la répéter ici ne montrait rien de nouveau et repoussait la famille et les
- * réglages hors de l'écran.
+ * la répéter ici ne montrait rien de nouveau et repoussait les réglages hors
+ * de l'écran. Enfin « Ma famille » : les cartes d'ayant droit se touchent
+ * désormais depuis l'accueil (components/CartePleinEcran), là où l'employé
+ * en a besoin, au lieu d'être rangées dans un écran de réglages.
  *
  * La déconnexion efface jeton, profil, bons et PDF en cache
  * (useSession().deconnecter) ; App.tsx revient seul à l'identification.
@@ -26,16 +28,12 @@ import {
   informationCircleOutline,
   logOutOutline,
   moonOutline,
-  peopleOutline,
   sunnyOutline,
 } from 'ionicons/icons'
 import { useMemo, useState } from 'react'
 
-import Avatar from '../components/Avatar'
-import BandeauMarque from '../components/BandeauMarque'
 import { BoutonPrincipal } from '../components/Boutons'
 import CarteListe from '../components/CarteListe'
-import EtatVide from '../components/EtatVide'
 import Feuille from '../components/Feuille'
 import FeuilleChoix from '../components/FeuilleChoix'
 import { ouvrirFeuilleInstallation } from '../components/InstallSheet'
@@ -43,14 +41,12 @@ import { haptique } from '../hooks/haptique'
 import { useParticipant, useSession } from '../session'
 import { basculerApparence, useApparence } from '../theme/apparence'
 import { estInstallee } from '../utils/plateforme'
-import { matriculeSansSociete } from '../utils/format'
 import { VERSION } from '../version'
-import { detailBeneficiaire } from './profil/famille'
 import { informationsDuParticipant } from './profil/informations'
 import './profil/profil.css'
 
 export default function Profil() {
-  const { participant, beneficiaires } = useParticipant()
+  const { participant } = useParticipant()
   const { rafraichir, deconnecter } = useSession()
   // La question posée dans une feuille de choix, s'il y en a une.
   const [question, setQuestion] = useState<'deconnexion' | null>(null)
@@ -59,12 +55,6 @@ export default function Profil() {
   const installee = useMemo(estInstallee, [])
   const sombre = useApparence() === 'sombre'
   const informations = useMemo(() => informationsDuParticipant(participant), [participant])
-  // « Ma famille » ne liste que les ayants droit : le titulaire est déjà
-  // détaillé juste au-dessus, dans « Mes informations ».
-  const famille = useMemo(
-    () => beneficiaires.filter((beneficiaire) => !beneficiaire.estParticipant),
-    [beneficiaires],
-  )
 
   function actualiser(evenement: CustomEvent<RefresherEventDetail>) {
     haptique.leger()
@@ -83,11 +73,9 @@ export default function Profil() {
           <IonRefresherContent />
         </IonRefresher>
 
-        <BandeauMarque titre="Profil" sousTitre="Vos informations, votre famille et les réglages" />
-
         {/* Ce que l'IPM sait de l'employé, rubrique par rubrique. Rien ne s'y
-            modifie : ces informations se corrigent à l'IPM, et la photo se
-            change sur la carte de l'accueil. */}
+            modifie : ces informations se corrigent à l'IPM, et la photo
+            s'envoie depuis la feuille « Photos d'identité » de l'accueil. */}
         <section className="ipm-section">
           <div className="ipm-entete-section">
             <h2 className="ipm-titre-section">Mes informations</h2>
@@ -111,48 +99,6 @@ export default function Profil() {
               </div>
             ))}
           </dl>
-        </section>
-
-        <section className="ipm-section">
-          <div className="ipm-entete-section">
-            <h2 className="ipm-titre-section">
-              Ma famille{famille.length > 0 ? ` · ${famille.length}` : ''}
-            </h2>
-          </div>
-          {famille.length === 0 ? (
-            <EtatVide
-              icone={peopleOutline}
-              teinte="neutre"
-              compact
-              titre={beneficiaires.length === 0 ? 'Famille indisponible' : 'Aucun ayant droit'}
-              message={
-                beneficiaires.length === 0
-                  ? 'La liste de vos bénéficiaires n’a pas encore pu être chargée. Tirez vers le bas pour actualiser.'
-                  : 'Aucun ayant droit n’est rattaché à votre dossier. Rapprochez-vous de l’IPM pour en ajouter un.'
-              }
-            />
-          ) : (
-            <>
-              {/* Une seule carte, et non cinq : la famille est UN objet. Rien
-                  ne sépare ses lignes, comme dans « Mes informations ». */}
-              <div className="ipm-groupe">
-                {famille.map((beneficiaire, rang) => (
-                  <CarteListe
-                    key={beneficiaire.matricule}
-                    rang={rang}
-                    vignette={<Avatar nom={beneficiaire.nomComplet} taille={44} />}
-                    titre={beneficiaire.nomComplet}
-                    details={detailBeneficiaire(beneficiaire)}
-                    meta={
-                      <span className="ipm-chiffres">
-                        {matriculeSansSociete(beneficiaire.matricule)}
-                      </span>
-                    }
-                  />
-                ))}
-              </div>
-            </>
-          )}
         </section>
 
         <section className="ipm-section">

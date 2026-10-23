@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { configurerClient } from '../../api'
@@ -83,8 +83,14 @@ const CLINIQUE = unFournisseur({
 })
 const DOCTEUR = unFournisseur({ code: 'MG001', libelle: 'CABINET MEDICAL FANN' })
 const NATURES = [
-  { code: '00', libelle: 'VISITE' },
-  { code: '01', libelle: 'ANALYSES BIO-MEDICALES' },
+  { code: '00', libelle: 'VISITE', courante: true },
+  { code: '01', libelle: 'ANALYSES BIO-MEDICALES', courante: true },
+]
+// Ce que le serveur rend pour la spécialité 08 CLINIQUES : la nature qu'elle
+// donne vraiment devant, le reste derrière (cf. natures_courantes.py).
+const NATURES_CLINIQUES = [
+  { code: '00', libelle: 'VISITE', courante: true },
+  { code: '01', libelle: 'ANALYSES BIO-MEDICALES', courante: false },
 ]
 const LETTRE_CREEE: Bon = unBon({
   genre: 'lettre-garantie',
@@ -112,7 +118,9 @@ function fauxServeur(creation: () => Response = () => reponseJson(LETTRE_CREEE, 
       corps: typeof init?.body === 'string' ? (JSON.parse(init.body) as unknown) : null,
     })
     if (url.endsWith('/mobile/specialites/')) return reponseJson(SPECIALITES)
-    if (url.endsWith('/mobile/natures-prestation/')) return reponseJson(NATURES)
+    if (url.includes('/mobile/natures-prestation/?specialite=08'))
+      return reponseJson(NATURES_CLINIQUES)
+    if (url.includes('/mobile/natures-prestation/')) return reponseJson(NATURES)
     if (url.includes('/mobile/prescripteurs/?specialite=08')) return reponseJson([CLINIQUE])
     if (url.includes('/mobile/prescripteurs/')) return reponseJson([DOCTEUR])
     if (url.endsWith('/mobile/lettres-garantie/') && methode === 'POST') return creation()
@@ -129,24 +137,30 @@ function fauxServeur(creation: () => Response = () => reponseJson(LETTRE_CREEE, 
   return appels
 }
 
-function toucher(texte: string | HTMLElement) {
-  const element = typeof texte === 'string' ? screen.getByText(texte) : texte
-  const cible = element.closest('button')
-  if (!cible) throw new Error(`Rien à toucher pour « ${element.textContent ?? ''} »`)
-  fireEvent.click(cible)
+function bouton(nom: string | RegExp): HTMLButtonElement {
+  const element = screen.getByText(nom).closest('button, ion-button')
+  if (!(element instanceof HTMLElement)) throw new Error(`Bouton « ${String(nom)} » absent`)
+  return element as HTMLButtonElement
 }
 
-async function allerAuRecap() {
-  toucher('Awa DIOP')
-  toucher(await screen.findByText('Cliniques'))
-  toucher(await screen.findByText('Clinique de la Madeleine'))
-  toucher(await screen.findByText('Visite'))
-  toucher(await screen.findByText('Generalistes'))
-  toucher(await screen.findByText('Cabinet Medical Fann'))
-  await screen.findByText('La prescription')
-  fireEvent.change(screen.getByLabelText('Roues de la date'), { target: { value: '2026-09-15' } })
-  toucher('Continuer')
-  await screen.findByText('Vérifiez avant de générer')
+/** Un champ du formulaire, par son libellé. */
+const champ = (libelle: string | RegExp) => screen.getByLabelText(libelle) as HTMLSelectElement
+const choisir = (libelle: string | RegExp, valeur: string) =>
+  fireEvent.change(champ(libelle), { target: { value: valeur } })
+
+/** Remplit le formulaire en entier. */
+async function remplirTout() {
+  choisir(/^Type/, 'CONJOINT')
+  choisir(/^Bénéficiaire/, '1204-01')
+  await waitFor(() => expect(champ('Spécialité').disabled).toBe(false))
+  choisir('Spécialité', '08')
+  await waitFor(() => expect(champ(/^Prestataire/).disabled).toBe(false))
+  choisir(/^Prestataire/, 'CL008')
+  choisir(/^Nature prestation/, '00')
+  choisir(/^Spécialité du prescripteur/, '00')
+  await waitFor(() => expect(champ(/^Prescripteur/).disabled).toBe(false))
+  choisir(/^Prescripteur/, 'MG001')
+  fireEvent.change(champ(/^Date prescription/), { target: { value: '2026-09-15' } })
 }
 
 beforeAll(() => preparerIonic())
@@ -164,33 +178,76 @@ afterEach(() => {
 })
 
 describe('Nouvelle lettre de garantie', () => {
-  it('commence par la famille, en six étapes', () => {
+  it('présente les mêmes sections que l’écran web, sans titre ni participant', () => {
     fauxServeur()
-    rendreAvecSession(<NouvelleLettre onFermer={vi.fn()} onCree={vi.fn()} />)
-    expect(screen.getByText('Pour qui est la prise en charge ?')).toBeInTheDocument()
-    expect(screen.getByText('Étape 1 sur 6 · Bénéficiaire')).toBeInTheDocument()
+    const { container } = rendreAvecSession(<NouvelleLettre onFermer={vi.fn()} onCree={vi.fn()} />)
+    const titres = Array.from(container.querySelectorAll('.ipm-formulaire__titre')).map(
+      (t) => t.textContent,
+    )
+    expect(titres).toEqual(['Bénéficiaire', 'Prestataire', 'Prescripteur', 'Actes'])
+    expect(screen.queryByText('Nouvelle lettre')).toBeNull()
+    expect(container.querySelector('.ipm-formulaire__lecture')).toBeNull()
   })
 
-  it('génère la lettre de bout en bout, puis ouvre son détail après l’animation', async () => {
+  it('n’exige que le bénéficiaire pour enregistrer', async () => {
+    fauxServeur()
+    rendreAvecSession(<NouvelleLettre onFermer={vi.fn()} onCree={vi.fn()} />)
+    expect(bouton('Enregistrer').disabled).toBe(true)
+
+    choisir(/^Type/, 'CONJOINT')
+    choisir(/^Bénéficiaire/, '1204-01')
+    await waitFor(() => expect(bouton('Enregistrer').disabled).toBe(false))
+  })
+
+  it('le prestataire et le prescripteur attendent leur spécialité', async () => {
+    fauxServeur()
+    rendreAvecSession(<NouvelleLettre onFermer={vi.fn()} onCree={vi.fn()} />)
+    expect(champ(/^Prestataire/).disabled).toBe(true)
+    expect(champ(/^Prescripteur/).disabled).toBe(true)
+
+    await waitFor(() => expect(champ('Spécialité').disabled).toBe(false))
+    choisir('Spécialité', '08')
+    await waitFor(() => expect(champ(/^Prestataire/).disabled).toBe(false))
+    // Celui du prescripteur reste fermé : c'est l'autre spécialité.
+    expect(champ(/^Prescripteur/).disabled).toBe(true)
+  })
+
+  it('range les natures d’après la spécialité du prestataire', async () => {
+    fauxServeur()
+    rendreAvecSession(<NouvelleLettre onFermer={vi.fn()} onCree={vi.fn()} />)
+    // Sans spécialité, pas de groupes : rien ne permet de mettre une nature
+    // en avant, la liste reste celle d'avant.
+    await waitFor(() => expect(champ(/^Nature prestation/).options.length).toBe(3))
+    expect(champ(/^Nature prestation/).querySelectorAll('optgroup')).toHaveLength(0)
+
+    await waitFor(() => expect(champ('Spécialité').disabled).toBe(false))
+    choisir('Spécialité', '08')
+
+    // Le serveur a rangé : la nature des cliniques d'abord, sous le nom de la
+    // spécialité ; les autres suivent, elles ne disparaissent pas.
+    await waitFor(() =>
+      expect(
+        Array.from(champ(/^Nature prestation/).querySelectorAll('optgroup')).map((g) =>
+          g.getAttribute('label'),
+        ),
+      ).toEqual(['Cliniques', 'Autres natures']),
+    )
+    expect(
+      Array.from(champ(/^Nature prestation/).options).map((o) => o.value),
+    ).toEqual(['', '00', '01'])
+  })
+
+  it('envoie le formulaire rempli, puis ouvre la lettre créée', async () => {
     const appels = fauxServeur()
     const onCree = vi.fn()
     rendreAvecSession(<NouvelleLettre onFermer={vi.fn()} onCree={onCree} />)
+    await remplirTout()
 
-    await allerAuRecap()
-    const recap = screen.getByLabelText('Récapitulatif de la lettre')
-    expect(within(recap).getByText('Awa DIOP')).toBeInTheDocument()
-    expect(within(recap).getByText('Clinique de la Madeleine')).toBeInTheDocument()
-    expect(within(recap).getByText('Visite')).toBeInTheDocument()
-    expect(within(recap).getByText('Cabinet Medical Fann')).toBeInTheDocument()
-    expect(within(recap).getByText('mardi 15 septembre 2026')).toBeInTheDocument()
-
-    toucher('Générer la lettre')
+    fireEvent.click(bouton('Enregistrer'))
     expect(await screen.findByText('Lettre générée')).toBeInTheDocument()
-    expect(screen.getByText('N° LGI000075')).toBeInTheDocument()
-
     const creation = appels.find((a) => a.methode === 'POST')
     expect(creation?.url).toBe('/api/mobile/lettres-garantie/')
-    expect(creation?.corps).toEqual({
+    expect(creation?.corps).toMatchObject({
       beneficiaire: '1204-01',
       specialitePrestataire: '08',
       prestataire: 'CL008',
@@ -203,16 +260,15 @@ describe('Nouvelle lettre de garantie', () => {
     await waitFor(() => expect(onCree).toHaveBeenCalledWith(LETTRE_CREEE), { timeout: 3000 })
   })
 
-  it('refus du serveur : ramène à l’étape du champ, avec son message', async () => {
+  it('affiche le refus du serveur sous le champ concerné', async () => {
     fauxServeur(() =>
       reponseJson({ prestataire: ['Ce prestataire n’est pas de la spécialité choisie.'] }, 400),
     )
     rendreAvecSession(<NouvelleLettre onFermer={vi.fn()} onCree={vi.fn()} />)
-    await allerAuRecap()
-    toucher('Générer la lettre')
+    await remplirTout()
+    fireEvent.click(bouton('Enregistrer'))
     expect(
       await screen.findByText('Ce prestataire n’est pas de la spécialité choisie.'),
     ).toBeInTheDocument()
-    expect(screen.getByText('Étape 2 sur 6 · Prestataire')).toBeInTheDocument()
   })
 })

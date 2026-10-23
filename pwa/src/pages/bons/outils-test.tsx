@@ -42,10 +42,3 @@ export function preparerIonic(): void {
 export function rendreEcran(ecran: ReactNode) {
   return render(<IonReactRouter>{ecran}</IonReactRouter>)
 }
-
-/** La puce de filtre d'une clé (§3.6), à la place de l'ancien ion-segment. */
-export function puce(cle: string): HTMLElement {
-  const element = document.querySelector<HTMLElement>(`[data-puce="${cle}"]`)
-  if (!element) throw new Error(`puce « ${cle} » absente`)
-  return element
-}

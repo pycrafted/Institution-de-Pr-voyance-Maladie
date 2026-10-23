@@ -80,6 +80,9 @@ describe('personnes', () => {
   it('capitalise les noms composés', () => {
     expect(capitaliser('JEAN-PIERRE N’DIAYE')).toBe('Jean-Pierre N’Diaye')
     expect(capitaliser('élodie')).toBe('Élodie')
+    // Raisons sociales d'IPM : le point sépare, sans espace derrière.
+    expect(capitaliser('DR.FARID GHOZAYEL')).toBe('Dr.Farid Ghozayel')
+    expect(capitaliser('CONSULTATION O.R.L')).toBe('Consultation O.R.L')
   })
 
   it('initiales', () => {

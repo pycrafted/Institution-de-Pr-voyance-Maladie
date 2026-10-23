@@ -44,6 +44,7 @@ export function unBeneficiaire(surcharge: Partial<Beneficiaire> = {}): Beneficia
     age: 64,
     type: { code: '1', libelle: 'PARTICIPANT' },
     estParticipant: true,
+    photo: null,
     ...surcharge,
   }
 }

@@ -41,7 +41,7 @@ import {
 import { type ReactNode } from 'react'
 import type { RouteComponentProps } from 'react-router'
 
-import BandeauMarque from '../components/BandeauMarque'
+import EnteteEcran from '../components/EnteteEcran'
 import { BoutonPrincipal, BoutonSecondaire } from '../components/Boutons'
 import EtatVide from '../components/EtatVide'
 import OfflineBanner from '../components/OfflineBanner'
@@ -202,10 +202,10 @@ export default function DetailBon({ match, location }: DetailBonProps) {
           <IonRefresherContent />
         </IonRefresher>
 
-        {/* Bandeau de marque : le numéro, lisible à bout de bras au
-            comptoir (§5). Le statut et la validité viennent juste en
-            dessous, sur le fond clair. */}
-        <BandeauMarque
+        {/* En-tête d'app mobile : flèche retour Material + le numéro du bon,
+            lisible à bout de bras au comptoir (§5). Le statut et la validité
+            viennent juste en dessous. */}
+        <EnteteEcran
           titre={
             bon ? (
               <span className="detail-bon__numero ipm-chiffres selectionnable">{bon.code}</span>

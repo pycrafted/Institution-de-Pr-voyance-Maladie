@@ -1,27 +1,23 @@
 /**
- * Assistant « Nouveau bon de pharmacie » (SPEC_DESIGN §5, SPEC §3 écran 4).
+ * Écran « Nouveau bon de pharmacie » (modal plein écran).
  *
- * Refonte visuelle : l'assistant commence par un BANDEAU DE MARQUE compact
- * et sombre (§3.2) portant le titre, l'étape en cours et une barre de
- * progression rouge de 4 px en pilule. La grande toolbar Ionic au titre noir
- * sur fond gris, la barre de progression d'Ionic et le pied `IonFooter` ont
- * disparu : §1 les interdit tous les trois.
+ * C'est un FORMULAIRE, le même que celui de l'application web (Documents →
+ * Bons de Pharmacie → Nouveau) : Bénéficiaire, Pharmacie, Prescripteur,
+ * Ordonnance, puis « Enregistrer ». Il a remplacé l'assistant en cinq
+ * étapes, à la demande du métier : le même document ne se demande pas de
+ * deux façons selon qu'on part du guichet ou du téléphone.
  *
- * Chaque étape est ensuite une suite de CARTES autonomes (§3.5) — jamais une
- * liste à filets — et l'action principale est posée en bas sur le voile
- * dégradé de `PiedBoutons` (§3.7).
+ * Ni titre ni section « Participant » : l'employé vient de toucher « Bon de
+ * pharmacie », et la société comme le matricule sont les siens.
  *
- * Modal plein écran en cinq étapes : bénéficiaire → prescripteur (spécialité
- * puis prescripteur) → pharmacie → ordonnance (date + articles) →
- * récapitulatif. Toucher un choix passe à la suite, comme dans une
- * application native ; « Générer le bon » envoie la saisie, joue l'animation
- * de succès, puis l'hôte (NouveauBonModal) ferme le modal et ouvre le détail.
+ * Les champs obligatoires sont ceux de l'écran web, et eux seuls : le
+ * bénéficiaire et son type. La pharmacie, le prescripteur et l'ordonnance
+ * peuvent rester vides et seront complétés au traitement.
  *
  * Les listes de référence sont chargées dès l'ouverture (spécialités,
- * pharmacies) ou dès le choix de la spécialité (prescripteurs), pour que
- * chaque étape s'affiche sans attente. Un refus du serveur (400) ramène à
- * l'étape du champ concerné, avec son message. Hors ligne, la saisie reste
- * possible mais la génération est désactivée, avec l'explication.
+ * pharmacies) ou au choix de la spécialité (prescripteurs). Un refus du
+ * serveur (400) s'affiche sous le champ concerné. Hors ligne, la saisie
+ * reste possible mais l'enregistrement est désactivé, avec l'explication.
  *
  * Contrat (ne pas changer, NouveauBonModal.tsx en dépend) :
  *  - rendu DANS un IonModal plein écran déjà ouvert ;
@@ -33,15 +29,7 @@
 
 import { IonContent, IonIcon, useIonToast } from '@ionic/react'
 import { alertCircleOutline, cloudOfflineOutline, trashOutline } from 'ionicons/icons'
-import {
-  useCallback,
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   creerBon,
@@ -51,7 +39,6 @@ import {
   listerSpecialites,
   messageErreur,
 } from '../../api'
-import BandeauMarque from '../../components/BandeauMarque'
 import { BoutonPrincipal, PiedBoutons } from '../../components/Boutons'
 import FeuilleChoix from '../../components/FeuilleChoix'
 import OfflineBanner from '../../components/OfflineBanner'
@@ -59,27 +46,20 @@ import { chargerBons, memoriserBon } from '../../data/bons'
 import { haptique } from '../../hooks/haptique'
 import { useOnline } from '../../hooks/useOnline'
 import { useSession } from '../../session'
-import type { Bon } from '../../types/api'
-import { aujourdhuiISO, capitaliser } from '../../utils/format'
-import Alerte from './Alerte'
+import type { Beneficiaire, Bon, DateISO, Fournisseur, Specialite } from '../../types/api'
+import { aujourdhuiISO } from '../../utils/format'
 import {
+  borneArticles,
   corpsDepuisSaisie,
   erreurDate,
   etatInitial,
   lireErreursServeur,
-  NB_ETAPES,
-  NOMS_ETAPES,
-  premiereEtapeEnErreur,
-  reducteur,
   saisieComplete,
-  type EtatAssistant,
+  type ErreursSaisie,
+  type Saisie,
 } from './assistant'
 import { useChargement } from './chargement'
-import EtapeBeneficiaire from './EtapeBeneficiaire'
-import EtapeOrdonnance from './EtapeOrdonnance'
-import EtapePharmacie from './EtapePharmacie'
-import EtapePrescripteur from './EtapePrescripteur'
-import EtapeRecapitulatif from './EtapeRecapitulatif'
+import FormulaireBon from './FormulaireBon'
 import Succes from './Succes'
 import './NouveauBon.css'
 
@@ -101,54 +81,21 @@ function dureeSucces(): number {
   return reduit ? DUREE_SUCCES_REDUITE_MS : DUREE_SUCCES_MS
 }
 
-/** Titre et consigne de l'étape affichée. */
-function entete(etat: EtatAssistant): { titre: string; consigne: string } {
-  switch (etat.etape) {
-    case 1:
-      return {
-        titre: 'Pour qui est l’ordonnance ?',
-        consigne: 'Choisissez la personne qui a consulté.',
-      }
-    case 2: {
-      const specialite = etat.saisie.specialite
-      if (etat.sousEtape === 'prescripteur' && specialite) {
-        return {
-          titre: 'Qui a prescrit ?',
-          consigne: `Médecins et structures en ${capitaliser(specialite.libelle)}.`,
-        }
-      }
-      return { titre: 'Qui a prescrit ?', consigne: 'Commencez par la spécialité du prescripteur.' }
-    }
-    case 3:
-      return {
-        titre: 'Dans quelle pharmacie ?',
-        consigne: 'La pharmacie conventionnée où vous retirerez vos médicaments.',
-      }
-    case 4:
-      return { titre: 'L’ordonnance', consigne: 'Sa date et le nombre de médicaments prescrits.' }
-    case 5:
-      return { titre: 'Vérifiez avant de générer', consigne: 'Touchez une carte pour la corriger.' }
-  }
-}
-
 export default function NouveauBon({ onFermer, onCree }: NouveauBonProps) {
   const { beneficiaires, rafraichir } = useSession()
   const enLigne = useOnline()
   // Figée à l'ouverture : les bornes de la date ne bougent pas pendant la saisie.
   const [aujourdhui] = useState(() => aujourdhuiISO())
-  const [etat, envoyer] = useReducer(reducteur, aujourdhui, etatInitial)
+  const [saisie, setSaisie] = useState<Saisie>(() => etatInitial(aujourdhui).saisie)
+  const [erreurs, setErreurs] = useState<ErreursSaisie>({})
   const [envoi, setEnvoi] = useState(false)
   const [bonCree, setBonCree] = useState<Bon | null>(null)
   const [familleEnCours, setFamilleEnCours] = useState(beneficiaires.length === 0)
   const [presenterToast] = useIonToast()
   // « Abandonner ce bon ? », posé dans une feuille de choix.
   const [abandonDemande, setAbandonDemande] = useState(false)
-  const contenuRef = useRef<HTMLIonContentElement>(null)
-  const titreRef = useRef<HTMLHeadingElement>(null)
 
-  const { etape, sousEtape, saisie, erreurs } = etat
   const codeSpecialite = saisie.specialite?.code ?? null
-
   const specialites = useChargement('specialites', (signal) => listerSpecialites({ signal }))
   const pharmacies = useChargement('pharmacies', (signal) => listerPharmacies({ signal }))
   const prescripteurs = useChargement(codeSpecialite, (signal) =>
@@ -166,21 +113,6 @@ export default function NouveauBon({ onFermer, onCree }: NouveauBonProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Nouvelle étape : en haut de page, et le titre reçoit le focus pour que
-  // les lecteurs d'écran annoncent où l'on est.
-  const premierAffichage = useRef(true)
-  useEffect(() => {
-    if (premierAffichage.current) {
-      premierAffichage.current = false
-      return
-    }
-    const contenu = contenuRef.current
-    if (contenu && typeof contenu.scrollToTop === 'function') {
-      void contenu.scrollToTop(0).catch(() => undefined)
-    }
-    titreRef.current?.focus({ preventScroll: true })
-  }, [etape, sousEtape])
-
   // Succès : l'animation se joue, puis l'hôte ouvre le détail.
   const onCreeRef = useRef(onCree)
   onCreeRef.current = onCree
@@ -190,12 +122,18 @@ export default function NouveauBon({ onFermer, onCree }: NouveauBonProps) {
     return () => window.clearTimeout(minuteur)
   }, [bonCree])
 
-  /** Le bandeau reste en place pendant l'envoi : ses boutons, eux, se taisent. */
+  /** L'en-tête reste en place pendant l'envoi : ses boutons, eux, se taisent. */
   const fige = envoi || bonCree !== null
 
-  const precedent = () => {
-    if (fige) return
-    envoyer({ type: 'precedent' })
+  /** Modifier un champ efface son erreur : elle ne vaut plus. */
+  function changer(partie: Partial<Saisie>, ...champs: (keyof ErreursSaisie)[]) {
+    setSaisie((avant) => ({ ...avant, ...partie }))
+    setErreurs((avant) => {
+      const suivantes = { ...avant }
+      for (const champ of champs) delete suivantes[champ]
+      delete suivantes.non_field_errors
+      return suivantes
+    })
   }
 
   const annuler = () => {
@@ -209,21 +147,16 @@ export default function NouveauBon({ onFermer, onCree }: NouveauBonProps) {
     setAbandonDemande(true)
   }
 
-  const continuer = () => {
-    const maintenant = aujourdhuiISO()
-    if (erreurDate(saisie.dateOrdonnance, maintenant)) haptique.erreur()
-    else haptique.selection()
-    envoyer({ type: 'continuer', aujourdhui: maintenant })
-  }
-
-  const generer = async () => {
+  const enregistrer = async () => {
     const corps = corpsDepuisSaisie(saisie)
     if (!corps || envoi || !enLigne || bonCree) return
-    // L'assistant a pu rester ouvert depuis la veille : la date se revérifie.
-    const dateRefusee = erreurDate(corps.dateOrdonnance, aujourdhuiISO())
+    // Le formulaire a pu rester ouvert depuis la veille : la date se revérifie.
+    const dateRefusee = corps.dateOrdonnance
+      ? erreurDate(corps.dateOrdonnance, aujourdhuiISO())
+      : undefined
     if (dateRefusee) {
       haptique.erreur()
-      envoyer({ type: 'erreurs-serveur', champs: { dateOrdonnance: [dateRefusee] } })
+      setErreurs((avant) => ({ ...avant, dateOrdonnance: dateRefusee }))
       return
     }
     setEnvoi(true)
@@ -246,12 +179,9 @@ export default function NouveauBon({ onFermer, onCree }: NouveauBonProps) {
       }
       haptique.erreur()
       if (estErreurApi(e) && e.genre === 'validation' && Object.keys(e.champs).length > 0) {
-        envoyer({ type: 'erreurs-serveur', champs: e.champs })
-        const aCorriger = premiereEtapeEnErreur(lireErreursServeur(e.champs))
+        setErreurs(lireErreursServeur(e.champs))
         void presenterToast({
-          message: aCorriger
-            ? `Une information est à corriger : ${NOMS_ETAPES[aCorriger].toLowerCase()}.`
-            : 'Le bon n’a pas pu être généré.',
+          message: 'Une information est à corriger.',
           duration: 3000,
           position: 'top',
           icon: alertCircleOutline,
@@ -270,169 +200,70 @@ export default function NouveauBon({ onFermer, onCree }: NouveauBonProps) {
     }
   }
 
-  const peutReculer = etape > 1 || sousEtape === 'prescripteur'
-  const { titre, consigne } = entete(etat)
-  // Pas d'animation à l'ouverture : le modal glisse déjà.
-  const anime = etape !== 1 || etat.sens === 'arriere'
-  // Part de chemin parcouru, posée en variable : le CSS en fait la largeur de
-  // la jauge, qui glisse d'une étape à l'autre.
-  const progression = { '--avancement': etape / NB_ETAPES } as CSSProperties
-
-  let contenuEtape: ReactNode = null
-  switch (etape) {
-    case 1:
-      contenuEtape = (
-        <EtapeBeneficiaire
-          beneficiaires={beneficiaires}
-          chargement={familleEnCours}
-          onReessayer={chargerFamille}
-          selection={saisie.beneficiaire?.matricule ?? null}
-          onChoisir={(beneficiaire) => envoyer({ type: 'beneficiaire', beneficiaire })}
-        />
-      )
-      break
-    case 2:
-      contenuEtape = (
-        <EtapePrescripteur
-          sousEtape={sousEtape}
-          specialites={specialites}
-          prescripteurs={prescripteurs}
-          specialite={saisie.specialite}
-          prescripteur={saisie.prescripteur}
-          onSpecialite={(specialite) => envoyer({ type: 'specialite', specialite })}
-          onPrescripteur={(prescripteur) => envoyer({ type: 'prescripteur', prescripteur })}
-        />
-      )
-      break
-    case 3:
-      contenuEtape = (
-        <EtapePharmacie
-          pharmacies={pharmacies}
-          selection={saisie.pharmacie}
-          onChoisir={(pharmacie) => envoyer({ type: 'pharmacie', pharmacie })}
-        />
-      )
-      break
-    case 4:
-      contenuEtape = (
-        <EtapeOrdonnance
-          aujourdhui={aujourdhui}
-          date={saisie.dateOrdonnance}
-          nbArticles={saisie.nbArticles}
-          erreurDate={erreurs.dateOrdonnance}
-          erreurArticles={erreurs.nbArticles}
-          onDate={(date) => envoyer({ type: 'date', date })}
-          onArticles={(nombre) => envoyer({ type: 'articles', nombre })}
-        />
-      )
-      break
-    case 5:
-      contenuEtape = (
-        <EtapeRecapitulatif
-          saisie={saisie}
-          aujourdhui={aujourdhui}
-          erreur={erreurs.non_field_errors}
-          onModifier={(cible) => {
-            haptique.leger()
-            envoyer({ type: 'modifier', etape: cible })
-          }}
-        />
-      )
-      break
-  }
-
-  // Refus du serveur sur un choix de liste : rappelé en tête de l'étape.
-  const erreurChoix =
-    etape === 1
-      ? erreurs.beneficiaire
-      : etape === 2
-        ? (erreurs.specialite ?? erreurs.prescripteur)
-        : etape === 3
-          ? erreurs.pharmacie
-          : undefined
-
   return (
     <>
-      <IonContent ref={contenuRef} className="nouveau-bon">
-        {/* Une colonne haute d'au moins un écran : le pied collant se pose
-            alors en bas même quand l'étape tient en quelques lignes. */}
+      <IonContent className="nouveau-bon">
         <div className="nouveau-bon__page">
-          <BandeauMarque
-            titre="Nouveau bon"
-            sousTitre={`Étape ${etape} sur ${NB_ETAPES} · ${NOMS_ETAPES[etape]}`}
-            onRetour={peutReculer ? precedent : undefined}
-            fin={
-              // Même pastille de verre que le bouton retour du bandeau (§3.2),
-              // en pilule : le composant partagé n'est pas dupliqué, sa classe
-              // est réemployée.
-              <button
-                type="button"
-                className="ipm-bandeau__retour nouveau-bon__annuler"
-                onClick={annuler}
-                disabled={fige}
-              >
-                Annuler
-              </button>
-            }
-          >
-            {/* §5 : barre de progression rouge, hauteur 4, en pilule. */}
-            <div
-              className="nouveau-bon__progression"
-              role="progressbar"
-              aria-valuemin={1}
-              aria-valuemax={NB_ETAPES}
-              aria-valuenow={etape}
-              aria-label={`Étape ${etape} sur ${NB_ETAPES}`}
+          {/* Ni titre ni sous-titre (demande de l'utilisateur) : l'employé
+              vient de toucher « Bon de pharmacie », il sait où il est. Reste
+              la sortie, qui ne peut pas disparaître - c'est le seul moyen de
+              refermer le formulaire. */}
+          <div className="nouveau-bon__barre">
+            <button
+              type="button"
+              className="nouveau-bon__annuler ipm-appui"
+              onClick={annuler}
+              disabled={fige}
             >
-              <span className="nouveau-bon__progression-jauge" style={progression} />
-            </div>
-          </BandeauMarque>
+              Annuler
+            </button>
+          </div>
 
           <OfflineBanner />
 
-          <div
-            key={`${etape}-${sousEtape}`}
-            className={`nouveau-bon__etape${anime ? ` nouveau-bon__etape--${etat.sens}` : ''}`}
-          >
-            {/* Le <h1> de l'écran est celui du bandeau (« Nouveau bon ») :
-                la question de l'étape vient donc au niveau en dessous. */}
-            <div className="nouveau-bon__intro ipm-gouttiere">
-              <h2 ref={titreRef} tabIndex={-1} className="nouveau-bon__titre">
-                {titre}
-              </h2>
-              <p className="nouveau-bon__consigne">{consigne}</p>
-            </div>
-            {erreurChoix && (
-              <div className="ipm-gouttiere">
-                <Alerte message={erreurChoix} />
-              </div>
-            )}
-            {contenuEtape}
-          </div>
+          <FormulaireBon
+            beneficiaires={beneficiaires}
+            familleEnCours={familleEnCours}
+            specialites={specialites}
+            prescripteurs={prescripteurs}
+            pharmacies={pharmacies}
+            saisie={saisie}
+            erreurs={erreurs}
+            aujourdhui={aujourdhui}
+            fige={fige}
+            onBeneficiaire={(beneficiaire: Beneficiaire | null) =>
+              changer({ beneficiaire }, 'beneficiaire')
+            }
+            onSpecialite={(specialite: Specialite | null) =>
+              // Autre spécialité : le prescripteur choisi n'en fait plus partie.
+              changer({ specialite, prescripteur: null }, 'specialite', 'prescripteur')
+            }
+            onPrescripteur={(prescripteur: Fournisseur | null) =>
+              changer({ prescripteur }, 'prescripteur')
+            }
+            onPharmacie={(pharmacie: Fournisseur | null) => changer({ pharmacie }, 'pharmacie')}
+            onDate={(dateOrdonnance: DateISO) => changer({ dateOrdonnance }, 'dateOrdonnance')}
+            onArticles={(nombre: number) =>
+              changer({ nbArticles: nombre ? borneArticles(nombre) : 0 }, 'nbArticles')
+            }
+          />
 
-          {/* Action principale posée sur le voile dégradé de la charte (§3.7). */}
-          {(etape === 4 || etape === 5) && (
-            <PiedBoutons>
-              {etape === 5 && !enLigne && (
-                <p className="nouveau-bon__hors-ligne" role="status">
-                  <IonIcon icon={cloudOfflineOutline} aria-hidden="true" />
-                  Vous êtes hors ligne. Reconnectez-vous pour générer le bon : votre saisie est
-                  conservée.
-                </p>
-              )}
-              {etape === 4 ? (
-                <BoutonPrincipal onClick={continuer}>Continuer</BoutonPrincipal>
-              ) : (
-                <BoutonPrincipal
-                  occupe={envoi}
-                  disabled={!enLigne || Boolean(bonCree) || !saisieComplete(saisie)}
-                  onClick={() => void generer()}
-                >
-                  {envoi ? 'Génération du bon…' : 'Générer le bon'}
-                </BoutonPrincipal>
-              )}
-            </PiedBoutons>
-          )}
+          <PiedBoutons>
+            {!enLigne && (
+              <p className="nouveau-bon__hors-ligne" role="status">
+                <IonIcon icon={cloudOfflineOutline} aria-hidden="true" />
+                Vous êtes hors ligne. Reconnectez-vous pour générer le bon : votre saisie est
+                conservée.
+              </p>
+            )}
+            <BoutonPrincipal
+              occupe={envoi}
+              disabled={!enLigne || Boolean(bonCree) || !saisieComplete(saisie)}
+              onClick={() => void enregistrer()}
+            >
+              {envoi ? 'Génération du bon…' : 'Enregistrer'}
+            </BoutonPrincipal>
+          </PiedBoutons>
         </div>
       </IonContent>
 

@@ -7,7 +7,7 @@ import { enregistrerBonsEnCache, viderCache } from '../../offline/stockage'
 import { reponseJson, unBon, unFournisseur } from '../../test/fabriques'
 import type { Bon } from '../../types/api'
 import MesBons from '../MesBons'
-import { preparerIonic, puce, rendreEcran } from './outils-test'
+import { preparerIonic, rendreEcran } from './outils-test'
 
 // L'hôte du modal « Nouveau bon » vit dans App (sous le routeur) : ici, on
 // ne vérifie que l'appel.
@@ -38,6 +38,15 @@ const BONS = [
   unBon({ id: 1, code: 'BPI000045', statut: 'expire', date: '2026-07-30' }),
 ]
 
+const LETTRE = unBon({
+  genre: 'lettre-garantie',
+  id: 3,
+  code: 'LGI000075',
+  pharmacie: null,
+  prestataire: unFournisseur({ code: 'CL008', libelle: 'CLINIQUE DE LA MADELEINE' }),
+  naturePrestation: { code: '00', libelle: 'VISITE' },
+})
+
 beforeAll(() => preparerIonic())
 
 beforeEach(async () => {
@@ -55,12 +64,10 @@ beforeEach(async () => {
   await viderCache()
 })
 
-/** Le champ de recherche de la charte (§3.8) enveloppe un ion-input. */
-function rechercher(texte: string) {
-  const saisie = document.querySelector('ion-input')
-  if (!saisie) throw new Error('recherche absente')
-  fireEvent(saisie, new CustomEvent('ionInput', { detail: { value: texte } }))
-}
+/** Le menu déroulant des types de document, seul filtre de l'écran. */
+const menu = () => screen.getByLabelText('Type de document') as HTMLSelectElement
+/** Choisit un type par sa clé (« tous », « lettre-garantie »…). */
+const choisir = (cle: string) => fireEvent.change(menu(), { target: { value: cle } })
 
 describe('Mes documents', () => {
   it('liste les documents avec type, numéro, bénéficiaire, pharmacie et statut', async () => {
@@ -74,11 +81,11 @@ describe('Mes documents', () => {
     expect(screen.getAllByText('Bon de pharmacie')).toHaveLength(BONS.length)
     expect(screen.getByText(/Awa Diop · Conjoint/)).toBeInTheDocument()
     expect(screen.getByText(/Pharmacie de l'Aeroport/)).toBeInTheDocument()
-    // Le sous-titre dit le nombre, et rien d'autre.
-    // Le sous-titre décrit l'écran ; le compte est sur les puces et en bas.
-    expect(container.querySelector('.ipm-bandeau__sous-titre')).toHaveTextContent(
-      /bons de pharmacie et vos lettres de garantie/,
-    )
+    // Plus d'en-tête du tout : ni bandeau sombre, ni grand titre - l'écran
+    // commence par son menu de types.
+    expect(container.querySelector('.ipm-bandeau')).toBeNull()
+    expect(container.querySelector('.ipm-entete')).toBeNull()
+    expect(screen.queryByText(/bons de pharmacie et vos lettres de garantie/)).toBeNull()
     expect(screen.queryByText(/demandés ou émis/)).toBeNull()
   })
 
@@ -108,31 +115,48 @@ describe('Mes documents', () => {
     expect(document.querySelector('ion-segment')).toBeNull()
   })
 
-  it('filtre par statut avec les puces', async () => {
+  it('ne propose au menu que les types présents, avec leur compte', async () => {
+    lettres = [LETTRE]
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
-    await screen.findByText('BPI000123')
+    await screen.findByText('LGI000075')
 
-    fireEvent.click(puce('traite'))
-    await waitFor(() => expect(screen.queryByText('BPI000123')).toBeNull())
-    expect(screen.getByText('BPI000122')).toBeInTheDocument()
-    expect(screen.getByText('1 document sur 3')).toBeInTheDocument()
+    await waitFor(() =>
+      expect(Array.from(menu().options).map((o) => o.textContent)).toEqual([
+        'Tous les documents (4)',
+        'Bons de pharmacie (3)',
+        'Lettres de garantie (1)',
+      ]),
+    )
   })
 
-  it('recherche, puis « Tout afficher » quand rien ne correspond', async () => {
+  it('n’offre pas un type dont l’employé n’a aucun document', async () => {
+    // « Lettres de garantie (0) » n'aiderait personne.
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
     await screen.findByText('BPI000123')
 
-    rechercher('aéroport')
-    await waitFor(() => expect(screen.queryByText('BPI000123')).toBeNull())
-    expect(screen.getByText('BPI000122')).toBeInTheDocument()
+    const libelles = Array.from(menu().options).map((o) => o.textContent)
+    expect(libelles).toEqual(['Tous les documents (3)', 'Bons de pharmacie (3)'])
+  })
 
-    rechercher('zzz')
-    expect(await screen.findByText('Aucun document trouvé')).toBeInTheDocument()
-    expect(screen.getByText(/ne correspond à « zzz »/)).toBeInTheDocument()
-    fireEvent.click(screen.getByText('Tout afficher'))
+  it('filtre sur le type choisi, et revient à tous les documents', async () => {
+    lettres = [LETTRE]
+    bonsMock.mockResolvedValue(reponseJson(BONS))
+    rendreEcran(<MesBons />)
+    await screen.findByText('LGI000075')
+
+    choisir('lettre-garantie')
+    await waitFor(() => expect(screen.queryByText('BPI000123')).toBeNull())
+    expect(screen.getByText('LGI000075')).toBeInTheDocument()
+    expect(screen.getByText('1 document sur 4')).toBeInTheDocument()
+
+    choisir('bon-pharmacie')
     expect(await screen.findByText('BPI000123')).toBeInTheDocument()
+    expect(screen.queryByText('LGI000075')).toBeNull()
+
+    choisir('tous')
+    expect(await screen.findByText('LGI000075')).toBeInTheDocument()
   })
 
   it('aucun document : état vide avec « Nouveau bon »', async () => {
@@ -165,16 +189,7 @@ describe('Mes documents', () => {
   })
 
   it('montre les lettres de garantie avec leur prestataire, et mène à leur détail', async () => {
-    lettres = [
-      unBon({
-        genre: 'lettre-garantie',
-        id: 3,
-        code: 'LGI000075',
-        pharmacie: null,
-        prestataire: unFournisseur({ code: 'CL008', libelle: 'CLINIQUE DE LA MADELEINE' }),
-        naturePrestation: { code: '00', libelle: 'VISITE' },
-      }),
-    ]
+    lettres = [LETTRE]
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
 
@@ -188,9 +203,5 @@ describe('Mes documents', () => {
     fireEvent.click(carte)
     await waitFor(() => expect(window.location.pathname).toBe('/bons/lettres/3'))
     window.history.replaceState(null, '', '/')
-
-    rechercher('visite')
-    await waitFor(() => expect(screen.queryByText('BPI000123')).toBeNull())
-    expect(screen.getByText('LGI000075')).toBeInTheDocument()
   })
 })

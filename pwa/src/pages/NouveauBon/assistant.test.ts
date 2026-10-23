@@ -6,6 +6,7 @@ import {
   borneArticles,
   correspond,
   corpsDepuisSaisie,
+  saisieComplete,
   erreurDate,
   etatInitial,
   grouperParLettre,
@@ -32,9 +33,9 @@ function jouer(...actions: Action[]): EtatAssistant {
 function jusquAuRecap(): EtatAssistant {
   return jouer(
     { type: 'beneficiaire', beneficiaire: conjointe },
+    { type: 'pharmacie', pharmacie },
     { type: 'specialite', specialite },
     { type: 'prescripteur', prescripteur },
-    { type: 'pharmacie', pharmacie },
     { type: 'articles', nombre: 3 },
     { type: 'continuer', aujourdhui: AUJOURDHUI },
   )
@@ -64,26 +65,30 @@ describe('parcours de l’assistant', () => {
   it('recule d’abord à la liste des spécialités, puis à l’étape précédente', () => {
     let etat = jouer(
       { type: 'beneficiaire', beneficiaire: conjointe },
+      { type: 'pharmacie', pharmacie },
       { type: 'specialite', specialite },
     )
     etat = reducteur(etat, { type: 'precedent' })
-    expect(etat).toMatchObject({ etape: 2, sousEtape: 'specialite', sens: 'arriere' })
+    expect(etat).toMatchObject({ etape: 3, sousEtape: 'specialite', sens: 'arriere' })
+    etat = reducteur(etat, { type: 'precedent' })
+    expect(etat.etape).toBe(2)
     etat = reducteur(etat, { type: 'precedent' })
     expect(etat.etape).toBe(1)
     // Déjà au début : rien ne bouge.
     expect(reducteur(etat, { type: 'precedent' })).toBe(etat)
   })
 
-  it('revient à la liste des prescripteurs en reculant depuis la pharmacie', () => {
+  it('revient à la liste des prescripteurs en reculant depuis l’ordonnance', () => {
     const etat = reducteur(
       jouer(
         { type: 'beneficiaire', beneficiaire: conjointe },
+        { type: 'pharmacie', pharmacie },
         { type: 'specialite', specialite },
         { type: 'prescripteur', prescripteur },
       ),
       { type: 'precedent' },
     )
-    expect(etat).toMatchObject({ etape: 2, sousEtape: 'prescripteur' })
+    expect(etat).toMatchObject({ etape: 3, sousEtape: 'prescripteur' })
   })
 
   it('oublie le prescripteur quand la spécialité change, pas quand elle est reprise', () => {
@@ -143,7 +148,7 @@ describe('erreurs du serveur', () => {
         nbArticles: ['Au plus 8 articles.'],
       },
     })
-    expect(etat).toMatchObject({ etape: 3, retourRecap: true })
+    expect(etat).toMatchObject({ etape: 2, retourRecap: true })
     expect(etat.erreurs.pharmacie).toBe('Pharmacie inconnue ou non conventionnée.')
   })
 
@@ -168,13 +173,13 @@ describe('erreurs du serveur', () => {
         type: 'erreurs-serveur',
         champs: { specialite: ['Spécialité inconnue.'] },
       }),
-    ).toMatchObject({ etape: 2, sousEtape: 'specialite' })
+    ).toMatchObject({ etape: 3, sousEtape: 'specialite' })
     expect(
       reducteur(recap, {
         type: 'erreurs-serveur',
         champs: { prescripteur: ['Prescripteur inconnu.'] },
       }),
-    ).toMatchObject({ etape: 2, sousEtape: 'prescripteur' })
+    ).toMatchObject({ etape: 3, sousEtape: 'prescripteur' })
   })
 
   it('garde une erreur générale au récapitulatif', () => {
@@ -190,7 +195,7 @@ describe('erreurs du serveur', () => {
     expect(lireErreursServeur({ pharmacie: ['', 'Inconnue.', 'Autre.'], nbArticles: [] })).toEqual({
       pharmacie: 'Inconnue.',
     })
-    expect(premiereEtapeEnErreur({ nbArticles: 'x', prescripteur: 'y' })).toBe(2)
+    expect(premiereEtapeEnErreur({ nbArticles: 'x', prescripteur: 'y' })).toBe(3)
     expect(premiereEtapeEnErreur({ non_field_errors: 'x' })).toBeNull()
   })
 })
@@ -207,8 +212,46 @@ describe('corps envoyé au serveur', () => {
     })
   })
 
-  it('refuse une saisie incomplète', () => {
+  it('n’exige que le bénéficiaire, comme l’écran IPM', () => {
+    // À l'écran des gestionnaires, seuls la société, le participant et le
+    // type de bénéficiaire portent l'astérisque : la pharmacie, le
+    // prescripteur et l'ordonnance se renseignent plus tard.
+    const etat = jouer({ type: 'beneficiaire', beneficiaire: conjointe })
+    expect(saisieComplete(etat.saisie)).toBe(true)
+    expect(corpsDepuisSaisie(etat.saisie)).toEqual({
+      beneficiaire: '1204-01',
+      nbArticles: 1,
+      dateOrdonnance: AUJOURDHUI,
+    })
+  })
+
+  it('n’envoie pas les étapes passées', () => {
+    const etat = jouer(
+      { type: 'beneficiaire', beneficiaire: conjointe },
+      { type: 'passer' }, // prescripteur
+      { type: 'passer' }, // pharmacie
+      { type: 'passer' }, // ordonnance
+    )
+    expect(etat.etape).toBe(5)
+    expect(corpsDepuisSaisie(etat.saisie)).toEqual({ beneficiaire: '1204-01' })
+  })
+
+  it('sans bénéficiaire, il n’y a rien à envoyer', () => {
     expect(corpsDepuisSaisie(etatInitial(AUJOURDHUI).saisie)).toBeNull()
+  })
+
+  it('« passer » efface ce que l’étape avait renseigné', () => {
+    // On choisit, puis on revient et on passe : le choix regretté ne doit pas
+    // partir au serveur.
+    const etat = jouer(
+      { type: 'beneficiaire', beneficiaire: conjointe },
+      { type: 'specialite', specialite },
+      { type: 'prescripteur', prescripteur },
+      { type: 'modifier', etape: 3 },
+      { type: 'passer' },
+    )
+    expect(etat.saisie.specialite).toBeNull()
+    expect(etat.saisie.prescripteur).toBeNull()
   })
 })
 

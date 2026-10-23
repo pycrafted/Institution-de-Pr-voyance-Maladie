@@ -120,12 +120,18 @@ export function premierPrenom(prenoms: string | null | undefined): string {
   return capitaliser(premier)
 }
 
-/** « MOUSTAPHA » → « Moustapha » ; « JEAN-PIERRE » → « Jean-Pierre ». */
+/**
+ * « MOUSTAPHA » → « Moustapha » ; « JEAN-PIERRE » → « Jean-Pierre ».
+ *
+ * Le point compte aussi comme séparateur : les raisons sociales d'IPM en
+ * portent sans espace derrière (« DR.FARID GHOZAYEL », « CONSULTATION O.R.L »),
+ * qui deviendraient « Dr.farid » et « O.r.l » sans cela.
+ */
 export function capitaliser(texte: string): string {
   return texte
     .toLocaleLowerCase(LOCALE)
     .replace(
-      /(^|[\s'’-])(\p{L})/gu,
+      /(^|[\s'’.-])(\p{L})/gu,
       (_, sep: string, lettre: string) => sep + lettre.toLocaleUpperCase(LOCALE),
     )
 }

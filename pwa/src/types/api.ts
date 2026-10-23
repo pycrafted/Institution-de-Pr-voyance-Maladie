@@ -19,6 +19,15 @@ export interface CodeLibelle {
   libelle: string
 }
 
+/**
+ * Nature de prestation, telle que l'API la range pour une spécialité de
+ * prestataire : `courante` dit si cette spécialité la donne vraiment, d'après
+ * les lettres réelles de LAMPS. Les autres restent proposées, à la suite.
+ */
+export interface NaturePrestation extends CodeLibelle {
+  courante?: boolean
+}
+
 export interface Participant {
   /** Matricule seul, ex. « 1204 ». */
   matricule: string
@@ -60,6 +69,8 @@ export interface Beneficiaire {
   /** Lien avec le participant (PARTICIPANT, CONJOINT, ENFANT…). */
   type: CodeLibelle | null
   estParticipant: boolean
+  /** Photo d'identité (URL de données), ou null : posée par le titulaire. */
+  photo: string | null
 }
 
 /** Pharmacie ou prescripteur (médecin, clinique…). */
@@ -165,18 +176,22 @@ export interface MoiReponse {
 
 /** POST /api/mobile/bons-pharmacie/ */
 export interface NouveauBonCorps {
-  /** Beneficiaire.matricule */
+  /**
+   * Beneficiaire.matricule - LE SEUL champ exigé, comme à l'écran IPM, où
+   * seuls la société, le participant et le type de bénéficiaire portent
+   * l'astérisque. Tout le reste se renseigne plus tard.
+   */
   beneficiaire: string
   /** Fournisseur.code de la pharmacie */
-  pharmacie: string
+  pharmacie?: string
   /** Specialite.code du prescripteur */
-  specialite: string
+  specialite?: string
   /** Fournisseur.code du prescripteur */
-  prescripteur: string
+  prescripteur?: string
   /** 1 à 8 (le bon imprimé a 8 lignes). */
-  nbArticles: number
+  nbArticles?: number
   /** Ni dans le futur, ni plus de 30 jours. */
-  dateOrdonnance: DateISO
+  dateOrdonnance?: DateISO
 }
 
 /** Champs sur lesquels le serveur peut poser une erreur 400 à la création. */
@@ -184,20 +199,25 @@ export type ChampNouveauBon = keyof NouveauBonCorps | 'non_field_errors'
 
 /** POST /api/mobile/lettres-garantie/ */
 export interface NouvelleLettreCorps {
-  /** Beneficiaire.matricule */
+  /**
+   * Beneficiaire.matricule - LE SEUL champ exigé, comme à l'écran IPM.
+   * Tout le reste se renseigne plus tard.
+   */
   beneficiaire: string
   /** Specialite.code du prestataire */
-  specialitePrestataire: string
+  specialitePrestataire?: string
   /** Fournisseur.code du prestataire */
-  prestataire: string
+  prestataire?: string
   /** Code de la nature de prestation (GET /api/mobile/natures-prestation/). */
-  naturePrestation: string
+  naturePrestation?: string
   /** Specialite.code du prescripteur */
-  specialite: string
+  specialite?: string
   /** Fournisseur.code du prescripteur */
-  prescripteur: string
+  prescripteur?: string
+  /** 1 à 8 (la lettre imprimée a 8 lignes). */
+  nbArticles?: number
   /** Ni dans le futur, ni plus de 30 jours. */
-  datePrescription: DateISO
+  datePrescription?: DateISO
 }
 
 export type ChampNouvelleLettre = keyof NouvelleLettreCorps | 'non_field_errors'

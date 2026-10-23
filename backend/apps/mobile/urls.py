@@ -7,6 +7,7 @@ Les chemins qu'appelle l'application IPM Mobile (pwa/src/api/).
 from django.urls import path
 
 from .views import (
+    BeneficiairePhotoView,
     BonPdfView,
     BonsView,
     BonView,
@@ -27,6 +28,11 @@ urlpatterns = [
     path('identification/', IdentificationView.as_view(), name='mobile-identification'),
     path('moi/', MoiView.as_view(), name='mobile-moi'),
     path('moi/photo/', PhotoView.as_view(), name='mobile-photo'),
+    path(
+        'moi/beneficiaires/<str:matricule>/photo/',
+        BeneficiairePhotoView.as_view(),
+        name='mobile-beneficiaire-photo',
+    ),
     path('pharmacies/', PharmaciesView.as_view(), name='mobile-pharmacies'),
     path('conventionnes/', ConventionnesView.as_view(), name='mobile-conventionnes'),
     path('specialites/', SpecialitesView.as_view(), name='mobile-specialites'),

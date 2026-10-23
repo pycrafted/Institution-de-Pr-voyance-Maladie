@@ -23,7 +23,7 @@ from django.db import IntegrityError, OperationalError, transaction
 from django.db.models import Count, Q
 from django.http import Http404, HttpResponse
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, SimpleRateThrottle
@@ -35,6 +35,7 @@ from documents.models import BonPharmacie, LettreGarantie
 from documents.serializers import BonPharmacieSerializer, LettreGarantieSerializer
 from donnees_de_base.models import TypeBeneficiaire
 from donnees_de_base.models.fournisseur_de_soins import CODE_FOURNISSEURS_DIVERS
+from donnees_de_base.natures_courantes import ordonner
 from participants.models import Participant
 from participants.serializers.participant import TYPE_PARTICIPANT
 
@@ -181,9 +182,14 @@ class IdentificationView(APIView):
         # plutôt que de lui être réclamés.
         if matricule.isdigit():
             matricule = matricule.zfill(4)
-        participant = (
-            Participant.objects.select_related('adherent').filter(matricule=matricule).first()
-        )
+        # Le matricule seul ne désigne pas toujours une personne : un salarié
+        # rattaché à deux sociétés (l'IPM et une mutuelle) en porte le même des
+        # deux côtés. Quand le préfixe est donné, il tranche ; sans lui, on ne
+        # choisit pas à sa place.
+        candidats = Participant.objects.select_related('adherent').filter(matricule=matricule)
+        if societe:
+            candidats = candidats.filter(adherent__code=societe)
+        participant = candidats.first() if len(candidats[:2]) == 1 else None
         if participant is None:
             # Même temps de réponse qu'un matricule connu : le chiffrement
             # du mot de passe est fait quand même, pour ne rien révéler.
@@ -229,70 +235,120 @@ class MoiView(VueParticipant):
         )
 
 
+# Une photo d'identité réduite à 320 px pèse une vingtaine de kilo-octets ;
+# 400 Ko laissent de la marge à un téléphone qui encoderait moins bien, sans
+# permettre d'utiliser la fiche comme un espace de stockage.
+PHOTO_TAILLE_MAX = 400 * 1024
+
+# Signatures des formats acceptés, une fois le base64 décodé, en hexadécimal.
+PHOTO_SIGNATURES = {
+    'image/jpeg': bytes.fromhex('ffd8ff'),
+    'image/png': bytes.fromhex('89504e470d0a1a0a'),
+    'image/webp': b'RIFF',
+}
+
+
+def valider_photo(valeur):
+    """
+    Valide une photo (URL de données base64) envoyée par le mobile et la
+    renvoie telle quelle. Lève ``ValidationError`` si la forme, le type ou le
+    poids ne conviennent pas. Pas de décodage d'image côté serveur (Pillow
+    n'est pas installé, et décoder l'image d'un tiers est ce qu'on évite) : les
+    premiers octets suffisent à écarter ce qui n'est pas une image. Partagée
+    par la photo du titulaire et celle de ses ayants droit.
+    """
+    if not isinstance(valeur, str) or not valeur.strip():
+        raise ValidationError({'photo': ['Aucune photo envoyée.']})
+    valeur = valeur.strip()
+
+    entete, _, donnees = valeur.partition(',')
+    correspondance = re.fullmatch(r'data:(image/(?:jpeg|png|webp));base64', entete)
+    if not correspondance or not donnees:
+        raise ValidationError(
+            {'photo': ['Format attendu : une image JPEG, PNG ou WEBP encodée en base64.']}
+        )
+    if len(valeur) > PHOTO_TAILLE_MAX:
+        raise ValidationError({'photo': ['Photo trop lourde : 400 Ko au plus.']})
+    try:
+        octets = base64.b64decode(donnees, validate=True)
+    except (binascii.Error, ValueError):
+        raise ValidationError({'photo': ['Photo illisible.']})
+    if not octets.startswith(PHOTO_SIGNATURES[correspondance.group(1)]):
+        raise ValidationError({'photo': ['Ce fichier n’est pas une image.']})
+    return valeur
+
+
+# Une photo d'identité ne se pose qu'UNE FOIS depuis le téléphone. Ensuite,
+# l'employé ne peut plus ni la changer ni la retirer : seule l'IPM le peut,
+# depuis l'application de gestion (Participants → fiche, ou Familles → fiche).
+#
+# C'est une pièce d'identité, pas un avatar : le portrait est présenté au
+# prestataire pour prouver que le porteur de la carte est bien l'ayant droit.
+# Si chacun pouvait le remplacer à volonté depuis son téléphone, la carte ne
+# prouverait plus rien, et une photo changée la veille d'une consommation
+# serait invérifiable. La règle est donc posée ICI, côté serveur, et pas
+# seulement dans l'écran : une requête forgée se heurte à la même réponse.
+PHOTO_DEJA_POSEE = (
+    'Votre photo est déjà enregistrée. Pour la remplacer, adressez-vous à '
+    'l’IPM : elle seule peut la réinitialiser.'
+)
+PHOTO_DEJA_POSEE_BENEF = (
+    'La photo de cet ayant droit est déjà enregistrée. Pour la remplacer, '
+    'adressez-vous à l’IPM : elle seule peut la réinitialiser.'
+)
+
+
 class PhotoView(VueParticipant):
     """
-    Photo d'identité du participant : la poser (PUT) ou la retirer (DELETE).
+    Photo d'identité du participant : la poser (PUT), une seule fois.
 
     C'est la seule écriture que le mobile fait sur la fiche du participant, et
     elle ne touche qu'à lui-même - ``request.auth`` désigne le participant
     identifié, jamais un autre. La photo se voit ensuite dans l'application
-    IPM, sur sa fiche : l'employé tient son portrait à jour, l'IPM n'a plus à
-    le faire.
+    IPM, sur sa fiche.
+
+    Pas de DELETE, et pas de second PUT : cf. PHOTO_DEJA_POSEE ci-dessus. Le
+    retrait et le remplacement appartiennent à l'IPM.
 
     Corps attendu : ``{"photo": "data:image/jpeg;base64,…"}``. L'image est
     réduite par le téléphone avant l'envoi (320 px, cf. pwa/src/utils/photo.ts).
-    Le serveur ne fait pas confiance pour autant : il vérifie la forme, le type
-    et le poids, et refuse tout le reste. Pas de décodage d'image côté serveur
-    (Pillow n'est pas installé, et décoder une image envoyée par un tiers est
-    précisément ce qu'on évite) : les premiers octets suffisent à écarter ce
-    qui n'est pas une image.
     """
 
-    # Une photo d'identité réduite à 320 px pèse une vingtaine de kilo-octets ;
-    # 400 Ko laissent de la marge à un téléphone qui encoderait moins bien,
-    # sans permettre d'utiliser la fiche comme un espace de stockage.
-    TAILLE_MAX = 400 * 1024
-
-    # Signatures des formats acceptés, une fois le base64 décodé : en
-    # hexadécimal, pour que le fichier reste lisible.
-    SIGNATURES = {
-        'image/jpeg': bytes.fromhex('ffd8ff'),
-        'image/png': bytes.fromhex('89504e470d0a1a0a'),
-        'image/webp': b'RIFF',
-    }
-
     def put(self, request):
-        valeur = request.data.get('photo')
-        if not isinstance(valeur, str) or not valeur.strip():
-            raise ValidationError({'photo': ['Aucune photo envoyée.']})
-        valeur = valeur.strip()
-
-        entete, _, donnees = valeur.partition(',')
-        correspondance = re.fullmatch(r'data:(image/(?:jpeg|png|webp));base64', entete)
-        if not correspondance or not donnees:
-            raise ValidationError(
-                {'photo': ['Format attendu : une image JPEG, PNG ou WEBP encodée en base64.']}
-            )
-        if len(valeur) > self.TAILLE_MAX:
-            raise ValidationError({'photo': ['Photo trop lourde : 400 Ko au plus.']})
-        try:
-            octets = base64.b64decode(donnees, validate=True)
-        except (binascii.Error, ValueError):
-            raise ValidationError({'photo': ['Photo illisible.']})
-        if not octets.startswith(self.SIGNATURES[correspondance.group(1)]):
-            raise ValidationError({'photo': ['Ce fichier n’est pas une image.']})
-
         participant = request.auth
+        if participant.photo:
+            raise ValidationError({'photo': [PHOTO_DEJA_POSEE]})
+        valeur = valider_photo(request.data.get('photo'))
         participant.photo = valeur
         participant.save(update_fields=['photo', 'modifie_le'])
         return Response({'photo': participant.photo})
 
-    def delete(self, request):
-        participant = request.auth
-        if participant.photo:
-            participant.photo = ''
-            participant.save(update_fields=['photo', 'modifie_le'])
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class BeneficiairePhotoView(VueParticipant):
+    """
+    Photo d'un AYANT DROIT du participant connecté : la poser (PUT), une seule
+    fois, comme la sienne. Le titulaire dote ses enfants d'un portrait pour la
+    carte à présenter au prestataire ; il ne peut plus y revenir ensuite.
+
+    Le bénéficiaire doit appartenir à la famille de ``request.auth`` : on le
+    cherche parmi SES ayants droit, jamais dans toute la base — une requête
+    forgée ne peut pas toucher l'ayant droit d'un autre dossier.
+    """
+
+    def _beneficiaire(self, request, matricule):
+        beneficiaire = request.auth.beneficiaires.filter(matricule_benef=matricule).first()
+        if beneficiaire is None:
+            raise NotFound('Cet ayant droit n’est pas rattaché à votre dossier.')
+        return beneficiaire
+
+    def put(self, request, matricule):
+        beneficiaire = self._beneficiaire(request, matricule)
+        if beneficiaire.photo:
+            raise ValidationError({'photo': [PHOTO_DEJA_POSEE_BENEF]})
+        valeur = valider_photo(request.data.get('photo'))
+        beneficiaire.photo = valeur
+        beneficiaire.save(update_fields=['photo', 'modifie_le'])
+        return Response({'photo': beneficiaire.photo})
 
 
 class ConventionnesView(VueParticipant):
@@ -347,10 +403,24 @@ class PrescripteursView(VueParticipant):
 
 
 class NaturesPrestationView(VueParticipant):
-    """Natures de prestation qu'une lettre de garantie peut couvrir."""
+    """
+    Natures de prestation qu'une lettre de garantie peut couvrir.
+
+    Avec ``?specialite=11``, la liste est RANGEE pour cette spécialité de
+    prestataire : d'abord les natures que les cardiologues ont vraiment
+    données dans les 41 487 lettres réelles de LAMPS, puis les autres
+    (``courante: false``). Rien n'est retiré, et sans spécialité la liste
+    reste celle d'avant - cf. donnees_de_base.natures_courantes.
+    """
 
     def get(self, request):
-        return Response([{'code': n.code, 'libelle': n.libelle} for n in natures_de_prestation()])
+        code = request.query_params.get('specialite', '')
+        return Response(
+            [
+                {'code': n.code, 'libelle': n.libelle, 'courante': courante}
+                for n, courante in ordonner(natures_de_prestation(), code)
+            ]
+        )
 
 
 def enregistrer_avec_numero(serializer_ipm, modele, donnees):
@@ -415,6 +485,14 @@ class BonsView(VueParticipant):
         )
         if erreurs:
             return Response(erreurs_mobile(erreurs), status=status.HTTP_400_BAD_REQUEST)
+        # Le nombre d'articles se pose ICI, et non par le serializer de l'écran
+        # IPM : là-bas il se DÉDUIT des médicaments choisis au catalogue, et il
+        # y est donc en lecture seule. Le mobile n'a pas ce catalogue - l'employé
+        # annonce seulement combien de lignes porte son ordonnance.
+        nb_articles = saisie.validated_data.get('nbArticles')
+        if nb_articles:
+            bon.nb_articles = nb_articles
+            bon.save(update_fields=['nb_articles', 'modifie_le'])
         bon = bons_du_participant(participant).get(pk=bon.pk)
         return Response(representer_bon(bon), status=status.HTTP_201_CREATED)
 
@@ -477,6 +555,13 @@ class LettresView(VueParticipant):
             return Response(
                 erreurs_mobile(erreurs, CHAMPS_IPM_LETTRE), status=status.HTTP_400_BAD_REQUEST
             )
+        # Le nombre d'actes se pose ICI, comme le nombre d'articles du bon : a
+        # l'ecran IPM il se DEDUIT des actes choisis au catalogue, et il y est
+        # donc en lecture seule. Le mobile n'a pas ce catalogue.
+        nb_articles = saisie.validated_data.get('nbArticles')
+        if nb_articles:
+            lettre.nb_articles = nb_articles
+            lettre.save(update_fields=['nb_articles', 'modifie_le'])
         lettre = lettres_du_participant(participant).get(pk=lettre.pk)
         return Response(representer_lettre(lettre), status=status.HTTP_201_CREATED)
 

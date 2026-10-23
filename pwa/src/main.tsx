@@ -24,9 +24,14 @@ import App from './App'
 import { appliquerApparence } from './theme/apparence'
 import { ecouterInstallation } from './utils/installation'
 
-// Pas de mode imposé : Ionic prend « ios » sur iPhone et « md » sur Android,
-// avec leurs transitions et le retour par balayage d'iOS.
+// Mode « md » IMPOSÉ sur toutes les plateformes (y compris iPhone). La refonte
+// copie à l'identique le langage Material Design 3 d'une vraie application
+// Flutter/Android : Ionic rend alors partout les composants Material — l'onde
+// à l'appui (ripple), les transitions de pages Android, les contrôles de
+// formulaire Material — et plus l'habillage iOS. C'est ce mode, et non une
+// imitation en CSS, qui fait percevoir une « vraie app mobile ».
 setupIonicReact({
+  mode: 'md',
   // Aucune chaîne HTML interprétée dans les alertes/toasts (données du serveur).
   innerHTMLTemplatesEnabled: false,
 })

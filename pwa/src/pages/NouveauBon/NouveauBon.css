@@ -45,16 +45,20 @@ ion-modal.ipm-modal-nouveau-bon {
   flex: 1;
 }
 
-/* --- Bandeau compact : « Annuler » et barre de progression ---------------- */
-/* « Annuler » reprend la pastille translucide du bouton retour du bandeau
-   (classe .ipm-bandeau__retour, §3.2) : seule sa forme change, de rond à
-   pilule, pour laisser la place au mot. Le verre blanc n'est donc pas
-   redéclaré ici. */
+/* --- En-tête d'app : « Annuler » et barre de progression ------------------ */
+/* « Annuler » : un bouton-texte Material, posé sur l'en-tête clair, au rouge
+   de marque — plus la pastille de verre du bandeau sombre d'autrefois. */
 .nouveau-bon__annuler {
+  appearance: none;
+  border: 0;
+  background: none;
   width: auto;
-  padding: 0 16px;
-  font-size: 0.875rem;
-  font-weight: 700;
+  min-height: 40px;
+  padding: 0 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ipm-rouge-texte);
+  cursor: pointer;
 }
 .nouveau-bon__annuler:disabled {
   opacity: 0.5;
@@ -64,14 +68,13 @@ ion-modal.ipm-modal-nouveau-bon {
   transform: none;
 }
 
-/* §5 : hauteur 4, pilule, rouge de marque sur un rail de verre blanc — le
-   même blanc translucide que les pastilles du bandeau, faute de jeton pour
-   une transparence posée sur la surface de marque. */
+/* Barre de progression Material : hauteur 4, rouge de marque sur un rail de
+   surface claire (plus le verre blanc, qui disparaissait sur fond clair). */
 .nouveau-bon__progression {
   height: 4px;
-  margin-top: var(--e-20);
+  margin-top: var(--e-16);
   border-radius: var(--r-pill);
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--ipm-surface-2);
   overflow: hidden;
 }
 .nouveau-bon__progression-jauge {
@@ -266,7 +269,7 @@ ion-modal.ipm-modal-nouveau-bon {
   height: 52px;
   border: 0;
   border-radius: var(--r-pill);
-  background: var(--ipm-rouge-doux);
+  background: var(--ipm-pastille);
   color: var(--ipm-rouge-texte);
   font-size: 1.5rem;
   cursor: pointer;
@@ -443,4 +446,14 @@ ion-modal.ipm-modal-nouveau-bon {
     opacity: 0;
     translate: 0 12px;
   }
+}
+
+/* Barre du formulaire : plus de titre, seule la sortie. Elle porte la zone
+   sûre du téléphone (encoche) mais pas la hauteur de la barre d'actions - le
+   modal passe PAR-DESSUS celle-ci. */
+.nouveau-bon__barre {
+  display: flex;
+  justify-content: flex-end;
+  padding: calc(var(--e-12) + var(--ion-safe-area-top, env(safe-area-inset-top))) var(--gouttiere)
+    var(--e-8);
 }

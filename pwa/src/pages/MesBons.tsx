@@ -6,8 +6,9 @@
  *
  *   1. bandeau de marque compact (§3.2), à la place de la toolbar Ionic au
  *      gros titre noir sur fond gris, interdite par §1 ;
- *   2. champ de recherche (§3.8) et puces de filtre défilantes (§3.6), qui
- *      remplacent l'ion-segment rectangulaire, lui aussi interdit ;
+ *   2. menu déroulant des TYPES de document (bons de pharmacie, lettres de
+ *      garantie), avec leur compte, qui remplacent l'ion-segment
+ *      rectangulaire, lui aussi interdit ;
  *   3. les documents en cartes autonomes (§3.5), groupées par mois : chaque
  *      carte porte le TYPE de document, son numéro, le bénéficiaire, la
  *      pharmacie et son statut — et jamais un filet gris entre deux lignes.
@@ -18,6 +19,7 @@
 
 import {
   IonContent,
+  IonIcon,
   IonPage,
   IonRefresher,
   IonRefresherContent,
@@ -27,20 +29,17 @@ import {
 } from '@ionic/react'
 import {
   add,
+  chevronDown,
   cloudOfflineOutline,
   documentTextOutline,
-  searchOutline,
   warningOutline,
 } from 'ionicons/icons'
 import { useMemo, useState, type ReactNode } from 'react'
 
 import CarteListe from '../components/CarteListe'
-import BandeauMarque from '../components/BandeauMarque'
-import Champ from '../components/Champ'
 import EtatVide from '../components/EtatVide'
 import { useNouveauBon } from '../components/NouveauBonModal'
 import OfflineBanner from '../components/OfflineBanner'
-import PucesFiltre, { type Puce } from '../components/PucesFiltre'
 import { SqueletteCarte } from '../components/Skeletons'
 import StatutBadge from '../components/StatutBadge'
 import { chargerBons, etatBons, useBons } from '../data/bons'
@@ -50,13 +49,14 @@ import type { Bon } from '../types/api'
 import { dateRelative, pluriel } from '../utils/format'
 import { libelleValidite, STATUTS } from '../utils/statut'
 import { cheminDocument, cleDocument } from '../utils/documents'
+import { documentParCle } from '../services/catalogue'
 import { libelleBeneficiaire, structureDuDocument, typeDocument } from './bons/affichage'
 import {
-  compterParStatut,
-  estFiltreStatut,
+  compterParType,
+  estFiltreType,
   FILTRES,
   filtrerBons,
-  type FiltreStatut,
+  type FiltreType,
 } from './bons/filtrage'
 import './bons/MesBons.css'
 
@@ -66,30 +66,27 @@ const FRAICHEUR_MS = 60_000
 /** Nombre de squelettes affichés tant que rien n'est connu. */
 const SQUELETTES = 4
 
-function libelleFiltre(filtre: FiltreStatut): string {
-  return filtre === 'tous' ? 'Tous' : STATUTS[filtre].libellePluriel
+/** Le nom de la catégorie : « Bons de pharmacie », « Lettres de garantie ». */
+function libelleFiltre(filtre: FiltreType): string {
+  return documentParCle(filtre)?.libellePluriel ?? filtre
 }
 
 export default function MesBons() {
   const { bons, chargement, erreur, depuisCache, synchroniseLe, rafraichir } = useBons()
   const { ouvrirNouveauBon } = useNouveauBon()
   const enLigne = useOnline()
-  const [filtre, setFiltre] = useState<FiltreStatut>('tous')
-  const [recherche, setRecherche] = useState('')
+  const [filtre, setFiltre] = useState<FiltreType>('tous')
   const [presenterToast] = useIonToast()
 
-  const visibles = useMemo(
-    () => (bons ? filtrerBons(bons, filtre, recherche) : []),
-    [bons, filtre, recherche],
-  )
-  const comptes = useMemo(() => compterParStatut(bons ?? []), [bons])
-  // Une puce par statut réellement présent : afficher « Annulés 0 » n'aide
-  // personne et allonge une rangée qui doit tenir sous le pouce.
-  const puces = useMemo<Puce[]>(
+  const visibles = useMemo(() => (bons ? filtrerBons(bons, filtre, '') : []), [bons, filtre])
+  const comptes = useMemo(() => compterParType(bons ?? []), [bons])
+  // Une entrée par type réellement présent : proposer « Lettres de garantie
+  // (0) » à qui n'en a aucune n'aide personne.
+  const categories = useMemo(
     () =>
       FILTRES.filter((f) => f === 'tous' || comptes[f] > 0).map((f) => ({
         cle: f,
-        libelle: libelleFiltre(f),
+        libelle: f === 'tous' ? 'Tous les documents' : libelleFiltre(f),
         nombre: comptes[f],
       })),
     [comptes],
@@ -124,7 +121,6 @@ export default function MesBons() {
 
   function toutAfficher() {
     setFiltre('tous')
-    setRecherche('')
   }
 
   // Liste venue du cache parce que le serveur ne répond pas (en ligne).
@@ -163,11 +159,11 @@ export default function MesBons() {
   } else if (visibles.length === 0) {
     contenu = (
       <EtatVide
-        icone={searchOutline}
+        icone={documentTextOutline}
         teinte="neutre"
         titre="Aucun document trouvé"
-        message={messageSansResultat(filtre, recherche)}
-        action={{ libelle: 'Tout afficher', onClick: toutAfficher, secondaire: true }}
+        message={messageSansResultat(filtre)}
+        action={{ libelle: 'Tous les documents', onClick: toutAfficher, secondaire: true }}
       />
     )
   } else {
@@ -199,39 +195,46 @@ export default function MesBons() {
           <IonRefresherContent />
         </IonRefresher>
 
-        <BandeauMarque
-          titre="Mes bons"
-          // Ce que l'écran contient, et non un compte : le nombre est déjà
-          // sur les puces de filtre et au bas de la liste.
-          sousTitre="Vos bons de pharmacie et vos lettres de garantie"
-        />
+        {/* Pas d'en-tête : l'écran commence par sa recherche et ses puces.
+            On ne garde que l'espace de la zone sûre (encoche du téléphone). */}
+        <div className="ipm-zone-sure" />
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 
         {avecDocuments && (
-          <>
-            <div className="mes-documents__recherche">
-              <Champ
-                libelle="Rechercher"
-                valeur={recherche}
-                onChanger={setRecherche}
-                placeholder="Numéro, bénéficiaire, structure"
-                icone={searchOutline}
-                type="search"
-                inputmode="search"
-                enterkeyhint="search"
+          /* Un menu déroulant plutôt qu'un champ de recherche et une rangée de
+             puces, comme sur l'annuaire des conventionnés : l'employé range
+             ses documents par TYPE (« mes lettres de garantie »), il ne les
+             cherche pas par numéro. Le statut, lui, se lit sur chaque carte
+             et change tout seul : il ne fait pas une catégorie. Un `select`
+             natif ouvre le sélecteur du téléphone. */
+          <div className="ipm-menu-categorie">
+            <label className="ipm-menu-categorie__libelle" htmlFor="bons-categorie">
+              Type de document
+            </label>
+            <div className="ipm-menu-categorie__cadre">
+              <select
+                id="bons-categorie"
+                className="ipm-menu-categorie__choix"
+                value={filtre}
+                onChange={(e) => {
+                  haptique.leger()
+                  if (estFiltreType(e.target.value)) setFiltre(e.target.value)
+                }}
+              >
+                {categories.map((categorie) => (
+                  <option key={categorie.cle} value={categorie.cle}>
+                    {categorie.libelle} ({categorie.nombre})
+                  </option>
+                ))}
+              </select>
+              <IonIcon
+                className="ipm-menu-categorie__chevron"
+                icon={chevronDown}
+                aria-hidden="true"
               />
             </div>
-            <PucesFiltre
-              className="mes-documents__filtres"
-              puces={puces}
-              active={filtre}
-              etiquette="Filtrer par statut"
-              onChanger={(cle) => {
-                if (estFiltreStatut(cle)) setFiltre(cle)
-              }}
-            />
-          </>
+          </div>
         )}
 
         {contenu}
@@ -243,10 +246,14 @@ export default function MesBons() {
   )
 }
 
-function messageSansResultat(filtre: FiltreStatut, recherche: string): string {
-  const statut = filtre === 'tous' ? '' : ` ${STATUTS[filtre].libelle.toLocaleLowerCase('fr-FR')}`
-  if (recherche.trim()) return `Aucun document${statut} ne correspond à « ${recherche.trim()} ».`
-  return `Vous n’avez aucun document${statut}.`
+/**
+ * « pas encore de » plutôt que « aucun » : la tournure vaut pour un bon
+ * comme pour une lettre, sans avoir à porter le genre de chaque type.
+ */
+function messageSansResultat(filtre: FiltreType): string {
+  if (filtre === 'tous') return 'Vous n’avez aucun document.'
+  const type = documentParCle(filtre)?.libelle.toLocaleLowerCase('fr-FR')
+  return `Vous n’avez pas encore de ${type}.`
 }
 
 /**

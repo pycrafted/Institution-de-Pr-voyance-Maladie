@@ -1,11 +1,11 @@
-import { fireEvent, screen, within } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { ReactNode } from 'react'
 
 import { ErreurApi } from '../api'
 import { DOCUMENTS, MESSAGE_BIENTOT } from '../services/catalogue'
-import { unBon, unParticipant } from '../test/fabriques'
+import { unBeneficiaire, unBon, unParticipant } from '../test/fabriques'
 import type { Bon } from '../types/api'
 import Accueil from './Accueil'
 import { preparerIonic, rendreEcran, uneSession } from './accueil/outils-test'
@@ -13,9 +13,6 @@ import { preparerIonic, rendreEcran, uneSession } from './accueil/outils-test'
 // Liste des bons et modal « Nouveau bon » simulés : l'écran seul est testé.
 const simulations = vi.hoisted(() => ({
   ouvrirAssistant: vi.fn(),
-  poserPhoto: vi.fn((_photo: string) => Promise.resolve({ photo: 'data:image/jpeg;base64,zz' })),
-  retirerPhoto: vi.fn(() => Promise.resolve()),
-  reduirePhoto: vi.fn((_f: File) => Promise.resolve('data:image/jpeg;base64,zz')),
   rafraichirBons: vi.fn(() => Promise.resolve()),
   bons: {
     bons: null as Bon[] | null,
@@ -25,18 +22,6 @@ const simulations = vi.hoisted(() => ({
     synchroniseLe: null as string | null,
   },
 }))
-
-// L'API et la réduction d'image sont simulées : c'est l'enchaînement de
-// l'écran qui est vérifié (choisir → réduire → envoyer → rafraîchir).
-vi.mock('../api', async (importOriginal) => {
-  const reel = await importOriginal<typeof import('../api')>()
-  return { ...reel, poserPhoto: simulations.poserPhoto, retirerPhoto: simulations.retirerPhoto }
-})
-
-vi.mock('../utils/photo', async (importOriginal) => {
-  const reel = await importOriginal<typeof import('../utils/photo')>()
-  return { ...reel, reduirePhoto: simulations.reduirePhoto }
-})
 
 vi.mock('../components/NouveauBonModal', () => ({
   useNouveauBon: () => ({ ouvrirAssistant: simulations.ouvrirAssistant }),
@@ -72,9 +57,6 @@ beforeAll(() => preparerIonic())
 
 beforeEach(() => {
   simulations.ouvrirAssistant.mockReset()
-  simulations.poserPhoto.mockClear()
-  simulations.retirerPhoto.mockClear()
-  simulations.reduirePhoto.mockClear()
   simulations.rafraichirBons.mockClear()
   simulations.bons = {
     bons: [],
@@ -93,25 +75,19 @@ afterEach(() => {
 })
 
 describe('Accueil', () => {
-  it('ouvre l’écran par un bandeau de marque, chevauché par la carte d’adhérent', () => {
+  it('ouvre l’écran sur la carte, sans titre ni salutation', () => {
     const { container } = rendreEcran(<Accueil />)
-    const bandeau = container.querySelector('.ipm-bandeau')
-    expect(bandeau).toHaveClass('ipm-bandeau--plein', 'ipm-bandeau--chevauche')
-    expect(container.querySelector('.ipm-bandeau__titre')).toHaveTextContent('Accueil')
-    // Le sous-titre dit ce que l'écran contient, et non la date du jour.
-    expect(container.querySelector('.ipm-bandeau__sous-titre')).toHaveTextContent(
-      /carte d’adhérent/,
-    )
-    const carte = container.querySelector('.accueil__chevauchement')
+    // Ni bandeau, ni « Accueil », ni « Bonjour » : le haut de l'écran est la
+    // barre d'actions, et l'écran commence par la carte.
+    expect(container.querySelector('.ipm-bandeau')).toBeNull()
+    expect(container.querySelector('.accueil-entete')).toBeNull()
+    expect(container).not.toHaveTextContent('Bonjour')
+    // La carte d'adhérent est le héros de l'écran.
+    const carte = container.querySelector('.accueil__carte')
     expect(carte?.querySelector('.ipm-carte-identite')).not.toBeNull()
     expect(screen.getByText('1204')).toBeInTheDocument()
     // La société n'est dite qu'une fois : sur la carte d'identité.
     expect(screen.getAllByText('SAR')).toHaveLength(1)
-  })
-
-  it('ne porte plus le réglage sombre / clair : il est passé au profil', () => {
-    rendreEcran(<Accueil />)
-    expect(screen.queryByLabelText(/Passer en mode/)).toBeNull()
   })
 
   it('montre les initiales quand aucune photo n’est enregistrée', () => {
@@ -119,7 +95,6 @@ describe('Accueil', () => {
     const portrait = container.querySelector('.ipm-carte-identite__portrait')
     expect(portrait?.querySelector('.ipm-carte-identite__initiales')).toHaveTextContent('MD')
     expect(portrait?.querySelector('img')).toBeNull()
-    expect(screen.getByLabelText('Ajouter ma photo')).toBeInTheDocument()
   })
 
   it('affiche la photo du participant sur la carte', () => {
@@ -129,31 +104,14 @@ describe('Accueil', () => {
     )
     const image = container.querySelector('.ipm-carte-identite__photo img') as HTMLImageElement
     expect(image?.src).toBe('data:image/jpeg;base64,aa')
-    expect(screen.getByLabelText('Changer ma photo')).toBeInTheDocument()
   })
 
-  it('choisit, réduit et envoie une photo depuis la carte', async () => {
+  it('ne laisse pas toucher le portrait de la carte', () => {
+    // Une pièce d'identité ne se modifie pas au moment où on la présente :
+    // les photos s'envoient depuis la feuille dédiée, et de là seulement.
     const { container } = rendreEcran(<Accueil />)
-    const champ = container.querySelector('.accueil__fichier') as HTMLInputElement
-    const fichier = new File(['xxx'], 'moi.jpg', { type: 'image/jpeg' })
-    fireEvent.change(champ, { target: { files: [fichier] } })
-
-    await vi.waitFor(() => expect(simulations.poserPhoto).toHaveBeenCalledTimes(1))
-    // Réduite avant l'envoi : le serveur refuse au-delà de 400 Ko.
-    expect(simulations.reduirePhoto).toHaveBeenCalledWith(fichier)
-    expect(simulations.poserPhoto).toHaveBeenCalledWith('data:image/jpeg;base64,zz')
-  })
-
-  it('propose de changer ou de retirer une photo déjà posée', async () => {
-    rendreEcran(
-      <Accueil />,
-      uneSession({ participant: unParticipant({ photo: 'data:image/jpeg;base64,aa' }) }),
-    )
-    fireEvent.click(screen.getByLabelText('Changer ma photo'))
-    const feuille = screen.getByRole('dialog')
-    expect(feuille).toHaveTextContent('Ma photo')
-    fireEvent.click(within(feuille).getByText('Retirer la photo'))
-    await vi.waitFor(() => expect(simulations.retirerPhoto).toHaveBeenCalledTimes(1))
+    expect(container.querySelector('.ipm-carte-identite button')).toBeNull()
+    expect(container.querySelector('.accueil__fichier')).toBeNull()
   })
 
   it('présente la carte comme une carte d’identité, champ par champ', () => {
@@ -196,6 +154,58 @@ describe('Accueil', () => {
     rendreEcran(<Accueil />)
     fireEvent.click(screen.getByLabelText('Lettre de garantie'))
     expect(simulations.ouvrirAssistant).toHaveBeenCalledWith('lettre-garantie')
+  })
+
+  it('ouvre sa propre carte en grand quand on la touche', () => {
+    // Même présentation que pour un ayant droit : la carte se tend au
+    // prestataire, en paysage et en plein écran. Sous jsdom, Ionic ne monte
+    // pas le dedans d'une fenêtre (pas de « framework delegate ») : on
+    // vérifie donc qu'elle s'ouvre, le dedans étant couvert ailleurs.
+    rendreEcran(<Accueil />)
+    const modale = () => document.body.querySelector('ion-modal.carte-plein') as HTMLIonModalElement
+    expect(modale().isOpen).toBe(false)
+    fireEvent.click(screen.getByLabelText('Voir ma carte d’adhérent en grand'))
+    expect(modale().isOpen).toBe(true)
+  })
+
+  it('offre un raccourci vers la carte de chaque ayant droit', () => {
+    // La fabrique donne le titulaire + une conjointe : seule la conjointe est
+    // un ayant droit, le titulaire a déjà sa carte en haut de l'écran.
+    const { container } = rendreEcran(<Accueil />)
+    expect(screen.getByText('Les cartes d’adhérent de ma famille')).toBeInTheDocument()
+    const membres = container.querySelectorAll('.accueil-famille__membre')
+    expect(membres).toHaveLength(1)
+    expect(screen.getByLabelText('Carte d’ayant droit de Awa DIOP')).toBeInTheDocument()
+    // Le prénom seul sous la pastille : le nom est le même pour toute la famille.
+    expect(container.querySelector('.accueil-famille__nom')?.textContent).toBe('Awa')
+  })
+
+  it('montre la photo d’un ayant droit à la place de ses initiales', () => {
+    const { container } = rendreEcran(
+      <Accueil />,
+      uneSession({
+        beneficiaires: [
+          unBeneficiaire({
+            matricule: '1204-01',
+            nomComplet: 'Awa DIOP',
+            prenoms: 'Awa',
+            estParticipant: false,
+            photo: 'data:image/jpeg;base64,aa',
+          }),
+        ],
+      }),
+    )
+    const pastille = container.querySelector('.accueil-famille__membre .ipm-avatar')
+    expect(pastille?.querySelector('img')).toHaveAttribute('src', 'data:image/jpeg;base64,aa')
+    // Ni initiales, ni teinte de pastille : la photo occupe toute la place.
+    expect(pastille?.textContent).toBe('')
+    expect(pastille?.className).not.toMatch(/ipm-avatar--\d/)
+  })
+
+  it('n’affiche pas la section famille sans ayant droit', () => {
+    const { container } = rendreEcran(<Accueil />, uneSession({ beneficiaires: [] }))
+    expect(screen.queryByText('Les cartes d’adhérent de ma famille')).toBeNull()
+    expect(container.querySelector('.accueil-famille')).toBeNull()
   })
 
   it('explique dans une feuille les documents encore à venir', () => {

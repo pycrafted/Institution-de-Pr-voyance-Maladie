@@ -10,16 +10,6 @@
 
 /* Le champ de recherche (§3.8) porte la gouttière commune et l'air qui le
    sépare du bandeau — comme sur « Mes documents ». */
-.conventionnes__recherche {
-  padding: var(--e-16) var(--gouttiere) 0;
-}
-
-/* Les puces de spécialité, juste sous la recherche : une rangée qui défile,
-   la liste des spécialités étant plus longue que l'écran n'est large. */
-.conventionnes__filtres {
-  margin-top: var(--e-12);
-}
-
 /* La spécialité, première ligne de détail : c'est elle qui dit à quoi sert
    la structure (« Cliniques », « Laboratoires d'analyses »…). */
 .conventionnes__specialite {
@@ -68,11 +58,12 @@
   border-radius: var(--r-pill);
   font-size: 20px;
 }
-/* « S'y rendre » : le noir de marque plein. C'est l'action que la carte
-   promet, et elle se distingue ainsi de l'appel d'un coup d'œil, même en
-   plein soleil — sans ajouter de rouge à l'annuaire. */
+/* « S'y rendre » : l'action que la carte promet. Le disque noir a été retiré
+   comme tous les autres (demande de l'utilisateur) ; elle se distingue
+   maintenant de l'appel par le seul contraste de l'icône - pleine ici, en
+   gris doux pour le téléphone - sans ajouter de rouge à l'annuaire. */
 .conventionnes__action--itineraire {
-  background: var(--deg-marque);
-  color: #ffffff;
-  box-shadow: var(--ombre-2);
+  background: transparent;
+  color: var(--ipm-texte);
+  box-shadow: none;
 }

@@ -5,7 +5,7 @@
  *
  * De haut en bas :
  *   1. bandeau de marque compact (§3.2) ; c'est un onglet, donc sans retour ;
- *   2. champ de recherche (§3.8) par nom, adresse ou spécialité ;
+ *   2. menu déroulant des catégories (spécialités), avec leur compte ;
  *   3. puces de filtre (§3.6) : « Tous », puis une par spécialité présente,
  *      les plus fournies d'abord ;
  *   4. une CARTE AUTONOME par structure (§3.5) : nom, spécialité, adresse,
@@ -28,21 +28,18 @@ import {
 } from '@ionic/react'
 import {
   callOutline,
+  chevronDown,
   cloudOfflineOutline,
   locationOutline,
   medicalOutline,
   navigateOutline,
-  searchOutline,
   warningOutline,
 } from 'ionicons/icons'
 import { useMemo, useState, type ReactNode } from 'react'
 
 import CarteListe from '../components/CarteListe'
-import BandeauMarque from '../components/BandeauMarque'
-import Champ from '../components/Champ'
 import EtatVide from '../components/EtatVide'
 import OfflineBanner from '../components/OfflineBanner'
-import PucesFiltre, { type Puce } from '../components/PucesFiltre'
 import { SqueletteCarte } from '../components/Skeletons'
 import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
@@ -66,13 +63,13 @@ const SQUELETTES = 5
 export default function Conventionnes() {
   const { structures, chargement, erreur, synchroniseLe, rafraichir } = useConventionnes()
   const enLigne = useOnline()
-  const [recherche, setRecherche] = useState('')
   const [specialite, setSpecialite] = useState(TOUS)
 
-  const puces = useMemo<Puce[]>(() => {
+  /** « Toutes les catégories », puis une entrée par spécialité, avec son compte. */
+  const categories = useMemo(() => {
     if (!structures) return []
     return [
-      { cle: TOUS, libelle: 'Tous', nombre: structures.length },
+      { cle: TOUS, libelle: 'Toutes les catégories', nombre: structures.length },
       ...filtresSpecialites(structures).map((f) => ({
         cle: f.code,
         libelle: f.libelle,
@@ -82,15 +79,14 @@ export default function Conventionnes() {
   }, [structures])
 
   const trouvees = useMemo(
-    () => (structures ? filtrerConventionnes(structures, recherche, specialite) : []),
-    [structures, recherche, specialite],
+    () => (structures ? filtrerConventionnes(structures, '', specialite) : []),
+    [structures, specialite],
   )
 
   const avecAnnuaire = structures !== null && structures.length > 0
   // Liste déjà affichée mais dernière synchronisation en échec : on le dit,
   // au lieu de laisser croire que l'annuaire est à jour.
   const serveurInjoignable = structures !== null && erreur !== null && !chargement
-  const filtreActif = puces.find((p) => p.cle === specialite)
 
   function actualiser(evenement: CustomEvent<RefresherEventDetail>) {
     haptique.leger()
@@ -98,7 +94,6 @@ export default function Conventionnes() {
   }
 
   function toutAfficher() {
-    setRecherche('')
     setSpecialite(TOUS)
   }
 
@@ -133,18 +128,13 @@ export default function Conventionnes() {
       />
     )
   } else if (trouvees.length === 0) {
-    const cherche = recherche.trim()
     contenu = (
       <EtatVide
-        icone={searchOutline}
+        icone={medicalOutline}
         teinte="neutre"
         titre="Aucune structure trouvée"
-        message={
-          cherche
-            ? `Rien ne correspond à « ${cherche} »${filtreActif && specialite !== TOUS ? ` parmi les ${filtreActif.libelle.toLocaleLowerCase('fr-FR')}` : ''}.`
-            : 'Aucune structure dans cette catégorie.'
-        }
-        action={{ libelle: 'Tout afficher', onClick: toutAfficher, secondaire: true }}
+        message="Aucune structure dans cette catégorie."
+        action={{ libelle: 'Toutes les catégories', onClick: toutAfficher, secondaire: true }}
       />
     )
   } else {
@@ -173,35 +163,45 @@ export default function Conventionnes() {
           <IonRefresherContent />
         </IonRefresher>
 
-        <BandeauMarque
-          titre="Conventionnés"
-          sousTitre="Les structures de santé conventionnées par votre IPM"
-        />
+        {/* Pas d'en-tête : l'écran commence par sa recherche et ses puces.
+            On ne garde que l'espace de la zone sûre (encoche du téléphone). */}
+        <div className="ipm-zone-sure" />
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 
         {avecAnnuaire && (
-          <>
-            <div className="conventionnes__recherche">
-              <Champ
-                libelle="Rechercher"
-                valeur={recherche}
-                onChanger={setRecherche}
-                placeholder="Nom, adresse ou spécialité"
-                icone={searchOutline}
-                type="search"
-                inputmode="search"
-                enterkeyhint="search"
+          /* Un menu déroulant plutôt qu'un champ de recherche et une rangée de
+             puces : l'annuaire compte plus de trente spécialités, la rangée
+             défilait sans fin et l'employé cherche une CATÉGORIE (« une
+             pharmacie »), pas un nom. Un `select` natif ouvre le sélecteur du
+             téléphone, celui que l'employé connaît déjà. */
+          <div className="ipm-menu-categorie">
+            <label className="ipm-menu-categorie__libelle" htmlFor="conventionnes-categorie">
+              Catégorie
+            </label>
+            <div className="ipm-menu-categorie__cadre">
+              <select
+                id="conventionnes-categorie"
+                className="ipm-menu-categorie__choix"
+                value={specialite}
+                onChange={(e) => {
+                  haptique.leger()
+                  setSpecialite(e.target.value)
+                }}
+              >
+                {categories.map((categorie) => (
+                  <option key={categorie.cle} value={categorie.cle}>
+                    {categorie.libelle} ({categorie.nombre})
+                  </option>
+                ))}
+              </select>
+              <IonIcon
+                className="ipm-menu-categorie__chevron"
+                icon={chevronDown}
+                aria-hidden="true"
               />
             </div>
-            <PucesFiltre
-              className="conventionnes__filtres"
-              puces={puces}
-              active={specialite}
-              onChanger={setSpecialite}
-              etiquette="Filtrer par spécialité"
-            />
-          </>
+          </div>
         )}
 
         {contenu}

@@ -49,11 +49,11 @@ describe('Profil', () => {
     // Ni l'identité, ni le portrait, ni son sélecteur de fichier.
     expect(screen.queryByLabelText(/ma photo/i)).toBeNull()
     expect(container.querySelector('input[type="file"]')).toBeNull()
-    // L'écran commence par la famille.
-    expect(screen.getByText(/Ma famille/)).toBeInTheDocument()
+    // L'écran commence par les informations de l'employé.
+    expect(screen.getByText('Mes informations')).toBeInTheDocument()
   })
 
-  it('détaille les informations de l’employé au-dessus de sa famille', () => {
+  it('détaille les informations de l’employé en tête d’écran', () => {
     const { container } = rendreEcran(<Profil />)
     // Plus de puces sous une carte : une rubrique par ligne.
     expect(container.querySelector('.profil__reperes')).toBeNull()
@@ -68,19 +68,18 @@ describe('Profil', () => {
       'href',
       'tel:771234567',
     )
-    // La section vient avant la famille.
+    // Elle ouvre l'écran, les réglages suivent.
     const titres = Array.from(container.querySelectorAll('.ipm-titre-section')).map(
       (t) => t.textContent,
     )
-    expect(titres.slice(0, 2)).toEqual(['Mes informations', 'Ma famille · 1'])
+    expect(titres.slice(0, 2)).toEqual(['Mes informations', 'Réglages'])
   })
 
-  it('ouvre l’écran par un bandeau compact, sans toolbar ni liste à filets', () => {
+  it('ouvre l’écran directement sur ses sections, sans en-tête ni toolbar ni liste à filets', () => {
     const { container } = rendreEcran(<Profil />)
-    // Pas de chevauchement ici : l'écran commence par un titre de section.
-    expect(container.querySelector('.ipm-bandeau')).toHaveClass('ipm-bandeau--compact')
-    expect(container.querySelector('.ipm-bandeau')).not.toHaveClass('ipm-bandeau--chevauche')
-    expect(container.querySelector('.ipm-bandeau__titre')).toHaveTextContent('Profil')
+    // Plus d'en-tête du tout : ni bandeau sombre, ni grand titre.
+    expect(container.querySelector('.ipm-bandeau')).toBeNull()
+    expect(container.querySelector('.ipm-entete')).toBeNull()
     // §1 : ni gros titre noir sur fond gris, ni ion-item, ni ion-list.
     expect(container.querySelector('ion-toolbar')).toBeNull()
     expect(container.querySelector('ion-item')).toBeNull()
@@ -98,24 +97,14 @@ describe('Profil', () => {
     localStorage.clear()
   })
 
-  it('groupe les ayants droit dans une seule carte, sans le titulaire', () => {
+  it('ne liste plus la famille : ses cartes se touchent depuis l’accueil', () => {
     const { container } = rendreEcran(<Profil />)
-    expect(screen.getByText('Ma famille · 1')).toBeInTheDocument()
-    expect(screen.getByText('Conjointe · 58 ans')).toBeInTheDocument()
-    // Le titulaire est détaillé au-dessus : il n'est plus dans sa famille.
-    expect(screen.queryByText('Titulaire · 64 ans')).toBeNull()
-    expect(screen.queryByText(/\(vous\)/)).toBeNull()
-    // La famille est UN objet : une seule carte, deux lignes dedans.
-    const famille = container.querySelectorAll('.ipm-groupe:not(.profil__infos)')
-    expect(famille).toHaveLength(1)
-    expect(famille[0]?.querySelectorAll('.ipm-carte-liste')).toHaveLength(1)
+    expect(screen.queryByText(/Ma famille/)).toBeNull()
+    expect(screen.queryByText('Conjointe · 58 ans · 1204-01')).toBeNull()
+    // Ni la carte d'ayant droit en plein écran, qui part avec elle.
+    expect(container.querySelector('.carte-plein')).toBeNull()
     // Toujours pas de liste Ionic à filets pleine largeur (§1).
     expect(container.querySelector('ion-item')).toBeNull()
-  })
-
-  it('le dit quand la famille n’a pas pu être chargée', () => {
-    rendreEcran(<Profil />, uneSession({ beneficiaires: [] }))
-    expect(screen.getByText(/n’a pas encore pu être chargée/)).toBeInTheDocument()
   })
 
   it('donne accès à l’assistance, qui n’a pas d’onglet', () => {

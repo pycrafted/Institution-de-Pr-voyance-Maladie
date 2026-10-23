@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { unFournisseur, uneSpecialite, unMoi } from '../../test/fabriques'
 import {
   corpsDepuisSaisie,
+  saisieComplete,
   erreurDate,
   etatInitial,
   reducteur,
@@ -60,6 +61,19 @@ describe('assistant de la lettre de garantie', () => {
       naturePrestation: '00',
       specialite: '00',
       prescripteur: 'MG001',
+      nbArticles: 1,
+      datePrescription: AUJOURDHUI,
+    })
+  })
+
+  it('n’exige que le bénéficiaire, comme l’écran IPM', () => {
+    // Prestataire, nature, prescripteur et prescription se renseignent plus
+    // tard : seul le bénéficiaire porte l'astérisque.
+    const etat = jouer({ type: 'beneficiaire', beneficiaire: AWA })
+    expect(saisieComplete(etat.saisie)).toBe(true)
+    expect(corpsDepuisSaisie(etat.saisie)).toEqual({
+      beneficiaire: AWA.matricule,
+      nbArticles: 1,
       datePrescription: AUJOURDHUI,
     })
   })

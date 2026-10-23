@@ -5,7 +5,7 @@ import { configurerClient } from '../api'
 import { reponseJson, unFournisseur } from '../test/fabriques'
 import type { Conventionne } from '../types/api'
 import Conventionnes from './Conventionnes'
-import { preparerIonic, rechercher, rendreEcran, simulerReseau } from './conventionnes/outils-test'
+import { preparerIonic, rendreEcran, simulerReseau } from './conventionnes/outils-test'
 import { reinitialiserConventionnes } from './conventionnes/useConventionnes'
 
 const fetchMock = vi.fn<typeof fetch>()
@@ -50,8 +50,10 @@ const ANNUAIRE: Conventionne[] = [
   }),
 ]
 
-/** La puce de filtre d'une spécialité (rôle « tab » de PucesFiltre). */
-const puce = (nom: RegExp) => screen.getByRole('tab', { name: nom })
+/** Le menu déroulant des catégories, seul filtre de l'écran. */
+const menu = () => screen.getByLabelText('Catégorie') as HTMLSelectElement
+/** Choisit une catégorie par son code de spécialité (TOUS : « * »). */
+const choisir = (code: string) => fireEvent.change(menu(), { target: { value: code } })
 
 beforeAll(() => preparerIonic())
 
@@ -94,13 +96,14 @@ describe('Conventionnés', () => {
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/mobile/conventionnes/')
   })
 
-  it('s’intitule « Conventionnés », en bandeau compact, sans retour ni filets (§1)', async () => {
+  it('commence directement par la recherche, sans en-tête ni retour ni filets (§1)', async () => {
     fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
     const { container } = rendreEcran(<Conventionnes />)
     await screen.findByText('Pharmacie du Plateau')
 
-    expect(container.querySelector('.ipm-bandeau')).toHaveClass('ipm-bandeau--compact')
-    expect(container.querySelector('.ipm-bandeau__titre')).toHaveTextContent('Conventionnés')
+    // Plus d'en-tête du tout : ni bandeau sombre, ni grand titre.
+    expect(container.querySelector('.ipm-bandeau')).toBeNull()
+    expect(container.querySelector('.ipm-entete')).toBeNull()
     // Un onglet : on en change, on n'en revient pas.
     expect(screen.queryByLabelText('Retour')).toBeNull()
     expect(container.querySelectorAll('.ipm-pile .ipm-carte-liste')).toHaveLength(ANNUAIRE.length)
@@ -108,46 +111,35 @@ describe('Conventionnés', () => {
     expect(container.querySelector('ion-segment')).toBeNull()
   })
 
-  it('propose un filtre par spécialité présente, les plus fournies d’abord', async () => {
+  it('liste les catégories présentes, les plus fournies d’abord, avec leur compte', async () => {
     fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
     rendreEcran(<Conventionnes />)
     await screen.findByText('Pharmacie du Plateau')
 
-    const libelles = screen.getAllByRole('tab').map((t) => t.textContent)
-    expect(libelles).toEqual(['Tous4', 'Pharmacies2', 'Cliniques1', 'Laboratoires d’analyses1'])
-    expect(puce(/^Tous/)).toHaveAttribute('aria-selected', 'true')
+    const libelles = Array.from(menu().options).map((o) => o.textContent)
+    expect(libelles).toEqual([
+      'Toutes les catégories (4)',
+      'Pharmacies (2)',
+      'Cliniques (1)',
+      'Laboratoires d’analyses (1)',
+    ])
+    // Toutes les catégories au départ : l'annuaire entier.
+    expect(menu().value).toBe('*')
   })
 
-  it('filtre par spécialité, et « Tous » rend l’annuaire entier', async () => {
+  it('filtre sur la catégorie choisie, et revient à l’annuaire entier', async () => {
     fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
     rendreEcran(<Conventionnes />)
     await screen.findByText('Pharmacie du Plateau')
 
-    fireEvent.click(puce(/^Cliniques/))
+    choisir('08') // Cliniques
     await waitFor(() => expect(screen.queryByText('Pharmacie du Plateau')).toBeNull())
     expect(screen.getByText('Clinique du Cap')).toBeInTheDocument()
     expect(screen.getByText('1 structure sur 4')).toBeInTheDocument()
 
-    fireEvent.click(puce(/^Tous/))
+    choisir('*')
     expect(await screen.findByText('Pharmacie du Plateau')).toBeInTheDocument()
     expect(screen.getByText('4 structures')).toBeInTheDocument()
-  })
-
-  it('combine la recherche et le filtre', async () => {
-    fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
-    rendreEcran(<Conventionnes />)
-    await screen.findByText('Pharmacie du Plateau')
-
-    // « plateau » : une pharmacie et une clinique…
-    rechercher('plateau')
-    await waitFor(() => expect(screen.queryByText('Bio 24')).toBeNull())
-    expect(screen.getByText('Pharmacie du Plateau')).toBeInTheDocument()
-    expect(screen.getByText('Clinique du Cap')).toBeInTheDocument()
-
-    // … et parmi les pharmacies seulement, la seule pharmacie.
-    fireEvent.click(puce(/^Pharmacies/))
-    await waitFor(() => expect(screen.queryByText('Clinique du Cap')).toBeNull())
-    expect(screen.getByText('Pharmacie du Plateau')).toBeInTheDocument()
   })
 
   it('appelle d’un toucher, et le dit quand le numéro manque', async () => {
@@ -184,28 +176,27 @@ describe('Conventionnés', () => {
     expect(screen.getAllByLabelText(/^Appeler/)).toHaveLength(3)
   })
 
-  it('propose « Tout afficher » quand rien ne correspond, et remet le filtre à « Tous »', async () => {
+  it('propose de revenir à toutes les catégories quand l’une est vide', async () => {
+    // Une spécialité de l'annuaire dont aucune structure n'est chargée : le
+    // cas se produit quand une structure est désactivée entre deux syncs.
     fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
     rendreEcran(<Conventionnes />)
     await screen.findByText('Pharmacie du Plateau')
 
-    fireEvent.click(puce(/^Cliniques/))
-    rechercher('yoff')
+    choisir('99') // aucune structure ne porte ce code
     expect(await screen.findByText('Aucune structure trouvée')).toBeInTheDocument()
-    expect(screen.getByText(/parmi les cliniques/)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Tout afficher'))
+    fireEvent.click(screen.getByText('Toutes les catégories'))
     expect(await screen.findByText('Pharmacie du Plateau')).toBeInTheDocument()
-    expect(puce(/^Tous/)).toHaveAttribute('aria-selected', 'true')
+    expect(menu().value).toBe('*')
   })
 
-  it('annuaire vide : un état vide illustré, sans recherche ni filtres', async () => {
+  it('annuaire vide : un état vide illustré, sans menu de catégories', async () => {
     fetchMock.mockResolvedValue(reponseJson([]))
     const { container } = rendreEcran(<Conventionnes />)
 
     expect(await screen.findByText('Aucune structure conventionnée')).toBeInTheDocument()
-    expect(container.querySelector('ion-input')).toBeNull()
-    expect(screen.queryByRole('tab')).toBeNull()
+    expect(container.querySelector('select')).toBeNull()
   })
 
   it('serveur injoignable : message humain et « Réessayer » qui recharge', async () => {

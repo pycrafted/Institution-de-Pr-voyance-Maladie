@@ -6,7 +6,7 @@
 
 import { setupIonicReact } from '@ionic/react'
 import { IonReactRouter } from '@ionic/react-router'
-import { fireEvent, render } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import type { ReactNode } from 'react'
 
 /** jsdom n'a ni IntersectionObserver ni ResizeObserver, dont Ionic se sert. */
@@ -38,13 +38,6 @@ export function preparerIonic(): void {
 /** Rend un écran sous le routeur Ionic. */
 export function rendreEcran(ecran: ReactNode) {
   return render(<IonReactRouter>{ecran}</IonReactRouter>)
-}
-
-/** Le champ de recherche de la charte (§3.8) enveloppe un ion-input. */
-export function rechercher(texte: string): void {
-  const saisie = document.querySelector('ion-input')
-  if (!saisie) throw new Error('champ de recherche absent')
-  fireEvent(saisie, new CustomEvent('ionInput', { detail: { value: texte } }))
 }
 
 /**

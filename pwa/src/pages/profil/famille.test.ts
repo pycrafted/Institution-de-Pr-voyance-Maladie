@@ -60,7 +60,7 @@ describe('detailBeneficiaire', () => {
       sexe: 'F',
       age: 58,
     })
-    expect(detailBeneficiaire(awa)).toBe('Conjointe · 58 ans')
-    expect(detailBeneficiaire({ ...awa, age: null })).toBe('Conjointe')
+    expect(detailBeneficiaire(awa)).toBe('Conjointe · 58 ans · 1204')
+    expect(detailBeneficiaire({ ...awa, age: null })).toBe('Conjointe · 1204')
   })
 })

@@ -5,7 +5,7 @@
  */
 
 import type { Beneficiaire } from '../../types/api'
-import { age } from '../../utils/format'
+import { age, matriculeSansSociete } from '../../utils/format'
 import { libelleLien } from '../../utils/libelles'
 
 // Le lien de parenté se nomme pareil sur tous les écrans : la table des liens
@@ -19,7 +19,9 @@ export function libelleSexe(sexe: string | null | undefined): string {
   return ''
 }
 
-/** Ligne de détail sous le nom : « Conjointe · 58 ans ». */
+/** Ligne de détail sous le nom : « Conjointe · 58 ans · 1204 ». */
 export function detailBeneficiaire(beneficiaire: Beneficiaire): string {
-  return [libelleLien(beneficiaire), age(beneficiaire.age)].filter(Boolean).join(' · ')
+  return [libelleLien(beneficiaire), age(beneficiaire.age), matriculeSansSociete(beneficiaire.matricule)]
+    .filter(Boolean)
+    .join(' · ')
 }

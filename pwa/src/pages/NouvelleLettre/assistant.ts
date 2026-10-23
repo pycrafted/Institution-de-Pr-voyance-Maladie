@@ -49,6 +49,8 @@ export interface Saisie {
   specialite: Specialite | null
   prescripteur: Fournisseur | null
   datePrescription: DateISO
+  /** Nombre d'actes prescrits ; 0 tant qu'il n'est pas renseigné. */
+  nbArticles: number
 }
 
 export type ErreursSaisie = Partial<Record<ChampNouvelleLettre, string>>
@@ -84,6 +86,7 @@ export const ETAPE_DU_CHAMP: Record<ChampNouvelleLettre, Etape> = {
   naturePrestation: 3,
   specialite: 4,
   prescripteur: 4,
+  nbArticles: 5,
   datePrescription: 5,
   non_field_errors: 6,
 }
@@ -110,6 +113,7 @@ export function etatInitial(aujourdhui: DateISO = aujourdhuiISO()): EtatAssistan
       specialite: null,
       prescripteur: null,
       datePrescription: aujourdhui,
+      nbArticles: 1,
     },
     erreurs: {},
     retourRecap: false,
@@ -132,39 +136,32 @@ export function erreurDate(
   return undefined
 }
 
+/**
+ * De quoi enregistrer la lettre. SEUL le bénéficiaire est exigé : c'est la
+ * règle de l'écran IPM pour le même document (société, participant et type
+ * de bénéficiaire sont les seuls champs à astérisque). Le prestataire, la
+ * nature, le prescripteur et la prescription se renseignent plus tard.
+ */
 export function saisieComplete(saisie: Saisie): boolean {
-  return Boolean(
-    saisie.beneficiaire &&
-    saisie.specialitePrestataire &&
-    saisie.prestataire &&
-    saisie.nature &&
-    saisie.specialite &&
-    saisie.prescripteur,
-  )
+  return Boolean(saisie.beneficiaire)
 }
 
-/** Corps de POST /api/mobile/lettres-garantie/, ou null si la saisie est incomplète. */
+/** Corps de POST /api/mobile/lettres-garantie/, ou null faute de bénéficiaire. */
 export function corpsDepuisSaisie(saisie: Saisie): NouvelleLettreCorps | null {
   const { beneficiaire, specialitePrestataire, prestataire, nature, specialite, prescripteur } =
     saisie
-  if (
-    !beneficiaire ||
-    !specialitePrestataire ||
-    !prestataire ||
-    !nature ||
-    !specialite ||
-    !prescripteur
-  ) {
-    return null
-  }
+  if (!beneficiaire) return null
+  // Ce qui n'a pas été renseigné n'est pas envoyé : le serveur laisse le champ
+  // vide, et le gestionnaire le complétera au traitement.
   return {
     beneficiaire: beneficiaire.matricule,
-    specialitePrestataire: specialitePrestataire.code,
-    prestataire: prestataire.code,
-    naturePrestation: nature.code,
-    specialite: specialite.code,
-    prescripteur: prescripteur.code,
-    datePrescription: saisie.datePrescription,
+    ...(specialitePrestataire ? { specialitePrestataire: specialitePrestataire.code } : {}),
+    ...(prestataire ? { prestataire: prestataire.code } : {}),
+    ...(nature ? { naturePrestation: nature.code } : {}),
+    ...(specialite ? { specialite: specialite.code } : {}),
+    ...(prescripteur ? { prescripteur: prescripteur.code } : {}),
+    ...(saisie.nbArticles ? { nbArticles: saisie.nbArticles } : {}),
+    ...(saisie.datePrescription ? { datePrescription: saisie.datePrescription } : {}),
   }
 }
 

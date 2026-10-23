@@ -4,8 +4,13 @@
  * du serveur. Tout ce qui se décide ici se teste sans rendre un seul écran.
  *
  * Les cinq étapes (SPEC §3, écran 4) :
- *   1. bénéficiaire ; 2. prescripteur (spécialité, puis prescripteur) ;
- *   3. pharmacie ; 4. ordonnance (date + nombre d'articles) ; 5. récapitulatif.
+ *   1. bénéficiaire ; 2. pharmacie ; 3. prescripteur (spécialité, puis
+ *   prescripteur) ; 4. ordonnance (date + nombre d'articles) ;
+ *   5. récapitulatif.
+ *
+ * La pharmacie vient AVANT le prescripteur : c'est l'ordre de la demande
+ * telle que l'employé la vit - il sait où il ira retirer ses médicaments, le
+ * nom du prescripteur lui revient ensuite (demande du métier).
  */
 
 import type {
@@ -37,8 +42,8 @@ export const VALIDITE_BON_JOURS = 30
 /** Nom court de chaque étape (sous-titre de l'en-tête, lecteurs d'écran). */
 export const NOMS_ETAPES: Record<Etape, string> = {
   1: 'Bénéficiaire',
-  2: 'Prescripteur',
-  3: 'Pharmacie',
+  2: 'Pharmacie',
+  3: 'Prescripteur',
   4: 'Ordonnance',
   5: 'Récapitulatif',
 }
@@ -79,6 +84,8 @@ export type Action =
   | { type: 'articles'; nombre: number }
   /** « Continuer » de l'étape 4. */
   | { type: 'continuer'; aujourdhui?: DateISO }
+  /** « Passer » : l'étape n'est pas obligatoire, on la laisse vide. */
+  | { type: 'passer' }
   | { type: 'precedent' }
   /** « Modifier » depuis le récapitulatif. */
   | { type: 'modifier'; etape: Etape }
@@ -87,9 +94,9 @@ export type Action =
 /** Étape où se corrige chaque champ du corps envoyé au serveur. */
 export const ETAPE_DU_CHAMP: Record<ChampNouveauBon, Etape> = {
   beneficiaire: 1,
-  specialite: 2,
-  prescripteur: 2,
-  pharmacie: 3,
+  pharmacie: 2,
+  specialite: 3,
+  prescripteur: 3,
   dateOrdonnance: 4,
   nbArticles: 4,
   non_field_errors: 5,
@@ -141,24 +148,30 @@ export function borneArticles(nombre: number): number {
   return Math.min(ARTICLES_MAX, Math.max(ARTICLES_MIN, Math.round(nombre)))
 }
 
-/** Toutes les réponses sont là : le récapitulatif peut s'afficher. */
+/**
+ * De quoi afficher le récapitulatif. SEUL le bénéficiaire est exigé : c'est
+ * la règle de l'écran IPM pour le même document (société, participant et type
+ * de bénéficiaire sont les seuls champs à astérisque). La pharmacie, le
+ * prescripteur et l'ordonnance se renseignent plus tard, quand l'employé
+ * revient avec - le mobile ne peut pas être plus sévère.
+ */
 export function saisieComplete(saisie: Saisie): boolean {
-  return Boolean(
-    saisie.beneficiaire && saisie.specialite && saisie.prescripteur && saisie.pharmacie,
-  )
+  return Boolean(saisie.beneficiaire)
 }
 
-/** Corps de POST /api/mobile/bons-pharmacie/, ou null si la saisie est incomplète. */
+/** Corps de POST /api/mobile/bons-pharmacie/, ou null faute de bénéficiaire. */
 export function corpsDepuisSaisie(saisie: Saisie): NouveauBonCorps | null {
   const { beneficiaire, specialite, prescripteur, pharmacie } = saisie
-  if (!beneficiaire || !specialite || !prescripteur || !pharmacie) return null
+  if (!beneficiaire) return null
+  // Ce qui n'a pas été renseigné n'est pas envoyé : le serveur laisse le champ
+  // vide, et le gestionnaire le complétera au traitement.
   return {
     beneficiaire: beneficiaire.matricule,
-    pharmacie: pharmacie.code,
-    specialite: specialite.code,
-    prescripteur: prescripteur.code,
-    nbArticles: borneArticles(saisie.nbArticles),
-    dateOrdonnance: saisie.dateOrdonnance,
+    ...(pharmacie ? { pharmacie: pharmacie.code } : {}),
+    ...(specialite ? { specialite: specialite.code } : {}),
+    ...(prescripteur ? { prescripteur: prescripteur.code } : {}),
+    ...(saisie.nbArticles ? { nbArticles: borneArticles(saisie.nbArticles) } : {}),
+    ...(saisie.dateOrdonnance ? { dateOrdonnance: saisie.dateOrdonnance } : {}),
   }
 }
 
@@ -285,8 +298,35 @@ export function reducteur(etat: EtatAssistant, action: Action): EtatAssistant {
       return apresChoix(etat, saisie, sansErreurs(etat.erreurs, 'dateOrdonnance', 'nbArticles'))
     }
 
+    case 'passer': {
+      // On efface ce que l'étape aurait renseigné : « passer » doit laisser
+      // le champ VIDE, et non garder un choix fait puis regretté.
+      switch (etat.etape) {
+        case 2:
+          return apresChoix(
+            etat,
+            { ...saisie, pharmacie: null },
+            sansErreurs(etat.erreurs, 'pharmacie'),
+          )
+        case 3:
+          return apresChoix(
+            { ...etat, sousEtape: 'specialite' },
+            { ...saisie, specialite: null, prescripteur: null },
+            sansErreurs(etat.erreurs, 'specialite', 'prescripteur'),
+          )
+        case 4:
+          return apresChoix(
+            etat,
+            { ...saisie, dateOrdonnance: '', nbArticles: 0 },
+            sansErreurs(etat.erreurs, 'dateOrdonnance', 'nbArticles'),
+          )
+        default:
+          return etat
+      }
+    }
+
     case 'precedent': {
-      if (etat.etape === 2 && etat.sousEtape === 'prescripteur') {
+      if (etat.etape === 3 && etat.sousEtape === 'prescripteur') {
         return { ...etat, sousEtape: 'specialite', sens: 'arriere' }
       }
       if (etat.etape === 1) return etat
@@ -295,7 +335,7 @@ export function reducteur(etat: EtatAssistant, action: Action): EtatAssistant {
         ...etat,
         etape,
         // En revenant à l'étape 2, on retrouve la liste où l'on avait choisi.
-        sousEtape: etape === 2 && saisie.specialite ? 'prescripteur' : 'specialite',
+        sousEtape: etape === 3 && saisie.specialite ? 'prescripteur' : 'specialite',
         sens: 'arriere',
       }
     }

@@ -16,65 +16,58 @@
  * §3.1 — Barre d'onglets flottante
  * ===================================================================== */
 
+/*
+ * Barre de NAVIGATION Material 3 (« Navigation bar ») : pleine largeur, collée
+ * au bas de l'écran, 80 de haut, posée sur une surface-container tonale avec
+ * un filet haut. Fini la barre flottante arrondie (un trait iOS) : la barre
+ * Material touche les bords, et l'onglet actif porte une PASTILLE d'indicateur
+ * (un ovale de couleur secondaire) DERRIÈRE SON ICÔNE, le libellé dessous.
+ * C'est la signature la plus reconnaissable d'une vraie application Android.
+ */
 ion-tab-bar.ipm-onglets {
-  /* Détachée de 12 px des bords et du bas : le contenu passe dessous. */
   position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: calc(12px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
-  height: 64px;
-  padding: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(80px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  padding: 0 0 var(--ion-safe-area-bottom, env(safe-area-inset-bottom));
   --background: transparent;
   --border: 0;
-  /* Le fond est posé sur l'hôte : c'est lui qui porte le rayon et l'ombre. */
-  background: var(--ipm-verre);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-  border-radius: var(--r-xl);
-  /*
-   * Le liseré du mode sombre est posé en ombre INTÉRIEURE, pas en bordure :
-   * Ionic force `box-sizing: content-box !important` sur ion-tab-bar, une
-   * bordure de 1 px portait donc la barre à 66 px au lieu des 64 du §3.1.
-   */
-  box-shadow:
-    var(--ombre-3),
-    inset 0 0 0 1px var(--ipm-liseret);
-  overflow: hidden;
+  /* Surface-container M3 : la barre se détache du fond sans ombre portée. */
+  background: var(--ipm-surface-2);
+  border-top: 1px solid var(--ipm-bordure);
+  border-radius: 0;
+  box-shadow: none;
 }
 
 .ipm-onglets ion-tab-button {
   --background: transparent;
   --background-focused: transparent;
   --color: var(--ipm-texte-doux);
-  /* Le rouge de marque porte du texte : sur la pastille rouge douce il ne
-     tient que 3,97:1 en 11 px. La variante « -texte » passe le niveau AA. */
-  --color-selected: var(--ipm-rouge-texte);
+  /* Le LIBELLÉ ne change pas quand l'onglet est actif : seule l'icône passe au
+     rouge. On garde donc la même couleur, sélectionné ou non. */
+  --color-selected: var(--ipm-texte-doux);
+  /* Pas d'onde (ripple) au toucher sur les onglets du footer (demande). */
   --ripple-color: transparent;
-  --padding-top: 0;
-  --padding-bottom: 0;
-  max-width: 108px;
-  margin: 8px 4px;
-  /* Concentricité : 26 (barre) − 8 (marge) = 18. */
-  border-radius: var(--r-md);
+  --padding-top: 12px;
+  --padding-bottom: 16px;
+  max-width: none;
   background: transparent;
-  transition:
-    background-color var(--mvt-appui) var(--mvt-courbe),
-    transform var(--mvt-appui) var(--mvt-courbe);
-}
-.ipm-onglets ion-tab-button:active {
-  transform: scale(var(--mvt-appui-echelle));
-}
-.ipm-onglets ion-tab-button.tab-selected {
-  background: var(--ipm-rouge-doux);
 }
 .ipm-onglets ion-tab-button ion-icon {
   font-size: 24px;
-  margin: 0 0 3px;
+  margin: 0 0 4px;
+  transition: color 180ms var(--mvt-courbe);
+}
+/* Onglet actif : SEULE l'icône devient rouge (pas de pastille, pas de libellé
+   coloré). */
+.ipm-onglets ion-tab-button.tab-selected ion-icon {
+  color: var(--ipm-rouge-texte);
 }
 .ipm-onglets ion-tab-button ion-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   margin: 0;
 }
 
@@ -92,8 +85,10 @@ ion-tab-bar.ipm-onglets {
      la limite basse du bandeau, comme l'ombre le fait en clair. */
   border-bottom: 1px solid var(--ipm-liseret);
   color: #ffffff;
-  border-end-start-radius: var(--r-2xl);
-  border-end-end-radius: var(--r-2xl);
+  /* Material 3 : le top app bar est à bords francs, pleine largeur, sans
+     coins arrondis en bas (l'ancien rayon était un trait iOS). */
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
   padding: calc(var(--e-16) + var(--ion-safe-area-top, env(safe-area-inset-top))) var(--gouttiere)
     var(--e-24);
   /*
@@ -201,11 +196,12 @@ ion-tab-bar.ipm-onglets {
 }
 .ipm-bandeau__titre {
   margin: 0;
-  /* §3.2 : 26/800 sur l'accueil. */
+  /* Material 3 : grand titre d'app bar, semi-gras (600) plutôt que l'ancien
+     800 iOS — M3 respire. */
   font-size: 1.625rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
   color: #ffffff;
 }
 .ipm-bandeau--compact .ipm-bandeau__titre {
@@ -232,7 +228,111 @@ ion-tab-bar.ipm-onglets {
  * d'onglets du bas qui le nomme.
  */
 .ipm-zone-sure {
-  height: calc(var(--e-16) + var(--ion-safe-area-top, env(safe-area-inset-top)));
+  height: calc(
+    var(--e-16) + var(--barre-haut) + var(--ion-safe-area-top, env(safe-area-inset-top))
+  );
+}
+
+/* ========================================================================
+ * Menu déroulant des catégories
+ * ---------------------------------------------------------------------
+ * Le filtre unique des écrans de liste (annuaire des conventionnés, mes
+ * documents) : il a remplacé le champ de recherche et la rangée de puces.
+ *
+ * Un `select` NATIF : sur le téléphone il ouvre le sélecteur du système,
+ * celui que l'employé connaît, et il reste accessible au clavier sans rien
+ * coder. On ne lui reprend que le cadre.
+ * ===================================================================== */
+.ipm-menu-categorie {
+  padding: var(--e-16) var(--gouttiere) 0;
+}
+.ipm-menu-categorie__libelle {
+  display: block;
+  margin-bottom: var(--e-8);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.ipm-menu-categorie__cadre {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ipm-menu-categorie__choix {
+  appearance: none;
+  width: 100%;
+  height: 52px;
+  padding: 0 calc(var(--e-16) + 24px) 0 var(--e-16);
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+/* Le chevron est à nous : `appearance: none` a retiré celui du navigateur, qui
+   n'avait ni la couleur ni la taille du reste. Il ne prend pas le toucher,
+   c'est le `select` dessous qui le reçoit. */
+.ipm-menu-categorie__chevron {
+  position: absolute;
+  inset-inline-end: var(--e-16);
+  pointer-events: none;
+  font-size: 20px;
+  color: var(--ipm-texte-doux);
+}
+
+/* ========================================================================
+ * Barre d'actions du HAUT (components/BarreActions.tsx)
+ * ---------------------------------------------------------------------
+ * Le pendant exact de la barre d'onglets du bas : pleine largeur, collée au
+ * bord, surface-container tonale, un filet qui la sépare du contenu, et les
+ * quatre actions réparties à parts égales. Elle est FIXE : le contenu des
+ * écrans défile dessous, chaque en-tête lui réservant sa hauteur.
+ * ===================================================================== */
+.ipm-barre-actions {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 11;
+  display: flex;
+  height: calc(var(--barre-haut) + var(--ion-safe-area-top, env(safe-area-inset-top)));
+  padding-top: var(--ion-safe-area-top, env(safe-area-inset-top));
+  background: var(--ipm-surface-2);
+  border-bottom: 1px solid var(--ipm-bordure);
+}
+/* `flex: 1` et non un espacement : chaque action occupe le même quart de la
+   largeur, comme un onglet du bas, et sa zone tactile va d'un bord à l'autre
+   de ce quart. Mêmes retraits (12/16) que `.ipm-onglets ion-tab-button`. */
+.ipm-barre-actions__bouton {
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 4px 16px;
+  border: 0;
+  background: transparent;
+  color: var(--ipm-texte-doux);
+  cursor: pointer;
+}
+/* Mêmes cotes qu'en bas : icône au trait de 24, libellé de 12. */
+.ipm-barre-actions__bouton ion-icon {
+  font-size: 24px;
+}
+.ipm-barre-actions__libelle {
+  max-width: 100%;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ========================================================================
@@ -245,8 +345,12 @@ ion-tab-bar.ipm-onglets {
  * ===================================================================== */
 
 .ipm-entete {
-  padding: calc(var(--e-16) + var(--ion-safe-area-top, env(safe-area-inset-top))) var(--gouttiere)
-    var(--e-12);
+  /* La barre d'actions est fixe au-dessus : on lui réserve sa hauteur, sans
+     quoi le titre passerait dessous. */
+  padding: calc(
+      var(--e-16) + var(--barre-haut) + var(--ion-safe-area-top, env(safe-area-inset-top))
+    )
+    var(--gouttiere) var(--e-12);
 }
 .ipm-entete__ligne {
   display: flex;
@@ -260,11 +364,11 @@ ion-tab-bar.ipm-onglets {
 }
 .ipm-entete__titre {
   margin: 0;
-  /* §3.2 : 26/800, comme le titre du bandeau qu'il remplace. */
+  /* Material 3 : même grand titre que le bandeau, semi-gras (600). */
   font-size: 1.625rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
   color: var(--ipm-texte);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -283,8 +387,9 @@ ion-tab-bar.ipm-onglets {
   align-items: center;
   gap: var(--e-8);
 }
-/* Bouton retour : la pastille du bandeau, en surface claire — c'est elle qui
-   le détache du fond, faute de fond coloré derrière. */
+/* Bouton retour : la flèche seule, sans disque derrière - comme toutes les
+   icônes de l'application (demande de l'utilisateur). Les 40 px restent :
+   c'est la zone tactile. */
 .ipm-entete__retour {
   appearance: none;
   border: 0;
@@ -294,11 +399,8 @@ ion-tab-bar.ipm-onglets {
   flex-shrink: 0;
   width: 40px;
   height: 40px;
-  border-radius: var(--r-pill);
-  background: var(--ipm-surface);
-  box-shadow:
-    var(--ombre-1),
-    inset 0 0 0 1px var(--ipm-liseret);
+  background: transparent;
+  box-shadow: none;
   color: var(--ipm-texte);
   font-size: 22px;
   cursor: pointer;
@@ -320,9 +422,15 @@ ion-tab-bar.ipm-onglets {
   width: 100%;
   /* Proportions d'une carte bancaire. */
   aspect-ratio: 1.586;
-  padding: var(--e-20);
+  /* TOUTES les cotes de la carte sont en `em` à partir de cette base : une
+     seule déclaration de `font-size` la fait alors grandir d'un bloc, texte,
+     photo et marges ensemble. C'est ce qui permet à la carte plein écran de
+     remplir l'écran sans se vider (cf. .carte-plein__carte). 16px = la valeur
+     des `rem` d'origine : l'aspect ne bouge pas là où rien n'est redéfini. */
+  font-size: 16px;
+  padding: 1.25em;
   border: 0;
-  border-radius: var(--r-xl);
+  border-radius: 1em;
   /* Le rouge de marque : c'est la pièce que l'employé présente, et le seul
      endroit de l'application où la couleur occupe une grande surface (les
      actions gardent le rouge, le reste des écrans est neutre). */
@@ -352,15 +460,15 @@ ion-tab-bar.ipm-onglets {
 .ipm-carte-identite {
   aspect-ratio: auto;
   justify-content: flex-start;
-  gap: var(--e-16);
-  padding: var(--e-16) var(--e-20) var(--e-20);
+  gap: 1em;
+  padding: 1em 1.25em 1.25em;
 }
 .ipm-carte-identite__entete {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--e-12);
+  gap: 0.75em;
 }
 /* Intitulé du document, à droite du logo : ce qui fait d'une carte rouge une
    pièce qu'on présente. Blanc plein, la hiérarchie par la taille. */
@@ -368,7 +476,7 @@ ion-tab-bar.ipm-onglets {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  font-size: 0.6875rem;
+  font-size: 0.6875em;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -388,8 +496,8 @@ ion-tab-bar.ipm-onglets {
    le coin bas droit, derrière les champs. Il ne gêne pas la lecture (7 %). */
 .ipm-carte-identite__embleme {
   position: absolute;
-  right: -46px;
-  bottom: -30px;
+  right: -2.875em;
+  bottom: -1.875em;
   opacity: 0.07;
   transform: rotate(-14deg);
   pointer-events: none;
@@ -397,7 +505,7 @@ ion-tab-bar.ipm-onglets {
 }
 
 .ipm-carte-identite__organisme {
-  font-size: 0.8125rem;
+  font-size: 0.8125em;
   font-weight: 800;
   letter-spacing: 0.18em;
 }
@@ -406,7 +514,7 @@ ion-tab-bar.ipm-onglets {
   position: relative;
   display: flex;
   align-items: flex-start;
-  gap: var(--e-16);
+  gap: 1em;
 }
 /* Le portrait : un simple conteneur, ou un bouton au profil (changer sa
    photo). Il porte la pastille d'appareil photo, hors du cadre qui rogne. */
@@ -424,16 +532,16 @@ button.ipm-carte-identite__portrait {
 }
 .ipm-carte-identite__crayon {
   position: absolute;
-  right: -6px;
-  bottom: -6px;
+  right: -0.375em;
+  bottom: -0.375em;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 1.625em;
+  height: 1.625em;
   border-radius: var(--r-pill);
   background: #ffffff;
   color: var(--ipm-rouge);
-  font-size: 14px;
+  font-size: 0.875em;
   box-shadow: var(--ombre-1);
 }
 
@@ -443,12 +551,12 @@ button.ipm-carte-identite__portrait {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 76px;
-  height: 96px;
-  border-radius: var(--r-sm);
+  width: 4.75em;
+  height: 6em;
+  border-radius: 0.75em;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.16);
-  border: 2px solid rgba(255, 255, 255, 0.85);
+  border: 0.125em solid rgba(255, 255, 255, 0.85);
   box-shadow: var(--ombre-1);
 }
 .ipm-carte-identite__photo img {
@@ -457,7 +565,7 @@ button.ipm-carte-identite__portrait {
   object-fit: cover;
 }
 .ipm-carte-identite__initiales {
-  font-size: 1.5rem;
+  font-size: 1.5em;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: #ffffff;
@@ -471,7 +579,7 @@ button.ipm-carte-identite__portrait {
   min-width: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--e-8) var(--e-12);
+  gap: 0.5em 0.75em;
   margin: 0;
 }
 .ipm-carte-identite__champ {
@@ -485,15 +593,15 @@ button.ipm-carte-identite__portrait {
   grid-column: 1 / -1;
 }
 .ipm-carte-identite__champ dt {
-  font-size: 0.625rem;
+  font-size: 0.625em;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #ffffff;
 }
 .ipm-carte-identite__champ dd {
-  margin: 1px 0 0;
-  font-size: 0.9375rem;
+  margin: 0.0625em 0 0;
+  font-size: 0.9375em;
   font-weight: 700;
   line-height: 1.25;
   color: #ffffff;
@@ -512,14 +620,14 @@ button.ipm-carte-identite__portrait {
 @media (max-width: 359px) {
   .ipm-carte-identite__champs {
     grid-template-columns: 1fr;
-    gap: 6px;
+    gap: 0.375em;
   }
   .ipm-carte-identite__photo {
-    width: 64px;
-    height: 80px;
+    width: 4em;
+    height: 5em;
   }
   .ipm-carte-identite__corps {
-    gap: var(--e-12);
+    gap: 0.75em;
   }
 }
 
@@ -536,6 +644,10 @@ button.ipm-carte-identite__portrait {
 .ipm-grille-services {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Toutes les tuiles a la meme hauteur, celle de la plus haute : sans cela,
+     la rangee dont le libelle tient sur une ligne serait plus courte que
+     l'autre. */
+  grid-auto-rows: 1fr;
   gap: var(--e-12);
   padding-inline: var(--gouttiere);
 }
@@ -554,15 +666,18 @@ button.ipm-carte-identite__portrait {
   border: 1px solid var(--ipm-liseret);
   box-sizing: border-box;
   width: 100%;
-  /* ≈ 150 de haut sur un téléphone courant (§3.4). */
-  aspect-ratio: 1 / 0.95;
+  /* La carte ne porte plus que deux choses depuis le retrait des mentions :
+     l'icone et le libelle. Un carre fige (l'ancien aspect-ratio taille pour
+     trois) la laissait a moitie vide. La hauteur suit donc le contenu, avec un
+     plancher qui garde une cible confortable au doigt et une grille reguliere. */
+  min-height: 116px;
   display: flex;
   flex-direction: column;
-  /* Contenu centré, comme sur la référence : icône, libellé, mention. */
+  /* Contenu centré : icône puis libellé. */
   align-items: center;
   justify-content: center;
-  gap: var(--e-12);
-  padding: var(--e-16) var(--e-12);
+  gap: var(--e-8);
+  padding: var(--e-20) var(--e-12);
   border-radius: var(--r-xl);
   text-align: center;
   cursor: pointer;
@@ -584,22 +699,16 @@ button.ipm-carte-identite__portrait {
   box-shadow: none;
 }
 
-.ipm-tuile__cercle {
-  display: grid;
-  place-items: center;
+/* Sans disque ni mention, l'icone est ce que l'oeil accroche en premier : elle
+   grossit pour tenir ce role (30 -> 34) et n'a plus besoin de la boite de 62 px
+   qui dimensionnait l'ancien disque. */
+.ipm-tuile__icone {
   flex-shrink: 0;
-  width: 62px;
-  height: 62px;
-  border-radius: var(--r-pill);
-  background: var(--ipm-rouge-doux);
+  font-size: 34px;
   color: var(--ipm-rouge-texte);
 }
-.ipm-tuile--avenir .ipm-tuile__cercle {
-  background: var(--ipm-surface);
+.ipm-tuile--avenir .ipm-tuile__icone {
   color: var(--ipm-texte-doux);
-}
-.ipm-tuile__icone {
-  font-size: 30px;
 }
 .ipm-tuile__libelle {
   font-size: 0.9375rem;
@@ -611,17 +720,6 @@ button.ipm-carte-identite__portrait {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-/* « Disponible » / « Bientôt », sous le libellé (§3.4). */
-.ipm-tuile__mention {
-  margin-top: -6px;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--ipm-rouge-texte);
-}
-.ipm-tuile--avenir .ipm-tuile__mention {
-  color: var(--ipm-texte-doux);
 }
 /* Puce « Bientôt » au coin de la carte à venir. */
 .ipm-tuile__puce {
@@ -745,32 +843,27 @@ div.ipm-carte-liste {
   flex-shrink: 0;
   width: 44px;
   height: 44px;
-  border-radius: var(--r-pill);
   font-size: 22px;
 }
-/* Cercles teintés du statut — partagés avec les états vides et le profil. */
+/* Teintes de statut : elles ne colorent plus qu'une icone posee a plat. Le
+   disque derriere a ete retire partout (demande de l'utilisateur) ; la couleur
+   suffit a dire l'etat, et la largeur garde l'alignement des lignes. */
 .ipm-cercle--valide {
-  background: var(--st-valide-doux);
   color: var(--st-valide-texte);
 }
 .ipm-cercle--traite {
-  background: var(--st-traite-doux);
   color: var(--st-traite-texte);
 }
 .ipm-cercle--expire {
-  background: var(--st-expire-doux);
   color: var(--st-expire-texte);
 }
 .ipm-cercle--annule {
-  background: var(--st-annule-doux);
   color: var(--st-annule-texte);
 }
 .ipm-cercle--rouge {
-  background: var(--ipm-rouge-doux);
   color: var(--ipm-rouge-texte);
 }
 .ipm-cercle--neutre {
-  background: var(--ipm-surface-2);
   color: var(--ipm-texte-doux);
 }
 
@@ -836,6 +929,10 @@ div.ipm-carte-liste {
   scroll-padding-inline: var(--gouttiere);
   -webkit-overflow-scrolling: touch;
 }
+/* Puce de filtre Material 3 : 32 de haut, coin « small » (8), un simple
+   CONTOUR quand elle est inactive (pas de fond), et un fond tonal
+   (secondary-container) quand elle est active. C'est la puce Material, pas la
+   pilule pleine iOS. */
 .ipm-puce {
   appearance: none;
   flex-shrink: 0;
@@ -843,32 +940,29 @@ div.ipm-carte-liste {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 38px;
-  padding: 0 16px;
+  height: 32px;
+  padding: 0 14px;
   border: 1px solid var(--ipm-bordure);
-  border-radius: var(--r-pill);
-  background: var(--ipm-surface);
+  border-radius: var(--r-xs);
+  background: transparent;
   color: var(--ipm-texte);
   font-size: 0.84375rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
   cursor: pointer;
   transition:
     background-color var(--mvt-appui) var(--mvt-courbe),
-    color var(--mvt-appui) var(--mvt-courbe),
-    transform var(--mvt-appui) var(--mvt-courbe);
-}
-.ipm-puce:active {
-  transform: scale(var(--mvt-appui-echelle));
+    border-color var(--mvt-appui) var(--mvt-courbe),
+    color var(--mvt-appui) var(--mvt-courbe);
 }
 .ipm-puce--active {
-  background: var(--ipm-rouge);
-  border-color: var(--ipm-rouge);
-  color: #ffffff;
+  background: var(--ipm-pastille);
+  border-color: transparent;
+  color: var(--ipm-rouge-texte);
 }
 .ipm-puce__nombre {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   opacity: 0.7;
 }
 
@@ -876,6 +970,9 @@ div.ipm-carte-liste {
  * §3.7 — Boutons
  * ===================================================================== */
 
+/* Boutons Material 3. Le bouton REMPLI (« filled ») : une pilule pleine, à
+   plat, SANS dégradé ni ombre au repos — M3 pose la couleur franche et laisse
+   l'onde au toucher marquer l'appui. 48 de haut, étiquette « label-large ». */
 .ipm-bouton {
   appearance: none;
   display: inline-flex;
@@ -883,13 +980,13 @@ div.ipm-carte-liste {
   justify-content: center;
   gap: var(--e-8);
   width: 100%;
-  height: 54px;
+  height: 48px;
   padding: 0 24px;
   border: 0;
   border-radius: var(--r-pill);
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   cursor: pointer;
 }
 .ipm-bouton--compact {
@@ -899,18 +996,21 @@ div.ipm-carte-liste {
 .ipm-bouton--principal {
   color: #ffffff;
 }
+/* Rempli rouge, à plat : la couleur source de la palette M3. */
 .ipm-bouton--principal.ipm-bouton--rouge {
-  background: var(--deg-rouge);
-  box-shadow: var(--ombre-rouge);
+  background: var(--ipm-rouge);
+  box-shadow: none;
 }
 .ipm-bouton--principal.ipm-bouton--noir {
-  background: var(--deg-marque);
-  box-shadow: var(--ombre-2);
+  background: var(--ipm-noir);
+  box-shadow: none;
 }
+/* Bouton « tonal » M3 : fond secondary-container (rouge très doux), texte de
+   marque. Remplace l'ancien bouton à bordure, plus proche d'un formulaire web. */
 .ipm-bouton--secondaire {
-  background: var(--ipm-surface);
-  border: 1px solid var(--ipm-bordure);
-  color: var(--ipm-texte);
+  background: var(--ipm-pastille);
+  border: 0;
+  color: var(--ipm-rouge-texte);
 }
 .ipm-bouton:disabled {
   opacity: 0.5;
@@ -1015,62 +1115,44 @@ div.ipm-carte-liste {
  * ===================================================================== */
 
 ion-modal.ipm-feuille {
-  --background: var(--ipm-surface);
-  /* Angles droits : la feuille est un bandeau posé sur le bas de l'écran,
-     pas une carte de plus. */
+  /* Le fond des PAGES, pas celui des cartes : c'est ce qui fait la
+     continuité - on n'ouvre pas une fenêtre, on avance d'un écran. */
+  --background: var(--ipm-fond);
   --border-radius: 0;
-  --box-shadow: var(--ombre-3);
-  /* Hauteur du contenu, et toute la largeur. Au-delà de 768 px de large,
-     Ionic taille ses fenêtres pour un bureau (600 px, centrées) : dans la
-     colonne de 480 px de l'application, la feuille débordait à gauche et
-     coupait son texte. */
-  --height: auto;
+  --box-shadow: none;
+  /* Plein écran, quelle que soit la largeur. Au-delà de 768 px, Ionic taille
+     ses fenêtres pour un bureau (600 px, centrées) : dans la colonne de
+     480 px de l'application, elles débordaient et coupaient leur texte. */
+  --height: 100%;
   --width: 100%;
   --min-width: 100%;
   --max-width: 100%;
 }
-/* Le conteneur qu'Ionic place autour du contenu est, par défaut, posé en
-   absolu sur toute la fenêtre : il faut le remettre dans le flux pour que la
-   feuille prenne la hauteur de ce qu'elle contient. */
-ion-modal.ipm-feuille .ion-page {
-  position: relative;
-  display: block;
-  contain: content;
-}
 .ipm-feuille__contenu {
-  /* Au-delà de 85 % de l'écran, le contenu défile dans la feuille. */
-  max-height: 85vh;
+  height: 100%;
   overflow-y: auto;
   padding-bottom: calc(var(--e-24) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
-  background: var(--ipm-surface);
-  text-align: center;
+  background: var(--ipm-fond);
 }
-.ipm-feuille__poignee {
-  width: 36px;
-  height: 4px;
-  margin: 10px auto 0;
-  border-radius: var(--r-pill);
-  background: var(--ipm-bordure);
+/* La barre de titre est celle des autres écrans (EnteteEcran) : flèche retour
+   à gauche, grand titre à côté. Rien ne la distingue d'un écran de détail. */
+.ipm-feuille__entete {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ipm-fond);
+  /* Une fenêtre passe PAR-DESSUS la barre d'actions : son en-tête ne lui
+     réserve donc pas de hauteur, contrairement à celui d'un écran. */
+  padding-top: calc(var(--e-16) + var(--ion-safe-area-top, env(safe-area-inset-top)));
 }
-/* L'icône de ce dont parle la feuille, en cercle teinté : c'est elle qu'on
-   voit d'abord, comme dans les feuilles natives. */
+/* L'icône de ce dont parle la page, en tête du corps : elle lui donne son
+   identité, comme l'illustration d'un état vide. Sans disque derrière. */
 .ipm-feuille__icone {
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  margin: var(--e-20) auto 0;
-  border-radius: var(--r-pill);
-  font-size: 26px;
-}
-.ipm-feuille__titre {
-  margin: var(--e-16) var(--gouttiere) 0;
-  font: var(--t-titre);
-  letter-spacing: -0.01em;
-  color: var(--ipm-texte);
-}
-.ipm-feuille__poignee + .ipm-feuille__titre {
-  margin-top: var(--e-20);
+  display: block;
+  margin: 0 auto var(--e-16);
+  text-align: center;
+  font-size: 40px;
+  color: var(--ipm-rouge-texte);
 }
 .ipm-feuille__corps {
   padding: var(--e-8) var(--gouttiere) 0;
@@ -1078,7 +1160,7 @@ ion-modal.ipm-feuille .ion-page {
   line-height: 1.5;
   color: var(--ipm-texte-doux);
 }
-/* Le bouton de la feuille, en bas, toute la largeur, détaché du texte. */
+/* Le bouton de la page, détaché du texte, sur toute la largeur. */
 .ipm-feuille__corps > .ipm-bouton {
   width: 100%;
   margin-top: var(--e-20);
@@ -1093,7 +1175,7 @@ ion-modal.ipm-feuille .ion-page {
   display: flex;
   flex-direction: column;
   gap: var(--e-12);
-  margin-top: var(--e-20);
+  margin-top: var(--e-24);
 }
 .ipm-feuille-choix__boutons > .ipm-bouton {
   width: 100%;
@@ -1218,8 +1300,19 @@ ion-modal.ipm-feuille .ion-page {
   place-items: center;
   flex-shrink: 0;
   border-radius: var(--r-pill);
+  /* Le portrait remplit la pastille : sans ce rognage, ses coins carrés
+     dépasseraient du cercle. */
+  overflow: hidden;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+/* Portrait : il remplit la pastille sans se déformer, quel que soit le cadrage
+   de la photo envoyée depuis le téléphone. */
+.ipm-avatar__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 /* Les trois teintes de la charte (jetons --av-*, cf. variables.css). */
 .ipm-avatar--1 {
@@ -1320,4 +1413,277 @@ ion-skeleton-text.skeleton-text-animated::after {
 }
 .ipm-hors-ligne ion-icon {
   font-size: 1rem;
+}
+
+/* ========================================================================
+ * Carte d'ayant droit en plein écran (components/CarteMembrePleinEcran)
+ * ---------------------------------------------------------------------
+ * Partagée par le profil et l'accueil : ces règles vivaient dans
+ * profil.css, que l'accueil n'importe pas - la modale s'y serait affichée
+ * sans style.
+ * ===================================================================== */
+/* --- Carte d'un ayant droit en plein écran ------------------------------- */
+/* Ouverte en touchant un membre de la famille : la carte occupe toute la
+   largeur, centrée, pour être tendue au prestataire. */
+ion-modal.carte-plein {
+  --background: var(--ipm-fond);
+  --width: 100%;
+  --height: 100%;
+  --max-width: 100%;
+  --border-radius: 0;
+}
+.carte-plein__contenu {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ipm-fond);
+}
+/* La scène est centrée en absolu, puis pivotée d'un quart de tour : la carte
+   s'affiche en paysage, centrée, quelle que soit la taille de la modale. Sa
+   boîte s'ajuste à son contenu (pas de taille en vw/vh géante qui déréglait
+   le centrage). */
+.carte-plein__scene {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg);
+  display: flex;
+  align-items: center;
+}
+.carte-plein__fermer {
+  position: absolute;
+  top: calc(var(--e-12) + var(--ion-safe-area-top, env(safe-area-inset-top)));
+  inset-inline-end: var(--gouttiere);
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  border: 1px solid var(--ipm-liseret);
+  box-sizing: border-box;
+  box-shadow: var(--ombre-1);
+  color: var(--ipm-texte);
+  font-size: 24px;
+  cursor: pointer;
+}
+/* La carte en paysage, au ratio d'une carte (1.586), AUSSI GRANDE que l'écran
+   le permet - c'est une pièce qu'on tend à bout de bras au pharmacien.
+
+   Elle est pivotée d'un quart de tour : sa HAUTEUR CSS devient la largeur
+   visible, et sa LARGEUR CSS la hauteur visible. Les deux contraintes de
+   l'écran se lisent donc en diagonale :
+     - largeur visible  ≤ largeur de l'écran        → hauteur CSS ≤ 100vw
+     - hauteur visible  ≤ hauteur de l'écran        → hauteur CSS ≤ 100vh / 1.586
+   La plus serrée des deux gagne, et le ratio fait le reste. Plus de plafond
+   en pixels : c'est l'écran qui décide. */
+.carte-plein__carte {
+  --carte-marge: 24px;
+  /* Largeur visible une fois pivotée (= hauteur CSS). Plus grande qu'avant
+     (300 -> 360) pour se lire de plus loin au comptoir, mais pas plein écran :
+     c'est la MÊME carte, simplement plus visible. */
+  --carte-cote: min(
+    calc(100vw - 2 * var(--carte-marge)),
+    calc((100vh - 2 * var(--carte-marge)) / 1.586),
+    360px
+  );
+  height: var(--carte-cote);
+  width: calc(var(--carte-cote) * 1.586);
+  max-width: none;
+  aspect-ratio: auto;
+  /* Le contenu grandit AVEC la carte : la base `em` du gabarit suit sa taille,
+     300px de côté valant les 16px d'origine. La carte n'est donc pas
+     redessinée, elle est mise à l'échelle - texte, photo et marges ensemble.
+     Sans cela, une carte plus grande garderait son texte d'avant et se
+     viderait. */
+  font-size: calc(var(--carte-cote) / 300 * 16);
+}
+
+/* ========================================================================
+ * Feuille « Photos d'identité » (components/PhotosModal)
+ * ---------------------------------------------------------------------
+ * Le seul endroit d'où une photo s'envoie. Une ligne par personne : le
+ * portrait (ou ses initiales), qui elle est, et soit « Ajouter », soit le
+ * constat « Enregistrée » - une photo ne se pose qu'une fois.
+ * ===================================================================== */
+.photos__consigne {
+  margin: var(--e-8) 0 var(--e-20);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.photos__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+}
+.photos__ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-12);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  border: 1px solid var(--ipm-liseret);
+}
+.photos__personne {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.photos__nom {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ipm-texte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.photos__qualite {
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+/* « Ajouter » : la seule action possible, et elle ne se propose qu'une fois. */
+.photos__ajouter {
+  appearance: none;
+  border: 0;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-pastille);
+  color: var(--ipm-rouge-texte);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.photos__ajouter:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+/* Photo déjà posée : un constat, pas un bouton - rien à toucher ici. */
+.photos__verrou {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ipm-texte-doux);
+}
+.photos__fichier {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ========================================================================
+ * Formulaires de demande (components/ChampsFormulaire)
+ * ---------------------------------------------------------------------
+ * Le bon de pharmacie et la lettre de garantie, à la forme des écrans web
+ * correspondants : un titre de section en petites capitales sur un filet,
+ * puis les champs. Les menus reprennent le cadre du `select` natif employé
+ * sur les écrans de liste.
+ * ===================================================================== */
+.ipm-formulaire {
+  padding: 0 var(--gouttiere);
+}
+.ipm-formulaire__section {
+  margin-top: var(--e-24);
+}
+.ipm-formulaire__section:first-child {
+  margin-top: 0;
+}
+.ipm-formulaire__titre {
+  margin: 0 0 var(--e-12);
+  padding-bottom: var(--e-8);
+  border-bottom: 1px solid var(--ipm-bordure);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ipm-texte-doux);
+}
+.ipm-formulaire__champ {
+  display: block;
+  margin-bottom: var(--e-16);
+}
+.ipm-formulaire__libelle {
+  display: block;
+  margin-bottom: var(--e-8);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.ipm-formulaire__requis {
+  color: var(--ipm-rouge-texte);
+}
+.ipm-formulaire__cadre {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.ipm-formulaire__saisie {
+  appearance: none;
+  width: 100%;
+  height: 52px;
+  padding: 0 var(--e-16);
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+select.ipm-formulaire__saisie {
+  padding-inline-end: calc(var(--e-16) + 24px);
+  cursor: pointer;
+}
+.ipm-formulaire__saisie:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ipm-formulaire__chevron {
+  position: absolute;
+  inset-inline-end: var(--e-16);
+  pointer-events: none;
+  font-size: 20px;
+  color: var(--ipm-texte-doux);
+}
+/* Nombre d'articles et date, côte à côte comme à l'écran web. */
+.ipm-formulaire__ligne {
+  display: flex;
+  gap: var(--e-12);
+}
+.ipm-formulaire__ligne > .ipm-formulaire__champ {
+  flex: 1;
+  min-width: 0;
+}
+.ipm-formulaire__attente,
+.ipm-formulaire__erreur {
+  margin: 0 0 var(--e-12);
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.ipm-formulaire__reessayer {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ipm-rouge-texte);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
 }

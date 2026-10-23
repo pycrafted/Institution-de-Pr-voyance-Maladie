@@ -18,6 +18,7 @@ import { IonReactRouter } from '@ionic/react-router'
 import { useEffect, useState } from 'react'
 import { Redirect, Route, useLocation } from 'react-router-dom'
 
+import BarreActions from './components/BarreActions'
 import BarreOngletsFlottante from './components/BarreOngletsFlottante'
 import InstallSheet from './components/InstallSheet'
 import MiseAJour from './components/MiseAJour'
@@ -136,6 +137,10 @@ function Onglets() {
             écrans réservent donc --bas-page en fin de contenu. */}
         <BarreOngletsFlottante />
       </IonTabs>
+      {/* Pendant de la barre d'onglets, en haut : les actions qui ne dépendent
+          d'aucun écran. Hors de l'IonTabs, qui ne veut que son outlet et sa
+          barre pour enfants. */}
+      <BarreActions />
     </>
   )
 }

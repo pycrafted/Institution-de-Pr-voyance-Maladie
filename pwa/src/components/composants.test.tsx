@@ -149,14 +149,12 @@ describe('§3.3 carte d’identité d’adhérent', () => {
     expect(avec.container.querySelector('.ipm-carte-identite__photo img')).not.toBeNull()
   })
 
-  it('n’est touchable que si on lui donne de quoi changer la photo', () => {
-    const lecture = carte()
-    expect(lecture.container.querySelector('button')).toBeNull()
-    lecture.unmount()
-    const changer = vi.fn()
-    carte({ onChangerPhoto: changer })
-    fireEvent.click(screen.getByLabelText('Ajouter ma photo'))
-    expect(changer).toHaveBeenCalledTimes(1)
+  it('ne porte rien de touchable : une pièce d’identité ne se modifie pas', () => {
+    // La photo s'envoie depuis la feuille « Photos d'identité », une seule
+    // fois ; la carte, elle, ne fait que montrer.
+    const { container } = carte({ photo: 'data:image/jpeg;base64,aa' })
+    expect(container.querySelector('button')).toBeNull()
+    expect(container.querySelector('.ipm-carte-identite__crayon')).toBeNull()
   })
 })
 
@@ -170,14 +168,12 @@ describe('§3.4 cartes de service et raccourcis', () => {
     expect(container.querySelector('[data-service="mes-documents"]')).toBeNull()
   })
 
-  it('porte la mention « Disponible » ou « Bientôt » sous le libellé', () => {
+  it('ne porte aucune mention sous le libellé', () => {
+    // Demande de l'utilisateur : ni « Disponible » ni « Bientôt » sous le nom
+    // du document. Seule la puce du coin signale une carte encore fermée.
     const { container } = rendre(<GrilleServices onOuvrir={vi.fn()} />)
-    expect(
-      container.querySelector('[data-service="bon-pharmacie"] .ipm-tuile__mention')?.textContent,
-    ).toBe('Disponible')
-    expect(
-      container.querySelector('[data-service="bon-optique"] .ipm-tuile__mention')?.textContent,
-    ).toBe('Bientôt')
+    expect(container.querySelector('.ipm-tuile__mention')).toBeNull()
+    expect(container.querySelector('[data-service="bon-pharmacie"] .ipm-tuile__puce')).toBeNull()
   })
 
   it('laisse l’apparition au conteneur et l’appui à la carte', () => {
@@ -202,7 +198,7 @@ describe('§3.4 cartes de service et raccourcis', () => {
     const carte = screen.getByLabelText('Bon de pharmacie')
     expect(carte).toHaveClass('ipm-tuile--ouverte')
     expect(carte).not.toHaveClass('ipm-tuile--rouge')
-    expect(container.querySelector('.ipm-tuile--ouverte .ipm-tuile__cercle')).not.toBeNull()
+    expect(container.querySelector('.ipm-tuile--ouverte .ipm-tuile__icone')).not.toBeNull()
   })
 
   it('éteint un document à venir, le dit, mais le laisse touchable', () => {
@@ -344,11 +340,10 @@ describe('§3.9 feuille', () => {
     // IonModal se pose à la racine du document, pas dans le conteneur rendu.
     const feuille = document.body.querySelector('ion-modal') as HTMLIonModalElement
     expect(feuille).toHaveClass('ipm-feuille')
-    // Un seul palier, la feuille entière : c'est son contenu qui donne sa
-    // hauteur (pas de vide blanc sous trois lignes de texte).
-    expect(feuille.breakpoints).toEqual([0, 1])
-    expect(feuille.initialBreakpoint).toBe(1)
-    expect(feuille.handle).toBe(false)
+    // Plus de paliers : ce n'est plus un bandeau monté du bas mais une page
+    // entière, qui s'ouvre et dont on revient par la flèche.
+    expect(feuille.breakpoints).toBeUndefined()
+    expect(feuille.initialBreakpoint).toBeUndefined()
   })
 
   it('porte l’icône de ce dont elle parle, et pas d’IonContent sans hauteur', () => {
@@ -361,15 +356,20 @@ describe('§3.9 feuille', () => {
     expect(container.querySelector('ion-content')).toBeNull()
   })
 
-  it('son contenu porte la poignée, le titre et le corps', () => {
+  it('se présente comme une page : barre de titre, flèche retour, corps', () => {
     // IonModal ne monte ses enfants qu'une fois présenté : on rend le dedans.
+    const fermer = vi.fn()
     const { container } = rendre(
-      <ContenuFeuille titre="Bon d’optique">
+      <ContenuFeuille titre="Bon d’optique" onFermer={fermer}>
         <p>Bientôt disponible</p>
       </ContenuFeuille>,
     )
-    expect(container.querySelector('.ipm-feuille__poignee')).not.toBeNull()
-    expect(screen.getByText('Bon d’optique')).toHaveClass('ipm-feuille__titre')
+    // La même barre de titre que les écrans de détail, pas un titre centré
+    // sous une poignée : c'est ce qui fait la continuité.
+    expect(container.querySelector('.ipm-feuille__poignee')).toBeNull()
+    expect(screen.getByText('Bon d’optique')).toHaveClass('ipm-entete__titre')
+    fireEvent.click(screen.getByLabelText('Retour'))
+    expect(fermer).toHaveBeenCalledTimes(1)
     expect(screen.getByText('Bientôt disponible')).toBeInTheDocument()
   })
 })

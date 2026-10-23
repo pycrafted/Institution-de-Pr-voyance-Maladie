@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { unBon, unFournisseur } from '../../test/fabriques'
-import { compterParStatut, estFiltreStatut, filtrerBons, normaliser } from './filtrage'
+import { compterParType, estFiltreType, filtrerBons, normaliser } from './filtrage'
 
 const bons = [
   unBon({ id: 3, code: 'BPI000123', statut: 'valide', date: '2026-09-18' }),
@@ -18,6 +18,15 @@ const bons = [
     pharmacie: unFournisseur({ code: 'PH002', libelle: "PHARMACIE DE L'AÉROPORT" }),
   }),
   unBon({ id: 1, code: 'BPI000045', statut: 'expire', date: '2026-07-30' }),
+  unBon({
+    id: 4,
+    genre: 'lettre-garantie',
+    code: 'LGI000007',
+    statut: 'valide',
+    date: '2026-09-20',
+    pharmacie: null,
+    prestataire: unFournisseur({ code: 'CL008', libelle: 'CLINIQUE NORD FOIRE' }),
+  }),
 ]
 
 describe('normaliser', () => {
@@ -29,12 +38,12 @@ describe('normaliser', () => {
 
 describe('filtrerBons', () => {
   it('sans filtre ni recherche : tout', () => {
-    expect(filtrerBons(bons, 'tous', '')).toHaveLength(3)
+    expect(filtrerBons(bons, 'tous', '')).toHaveLength(4)
   })
 
-  it('filtre par statut', () => {
-    expect(filtrerBons(bons, 'traite', '').map((b) => b.id)).toEqual([2])
-    expect(filtrerBons(bons, 'annule', '')).toEqual([])
+  it('filtre par type de document', () => {
+    expect(filtrerBons(bons, 'lettre-garantie', '').map((b) => b.id)).toEqual([4])
+    expect(filtrerBons(bons, 'bon-pharmacie', '').map((b) => b.id)).toEqual([3, 2, 1])
   })
 
   it('recherche sans accents sur la pharmacie et le bénéficiaire, tous les mots', () => {
@@ -48,8 +57,9 @@ describe('filtrerBons', () => {
     expect(filtrerBons(bons, 'tous', 'bpi000045').map((b) => b.id)).toEqual([1])
   })
 
-  it('combine statut et recherche', () => {
-    expect(filtrerBons(bons, 'valide', 'awa')).toEqual([])
+  it('combine le type et la recherche', () => {
+    expect(filtrerBons(bons, 'bon-pharmacie', 'aeroport').map((b) => b.id)).toEqual([2])
+    expect(filtrerBons(bons, 'lettre-garantie', 'aeroport')).toEqual([])
   })
 
   it('recherche par date affichée', () => {
@@ -57,17 +67,22 @@ describe('filtrerBons', () => {
   })
 })
 
-describe('compterParStatut', () => {
-  it('compte chaque statut et le total', () => {
-    expect(compterParStatut(bons)).toEqual({ tous: 3, valide: 1, traite: 1, expire: 1, annule: 0 })
+describe('compterParType', () => {
+  it('compte chaque type et le total', () => {
+    expect(compterParType(bons)).toEqual({
+      tous: 4,
+      'bon-pharmacie': 3,
+      'lettre-garantie': 1,
+    })
   })
 })
 
-describe('estFiltreStatut', () => {
-  it('reconnaît les valeurs du segment', () => {
-    expect(estFiltreStatut('tous')).toBe(true)
-    expect(estFiltreStatut('valide')).toBe(true)
-    expect(estFiltreStatut('autre')).toBe(false)
-    expect(estFiltreStatut(2)).toBe(false)
+describe('estFiltreType', () => {
+  it('reconnaît les valeurs du menu', () => {
+    expect(estFiltreType('tous')).toBe(true)
+    expect(estFiltreType('lettre-garantie')).toBe(true)
+    // Un statut n'est plus une catégorie : le menu range par type.
+    expect(estFiltreType('valide')).toBe(false)
+    expect(estFiltreType(2)).toBe(false)
   })
 })

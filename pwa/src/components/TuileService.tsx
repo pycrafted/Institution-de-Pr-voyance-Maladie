@@ -3,10 +3,12 @@
  * type de document, sur deux colonnes : c'est le modèle donné par
  * l'utilisateur (images/2.png).
  *
- * Contenu centré verticalement : cercle 62, icône 30, libellé 15/700 centré,
- * mention « Disponible » / « Bientôt ». La carte est une surface claire ;
- * seul le cercle de l'icône porte le rouge de marque, et la carte d'un
- * document à venir s'éteint d'un cran.
+ * Contenu centré verticalement : icône 34, libellé 15/700 centré. Rien
+ * d'autre (demande de l'utilisateur) : ni disque derrière l'icône, ni mention
+ * sous le libellé. La hauteur de la carte suit donc ces deux éléments. L'icône
+ * porte le rouge de marque, et la carte d'un document à venir s'éteint d'un
+ * cran et garde sa puce « Bientôt » au coin - seul repère qu'il n'est pas
+ * encore ouvert.
  *
  * Une carte « à venir » reste touchable : elle ouvre la feuille qui explique
  * où demander le document. Elle ne porte donc PAS `aria-disabled`, qui
@@ -21,7 +23,7 @@
 import { IonIcon } from '@ionic/react'
 
 import { haptique } from '../hooks/haptique'
-import { MENTION_BIENTOT, MENTION_DISPONIBLE, type TypeDocument } from '../services/catalogue'
+import { MENTION_BIENTOT, type TypeDocument } from '../services/catalogue'
 
 interface Props {
   document: TypeDocument
@@ -57,13 +59,8 @@ export default function TuileService({ document, onOuvrir, onIndisponible }: Pro
           {MENTION_BIENTOT}
         </span>
       )}
-      <span className="ipm-tuile__cercle" aria-hidden="true">
-        <IonIcon className="ipm-tuile__icone" icon={document.icone} />
-      </span>
+      <IonIcon className="ipm-tuile__icone" icon={document.icone} aria-hidden="true" />
       <span className="ipm-tuile__libelle">{document.libelle}</span>
-      <span className="ipm-tuile__mention" aria-hidden="true">
-        {indisponible ? MENTION_BIENTOT : MENTION_DISPONIBLE}
-      </span>
     </button>
   )
 }

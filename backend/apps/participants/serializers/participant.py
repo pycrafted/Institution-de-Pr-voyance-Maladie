@@ -265,6 +265,11 @@ class BeneficiaireSerializer(serializers.ModelSerializer):
             'matriculeBenef',
             'typeBenef',
             'codeTypeBenef',
+            # Portrait de la carte d'ayant droit. Il arrive surtout du mobile,
+            # où le participant le pose lui-même pour les siens (cf.
+            # apps.mobile.views.BeneficiairePhotoView) ; il doit se retrouver
+            # sur la fiche côté gestionnaire, comme celui du participant.
+            'photo',
             'prenoms',
             'nom',
             'matriculePart',

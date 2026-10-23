@@ -1,20 +1,24 @@
 /**
- * Recherche et filtre par statut de « Mes bons ».
+ * Recherche et filtre par TYPE de document de « Mes bons ».
+ *
+ * L'employé range ses documents par ce qu'ils sont - « mes lettres de
+ * garantie », « mes bons de pharmacie » - et non par leur état : le statut
+ * se lit déjà sur chaque carte, et il change tout seul avec le temps.
  *
  * Logique pure (sans React) pour être testée à part : l'écran ne fait que
- * brancher le segment et la barre de recherche sur ces fonctions.
+ * brancher le menu et la barre de recherche sur ces fonctions.
  */
 
-import type { Bon, StatutBon } from '../../types/api'
+import type { Bon, GenreDocument } from '../../types/api'
+import { GENRES_DOCUMENT, genreDe } from '../../utils/documents'
 import { dateCourte, dateMoyenne } from '../../utils/format'
-import { ORDRE_STATUTS } from '../../utils/statut'
 
-/** Valeur du segment : un statut, ou « tous ». */
-export type FiltreStatut = StatutBon | 'tous'
+/** Valeur du menu : un type de document, ou « tous ». */
+export type FiltreType = GenreDocument | 'tous'
 
-export const FILTRES: FiltreStatut[] = ['tous', ...ORDRE_STATUTS]
+export const FILTRES: FiltreType[] = ['tous', ...GENRES_DOCUMENT]
 
-export function estFiltreStatut(valeur: unknown): valeur is FiltreStatut {
+export function estFiltreType(valeur: unknown): valeur is FiltreType {
   return typeof valeur === 'string' && (FILTRES as string[]).includes(valeur)
 }
 
@@ -55,14 +59,14 @@ function texteRecherchable(bon: Bon): string {
 }
 
 /**
- * Bons correspondant au statut choisi ET à tous les mots de la recherche
+ * Bons du type choisi ET correspondant à tous les mots de la recherche
  * (« awa plateau » trouve les bons d'Awa à la pharmacie du Plateau). Le
  * numéro se cherche aussi sans ses zéros : « 123 » trouve « BPI000123 ».
  */
-export function filtrerBons(bons: readonly Bon[], filtre: FiltreStatut, recherche: string): Bon[] {
+export function filtrerBons(bons: readonly Bon[], filtre: FiltreType, recherche: string): Bon[] {
   const mots = normaliser(recherche).split(' ').filter(Boolean)
   return bons.filter((bon) => {
-    if (filtre !== 'tous' && bon.statut !== filtre) return false
+    if (filtre !== 'tous' && genreDe(bon) !== filtre) return false
     if (mots.length === 0) return true
     const texte = texteRecherchable(bon)
     const numero = bon.code.replace(/^\D+0*/, '')
@@ -70,17 +74,13 @@ export function filtrerBons(bons: readonly Bon[], filtre: FiltreStatut, recherch
   })
 }
 
-/** Nombre de bons par valeur du segment (pour les pastilles du filtre). */
-export function compterParStatut(bons: readonly Bon[]): Record<FiltreStatut, number> {
-  const comptes: Record<FiltreStatut, number> = {
+/** Nombre de documents par type (le compte affiché dans le menu). */
+export function compterParType(bons: readonly Bon[]): Record<FiltreType, number> {
+  const comptes: Record<FiltreType, number> = {
     tous: bons.length,
-    valide: 0,
-    traite: 0,
-    expire: 0,
-    annule: 0,
+    'bon-pharmacie': 0,
+    'lettre-garantie': 0,
   }
-  for (const bon of bons) {
-    if (bon.statut in comptes) comptes[bon.statut] += 1
-  }
+  for (const bon of bons) comptes[genreDe(bon)] += 1
   return comptes
 }

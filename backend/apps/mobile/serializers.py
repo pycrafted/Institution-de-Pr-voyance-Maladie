@@ -205,6 +205,8 @@ def representer_beneficiaire(personne, type_benef):
         'age': age(personne.date_naissance),
         'type': _type(type_benef),
         'estParticipant': est_participant,
+        # Photo d'identité (participant comme ayant droit), pour la carte.
+        'photo': personne.photo or None,
     }
 
 
@@ -344,11 +346,18 @@ class NouveauBonSerializer(serializers.Serializer):
     ``BonPharmacieSerializer``.
     """
 
+    # SEUL le bénéficiaire est exigé, comme à l'écran IPM : là-bas, seuls la
+    # société, le participant et le type de bénéficiaire portent l'astérisque
+    # (cf. documents/serializers/commun.py, CHAMPS_REQUIS) - la pharmacie, le
+    # prescripteur et l'ordonnance se renseignent plus tard, quand l'employé
+    # revient avec. Le mobile ne peut pas être plus sévère que l'écran des
+    # gestionnaires pour le même document.
     beneficiaire = serializers.CharField(max_length=25)
-    pharmacie = serializers.CharField(max_length=10)
-    specialite = serializers.CharField(max_length=2)
-    prescripteur = serializers.CharField(max_length=10)
+    pharmacie = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    specialite = serializers.CharField(max_length=2, required=False, allow_blank=True)
+    prescripteur = serializers.CharField(max_length=10, required=False, allow_blank=True)
     nbArticles = serializers.IntegerField(
+        required=False,
         min_value=1,
         max_value=ARTICLES_MAX,
         error_messages={
@@ -358,20 +367,24 @@ class NouveauBonSerializer(serializers.Serializer):
         },
     )
     dateOrdonnance = serializers.DateField(
-        error_messages={'invalid': 'Date d’ordonnance invalide (AAAA-MM-JJ).'}
+        required=False,
+        allow_null=True,
+        error_messages={'invalid': 'Date d’ordonnance invalide (AAAA-MM-JJ).'},
     )
 
     def validate_beneficiaire(self, matricule):
         return beneficiaire_de_la_famille(self.context['participant'], matricule)
 
     def validate_pharmacie(self, code):
+        if not code:
+            return None
         pharmacie = pharmacies().filter(code=code).first()
         if pharmacie is None:
             raise serializers.ValidationError('Pharmacie inconnue ou non conventionnée.')
         return pharmacie
 
     def validate_specialite(self, code):
-        return specialite_de_prescription(code)
+        return specialite_de_prescription(code) if code else None
 
     def validate_dateOrdonnance(self, jour):
         aujourdhui = timezone.localdate()
@@ -383,9 +396,18 @@ class NouveauBonSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         # Le prescripteur se juge avec la spécialité choisie : il est contrôlé
-        # ici, une fois celle-ci résolue.
-        attrs['prescripteur'] = fournisseur_de_la_specialite(
-            attrs['prescripteur'], attrs['specialite'], 'prescripteur', 'Prescripteur'
+        # ici, une fois celle-ci résolue. Les deux vont de pair - on ne peut
+        # pas désigner un prescripteur sans dire de quelle spécialité, c'est
+        # elle qui dit parmi qui le chercher.
+        prescripteur, specialite = attrs.get('prescripteur'), attrs.get('specialite')
+        if prescripteur and not specialite:
+            raise serializers.ValidationError(
+                {'specialite': ['Choisissez la spécialité du prescripteur.']}
+            )
+        attrs['prescripteur'] = (
+            fournisseur_de_la_specialite(prescripteur, specialite, 'prescripteur', 'Prescripteur')
+            if prescripteur
+            else None
         )
         return attrs
 
@@ -396,14 +418,18 @@ class NouveauBonSerializer(serializers.Serializer):
         """
         participant = self.context['participant']
         donnees = self.validated_data
-        return {
-            **tiers_ipm(participant, donnees['beneficiaire']),
-            'codeFournisseur': donnees['pharmacie'].code,
-            'specialite': donnees['specialite'].code,
-            'prescripteur': donnees['prescripteur'].code,
-            'nbArticles': donnees['nbArticles'],
-            'dateOrdonnance': donnees['dateOrdonnance'].isoformat(),
-        }
+        ipm = dict(tiers_ipm(participant, donnees['beneficiaire']))
+        # Un champ laissé de côté n'est pas envoyé : l'écran IPM le laisse vide
+        # lui aussi, et le gestionnaire le complétera au traitement.
+        if donnees.get('pharmacie'):
+            ipm['codeFournisseur'] = donnees['pharmacie'].code
+        if donnees.get('specialite'):
+            ipm['specialite'] = donnees['specialite'].code
+        if donnees.get('prescripteur'):
+            ipm['prescripteur'] = donnees['prescripteur'].code
+        if donnees.get('dateOrdonnance'):
+            ipm['dateOrdonnance'] = donnees['dateOrdonnance'].isoformat()
+        return ipm
 
 
 def beneficiaire_de_la_famille(participant, matricule):
@@ -512,26 +538,44 @@ class NouvelleLettreSerializer(serializers.Serializer):
     restent à ``LettreGarantieSerializer``.
     """
 
+    # SEUL le beneficiaire est exige, comme a l'ecran IPM : prestataire,
+    # nature, prescripteur et prescription s'y renseignent plus tard (cf.
+    # documents/serializers/commun.py, CHAMPS_REQUIS). Meme regle que le bon.
     beneficiaire = serializers.CharField(max_length=25)
-    specialitePrestataire = serializers.CharField(max_length=2)
-    prestataire = serializers.CharField(max_length=10)
-    naturePrestation = serializers.CharField(max_length=2)
-    specialite = serializers.CharField(max_length=2)
-    prescripteur = serializers.CharField(max_length=10)
+    specialitePrestataire = serializers.CharField(max_length=2, required=False, allow_blank=True)
+    prestataire = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    naturePrestation = serializers.CharField(max_length=2, required=False, allow_blank=True)
+    specialite = serializers.CharField(max_length=2, required=False, allow_blank=True)
+    prescripteur = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    nbArticles = serializers.IntegerField(
+        required=False,
+        min_value=1,
+        max_value=ARTICLES_MAX,
+        error_messages={
+            'min_value': 'Au moins un acte.',
+            'max_value': 'Au plus %d actes : la lettre n’a que %d lignes.'
+            % (ARTICLES_MAX, ARTICLES_MAX),
+            'invalid': 'Nombre d’actes invalide.',
+        },
+    )
     datePrescription = serializers.DateField(
-        error_messages={'invalid': 'Date de prescription invalide (AAAA-MM-JJ).'}
+        required=False,
+        allow_null=True,
+        error_messages={'invalid': 'Date de prescription invalide (AAAA-MM-JJ).'},
     )
 
     def validate_beneficiaire(self, matricule):
         return beneficiaire_de_la_famille(self.context['participant'], matricule)
 
     def validate_specialitePrestataire(self, code):
-        return specialite_de_prescription(code)
+        return specialite_de_prescription(code) if code else None
 
     def validate_specialite(self, code):
-        return specialite_de_prescription(code)
+        return specialite_de_prescription(code) if code else None
 
     def validate_naturePrestation(self, code):
+        if not code:
+            return None
         nature = next((n for n in natures_de_prestation() if n.code == code), None)
         if nature is None:
             raise serializers.ValidationError('Nature de prestation inconnue.')
@@ -546,26 +590,52 @@ class NouvelleLettreSerializer(serializers.Serializer):
         return jour
 
     def validate(self, attrs):
-        attrs['prestataire'] = fournisseur_de_la_specialite(
-            attrs['prestataire'], attrs['specialitePrestataire'], 'prestataire', 'Prestataire'
+        # Un fournisseur se cherche DANS une specialite : l'un sans l'autre
+        # n'a pas de sens, comme a l'ecran IPM.
+        couples = (
+            ('prestataire', 'specialitePrestataire', 'prestataire'),
+            ('prescripteur', 'specialite', 'prescripteur'),
         )
-        attrs['prescripteur'] = fournisseur_de_la_specialite(
-            attrs['prescripteur'], attrs['specialite'], 'prescripteur', 'Prescripteur'
+        for fournisseur, specialite, nom in couples:
+            if attrs.get(fournisseur) and not attrs.get(specialite):
+                raise serializers.ValidationError(
+                    {specialite: ['Choisissez la spécialité du %s.' % nom]}
+                )
+        attrs['prestataire'] = (
+            fournisseur_de_la_specialite(
+                attrs['prestataire'], attrs['specialitePrestataire'], 'prestataire', 'Prestataire'
+            )
+            if attrs.get('prestataire')
+            else None
+        )
+        attrs['prescripteur'] = (
+            fournisseur_de_la_specialite(
+                attrs['prescripteur'], attrs['specialite'], 'prescripteur', 'Prescripteur'
+            )
+            if attrs.get('prescripteur')
+            else None
         )
         return attrs
 
     def donnees_ipm(self):
         """La lettre, dans les termes de ``LettreGarantieSerializer`` (écran IPM)."""
         donnees = self.validated_data
-        return {
-            **tiers_ipm(self.context['participant'], donnees['beneficiaire']),
-            'specialitePrestataire': donnees['specialitePrestataire'].code,
-            'codePrestataire': donnees['prestataire'].code,
-            'naturePrestation': donnees['naturePrestation'].code,
-            'specialite': donnees['specialite'].code,
-            'prescripteur': donnees['prescripteur'].code,
-            'datePrescription': donnees['datePrescription'].isoformat(),
-        }
+        ipm = dict(tiers_ipm(self.context['participant'], donnees['beneficiaire']))
+        # Un champ laisse de cote n'est pas envoye : l'ecran IPM le laisse vide
+        # lui aussi, et le gestionnaire le completera au traitement.
+        correspondances = (
+            ('specialitePrestataire', 'specialitePrestataire'),
+            ('prestataire', 'codePrestataire'),
+            ('naturePrestation', 'naturePrestation'),
+            ('specialite', 'specialite'),
+            ('prescripteur', 'prescripteur'),
+        )
+        for depuis, vers in correspondances:
+            if donnees.get(depuis):
+                ipm[vers] = donnees[depuis].code
+        if donnees.get('datePrescription'):
+            ipm['datePrescription'] = donnees['datePrescription'].isoformat()
+        return ipm
 
 
 # Champs de l'écran IPM → champs du mobile, pour la lettre de garantie.

@@ -9,14 +9,8 @@
   pointer-events: none;
 }
 
-/*
- * Le chevauchement de 24 px (SPEC_DESIGN §4) : la carte d'adhérent remonte
- * sur le bandeau, qui a réservé la même hauteur sous son texte
- * (.ipm-bandeau--chevauche). Sans ce décalage, l'accueil redevient une
- * succession de blocs posés les uns sous les autres.
- */
-.accueil__chevauchement {
-  margin-top: calc(-1 * var(--chevauchement));
+/* La carte d'adhérent, héros de l'écran, posée sur le fond clair. */
+.accueil__carte {
   padding-inline: var(--gouttiere);
   position: relative;
   z-index: 1;
@@ -43,4 +37,63 @@
   background: var(--ipm-surface-2);
   font: var(--t-secondaire);
   color: var(--ipm-texte);
+}
+
+/* --- Raccourcis vers les cartes d'ayant droit ---------------------------- */
+/* Une rangée qui défile horizontalement : la famille d'un employé SAR compte
+   souvent plus de trois personnes, et les empiler pousserait la barre du bas
+   hors de l'écran. Même gouttière que les autres sections, mais le défilement
+   va bord à bord — une pastille coupée au bord dit qu'il y en a d'autres. */
+.accueil-famille {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--gouttiere);
+  display: flex;
+  gap: var(--e-16);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.accueil-famille::-webkit-scrollbar {
+  display: none;
+}
+.accueil-famille__membre {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--e-8);
+  width: 72px;
+  scroll-snap-align: start;
+  cursor: pointer;
+  color: var(--ipm-texte);
+}
+/* Le prénom seul : le nom de famille est le même pour presque tous, il ne
+   distingue rien et ferait déborder la colonne. */
+.accueil-famille__nom {
+  max-width: 100%;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* La carte d'adhérent est touchable : elle s'ouvre en grand et en paysage.
+   Le bouton n'est qu'une enveloppe - aucun habillage propre, la carte garde
+   exactement son apparence. */
+.accueil__carte-bouton {
+  appearance: none;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
 }

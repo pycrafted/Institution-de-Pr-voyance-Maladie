@@ -9,13 +9,13 @@
  *
  * Elle reprend l'habillage de la carte d'adhérent (dégradé rouge SAR,
  * filigrane, rayon, ombre — classes .ipm-carte-adherent) ; seule la
- * disposition intérieure change. La MÊME carte sert à l'accueil et au
- * profil ; au profil, la photo est touchable (`onChangerPhoto`) pour la
- * poser ou la changer.
+ * disposition intérieure change. La MÊME carte sert à l'accueil et à la
+ * présentation plein écran (components/CartePleinEcran).
+ *
+ * Rien ne s'y touche : une pièce d'identité ne se modifie pas au moment où
+ * on la présente. La photo s'envoie depuis la feuille « Photos d'identité »
+ * de l'accueil, et une seule fois (cf. apps/mobile/views.py).
  */
-
-import { IonIcon } from '@ionic/react'
-import { cameraOutline } from 'ionicons/icons'
 
 import { dateCourte, initiales } from '../utils/format'
 import LogoSar from './LogoSar'
@@ -30,11 +30,12 @@ interface Props {
   dateNaissance?: string | null
   /** Photo d'identité (URL de données) ; à défaut, les initiales. */
   photo?: string | null
-  /**
-   * Rend la photo touchable, pour la poser ou la changer (profil). Absent,
-   * la photo n'est qu'affichée (accueil).
-   */
-  onChangerPhoto?: () => void
+  /** Intitulé de la pièce : « Carte d'adhérent » (défaut) ou « Carte d'ayant droit ». */
+  intitule?: string
+  /** Qualité d'un ayant droit (« Conjointe », « Enfant »…), champ ajouté. */
+  qualite?: string
+  /** Titulaire auquel l'ayant droit est rattaché (« Abdoulaye MBAYE · 1204 »). */
+  rattachement?: string
   className?: string
 }
 
@@ -45,7 +46,9 @@ export default function CarteIdentite({
   societe,
   dateNaissance,
   photo,
-  onChangerPhoto,
+  intitule = 'Carte d’adhérent',
+  qualite,
+  rattachement,
   className,
 }: Props) {
   const naissance = dateCourte(dateNaissance)
@@ -54,9 +57,11 @@ export default function CarteIdentite({
   const champs: [string, string, string?][] = [
     ['Nom', nom.toUpperCase()],
     ['Prénom(s)', prenoms],
+    ...(qualite ? ([['Qualité', qualite]] as [string, string][]) : []),
     ['Matricule', matricule, 'ipm-chiffres'],
     ...(naissance ? ([['Né(e) le', naissance, 'ipm-chiffres']] as [string, string, string][]) : []),
     ...(societe ? ([['Société', societe]] as [string, string][]) : []),
+    ...(rattachement ? ([['Ayant droit de', rattachement]] as [string, string][]) : []),
   ]
 
   return (
@@ -64,7 +69,7 @@ export default function CarteIdentite({
       className={['ipm-carte-adherent', 'ipm-carte-identite', className ?? '']
         .filter(Boolean)
         .join(' ')}
-      aria-label="Ma carte d’adhérent"
+      aria-label={intitule}
     >
       {/* Filigrane de sécurité : le logo de l'émetteur, en très grand et
           presque transparent, derrière les champs — comme l'emblème d'une
@@ -78,7 +83,7 @@ export default function CarteIdentite({
           logo y est en blanc, directement sur le rouge, comme l'intitulé. */}
       <div className="ipm-carte-identite__entete">
         <span className="ipm-carte-identite__intitule">
-          Carte d’adhérent
+          {intitule}
           <span className="ipm-carte-identite__organisme">IPM SAR</span>
         </span>
         <span className="ipm-carte-identite__sceau">
@@ -87,25 +92,9 @@ export default function CarteIdentite({
       </div>
 
       <div className="ipm-carte-identite__corps">
-        {onChangerPhoto ? (
-          <button
-            type="button"
-            className="ipm-carte-identite__portrait ipm-appui"
-            onClick={onChangerPhoto}
-            aria-label={photo ? 'Changer ma photo' : 'Ajouter ma photo'}
-          >
-            <Photo photo={photo} prenoms={prenoms} nom={nom} />
-            {/* Hors du cadre de la photo, qui rogne ce qui dépasse : la
-                pastille déborde volontairement sur son coin. */}
-            <span className="ipm-carte-identite__crayon" aria-hidden="true">
-              <IonIcon icon={cameraOutline} />
-            </span>
-          </button>
-        ) : (
-          <span className="ipm-carte-identite__portrait">
-            <Photo photo={photo} prenoms={prenoms} nom={nom} />
-          </span>
-        )}
+        <span className="ipm-carte-identite__portrait">
+          <Photo photo={photo} prenoms={prenoms} nom={nom} />
+        </span>
 
         <dl className="ipm-carte-identite__champs">
           {champs.map(([libelle, valeur, classe]) => (

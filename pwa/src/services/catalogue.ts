@@ -17,7 +17,7 @@
  * Cf. README.md, « Ouvrir un nouveau service ».
  */
 
-import { bedOutline, eyeOutline, medkitOutline, shieldCheckmarkOutline } from 'ionicons/icons'
+import { bedOutline, eyeOutline, mailOutline, medkitOutline } from 'ionicons/icons'
 
 /** Clé stable d'un type de document : identifiant de test et clé React. */
 export type CleDocument = 'bon-pharmacie' | 'bon-optique' | 'lettre-garantie' | 'hospitalisation'
@@ -35,6 +35,8 @@ export interface TypeDocument {
   cle: CleDocument
   /** Libellé de la carte : court, deux lignes au plus. */
   libelle: string
+  /** Le même au pluriel, pour nommer une CATEGORIE (filtre de « Mes bons »). */
+  libellePluriel: string
   /** Phrase d'explication (feuille « Bientôt », accessibilité). */
   description: string
   /** Icône ionicons (la chaîne importée, pas son nom). */
@@ -47,13 +49,11 @@ export interface TypeDocument {
   disponible: boolean
 }
 
-/** Un écran utilitaire : un simple cercle sous la grille (§3.4, 2e famille). */
 /** Message unique des documents à venir : même phrase partout. */
 export const MESSAGE_BIENTOT =
   "Bientôt disponible. Ce document se demande pour l'instant auprès de l'IPM."
 
-/** Mention portée sous le libellé d'une carte de service (§3.4). */
-export const MENTION_DISPONIBLE = 'Disponible'
+/** Puce au coin d'une carte de service encore fermée (§3.4). */
 export const MENTION_BIENTOT = 'Bientôt'
 
 /**
@@ -64,6 +64,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
   {
     cle: 'bon-pharmacie',
     libelle: 'Bon de pharmacie',
+    libellePluriel: 'Bons de pharmacie',
     description: 'Générer un bon à présenter en pharmacie avec votre ordonnance.',
     icone: medkitOutline,
     route: ROUTE_ASSISTANT,
@@ -72,6 +73,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
   {
     cle: 'bon-optique',
     libelle: "Bon d'optique",
+    libellePluriel: "Bons d'optique",
     description: "Bon à présenter chez l'opticien conventionné.",
     icone: eyeOutline,
     route: null,
@@ -80,14 +82,16 @@ export const DOCUMENTS: readonly TypeDocument[] = [
   {
     cle: 'lettre-garantie',
     libelle: 'Lettre de garantie',
+    libellePluriel: 'Lettres de garantie',
     description: "Prise en charge auprès d'un fournisseur de soins conventionné.",
-    icone: shieldCheckmarkOutline,
+    icone: mailOutline,
     route: ROUTE_ASSISTANT,
     disponible: true,
   },
   {
     cle: 'hospitalisation',
     libelle: 'LG hospitalisation',
+    libellePluriel: 'LG hospitalisation',
     description: 'Lettre de garantie pour une hospitalisation.',
     icone: bedOutline,
     route: null,

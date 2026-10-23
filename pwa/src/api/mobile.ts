@@ -8,13 +8,13 @@
 
 import type {
   Bon,
-  CodeLibelle,
   Conventionne,
   Fournisseur,
   GenreDocument,
   IdentificationCorps,
   IdentificationReponse,
   MoiReponse,
+  NaturePrestation,
   NouveauBonCorps,
   NouvelleLettreCorps,
   Specialite,
@@ -44,6 +44,11 @@ export function lireMoi({ signal }: Signal = {}) {
 /**
  * Pose la photo d'identité du participant (URL de données JPEG/PNG/WEBP,
  * 400 Ko au plus — cf. utils/photo.ts, qui la réduit avant l'envoi).
+ *
+ * UNE SEULE FOIS : si une photo est déjà enregistrée, le serveur refuse
+ * (400) et renvoie le message à montrer. Le remplacement et le retrait
+ * appartiennent à l'IPM, depuis son application de gestion — c'est une pièce
+ * d'identité présentée au prestataire, pas un avatar.
  */
 export function poserPhoto(photo: string, { signal }: Signal = {}) {
   return requete<{ photo: string }>('/mobile/moi/photo/', {
@@ -53,9 +58,16 @@ export function poserPhoto(photo: string, { signal }: Signal = {}) {
   })
 }
 
-/** Retire la photo d'identité. */
-export function retirerPhoto({ signal }: Signal = {}) {
-  return requete<void>('/mobile/moi/photo/', { methode: 'DELETE', signal })
+/**
+ * Pose la photo d'un ayant droit (même format, mêmes limites et même règle du
+ * « une seule fois » que la photo du titulaire). Le bénéficiaire doit
+ * appartenir à la famille du participant connecté ; le serveur le vérifie.
+ */
+export function poserPhotoBeneficiaire(matricule: string, photo: string, { signal }: Signal = {}) {
+  return requete<{ photo: string }>(
+    `/mobile/moi/beneficiaires/${encodeURIComponent(matricule)}/photo/`,
+    { methode: 'PUT', corps: { photo }, signal },
+  )
 }
 
 /**
@@ -105,8 +117,14 @@ export function lireBon(genre: GenreDocument, id: number, { signal }: Signal = {
 }
 
 /** Natures de prestation qu'une lettre de garantie peut couvrir. */
-export function listerNaturesPrestation({ signal }: Signal = {}) {
-  return requete<CodeLibelle[]>('/mobile/natures-prestation/', { signal })
+export function listerNaturesPrestation(
+  specialite?: string | null,
+  { signal }: Signal = {},
+) {
+  // La spécialité du prestataire range la liste : un cardiologue voit
+  // « CONSULTATION CARDIOLOGIE » en tête, l'échographie avec les autres.
+  const requis = specialite ? `?specialite=${encodeURIComponent(specialite)}` : ''
+  return requete<NaturePrestation[]>(`/mobile/natures-prestation/${requis}`, { signal })
 }
 
 /** Crée une lettre. 400 : erreurs par champ de NouvelleLettreCorps dans ErreurApi.champs. */

@@ -115,12 +115,6 @@ ion-toolbar {
  * Utilitaires de mise en page (préfixe ipm-).
  * --------------------------------------------------------------------- */
 
-/* Écrans sans en-tête (lancement, identification) : sous l'encoche. */
-.ipm-zone-sure {
-  padding-top: var(--ion-safe-area-top, env(safe-area-inset-top));
-  padding-bottom: var(--ion-safe-area-bottom, env(safe-area-inset-bottom));
-}
-
 /* Marge latérale commune à tout le contenu d'un écran (§1 : 16 px partout). */
 .ipm-gouttiere {
   padding-inline: var(--gouttiere);
@@ -171,8 +165,10 @@ ion-toolbar {
   margin: 0;
   padding-inline: var(--gouttiere);
   font: var(--t-section);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  /* Material 3 : en-tête de liste en casse normale, sans interlettrage
+     étiré — les petites capitales espacées sont un trait iOS. */
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--ipm-texte-doux);
 }
 

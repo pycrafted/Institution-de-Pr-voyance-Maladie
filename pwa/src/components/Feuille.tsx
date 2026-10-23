@@ -1,55 +1,59 @@
 /**
- * Feuille (SPEC_DESIGN §3.9) : la fenêtre qui monte du bas, à angles droits
- * (un bandeau posé sur le bas de l'écran, pas une carte de plus), poignée
- * 36×4 arrondie, fond surface, `--ombre-3`.
+ * Fenêtre plein écran (SPEC_DESIGN §3.9) — une PAGE, pas une feuille.
  *
- * C'est la forme à employer pour tout ce qui explique ou demande une
- * précision sans quitter l'écran (« Bientôt disponible », installation,
- * choix court) — jamais une boîte de dialogue carrée.
+ * Tout ce qui s'ouvre par-dessus un écran (« Bientôt disponible »,
+ * notifications, À propos, photos d'identité, une question) prend désormais
+ * TOUT l'écran et se présente comme les autres pages de l'application :
+ * même fond (`--ipm-fond`), même barre de titre que `EnteteEcran` avec sa
+ * flèche retour à gauche. L'employé ne distingue plus « une fenêtre » d'« un
+ * écran » : il avance et il revient, comme dans n'importe quelle application
+ * mobile.
  *
- * IonModal en mode feuille : le balayage vers le bas la referme, comme partout
- * ailleurs sur un téléphone. Sa HAUTEUR EST CELLE DE SON CONTENU — une feuille
- * de trois lignes ne monte pas à mi-écran pour n'y montrer que du blanc. Pour
- * cela, un seul palier (1, soit toute la hauteur de la feuille) et une feuille
- * à hauteur automatique ; le contenu n'est PAS un IonContent, qui, étant posé
- * en absolu sur son parent, n'a aucune hauteur propre et ramenait la feuille
- * à zéro (cf. composants.css §3.9).
+ * Ce qu'on a quitté, et pourquoi : le bandeau monté du bas, à poignée et à
+ * hauteur de contenu. Il tenait pour deux lignes, mais rompait la continuité
+ * - fond `--ipm-surface` sur l'écran assombri, titre centré, pas de retour -
+ * et donnait à des contenus entiers (la liste des photos de la famille) la
+ * forme d'une notification.
  */
 
 import { IonIcon, IonModal } from '@ionic/react'
 import type { ReactNode } from 'react'
 
+import EnteteEcran from './EnteteEcran'
+
 interface Props {
   ouverte: boolean
   onFermer: () => void
-  /** Titre en 17/600 sous la poignée ; facultatif. */
+  /** Titre de la page, dans la barre du haut, à droite de la flèche retour. */
   titre?: ReactNode
-  /** Icône ionicons, dans un cercle teinté au-dessus du titre ; facultative. */
+  /** Icône ionicons, en tête du corps ; facultative. */
   icone?: string
   children: ReactNode
   className?: string
 }
 
 /**
- * Le dedans de la feuille, exporté à part : IonModal ne monte ses enfants
+ * Le dedans de la page, exporté à part : IonModal ne monte ses enfants
  * qu'une fois présenté, et sous jsdom il n'a pas de « framework delegate ».
  * C'est donc ce composant-ci que les tests rendent.
  */
 export function ContenuFeuille({
   titre,
   icone,
+  onFermer,
   children,
-}: Pick<Props, 'titre' | 'icone' | 'children'>) {
+}: Pick<Props, 'titre' | 'icone' | 'children'> & { onFermer?: () => void }) {
   return (
     <div className="ipm-feuille__contenu">
-      <div className="ipm-feuille__poignee" aria-hidden="true" />
-      {icone && (
-        <span className="ipm-feuille__icone ipm-cercle--rouge" aria-hidden="true">
-          <IonIcon icon={icone} />
-        </span>
-      )}
-      {titre && <h2 className="ipm-feuille__titre">{titre}</h2>}
-      <div className="ipm-feuille__corps">{children}</div>
+      <EnteteEcran titre={titre} onRetour={onFermer} className="ipm-feuille__entete" />
+      <div className="ipm-feuille__corps">
+        {icone && (
+          <span className="ipm-feuille__icone" aria-hidden="true">
+            <IonIcon icon={icone} />
+          </span>
+        )}
+        {children}
+      </div>
     </div>
   )
 }
@@ -60,13 +64,8 @@ export default function Feuille({ ouverte, onFermer, titre, icone, children, cla
       className={`ipm-feuille${className ? ` ${className}` : ''}`}
       isOpen={ouverte}
       onDidDismiss={onFermer}
-      initialBreakpoint={1}
-      breakpoints={[0, 1]}
-      // Poignée dessinée par la feuille elle-même : celle d'Ionic est
-      // interactive (elle change de palier) et n'a pas nos cotes.
-      handle={false}
     >
-      <ContenuFeuille titre={titre} icone={icone}>
+      <ContenuFeuille titre={titre} icone={icone} onFermer={onFermer}>
         {children}
       </ContenuFeuille>
     </IonModal>

@@ -20,7 +20,7 @@
 import { IonContent, IonPage, useIonRouter } from '@ionic/react'
 import { add, businessOutline, timeOutline } from 'ionicons/icons'
 
-import BandeauMarque from '../components/BandeauMarque'
+import EnteteEcran from '../components/EnteteEcran'
 import { BoutonPrincipal } from '../components/Boutons'
 import CarteListe from '../components/CarteListe'
 import { useNouveauBon } from '../components/NouveauBonModal'
@@ -37,7 +37,7 @@ export default function Assistance() {
   return (
     <IonPage className="assistance">
       <IonContent fullscreen>
-        <BandeauMarque
+        <EnteteEcran
           titre="Assistance"
           sousTitre="Le bon de pharmacie, pas à pas"
           onRetour={() => routeur.goBack()}

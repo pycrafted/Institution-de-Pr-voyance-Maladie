@@ -399,6 +399,7 @@ class ListesTests(Fixture):
                 'age': beneficiaires[0]['age'],
                 'type': {'code': '1', 'libelle': 'PARTICIPANT'},
                 'estParticipant': True,
+                'photo': None,
             },
         )
         self.assertEqual(beneficiaires[1]['type'], {'code': '2', 'libelle': 'EPOUSE'})
@@ -640,13 +641,38 @@ class CreationTests(Fixture):
     def test_ordonnance_mal_formee(self):
         self.assertRefus(self.creer(dateOrdonnance='31/12/2025'), 'dateOrdonnance')
 
-    def test_champs_manquants(self):
+    def test_seul_le_beneficiaire_est_exige(self):
+        # Même règle qu'à l'écran IPM, où seuls la société, le participant et
+        # le type de bénéficiaire portent l'astérisque : la pharmacie, le
+        # prescripteur et l'ordonnance se renseignent plus tard.
         reponse = self.client.post(f'{URL}bons-pharmacie/', {}, format='json')
         self.assertEqual(reponse.status_code, 400)
-        self.assertEqual(
-            set(reponse.data),
-            {'beneficiaire', 'pharmacie', 'specialite', 'prescripteur', 'nbArticles', 'dateOrdonnance'},
+        self.assertEqual(set(reponse.data), {'beneficiaire'})
+
+    def test_bon_avec_le_seul_beneficiaire(self):
+        reponse = self.client.post(
+            f'{URL}bons-pharmacie/', {'beneficiaire': self.moi.matricule}, format='json'
         )
+        self.assertEqual(reponse.status_code, 201, reponse.data)
+        bon = BonPharmacie.objects.get(pk=reponse.data['id'])
+        self.assertEqual(bon.participant, self.moi)
+        # Tout le reste reste à compléter par le gestionnaire.
+        self.assertIsNone(bon.pharmacie)
+        self.assertIsNone(bon.specialite)
+        self.assertIsNone(bon.prescripteur)
+        self.assertIsNone(bon.date_ordonnance)
+        self.assertEqual(bon.nb_articles, 0)
+
+    def test_prescripteur_sans_specialite_refuse(self):
+        # La spécialité dit parmi qui chercher le prescripteur : l'un sans
+        # l'autre n'a pas de sens, comme à l'écran IPM.
+        reponse = self.client.post(
+            f'{URL}bons-pharmacie/',
+            {'beneficiaire': self.moi.matricule, 'prescripteur': self.generaliste.code},
+            format='json',
+        )
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('specialite', reponse.data)
 
     def test_numero_pris_entre_temps(self):
         # Un autre poste a pris le numéro entre le calcul et l'enregistrement
@@ -767,7 +793,8 @@ class IsolementEtPdfTests(Fixture):
 
 class PhotoTests(Fixture):
     """
-    Photo d'identité posée depuis le mobile (PUT/DELETE /api/mobile/moi/photo/).
+    Photo d'identité posée depuis le mobile (PUT /api/mobile/moi/photo/),
+    une seule fois : ensuite, seule l'IPM peut la réinitialiser.
 
     C'est la seule écriture du mobile sur la fiche du participant : elle doit
     donc n'accepter qu'une vraie image, raisonnablement légère, et ne toucher
@@ -796,22 +823,29 @@ class PhotoTests(Fixture):
         # Et elle revient aussitôt avec le profil : l'écran peut l'afficher.
         self.assertEqual(self.client.get('/api/mobile/moi/').data['participant']['photo'], self.JPEG)
 
-    def test_png_accepte_et_remplace_la_precedente(self):
-        self.client.put(self.URL, {'photo': self.JPEG}, format='json')
+    def test_png_accepte(self):
         self.assertEqual(self.client.put(self.URL, {'photo': self.PNG}, format='json').status_code, 200)
         self.moi.refresh_from_db()
         self.assertEqual(self.moi.photo, self.PNG)
 
+    def test_une_seule_fois_ensuite_seule_lipm_peut_reinitialiser(self):
+        # Une photo d'identité n'est pas un avatar : une fois posée, l'employé
+        # ne la remplace plus depuis son téléphone.
+        self.client.put(self.URL, {'photo': self.JPEG}, format='json')
+        reponse = self.client.put(self.URL, {'photo': self.PNG}, format='json')
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('IPM', reponse.data['photo'][0])
+        self.moi.refresh_from_db()
+        self.assertEqual(self.moi.photo, self.JPEG)
+
+    def test_le_mobile_ne_retire_pas_une_photo(self):
+        self.client.put(self.URL, {'photo': self.JPEG}, format='json')
+        self.assertEqual(self.client.delete(self.URL).status_code, 405)
+        self.moi.refresh_from_db()
+        self.assertEqual(self.moi.photo, self.JPEG)
+
     def test_sans_photo_le_profil_la_dit_vide(self):
         self.assertIsNone(self.client.get('/api/mobile/moi/').data['participant']['photo'])
-
-    def test_retrait(self):
-        self.client.put(self.URL, {'photo': self.JPEG}, format='json')
-        self.assertEqual(self.client.delete(self.URL).status_code, 204)
-        self.moi.refresh_from_db()
-        self.assertEqual(self.moi.photo, '')
-        # Retirer une photo absente ne casse rien.
-        self.assertEqual(self.client.delete(self.URL).status_code, 204)
 
     def test_refus_des_envois_mal_formes(self):
         for valeur in (
@@ -853,7 +887,71 @@ class PhotoTests(Fixture):
     def test_jeton_exige(self):
         self.client.credentials()
         self.assertEqual(self.client.put(self.URL, {'photo': self.JPEG}, format='json').status_code, 401)
-        self.assertEqual(self.client.delete(self.URL).status_code, 401)
+
+
+
+class PhotoBeneficiaireTests(Fixture):
+    """
+    Photo d'un ayant droit, posée par le titulaire depuis le mobile
+    (PUT /api/mobile/moi/beneficiaires/<matricule>/photo/).
+
+    Mêmes règles que la sienne - une seule fois, pas de retrait - plus une qui
+    n'a de sens qu'ici : on ne touche qu'aux ayants droit de SON dossier.
+    """
+
+    JPEG = PhotoTests.JPEG
+    PNG = PhotoTests.PNG
+
+    def url(self, matricule):
+        return f'/api/mobile/moi/beneficiaires/{matricule}/photo/'
+
+    def setUp(self):
+        super().setUp()
+        self.identifier()
+
+    def test_pose_la_photo_dun_enfant(self):
+        reponse = self.client.put(self.url('01-1204-31'), {'photo': self.JPEG}, format='json')
+        self.assertEqual(reponse.status_code, 200)
+        self.enfant.refresh_from_db()
+        self.assertEqual(self.enfant.photo, self.JPEG)
+        # Elle revient avec le profil : la carte d'ayant droit peut l'afficher.
+        beneficiaires = self.client.get('/api/mobile/moi/').data['beneficiaires']
+        enfant = next(b for b in beneficiaires if b['matricule'] == '01-1204-31')
+        self.assertEqual(enfant['photo'], self.JPEG)
+
+    def test_une_seule_fois_ensuite_seule_lipm_peut_reinitialiser(self):
+        self.client.put(self.url('01-1204-31'), {'photo': self.JPEG}, format='json')
+        reponse = self.client.put(self.url('01-1204-31'), {'photo': self.PNG}, format='json')
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('IPM', reponse.data['photo'][0])
+        self.enfant.refresh_from_db()
+        self.assertEqual(self.enfant.photo, self.JPEG)
+
+    def test_le_mobile_ne_retire_pas_une_photo(self):
+        self.client.put(self.url('01-1204-31'), {'photo': self.JPEG}, format='json')
+        self.assertEqual(self.client.delete(self.url('01-1204-31')).status_code, 405)
+        self.enfant.refresh_from_db()
+        self.assertEqual(self.enfant.photo, self.JPEG)
+
+    def test_refus_dun_ayant_droit_dun_autre_dossier(self):
+        reponse = self.client.put(self.url('01-1207-31'), {'photo': self.JPEG}, format='json')
+        self.assertEqual(reponse.status_code, 404)
+        self.enfant_du_voisin.refresh_from_db()
+        self.assertEqual(self.enfant_du_voisin.photo, '')
+
+    def test_refus_dune_image_mentie(self):
+        faux = 'data:image/jpeg;base64,' + b64encode(b'<html>trompe-oeil</html>').decode()
+        self.assertEqual(
+            self.client.put(self.url('01-1204-31'), {'photo': faux}, format='json').status_code,
+            400,
+        )
+        self.enfant.refresh_from_db()
+        self.assertEqual(self.enfant.photo, '')
+
+    def test_jeton_exige(self):
+        self.client.credentials()
+        reponse = self.client.put(self.url('01-1204-31'), {'photo': self.JPEG}, format='json')
+        self.assertEqual(reponse.status_code, 401)
 
 
 class LettresGarantieTests(Fixture):
@@ -900,8 +998,32 @@ class LettresGarantieTests(Fixture):
         self.assertEqual(reponse.status_code, 200)
         self.assertEqual(
             reponse.data,
-            [{'code': '00', 'libelle': 'VISITE'}, {'code': '01', 'libelle': 'ANALYSES BIO-MEDICALES'}],
+            [
+                {'code': '00', 'libelle': 'VISITE', 'courante': True},
+                {'code': '01', 'libelle': 'ANALYSES BIO-MEDICALES', 'courante': True},
+            ],
         )
+
+    def test_natures_rangees_par_specialite(self):
+        # Spécialité 01 BIOLOGISTES : les 2 889 lettres réelles de LAMPS ne
+        # lui connaissent qu'une nature, 01 ANALYSES BIO-MEDICALES. Elle passe
+        # devant, la visite reste proposée derrière.
+        reponse = self.client.get(f'{URL}natures-prestation/?specialite=01')
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(
+            reponse.data,
+            [
+                {'code': '01', 'libelle': 'ANALYSES BIO-MEDICALES', 'courante': True},
+                {'code': '00', 'libelle': 'VISITE', 'courante': False},
+            ],
+        )
+
+    def test_specialite_sans_releve_garde_la_liste(self):
+        # Aucune lettre réelle pour cette spécialité : rien ne justifie de
+        # mettre une nature en avant, la liste reste celle d'avant.
+        reponse = self.client.get(f'{URL}natures-prestation/?specialite=28')
+        self.assertEqual([n['code'] for n in reponse.data], ['00', '01'])
+        self.assertTrue(all(n['courante'] for n in reponse.data))
 
     def test_creation(self):
         reponse = self.creer()
@@ -946,6 +1068,42 @@ class LettresGarantieTests(Fixture):
                 self.assertEqual(reponse.status_code, 400)
                 self.assertIn(extrait, reponse.data[champ][0])
         self.assertFalse(LettreGarantie.objects.filter(participant=self.moi).exists())
+
+    def test_seul_le_beneficiaire_est_exige(self):
+        # Meme regle que le bon et que l'ecran IPM : le reste se renseigne
+        # plus tard, quand l'employe revient avec sa prescription.
+        reponse = self.client.post(f'{URL}lettres-garantie/', {}, format='json')
+        self.assertEqual(reponse.status_code, 400)
+        self.assertEqual(set(reponse.data), {'beneficiaire'})
+
+    def test_lettre_avec_le_seul_beneficiaire(self):
+        reponse = self.client.post(
+            f'{URL}lettres-garantie/',
+            {'beneficiaire': self.enfant.matricule_benef},
+            format='json',
+        )
+        self.assertEqual(reponse.status_code, 201, reponse.data)
+        lettre = LettreGarantie.objects.get(pk=reponse.data['id'])
+        self.assertEqual(lettre.participant, self.moi)
+        self.assertIsNone(lettre.prestataire)
+        self.assertIsNone(lettre.nature_prestation)
+        self.assertIsNone(lettre.prescripteur)
+        self.assertIsNone(lettre.date_prescription)
+        self.assertEqual(lettre.nb_articles, 0)
+
+    def test_fournisseur_sans_specialite_refuse(self):
+        reponse = self.client.post(
+            f'{URL}lettres-garantie/',
+            {'beneficiaire': self.enfant.matricule_benef, 'prestataire': '301'},
+            format='json',
+        )
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('specialitePrestataire', reponse.data)
+
+    def test_nombre_d_actes_enregistre(self):
+        reponse = self.creer(nbArticles=3)
+        self.assertEqual(reponse.status_code, 201, reponse.data)
+        self.assertEqual(LettreGarantie.objects.get(pk=reponse.data['id']).nb_articles, 3)
 
     def test_prescription_dans_le_futur(self):
         demain = (timezone.localdate() + timedelta(days=1)).isoformat()
