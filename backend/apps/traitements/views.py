@@ -3,7 +3,9 @@
 from datetime import date
 
 from django.db import transaction
+from django.db.models import Count, Max
 from django.http import HttpResponse
+from django.utils.dateparse import parse_date
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -15,8 +17,10 @@ from datetime import date as _date
 from . import bons as bons_service
 from .comptabilisation import generer_ecritures
 from .editions import editer_liste_factures
-from .liquidation import liquider
+from .liquidation import liquider, taux_societe
+from .remboursement import generer_ecritures_remboursement
 from .models import (
+    CODES_BON_MANUEL,
     ETAT_COMPTABILISEE,
     ETAT_EN_COURS,
     ETAT_PAYEE,
@@ -25,10 +29,19 @@ from .models import (
     TYPE_BON_MANUEL,
     TYPE_DIVERS,
     TYPE_SOINS,
+    Banque,
+    EcritureCompta,
     Facture,
     LiquidationBon,
+    OrdrePaiement,
 )
-from .serializers import EcritureComptaSerializer, FactureSerializer, LiquidationBonSerializer
+from .serializers import (
+    BanqueSerializer,
+    EcritureComptaSerializer,
+    FactureSerializer,
+    LiquidationBonSerializer,
+    OrdrePaiementSerializer,
+)
 
 # « sept.-2026 » : le mois de traitement, comme l'application d'origine.
 _MOIS = [
@@ -242,11 +255,17 @@ class FactureViewSet(ReferentielViewSet):
     @action(detail=True, methods=['post'], url_path='creer-bon-manuel')
     def creer_bon_manuel(self, request, pk=None):
         """
-        Crée un bon directement au traitement, sans document préexistant à
-        rattacher (« Créer bon manuel », capture 38 ; surtout pour les factures
-        « divers »). Corps : { matriculePart, participant, typeBenef,
-        beneficiaire, actes:[…] }. Le bon est aussitôt liquidé (ses actes) et
-        compte dans l'écart de la facture, comme un bon rattaché.
+        Crée un bon manuel au traitement d'une facture (capture 69) : on choisit
+        un TYPE de document (4 types de bon + bon d'avoir + ticket remboursement),
+        un n°, une date, un MONTANT, le participant et le bénéficiaire, et l'option
+        « remboursement intégral ». La liquidation se fait sur le seul montant,
+        SANS saisie d'actes : QP.IPM = taux × montant (ou = montant si intégral),
+        QP.PART = montant − QP.IPM. Le bon s'ajoute aux bons traités et compte dans
+        l'écart. En interne il reste un « manuel » (séquence BMI propre, pas de
+        collision avec un vrai document) ; le type choisi est gardé dans `type_manuel`.
+
+        Corps : { typeManuel, numero, date, montant, matriculePart, participant,
+        typeBenef, beneficiaire, remboursementIntegral }.
         """
         facture = self.get_object()
         if facture.etat not in (ETAT_RECUE, ETAT_EN_COURS):
@@ -254,13 +273,38 @@ class FactureViewSet(ReferentielViewSet):
                 {'detail': 'La facture est déjà validée : on ne peut plus y ajouter de bon.'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        actes, totaux = _normaliser_actes(request.data.get('actes'))
-        if not actes:
+        d = request.data
+        type_manuel = str(d.get('typeManuel', '')).strip()
+        if type_manuel not in CODES_BON_MANUEL:
             return Response(
-                {'detail': 'Saisissez au moins un acte pour le bon manuel.'},
-                status=status.HTTP_400_BAD_REQUEST,
+                {'detail': 'Choisissez un type de document.'}, status=status.HTTP_400_BAD_REQUEST
             )
+        montant = max(0, _entier(d.get('montant')))
+        if montant <= 0:
+            return Response(
+                {'detail': 'Saisissez un montant.'}, status=status.HTTP_400_BAD_REQUEST
+            )
+        matricule_part = str(d.get('matriculePart', '')).strip()
+        if not matricule_part:
+            return Response(
+                {'detail': 'Choisissez un participant.'}, status=status.HTTP_400_BAD_REQUEST
+            )
+        beneficiaire = str(d.get('beneficiaire', '')).strip()
+        if not beneficiaire:
+            return Response(
+                {'detail': 'Choisissez un bénéficiaire.'}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         code_soc = facture.adherent.code if facture.adherent_id else ''
+        integral = bool(d.get('remboursementIntegral'))
+        taux = taux_societe(code_soc)
+        # Remboursement intégral : l'IPM prend 100 %. Sinon, le taux de la société.
+        qpipm = montant if integral else round(taux * montant / 100)
+        qpipm = min(qpipm, montant)
+        qppart = max(0, montant - qpipm)
+        date_bon = parse_date(str(d.get('date', '')) or '') or date.today()
+        numero_saisi = str(d.get('numero', '')).strip()
+
         # Numéro et identifiant propres aux bons manuels (séquence « BMI… »).
         dernier = (
             LiquidationBon.objects.filter(type_document=TYPE_BON_MANUEL)
@@ -272,16 +316,21 @@ class FactureViewSet(ReferentielViewSet):
             liquidation = LiquidationBon.objects.create(
                 facture=facture,
                 type_document=TYPE_BON_MANUEL,
+                type_manuel=type_manuel,
                 document_id=prochain,
-                numero=f'BMI{prochain:06d}',
-                date_bon=date.today(),
+                numero=numero_saisi or f'BMI{prochain:06d}',
+                date_bon=date_bon,
                 code_soc=code_soc,
-                matricule_part=str(request.data.get('matriculePart', '')).strip(),
-                participant=str(request.data.get('participant', '')).strip(),
-                type_benef=str(request.data.get('typeBenef', '')).strip(),
-                beneficiaire=str(request.data.get('beneficiaire', '')).strip(),
-                actes=actes,
-                **totaux,
+                matricule_part=matricule_part,
+                participant=str(d.get('participant', '')).strip()[:160],
+                # Code du lien de parenté (« 1 » = le participant lui-même).
+                type_benef=str(d.get('typeBenef', '')).strip()[:4],
+                beneficiaire=beneficiaire,
+                remboursement_integral=integral,
+                freel=montant,
+                qpipm=qpipm,
+                qppart=qppart,
+                actes=[],
             )
             if facture.etat == ETAT_RECUE:
                 facture.etat = ETAT_EN_COURS
@@ -506,3 +555,275 @@ class FactureViewSet(ReferentielViewSet):
         reponse = HttpResponse(pdf, content_type='application/pdf')
         reponse['Content-Disposition'] = f'inline; filename="{etat}-{type_fournisseur}.pdf"'
         return reponse
+
+
+class BanqueViewSet(ReferentielViewSet):
+    """Référentiel des banques (B1..B10) - journaux et comptes 521xxx (§18)."""
+
+    queryset = Banque.objects.all()
+    serializer_class = BanqueSerializer
+    importer = None
+
+
+class OrdrePaiementViewSet(ReferentielViewSet):
+    """
+    Ordres de paiement (chèques / virements libres), §18. N° d'enregistrement et
+    N° de pièce (chèque) posés par le serveur ; le reste vient du modal Etablir.
+    """
+
+    queryset = OrdrePaiement.objects.select_related('banque')
+    serializer_class = OrdrePaiementSerializer
+    importer = None
+
+    def perform_create(self, serializer):
+        # Les ordres n'ont pas de « code » : on pose le N° d'enregistrement et le
+        # N° de chèque (séquence du chéquier de la banque) nous-mêmes.
+        banque = serializer.validated_data.get('banque')
+        user = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(
+            numero_enreg=OrdrePaiement.prochain_enreg(),
+            numero_piece=OrdrePaiement.prochain_numero_piece(banque),
+            saisi_par=user,
+        )
+
+
+# ===========================================================================
+# Suspensions (§19, captures 63-64) : vues calculées (lecture seule).
+#
+# Optique : la périodicité biennale, dérivée des bons optique (dernier bon par
+# bénéficiaire ; date prochaine = date + 2 ans ; encore suspendu si à venir).
+# Consommation totale : cumul des frais liquidés par participant et par exercice
+# (le filtrage par plafond annuel reste à faire - seuil non encore capturé).
+# ===========================================================================
+from rest_framework import viewsets  # noqa: E402
+
+from documents.models import BonOptique  # noqa: E402
+from participants.models import Participant  # noqa: E402
+
+
+def _plus_deux_ans(jour):
+    """Même jour, deux ans plus tard (29 février → 28)."""
+    try:
+        return jour.replace(year=jour.year + 2)
+    except ValueError:
+        return jour.replace(year=jour.year + 2, day=28)
+
+
+def _age(naissance, reference):
+    if not naissance:
+        return ''
+    return reference.year - naissance.year - (
+        (reference.month, reference.day) < (naissance.month, naissance.day)
+    )
+
+
+# Plafond annuel de consommation : au-delà, le participant est « suspendu » et
+# apparaît dans l'onglet Consommation totale. Règle métier : SEULS LES RETRAITÉS
+# (sociétés 03 CMM CR-SAR et 04 CMM NCR-SAR) ont un plafond, fixé à 700 000 CFA/an.
+# Les actifs (01/02) n'ont pas de plafond et ne sont jamais suspendus à ce titre.
+PLAFOND_CONSOMMATION_ANNUEL = 700000
+SOCIETES_RETRAITES = ('03', '04')
+
+
+class SuspensionsViewSet(viewsets.ViewSet):
+    """Deux vues : Optique (périodicité) et Consommation totale (plafond)."""
+
+    @action(detail=False)
+    def optique(self, request):
+        aujourdhui = date.today()
+        bons = (
+            BonOptique.objects.filter(actif=True)
+            .select_related('adherent', 'participant', 'beneficiaire', 'fournisseur')
+            .order_by('date')
+        )
+        # Dernier bon optique par bénéficiaire (ou par participant lui-même).
+        dernier = {}
+        for b in bons:
+            cle = f'b{b.beneficiaire_id}' if b.beneficiaire_id else f'p{b.participant_id}'
+            dernier[cle] = b
+        lignes = []
+        for b in dernier.values():
+            prochaine = _plus_deux_ans(b.date)
+            if prochaine <= aujourdhui:
+                continue  # période écoulée : plus suspendu
+            soc = b.adherent.code if b.adherent_id else ''
+            if b.beneficiaire_id:
+                personne = b.beneficiaire
+                matricule = b.beneficiaire.matricule_benef
+                beneficiaire = b.beneficiaire.nom_complet
+            else:
+                personne = b.participant
+                matricule = f'{soc}-{b.participant.matricule}-1' if b.participant_id else ''
+                beneficiaire = 'LUI-MÊME'
+            lignes.append({
+                'id': b.id,
+                'matricule': matricule,
+                'participant': b.participant.nom_complet if b.participant_id else '',
+                'beneficiaire': beneficiaire,
+                'sexe': getattr(personne, 'sexe', '') or '',
+                'societe': soc,
+                'age': _age(getattr(personne, 'date_naissance', None), aujourdhui),
+                'numeroBon': b.code,
+                'dateBon': b.date.isoformat() if b.date else '',
+                'fraisReel': b.montant_total,
+                'qpPart': 0,  # renseigné à la liquidation (pas disponible sur le bon seul)
+                'dateProchaine': prochaine.isoformat(),
+                'joursRestants': (aujourdhui - prochaine).days,
+                'fournisseur': b.fournisseur.libelle if b.fournisseur_id else '',
+            })
+        # Du plus proche de la réouverture (-1) au plus lointain.
+        lignes.sort(key=lambda ligne: ligne['joursRestants'], reverse=True)
+        return Response(lignes)
+
+    @action(detail=False)
+    def consommation(self, request):
+        aujourdhui = date.today()
+        exercice = str(request.query_params.get('exercice') or aujourdhui.year)
+        cumul = {}
+        # Seuls les retraités (03/04) ont un plafond : on n'agrège qu'eux.
+        for lb in LiquidationBon.objects.filter(
+            date_bon__year=exercice, code_soc__in=SOCIETES_RETRAITES
+        ):
+            mp = lb.matricule_part or ''
+            entree = cumul.setdefault(
+                mp, {'participant': lb.participant, 'societe': lb.code_soc, 'consommation': 0}
+            )
+            entree['consommation'] += lb.freel
+            if not entree['participant'] and lb.participant:
+                entree['participant'] = lb.participant
+        lignes = []
+        for mp, entree in cumul.items():
+            mat = mp.split('-')[-1] if mp else ''
+            p = Participant.objects.filter(matricule=mat).first()
+            lignes.append({
+                'id': mp,
+                'matricule': mp,
+                'participant': entree['participant'] or (p.nom_complet if p else ''),
+                'sexe': (p.sexe if p else '') or '',
+                'societe': entree['societe'],
+                'age': _age(p.date_naissance, aujourdhui) if p else '',
+                'telephone': (p.mobile if p else '') or '',
+                'consommation': entree['consommation'],
+            })
+        # On ne retient que les retraités qui DÉPASSENT le plafond annuel (700 000) :
+        # c'est ça « être suspendu » pour consommation excessive.
+        lignes = [l for l in lignes if l['consommation'] > PLAFOND_CONSOMMATION_ANNUEL]
+        lignes.sort(key=lambda ligne: ligne['consommation'], reverse=True)
+        return Response({'plafond': PLAFOND_CONSOMMATION_ANNUEL, 'lignes': lignes})
+
+
+def _representer_remboursement(bon):
+    """Une ligne de la page « Remboursement Frais Médicaux » (capture 66)."""
+    f = bon.facture
+    par_banque = (f.type_remb or '') == 'banque'
+    return {
+        'id': bon.id,
+        'codeJournal': 'RIB' if par_banque else 'RIC',
+        'datePiece': bon.date_bon,
+        'moisTraitement': f.mois_traitement,
+        'dateSaisie': bon.cree_le.date() if bon.cree_le else None,
+        'numTicket': str(f.id),
+        'numFactIpm': str(f.id),
+        'participant': bon.participant,
+        'matriculePart': bon.matricule_part,
+        'codeSoc': bon.code_soc,
+        'libelle': bon.beneficiaire or bon.participant,
+        'rembourse': bon.rembourse,
+        'typeRemb': f.type_remb or '',
+        'fraisReel': bon.freel,
+        'montantDu': bon.qpipm,
+        'exercice': str(bon.date_bon.year) if bon.date_bon else '',
+        'moisNum': str(bon.date_bon.month) if bon.date_bon else '',
+        'etatRemboursement': 'Réglé' if bon.rembourse else 'Non réglé',
+        # Une ligne de remboursement ne se désactive pas : sans ce drapeau, le
+        # tableau générique la barrerait et l'annoncerait « Inactif ».
+        'actif': True,
+        'reglementMethode': bon.reglement_methode,
+        'reglementNumero': bon.reglement_numero,
+        'reglementBanque': bon.reglement_banque,
+    }
+
+
+class RemboursementViewSet(viewsets.ViewSet):
+    """
+    Page « Remboursement Frais Médicaux » (Traitements → Remboursement) : les
+    bons de remboursement (bons manuels des factures « Remboursement ticket »)
+    à rembourser aux participants, et leur règlement (écritures RIB/RIC + Bx).
+    """
+
+    def _bons(self):
+        return (
+            LiquidationBon.objects.filter(
+                type_document=TYPE_BON_MANUEL,
+                facture__remboursement_ticket=True,
+            )
+            .select_related('facture', 'facture__adherent')
+            .order_by('-date_bon', 'id')
+        )
+
+    def list(self, request):
+        return Response([_representer_remboursement(b) for b in self._bons()])
+
+    @action(detail=False, methods=['get'], url_path='etat')
+    def etat(self, request):
+        """
+        État compact de la liste, comme le socle des référentiels : l'écoute de
+        fond du frontend l'interroge pour savoir s'il faut recharger. Sans cette
+        action, chaque sondage répondait 404 et la page ne se rafraîchissait
+        jamais toute seule.
+        """
+        return Response(
+            self._bons().order_by().aggregate(
+                nombre=Count('pk'), dernier_changement=Max('modifie_le')
+            )
+        )
+
+    @action(detail=False, methods=['post'])
+    def regler(self, request):
+        """
+        Règle (rembourse) une ou plusieurs lignes. Corps : { ids, methode (C/V/T),
+        numero, banque (Bx), date }. Pose les écritures (comptabilisation RIB/RIC
+        Dr 602 / Cr 411, puis, si banque, règlement Bx Dr 411 / Cr 521) et marque
+        les bons « Remboursé ».
+        """
+        data = request.data
+        ids = data.get('ids') or []
+        methode = str(data.get('methode', '')).strip()
+        numero = str(data.get('numero', '')).strip()
+        code_banque = str(data.get('banque', '')).strip()
+        try:
+            date_r = date.fromisoformat(str(data.get('date', '')))
+        except ValueError:
+            date_r = date.today()
+        if not methode:
+            return Response(
+                {'detail': 'Choisissez une méthode de paiement.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not ids:
+            return Response(
+                {'detail': 'Aucun remboursement sélectionné.'}, status=status.HTTP_400_BAD_REQUEST
+            )
+        banque = Banque.objects.filter(code=code_banque).first() if code_banque else None
+        reglees = []
+        with transaction.atomic():
+            bons = self._bons().filter(id__in=ids, rembourse=False)
+            for bon in bons:
+                # Un remboursement « par banque » exige une banque.
+                if (bon.facture.type_remb or '') == 'banque' and banque is None:
+                    continue
+                lignes, _m = generer_ecritures_remboursement(bon, banque, numero, date_r)
+                EcritureCompta.objects.bulk_create(lignes)
+                bon.rembourse = True
+                bon.rembourse_le = date_r
+                bon.reglement_methode = methode
+                bon.reglement_numero = numero
+                bon.reglement_banque = banque.code if banque else ''
+                bon.save(
+                    update_fields=[
+                        'rembourse', 'rembourse_le', 'reglement_methode',
+                        'reglement_numero', 'reglement_banque', 'modifie_le',
+                    ]
+                )
+                reglees.append(bon.id)
+        return Response({'reglees': reglees})

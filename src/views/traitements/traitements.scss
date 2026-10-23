@@ -194,6 +194,27 @@ $trt-encre: #11151d;
   font-weight: 600;
 }
 
+// Société rappelée dans le titre de section du bon manuel.
+.trt-liq-societe {
+  font-weight: 400;
+  color: $trt-rouge;
+}
+
+// Case « Remboursement intégral » du bon manuel : l'IPM prend 100 %.
+.trt-bm-integral {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  input {
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+  }
+}
+
 .trt-liq-actions {
   display: flex;
   align-items: center;
@@ -323,5 +344,54 @@ $trt-encre: #11151d;
 @media (max-width: 479.98px) {
   .trt-reg-entete {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// --- Page Suspensions (§19) -------------------------------------------------
+.sus-barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+}
+
+.sus-barre .sus-recherche {
+  min-width: 180px;
+}
+
+.sus-barre-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sus-tableau {
+  margin-top: 1rem;
+}
+
+.sus-total {
+  padding: 0.85rem 0.25rem 0.25rem;
+  color: $trt-rouge;
+  font-weight: 600;
+
+  strong {
+    color: $trt-encre;
+    font-variant-numeric: tabular-nums;
+    margin-left: 0.2rem;
+  }
+}
+
+
+// Note du plafond annuel (onglet Consommation des Suspensions).
+.sus-plafond {
+  margin: 0.25rem 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.4rem;
+  background: rgba(229, 38, 33, 0.07);
+  color: $trt-rouge;
+  font-size: 0.9rem;
+
+  strong {
+    font-variant-numeric: tabular-nums;
   }
 }

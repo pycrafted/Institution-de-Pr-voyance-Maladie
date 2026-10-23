@@ -45,6 +45,9 @@ const ENDPOINTS_API = {
   'taux-exceptionnels': '/taux-exceptionnels',
   // Module Traitements (cf. backend/apps/traitements).
   factures: '/factures',
+  banques: '/banques',
+  'ordres-paiement': '/ordres-paiement',
+  remboursements: '/remboursements',
 }
 
 const servrParApi = (cle) => cle in ENDPOINTS_API

@@ -14,7 +14,15 @@ from donnees_de_base.models import FournisseurDeSoins, FournisseurDivers, Specia
 from donnees_de_base.serializers.fournisseur_de_soins import DateOuVide
 from documents.serializers.commun import lien
 
-from .models import TYPE_SOINS, EcritureCompta, Facture, LiquidationBon
+from .models import (
+    MODES_PAIEMENT,
+    TYPE_SOINS,
+    Banque,
+    EcritureCompta,
+    Facture,
+    LiquidationBon,
+    OrdrePaiement,
+)
 
 
 class FactureSerializer(serializers.ModelSerializer):
@@ -45,6 +53,7 @@ class FactureSerializer(serializers.ModelSerializer):
     qpAgent = serializers.IntegerField(source='qp_agent', required=False, min_value=0)
     montantNet = serializers.IntegerField(source='montant_net', read_only=True)
     remboursementTicket = serializers.BooleanField(source='remboursement_ticket', required=False)
+    typeRemb = serializers.CharField(source='type_remb', required=False, allow_blank=True)
     avoir = serializers.BooleanField(required=False)
 
     # Calculés / lecture seule tant que le traitement n'est pas fait.
@@ -95,6 +104,7 @@ class FactureSerializer(serializers.ModelSerializer):
             'qpAgent',
             'montantNet',
             'remboursementTicket',
+            'typeRemb',
             'avoir',
             'etat',
             'moisTraitement',
@@ -177,6 +187,10 @@ class LiquidationBonSerializer(serializers.ModelSerializer):
     """Une ligne « Bons traités » (capture 38) : le bon rattaché et sa liquidation."""
 
     typeDocument = serializers.CharField(source='type_document', read_only=True)
+    typeManuel = serializers.CharField(source='type_manuel', read_only=True)
+    remboursementIntegral = serializers.BooleanField(
+        source='remboursement_integral', read_only=True
+    )
     documentId = serializers.IntegerField(source='document_id', read_only=True)
     date = serializers.DateField(source='date_bon', read_only=True)
     codeSoc = serializers.CharField(source='code_soc', read_only=True)
@@ -188,6 +202,8 @@ class LiquidationBonSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'typeDocument',
+            'typeManuel',
+            'remboursementIntegral',
             'documentId',
             'numero',
             'date',
@@ -238,3 +254,62 @@ class EcritureComptaSerializer(serializers.ModelSerializer):
             'numfourn',
         ]
         read_only_fields = fields
+
+
+class BanqueSerializer(serializers.ModelSerializer):
+    """Référentiel des banques (B1..B10) : code, libellé, réseau, compte 521xxx."""
+
+    class Meta:
+        model = Banque
+        fields = ['id', 'code', 'libelle', 'reseau', 'compte', 'actif', 'cree_le', 'modifie_le']
+        read_only_fields = ['id', 'cree_le', 'modifie_le']
+
+
+class OrdrePaiementSerializer(serializers.ModelSerializer):
+    """
+    Un ordre de paiement (chèque / virement libre). N° Enreg. et N° pièce sont
+    posés par le serveur ; le modal « Etablir » saisit mode, date, montant,
+    motif, bénéficiaire et banque.
+    """
+
+    numeroEnreg = serializers.IntegerField(source='numero_enreg', read_only=True)
+    dateSaisie = serializers.DateField(source='date_saisie', read_only=True)
+    modePaiement = serializers.ChoiceField(source='mode_paiement', choices=MODES_PAIEMENT, required=False)
+    modePaiementLibelle = serializers.CharField(source='get_mode_paiement_display', read_only=True)
+    datePiece = DateOuVide(source='date_piece', required=False)
+    numeroPiece = serializers.CharField(source='numero_piece', read_only=True)
+    montant = serializers.IntegerField(required=False, min_value=0)
+    aOrdreDe = serializers.CharField(source='a_ordre_de', required=False, allow_blank=True)
+    motif = serializers.CharField(required=False, allow_blank=True)
+    banque = serializers.SlugRelatedField(
+        slug_field='code', queryset=Banque.objects.all(), required=False, allow_null=True,
+    )
+    banqueLibelle = serializers.SerializerMethodField()
+    exercice = serializers.CharField(read_only=True)
+    aImprimer = serializers.BooleanField(source='a_imprimer', required=False)
+
+    class Meta:
+        model = OrdrePaiement
+        fields = [
+            'id',
+            'numeroEnreg',
+            'dateSaisie',
+            'modePaiement',
+            'modePaiementLibelle',
+            'datePiece',
+            'numeroPiece',
+            'montant',
+            'aOrdreDe',
+            'motif',
+            'banque',
+            'banqueLibelle',
+            'aImprimer',
+            'exercice',
+            'actif',
+            'cree_le',
+            'modifie_le',
+        ]
+        read_only_fields = ['id', 'cree_le', 'modifie_le']
+
+    def get_banqueLibelle(self, ordre):
+        return ordre.banque.libelle if ordre.banque_id else ''

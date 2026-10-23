@@ -172,6 +172,19 @@ const colonnesCommunes = [
     defaut: 0,
   },
   { nom: 'remboursementTicket', libelleForm: 'Remboursement Ticket', type: 'booleen' },
+  // Mode du remboursement : n'apparaît que si « Remboursement Ticket » est coché
+  // (capture 65). Banque par défaut (majoritaire dans LAMPS).
+  {
+    nom: 'typeRemb',
+    libelleForm: 'Mode de remboursement',
+    type: 'bascule',
+    defaut: 'banque',
+    options: () => [
+      { valeur: 'compense', libelle: 'Compense' },
+      { valeur: 'banque', libelle: 'Banque' },
+    ],
+    visible: (v) => Boolean(v.remboursementTicket),
+  },
   { nom: 'avoir', libelleForm: 'Facture d’avoir', type: 'booleen' },
   // Fournisseur : le code (N° Frs) et le nom, lu sur sa fiche.
   { nom: 'fournisseur', libelle: 'Fournisseur', largeur: '220px', calcule: true },
@@ -184,6 +197,7 @@ const colonnesCommunes = [
     requis: true,
     afficherCode: true,
     options: optionsAdherents,
+    libelleSeul: true,
   },
   { nom: 'saisiePar', libelle: 'Saisie par', largeur: '130px', calcule: true },
   { nom: 'traiteePar', libelle: 'Traitée par', largeur: '130px', calcule: true },
@@ -245,6 +259,7 @@ const barreFactures = (champsSupplementaires = []) => ({
 /** Base commune aux deux sous-onglets. */
 const baseFactures = {
   cle: 'factures',
+  vide: 'Aucune facture',
   nouveau: 'Réceptionner une facture',
   modifier: 'Modifier la facture',
   taillePage: 15,
@@ -313,6 +328,9 @@ export const FACTURES_SOINS = {
       libelleForm: 'Spécialité',
       largeur: '150px',
       options: optionsSpecialites,
+      // Le code est déjà dans le libellé de l'option (« 06 - PHARMACIES ») :
+      // `libelleSeul` évite que le formulaire le rajoute (« 06 - 06 - … »).
+      libelleSeul: true,
       valeurTableau: (f) => libelleSpecialite(f.specialite),
     },
     {
@@ -324,6 +342,7 @@ export const FACTURES_SOINS = {
       afficherCode: true,
       dependDe: 'specialite',
       options: optionsFournisseursSoins,
+      libelleSeul: true,
     },
     ...colonnesCommunes,
   ],
@@ -341,7 +360,7 @@ export const FACTURES_SOINS = {
             ['montantNet'],
           ],
         },
-        { lignes: [['remboursementTicket', 'avoir']] },
+        { lignes: [['remboursementTicket', 'avoir'], ['typeRemb']] },
       ],
     },
   ],
@@ -366,6 +385,7 @@ export const FACTURES_DIVERS = {
       mono: true,
       afficherCode: true,
       options: optionsFournisseursDivers,
+      libelleSeul: true,
     },
     ...colonnesCommunes,
   ],
@@ -383,7 +403,7 @@ export const FACTURES_DIVERS = {
             ['montantNet'],
           ],
         },
-        { lignes: [['remboursementTicket', 'avoir']] },
+        { lignes: [['remboursementTicket', 'avoir'], ['typeRemb']] },
       ],
     },
   ],
@@ -452,6 +472,7 @@ const statsReglement = (factures) => {
 /** Base commune aux deux sous-onglets de règlement. */
 const baseReglements = {
   cle: 'factures',
+  vide: 'Aucune facture à régler',
   taillePage: 15,
   sansTitre: true,
   // On ne crée pas de facture ici ; on règle.
@@ -540,3 +561,240 @@ export const LIBELLES_REGLEMENT = {
   V: 'Virement',
   T: 'Transfert',
 }
+
+// ============================================================================
+// Ordre de Paiement (§18, captures 61-62) : établir un chèque/virement libre,
+// « à l'ordre de » quelqu'un, avec un motif - sans facture derrière. Liste
+// « Edition Lettres Chèques/Ordre de Virement », modal « Etablir ».
+// (Sous réserve des captures à venir : mode Virement détaillé, impression.)
+// ============================================================================
+
+/** Banques du référentiel, en « code - libellé » pour la liste déroulante. */
+const optionsBanques = () =>
+  actifs('banques').map((b) => ({ valeur: b.code, libelle: `${b.code} - ${b.libelle}` }))
+
+/** Modes de paiement d'un ordre (cf. titre de l'écran). */
+const MODES_PAIEMENT = [
+  { valeur: 'C', libelle: 'Chèque' },
+  { valeur: 'V', libelle: 'Virement' },
+]
+
+export const ORDRES_PAIEMENT = {
+  cle: 'ordres-paiement',
+  vide: 'Aucun ordre de paiement',
+  libelle: 'Edition Lettres Chèques/Ordre de Virement',
+  nouveau: 'Etablir',
+  modifier: "Modifier l'ordre",
+  taillePage: 15,
+  // Pas de titre au-dessus de la liste : la page le porte déjà.
+  sansTitre: true,
+  // Cases à cocher (action de lot), comme l'application d'origine.
+  selection: true,
+  nommer: (o) => `l'ordre n° ${o.numeroEnreg}`,
+  champsSoulignes: true,
+  barreCompacte: true,
+  rechercheEnDernier: true,
+  rechercheFlottante: true,
+  // Un ordre ne se supprime pas, il s'annule.
+  etat: {
+    actif: 'Valide',
+    inactif: 'Annulé',
+    desactiver: "Annuler l'ordre",
+    reactiver: "Rétablir l'ordre",
+    desactive: 'annulé',
+    reactive: 'rétabli',
+  },
+  filtres: [
+    {
+      champ: 'exercice',
+      etiquette: 'Exercice',
+      libelle: 'Tous',
+      options: EXERCICES,
+      defaut: () => String(new Date().getFullYear()),
+      largeur: '7rem',
+    },
+  ],
+  // Colonnes de la liste (capture 61) : sans la banque, comme l'origine.
+  colonnesTableau: [
+    'numeroEnreg',
+    'dateSaisie',
+    'numeroPiece',
+    'datePiece',
+    'montant',
+    'aOrdreDe',
+    'motif',
+    'modePaiement',
+  ],
+  colonnes: [
+    { nom: 'numeroEnreg', libelle: 'N° Enreg.', largeur: '90px', mono: true, calcule: true },
+    {
+      nom: 'dateSaisie',
+      libelle: 'Date saisie',
+      largeur: '110px',
+      calcule: true,
+      valeurTableau: (o) => dateFr(o.dateSaisie),
+    },
+    { nom: 'numeroPiece', libelle: 'N° pièce', largeur: '110px', mono: true, calcule: true },
+    {
+      nom: 'datePiece',
+      libelle: 'Date pièce',
+      libelleForm: 'Date chèque',
+      largeur: '110px',
+      type: 'date',
+      defaut: () => new Date().toISOString().slice(0, 10),
+      valeurTableau: (o) => dateFr(o.datePiece),
+    },
+    {
+      nom: 'montant',
+      libelle: 'Montant',
+      largeur: '120px',
+      type: 'number',
+      aligne: 'droite',
+      valeurTableau: (o) => montantFr(o.montant),
+    },
+    { nom: 'aOrdreDe', libelle: "A l'ordre de", libelleForm: "À l'ordre de", maxLength: 150 },
+    { nom: 'motif', libelle: 'Motif', maxLength: 200 },
+    {
+      nom: 'modePaiement',
+      libelle: 'Mode paiement',
+      largeur: '120px',
+      options: MODES_PAIEMENT,
+      defaut: 'C',
+      valeurTableau: (o) =>
+        o.modePaiementLibelle || (o.modePaiement === 'V' ? 'Virement' : 'Chèque'),
+    },
+    {
+      nom: 'banque',
+      libelle: 'Banque',
+      libelleForm: 'Banque',
+      options: optionsBanques,
+      afficherCode: true,
+      libelleSeul: true,
+    },
+  ],
+  formulaire: [
+    {
+      libelle: 'Etablir un paiement',
+      sections: [
+        {
+          lignes: [['modePaiement', 'banque'], ['datePiece', 'montant'], ['aOrdreDe'], ['motif']],
+        },
+      ],
+    },
+  ],
+}
+
+// ============================================================================
+// Remboursement Frais Médicaux (Traitements → Remboursement, captures 66-68)
+// ============================================================================
+const MOIS_OPTIONS = [
+  { valeur: '1', libelle: 'Janvier' },
+  { valeur: '2', libelle: 'Février' },
+  { valeur: '3', libelle: 'Mars' },
+  { valeur: '4', libelle: 'Avril' },
+  { valeur: '5', libelle: 'Mai' },
+  { valeur: '6', libelle: 'Juin' },
+  { valeur: '7', libelle: 'Juillet' },
+  { valeur: '8', libelle: 'Août' },
+  { valeur: '9', libelle: 'Septembre' },
+  { valeur: '10', libelle: 'Octobre' },
+  { valeur: '11', libelle: 'Novembre' },
+  { valeur: '12', libelle: 'Décembre' },
+]
+
+/** Stats du titre : « N Participants - Total Solde - Total à rembourser ». */
+const statsRemboursement = (lignes) => {
+  const solde = lignes.reduce((s, l) => s + entier(l.montantDu), 0)
+  const aRembourser = lignes
+    .filter((l) => !l.rembourse)
+    .reduce((s, l) => s + entier(l.montantDu), 0)
+  return `${lignes.length} Participants - Total Solde: ${montantFr(solde)} - Total à rembourser: ${montantFr(aRembourser)}`
+}
+
+/** Segments d'état : Tous / Réglé / Non réglé. */
+const segmentsRemboursement = {
+  activite: true,
+  valeurs: [
+    { valeur: 'tous', libelle: 'Tous', filtre: () => true },
+    { valeur: 'regle', libelle: 'Réglé', filtre: (l) => Boolean(l.rembourse) },
+    { valeur: 'non-regle', libelle: 'Non réglé', filtre: (l) => !l.rembourse },
+  ],
+}
+
+export const REMBOURSEMENTS = {
+  cle: 'remboursements',
+  libelle: 'Remboursement Frais Médicaux',
+  vide: 'Aucun remboursement',
+  taillePage: 15,
+  sansTitre: true,
+  sansCreation: true,
+  // Cases à cocher : on règle en lot (comme l'application d'origine).
+  selection: true,
+  stats: statsRemboursement,
+  nommer: (l) => `le remboursement de ${l.participant}`,
+  segments: segmentsRemboursement,
+  champsSoulignes: true,
+  barreCompacte: true,
+  rechercheEnDernier: true,
+  rechercheFlottante: true,
+  segmentsADroite: true,
+  filtres: [
+    {
+      champ: 'exercice',
+      etiquette: 'Exercice',
+      libelle: 'Tous',
+      options: EXERCICES,
+      defaut: () => String(new Date().getFullYear()),
+      largeur: '7rem',
+    },
+    { champ: 'codeSoc', etiquette: 'Société', libelle: '- Toutes -', options: optionsAdherents },
+    { champ: 'moisNum', etiquette: 'Mois', libelle: '- Tous -', options: () => MOIS_OPTIONS },
+    {
+      champ: 'typeRemb',
+      etiquette: 'Mode',
+      libelle: '- Tous -',
+      options: () => [
+        { valeur: 'compense', libelle: 'Compense' },
+        { valeur: 'banque', libelle: 'Banque' },
+      ],
+    },
+  ],
+  colonnesTableau: [
+    'codeJournal',
+    'datePiece',
+    'moisTraitement',
+    'dateSaisie',
+    'numTicket',
+    'numFactIpm',
+    'participant',
+    'matriculePart',
+    'codeSoc',
+    'libelleRemb',
+    'etatRemboursement',
+    'fraisReel',
+    'montantDu',
+  ],
+  colonnes: [
+    { nom: 'codeJournal', libelle: 'C.JL', largeur: '70px', mono: true },
+    { nom: 'datePiece', libelle: 'Date Pièce', largeur: '110px', valeurTableau: (l) => dateFr(l.datePiece) },
+    { nom: 'moisTraitement', libelle: 'Mois trait.', largeur: '100px' },
+    { nom: 'dateSaisie', libelle: 'Date Saisie', largeur: '110px', valeurTableau: (l) => dateFr(l.dateSaisie) },
+    { nom: 'numTicket', libelle: 'N° ticket', largeur: '90px', mono: true },
+    { nom: 'numFactIpm', libelle: 'N° Fact. IPM', largeur: '100px', mono: true },
+    { nom: 'participant', libelle: 'Participant', largeur: '180px' },
+    { nom: 'matriculePart', libelle: 'Soc. Mat', largeur: '90px', mono: true },
+    { nom: 'codeSoc', libelle: 'Code Soc.', largeur: '80px', mono: true },
+    { nom: 'libelleRemb', libelle: 'Libellé', largeur: '160px', valeurTableau: (l) => l.libelle },
+    // `type: 'statut'` : l'état est porté par la colonne, donc pas de bouton
+    // « Désactiver » sur la ligne ni d'interrupteur « Afficher les inactifs » -
+    // une ligne de remboursement ne se désactive pas, elle se règle.
+    { nom: 'etatRemboursement', libelle: 'Remboursé', largeur: '110px', type: 'statut' },
+    { nom: 'fraisReel', libelle: 'Frais réel', largeur: '100px', aligne: 'droite', valeurTableau: (l) => montantFr(l.fraisReel) },
+    { nom: 'montantDu', libelle: 'Montant dû', largeur: '100px', aligne: 'droite', valeurTableau: (l) => montantFr(l.montantDu) },
+  ],
+}
+
+/** Mode de paiement du remboursement (Méthode de Règlement, captures 56-57). */
+export const METHODES_REMBOURSEMENT = { C: 'Chèque', V: 'Virement', T: 'Transfert' }
+
+export { optionsBanques }

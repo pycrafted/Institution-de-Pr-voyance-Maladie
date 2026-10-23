@@ -20,6 +20,9 @@ const LgHospitalisation = React.lazy(
 )
 const Factures = React.lazy(() => import('./views/traitements/Factures'))
 const Reglements = React.lazy(() => import('./views/traitements/Reglements'))
+const Remboursements = React.lazy(() => import('./views/traitements/Remboursements'))
+const OrdresPaiement = React.lazy(() => import('./views/traitements/OrdresPaiement'))
+const Suspensions = React.lazy(() => import('./views/traitements/Suspensions'))
 const PageAVenir = React.lazy(() => import('./views/a-venir/PageAVenir'))
 
 export const routes = [
@@ -41,6 +44,9 @@ export const routes = [
   { path: '/traitements/factures', name: 'Factures', element: Factures },
   { path: '/traitements/factures/:id', name: 'Traitement facture', element: Factures },
   { path: '/traitements/reglements', name: 'Règlements', element: Reglements },
+  { path: '/traitements/remboursements', name: 'Remboursement', element: Remboursements },
+  { path: '/traitements/ordres-paiement', name: 'Ordre de Paiement', element: OrdresPaiement },
+  { path: '/traitements/suspensions', name: 'Suspensions', element: Suspensions },
 
   // Sections annoncées dans le menu, écran d'attente en attendant leur
   // développement. Retirer l'entrée de pagesAVenir.js et déclarer la vraie

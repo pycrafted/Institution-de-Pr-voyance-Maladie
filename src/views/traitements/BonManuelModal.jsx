@@ -1,28 +1,23 @@
 /**
- * Modal « Créer bon manuel » - crée un bon directement au traitement d'une
- * facture, sans document préexistant à rattacher (capture 38, surtout pour les
- * factures « divers »). On désigne le participant, le bénéficiaire et la nature
- * du bénéfice, puis on liquide acte par acte (même logique 85/87 que la
- * liquidation d'un bon). « Enregistrer » crée le bon, l'ajoute aux bons traités
- * et le fait compter dans l'écart de la facture.
+ * Modal « Création bon manuel » (capture 69) - crée un bon directement au
+ * traitement d'une facture, sans document préexistant à rattacher (surtout pour
+ * les factures « divers » / remboursements).
+ *
+ * Volontairement SIMPLE, comme LAMPS : pas de saisie acte-par-acte. On choisit
+ * un TYPE de document (les 4 types de bon + bon d'avoir + ticket remboursement),
+ * un n°, une date, un MONTANT, le participant et le bénéficiaire, et l'option
+ * « Remboursement intégral ». La liquidation se fait sur le seul montant :
+ * QP.IPM = taux × montant (ou = montant si intégral), QP.PART = reste.
  */
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   CModal,
   CModalBody,
   CModalHeader,
   CModalTitle,
   CSpinner,
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilPlus, cilX } from '@coreui/icons'
 
 import { request } from '../../services/api'
 import { listerEntreesSync } from '../../services/referentiels'
@@ -34,34 +29,36 @@ const entier = (v) => {
   const n = Number.parseInt(String(v ?? '').replace(/[^\d-]/g, ''), 10)
   return Number.isFinite(n) ? n : 0
 }
+const aujourdHui = () => new Date().toISOString().slice(0, 10)
 /** 87 % pour les retraités (sociétés 03/04), 85 % sinon - cf. backend. */
 const tauxDe = (codeSoc) => (['03', '04'].includes(codeSoc) ? 87 : 85)
 
-const LIGNE_VIDE = {
-  prestation: '',
-  freel: '',
-  qpipm: '',
-  qppart: '',
-  qpassur: '',
-  fexclus: '',
-  ajustement: '',
-  quantite: '1',
-}
+/** Type de document du bon manuel : 4 bons + bon d'avoir + ticket remboursement. */
+const TYPES_DOC = [
+  { code: 'bon-pharmacie', libelle: 'Bon de pharmacie' },
+  { code: 'bon-optique', libelle: 'Bon optique' },
+  { code: 'lettre-garantie', libelle: 'Lettre de garantie' },
+  { code: 'lg-hospitalisation', libelle: 'LG hospitalisation' },
+  { code: 'bon-avoir', libelle: "Bon d'avoir" },
+  { code: 'ticket-remboursement', libelle: 'Ticket remboursement' },
+]
+const libelleType = (code) => TYPES_DOC.find((t) => t.code === code)?.libelle || 'document'
 
 const BonManuelModal = ({ factureId, facture, visible, onFermer, onEnregistre }) => {
   const codeSoc = facture?.codeSoc || ''
   const taux = tauxDe(codeSoc)
 
-  const prestations = useMemo(
-    () => listerEntreesSync('types-prestations').filter((p) => p.actif !== false),
-    [],
-  )
-  const libellePrestation = (code) => prestations.find((p) => p.code === code)?.libelle || code
+  const societe = useMemo(() => {
+    const a = listerEntreesSync('adherents').find((x) => x.code === codeSoc)
+    return a ? a.libelle || a.raisonSociale || a.nom || '' : ''
+  }, [codeSoc])
 
   const typesBenef = useMemo(
     () => listerEntreesSync('types-beneficiaires').filter((t) => t.actif !== false),
     [],
   )
+  const codeTypeBenef = (libelle) => typesBenef.find((t) => t.libelle === libelle)?.code || ''
+
   // Participants de la société de la facture (le bon manuel reste dans sa société).
   const participants = useMemo(
     () =>
@@ -71,101 +68,91 @@ const BonManuelModal = ({ factureId, facture, visible, onFermer, onEnregistre })
     [codeSoc],
   )
 
-  // --- Identité du bon ---
+  // --- Entête du bon ---
+  const [typeDoc, setTypeDoc] = useState('')
+  const [numero, setNumero] = useState('')
+  const [dateBon, setDateBon] = useState(aujourdHui())
+  const [montant, setMontant] = useState('')
+  const [integral, setIntegral] = useState(false)
+
+  // --- Participant & bénéficiaire ---
   const [matricule, setMatricule] = useState('')
-  const [typeBenef, setTypeBenef] = useState('1')
-  const [beneficiaire, setBeneficiaire] = useState('')
+  const [beneficiaireMat, setBeneficiaireMat] = useState('')
+  const [envoi, setEnvoi] = useState(false)
 
   const participantChoisi = participants.find((p) => p.matricule === matricule)
   const nomParticipant = participantChoisi
     ? `${participantChoisi.prenoms || ''} ${participantChoisi.nom || ''}`.trim()
     : ''
 
+  // Bénéficiaires possibles : le participant lui-même, puis ses ayants droit.
+  const beneficiaires = useMemo(() => {
+    if (!participantChoisi) return []
+    const liste = [
+      {
+        matricule: participantChoisi.matricule,
+        libelle: nomParticipant,
+        typeBenef: '1',
+      },
+    ]
+    listerEntreesSync('beneficiaires')
+      .filter((b) => b.matriculePart === matricule && b.actif !== false)
+      .forEach((b) =>
+        liste.push({
+          matricule: b.matriculeBenef,
+          libelle: `${b.prenoms || ''} ${b.nom || ''}`.trim(),
+          typeBenef: codeTypeBenef(b.typeBenef),
+        }),
+      )
+    return liste
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matricule, participantChoisi])
+
+  const benefChoisi = beneficiaires.find((b) => b.matricule === beneficiaireMat)
+
+  // Participant choisi : par défaut, le bénéficiaire est lui-même.
   const changerParticipant = (mat) => {
     setMatricule(mat)
-    // Par défaut, le bénéficiaire est le participant lui-même.
     const p = participants.find((x) => x.matricule === mat)
-    if (p && (typeBenef === '1' || !beneficiaire)) {
-      setBeneficiaire(`${p.prenoms || ''} ${p.nom || ''}`.trim())
-    }
-  }
-  const changerType = (code) => {
-    setTypeBenef(code)
-    // « Participant » (code 1) : le bénéficiaire est le participant lui-même.
-    if (code === '1' && nomParticipant) setBeneficiaire(nomParticipant)
+    setBeneficiaireMat(p ? p.matricule : '')
   }
 
-  // --- Saisie des actes (même logique 85/87 que la liquidation) ---
-  const [actes, setActes] = useState([])
-  const [saisie, setSaisie] = useState(LIGNE_VIDE)
-  const [envoi, setEnvoi] = useState(false)
+  // Aperçu de la liquidation, sur le seul montant.
+  const montantNb = entier(montant)
+  const qpipm = montantNb <= 0 ? 0 : integral ? montantNb : Math.round((taux * montantNb) / 100)
+  const qppart = Math.max(0, montantNb - qpipm)
 
-  const avecCalcul = (suivant, champModifie) => {
-    const freel = entier(suivant.freel)
-    const fexclus = Math.min(entier(suivant.fexclus), freel)
-    const qpassur = entier(suivant.qpassur)
-    let qpipm = entier(suivant.qpipm)
-    if (champModifie === 'freel' || champModifie === 'fexclus') {
-      qpipm = Math.round((taux * Math.max(0, freel - fexclus)) / 100)
-      suivant.qpipm = String(qpipm)
-    }
-    suivant.qppart = String(Math.max(0, freel - qpipm - qpassur))
-    return suivant
-  }
-  const changer = (champ, valeur) => setSaisie((s) => avecCalcul({ ...s, [champ]: valeur }, champ))
-
-  const ajouter = () => {
-    const freel = entier(saisie.freel)
-    if (!saisie.prestation && freel === 0) {
-      toast.info('Choisissez une prestation et un frais réel.')
-      return
-    }
-    setActes((liste) => [
-      ...liste,
-      {
-        prestation: saisie.prestation,
-        libelle: libellePrestation(saisie.prestation),
-        quantite: Math.max(1, entier(saisie.quantite) || 1),
-        freel,
-        qpipm: entier(saisie.qpipm),
-        qppart: entier(saisie.qppart),
-        qpassur: entier(saisie.qpassur),
-        fexclus: entier(saisie.fexclus),
-        ajustement: entier(saisie.ajustement),
-      },
-    ])
-    setSaisie(LIGNE_VIDE)
-  }
-  const retirer = (index) => setActes((liste) => liste.filter((_, i) => i !== index))
-
-  const totaux = actes.reduce(
-    (t, a) => ({
-      freel: t.freel + entier(a.freel),
-      qpipm: t.qpipm + entier(a.qpipm),
-      qppart: t.qppart + entier(a.qppart),
-    }),
-    { freel: 0, qpipm: 0, qppart: 0 },
-  )
+  // À la réouverture, on repart d'un formulaire vierge.
+  useEffect(() => {
+    if (!visible) return
+    setTypeDoc('')
+    setNumero('')
+    setDateBon(aujourdHui())
+    setMontant('')
+    setIntegral(false)
+    setMatricule('')
+    setBeneficiaireMat('')
+  }, [visible])
 
   const enregistrer = async () => {
-    if (!matricule) {
-      toast.info('Choisissez un participant.')
-      return
-    }
-    if (actes.length === 0) {
-      toast.info('Ajoutez au moins un acte.')
-      return
-    }
+    if (!typeDoc) return toast.info('Choisissez un type de document.')
+    if (montantNb <= 0) return toast.info('Saisissez un montant.')
+    if (!matricule) return toast.info('Choisissez un participant.')
+    if (!benefChoisi) return toast.info('Choisissez un bénéficiaire.')
     try {
       setEnvoi(true)
       await request(`/factures/${factureId}/creer-bon-manuel/`, {
         method: 'POST',
         body: JSON.stringify({
+          typeManuel: typeDoc,
+          numero: numero.trim(),
+          date: dateBon,
+          montant: montantNb,
           matriculePart: `${codeSoc}-${matricule}`,
           participant: nomParticipant,
-          typeBenef,
-          beneficiaire: beneficiaire || nomParticipant,
-          actes,
+          typeBenef: benefChoisi.typeBenef,
+          beneficiaire: benefChoisi.libelle,
+          remboursementIntegral: integral,
         }),
       })
       toast.success('Bon manuel créé')
@@ -178,14 +165,65 @@ const BonManuelModal = ({ factureId, facture, visible, onFermer, onEnregistre })
   }
 
   return (
-    <CModal visible={visible} onClose={onFermer} size="xl" alignment="center" className="trt-liq">
+    <CModal visible={visible} onClose={onFermer} size="lg" alignment="center" className="trt-liq">
       <CModalHeader>
-        <CModalTitle>Créer un bon manuel</CModalTitle>
+        <CModalTitle>Création bon manuel</CModalTitle>
       </CModalHeader>
       <CModalBody>
-        {/* Identité du bon */}
+        {/* Entête du bon : type, n°, date, montant */}
         <div className="trt-liq-saisie">
-          <div className="trt-liq-entete-titre">Participant &amp; bénéficiaire</div>
+          <div className="trt-liq-entete-titre">Document</div>
+          <div className="trt-liq-grille">
+            <Champ libelle="Type de document">
+              <select
+                className="ddb-champ ddb-champ-liste"
+                value={typeDoc}
+                onChange={(e) => setTypeDoc(e.target.value)}
+              >
+                <option value="">- Type de document -</option>
+                {TYPES_DOC.map((t) => (
+                  <option key={t.code} value={t.code}>
+                    {t.libelle}
+                  </option>
+                ))}
+              </select>
+            </Champ>
+            <Champ libelle={`N° ${libelleType(typeDoc)}`}>
+              <input
+                className="ddb-champ"
+                value={numero}
+                onChange={(e) => setNumero(e.target.value)}
+                placeholder="N° du document"
+                autoComplete="off"
+              />
+            </Champ>
+            <Champ libelle="Date">
+              <input
+                type="date"
+                className="ddb-champ"
+                value={dateBon}
+                onChange={(e) => setDateBon(e.target.value)}
+              />
+            </Champ>
+            <Champ libelle={`Montant${montantNb ? ` (${montantFr(montantNb)})` : ''}`}>
+              <input
+                className="ddb-champ text-end"
+                value={montant}
+                onChange={(e) => setMontant(e.target.value)}
+                inputMode="numeric"
+                placeholder="0"
+                autoComplete="off"
+              />
+            </Champ>
+          </div>
+        </div>
+
+        {/* Participant & bénéficiaire */}
+        <div className="trt-liq-saisie">
+          <div className="trt-liq-entete-titre">
+            Participant &amp; bénéficiaire
+            {societe && <span className="trt-liq-societe"> · Société : {societe}</span>}
+          </div>
           <div className="trt-liq-grille">
             <Champ libelle="Participant">
               <select
@@ -201,152 +239,36 @@ const BonManuelModal = ({ factureId, facture, visible, onFermer, onEnregistre })
                 ))}
               </select>
             </Champ>
-            <Champ libelle="Type bénéficiaire">
-              <select
-                className="ddb-champ ddb-champ-liste"
-                value={typeBenef}
-                onChange={(e) => changerType(e.target.value)}
-              >
-                {typesBenef.map((t) => (
-                  <option key={t.code} value={t.code}>
-                    {t.code} - {t.libelle}
-                  </option>
-                ))}
-              </select>
-            </Champ>
             <Champ libelle="Bénéficiaire">
-              <input
-                className="ddb-champ"
-                value={beneficiaire}
-                onChange={(e) => setBeneficiaire(e.target.value)}
-                placeholder="Nom du bénéficiaire"
-                autoComplete="off"
-              />
-            </Champ>
-          </div>
-        </div>
-
-        {/* Saisie des actes */}
-        <div className="trt-liq-saisie">
-          <div className="trt-liq-entete-titre">Saisie des Actes</div>
-          <div className="trt-liq-grille">
-            <Champ libelle="Acte">
               <select
                 className="ddb-champ ddb-champ-liste"
-                value={saisie.prestation}
-                onChange={(e) => changer('prestation', e.target.value)}
+                value={beneficiaireMat}
+                onChange={(e) => setBeneficiaireMat(e.target.value)}
+                disabled={!matricule}
               >
-                <option value="">- Prestation -</option>
-                {prestations.map((p) => (
-                  <option key={p.code} value={p.code}>
-                    {p.code} - {p.libelle}
+                <option value="">- Bénéficiaire -</option>
+                {beneficiaires.map((b) => (
+                  <option key={b.matricule} value={b.matricule}>
+                    {b.matricule} - {b.libelle}
                   </option>
                 ))}
               </select>
             </Champ>
-            <ChampNombre
-              libelle="Frais Réel"
-              valeur={saisie.freel}
-              onChanger={(v) => changer('freel', v)}
-            />
-            <ChampNombre
-              libelle="QP.IPM"
-              valeur={saisie.qpipm}
-              onChanger={(v) => changer('qpipm', v)}
-            />
-            <ChampNombre
-              libelle="QP.PART"
-              valeur={saisie.qppart}
-              onChanger={(v) => changer('qppart', v)}
-            />
-            <ChampNombre
-              libelle="Quote Part Assur."
-              valeur={saisie.qpassur}
-              onChanger={(v) => changer('qpassur', v)}
-            />
-            <ChampNombre
-              libelle="Frais Exclus"
-              valeur={saisie.fexclus}
-              onChanger={(v) => changer('fexclus', v)}
-            />
-            <ChampNombre
-              libelle="Ajustement"
-              valeur={saisie.ajustement}
-              onChanger={(v) => changer('ajustement', v)}
-            />
-            <ChampNombre
-              libelle="Quantité"
-              valeur={saisie.quantite}
-              onChanger={(v) => changer('quantite', v)}
-            />
           </div>
-          <div className="trt-liq-ajouter">
-            <button type="button" className="ddb-bouton-enregistrer" onClick={ajouter}>
-              <CIcon icon={cilPlus} className="me-2" />
-              Valider
-            </button>
-          </div>
-        </div>
-
-        {/* Tableau des actes */}
-        <div className="ddb-tableau-conteneur trt-liq-tableau">
-          <CTable responsive className="ddb-tableau align-middle mb-0">
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Prestation</CTableHeaderCell>
-                <CTableHeaderCell>Code prest.</CTableHeaderCell>
-                <CTableHeaderCell className="text-end">Qte.</CTableHeaderCell>
-                <CTableHeaderCell className="text-end">F. réel</CTableHeaderCell>
-                <CTableHeaderCell className="text-end">QP.IPM</CTableHeaderCell>
-                <CTableHeaderCell className="text-end">QP.PART</CTableHeaderCell>
-                <CTableHeaderCell className="text-end" aria-label="Retirer" />
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {actes.length === 0 ? (
-                <CTableRow>
-                  <CTableDataCell colSpan={7} className="ddb-etat-vide">
-                    Aucun acte. Saisissez-en un ci-dessus.
-                  </CTableDataCell>
-                </CTableRow>
-              ) : (
-                actes.map((a, index) => (
-                  <CTableRow key={`${a.prestation}-${index}`}>
-                    <CTableDataCell>{a.libelle || libellePrestation(a.prestation)}</CTableDataCell>
-                    <CTableDataCell className="ddb-mono">{a.prestation}</CTableDataCell>
-                    <CTableDataCell className="text-end">{a.quantite}</CTableDataCell>
-                    <CTableDataCell className="text-end ddb-mono">
-                      {montantFr(a.freel)}
-                    </CTableDataCell>
-                    <CTableDataCell className="text-end ddb-mono">
-                      {montantFr(a.qpipm)}
-                    </CTableDataCell>
-                    <CTableDataCell className="text-end ddb-mono">
-                      {montantFr(a.qppart)}
-                    </CTableDataCell>
-                    <CTableDataCell className="text-end">
-                      <button
-                        type="button"
-                        className="ddb-medic-retirer"
-                        onClick={() => retirer(index)}
-                        aria-label="Retirer l’acte"
-                        title="Retirer"
-                      >
-                        <CIcon icon={cilX} />
-                      </button>
-                    </CTableDataCell>
-                  </CTableRow>
-                ))
-              )}
-            </CTableBody>
-          </CTable>
         </div>
 
         <div className="trt-liq-pied">
+          <label className="trt-bm-integral">
+            <input
+              type="checkbox"
+              checked={integral}
+              onChange={(e) => setIntegral(e.target.checked)}
+            />
+            Remboursement intégral
+          </label>
           <div className="trt-liq-totaux">
-            Montant Total : <strong>{montantFr(totaux.freel)}</strong> - Quote part IPM :{' '}
-            <strong>{montantFr(totaux.qpipm)}</strong> / Quote part AGENT :{' '}
-            <strong>{montantFr(totaux.qppart)}</strong>
+            Montant : <strong>{montantFr(montantNb)}</strong> - Quote part IPM :{' '}
+            <strong>{montantFr(qpipm)}</strong> / Quote part AGENT : <strong>{montantFr(qppart)}</strong>
           </div>
           <div className="trt-liq-actions">
             <button type="button" className="ddb-outil" onClick={onFermer}>
@@ -372,19 +294,6 @@ const Champ = ({ libelle, children }) => (
   <div className="ddb-groupe">
     <label>{libelle}</label>
     {children}
-  </div>
-)
-
-const ChampNombre = ({ libelle, valeur, onChanger }) => (
-  <div className="ddb-groupe">
-    <label>{libelle}</label>
-    <input
-      className="ddb-champ text-end"
-      value={valeur}
-      onChange={(e) => onChanger(e.target.value)}
-      inputMode="numeric"
-      autoComplete="off"
-    />
   </div>
 )
 

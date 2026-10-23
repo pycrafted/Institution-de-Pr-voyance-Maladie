@@ -1,16 +1,17 @@
 import React from 'react'
 import CIcon from '@coreui/icons-react'
-import { cilCalculator, cilDescription, cilFolder } from '@coreui/icons'
+import { cilCalculator, cilDescription, cilFolder, cilSpeedometer } from '@coreui/icons'
 import { CNavGroup, CNavItem } from '@coreui/react'
 
 const icone = (glyphe) => <CIcon icon={glyphe} customClassName="nav-icon" />
 
 const _nav = [
-  // Le tableau de bord ne figure plus dans la colonne : ses chiffres sont
-  // encore ceux d'une maquette, et l'annoncer avant qu'ils soient réels
-  // laissait croire à une synthèse de la caisse. Sa route existe toujours
-  // (/#/tableau-de-bord) : elle reviendra au menu quand elle agrégera de
-  // vraies données - comme Traitements et Comptabilité.
+  {
+    component: CNavItem,
+    name: 'Tableau de bord',
+    to: '/tableau-de-bord',
+    icon: icone(cilSpeedometer),
+  },
   // « Fichiers » et « Documents » sont des sections dépliantes : on clique sur
   // l'intitulé pour voir ses pages. D'autres viendront s'y ranger, et la
   // colonne ne s'allongera pas pour autant. Elles se présentent fermées, et
@@ -93,6 +94,21 @@ const _nav = [
         component: CNavItem,
         name: 'Règlements',
         to: '/traitements/reglements',
+      },
+      {
+        component: CNavItem,
+        name: 'Remboursement',
+        to: '/traitements/remboursements',
+      },
+      {
+        component: CNavItem,
+        name: 'Ordre de Paiement',
+        to: '/traitements/ordres-paiement',
+      },
+      {
+        component: CNavItem,
+        name: 'Suspensions',
+        to: '/traitements/suspensions',
       },
     ],
   },

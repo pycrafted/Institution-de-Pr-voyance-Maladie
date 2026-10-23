@@ -102,6 +102,14 @@ class Facture(models.Model):
     qp_agent = models.PositiveIntegerField('QP. Agent', default=0)
     # Cases de la réception.
     remboursement_ticket = models.BooleanField('Remboursement ticket', default=False)
+    # Mode du remboursement quand « Remboursement ticket » est coché (capture 65) :
+    # par la banque (majoritaire) ou par compensation. Vide sinon.
+    type_remb = models.CharField(
+        'Mode de remboursement',
+        max_length=10,
+        blank=True,
+        choices=[('compense', 'Compense'), ('banque', 'Banque')],
+    )
     avoir = models.BooleanField('Facture d’avoir', default=False)
 
     # --- Traitement / comptabilisation / paiement (tranches suivantes) -------
@@ -215,6 +223,22 @@ TYPES_DOCUMENT = [
     (TYPE_BON_MANUEL, 'Bon manuel'),
 ]
 
+# Types de document sélectionnables à la CRÉATION d'un bon manuel (capture 69) :
+# les 4 types de bon + bon d'avoir + ticket remboursement. (Le bon créé reste un
+# « manuel » en interne — type_document = TYPE_BON_MANUEL, séquence BMI propre —,
+# et porte ce choix dans `type_manuel`.)
+TYPE_BON_AVOIR = 'bon-avoir'
+TYPE_TICKET_REMBOURSEMENT = 'ticket-remboursement'
+TYPES_BON_MANUEL = [
+    (TYPE_BON_PHARMACIE, 'Bon de pharmacie'),
+    (TYPE_BON_OPTIQUE, 'Bon optique'),
+    (TYPE_LETTRE_GARANTIE, 'Lettre de garantie'),
+    (TYPE_LG_HOSPITALISATION, 'LG hospitalisation'),
+    (TYPE_BON_AVOIR, "Bon d'avoir"),
+    (TYPE_TICKET_REMBOURSEMENT, 'Ticket remboursement'),
+]
+CODES_BON_MANUEL = {code for code, _ in TYPES_BON_MANUEL}
+
 
 class LiquidationBon(models.Model):
     """
@@ -241,6 +265,23 @@ class LiquidationBon(models.Model):
     participant = models.CharField('Participant', max_length=160, blank=True)
     type_benef = models.CharField('Type bénéficiaire', max_length=4, blank=True)
     beneficiaire = models.CharField('Bénéficiaire', max_length=160, blank=True)
+
+    # Bon manuel (capture 69) : le type choisi parmi les 6 (TYPES_BON_MANUEL), et
+    # le drapeau « remboursement intégral » (l'IPM prend 100 % au lieu du taux).
+    # Vides / False pour un bon rattaché normal.
+    type_manuel = models.CharField(
+        'Type (bon manuel)', max_length=25, blank=True, choices=TYPES_BON_MANUEL
+    )
+    remboursement_integral = models.BooleanField('Remboursement intégral', default=False)
+
+    # Règlement du remboursement à l'assuré (page « Remboursement Frais Médicaux ») :
+    # quand et comment le participant a été remboursé. `rembourse` reste False tant
+    # que non réglé. Ne concerne que les bons des factures « Remboursement ticket ».
+    rembourse = models.BooleanField('Remboursé', default=False)
+    rembourse_le = models.DateField('Remboursé le', null=True, blank=True)
+    reglement_methode = models.CharField('Méthode (C/V/T)', max_length=1, blank=True)
+    reglement_numero = models.CharField('N° règlement', max_length=30, blank=True)
+    reglement_banque = models.CharField('Banque (Bx)', max_length=5, blank=True)
 
     # Liquidation agrégée (proposée par le moteur, ajustable).
     freel = models.PositiveIntegerField('F. réels', default=0)
@@ -275,6 +316,10 @@ class LiquidationBon(models.Model):
 JOURNAL_IMPUTATION = 'IF'
 # Compte des participants : « 4110 » + code société (411001 = société 01…).
 PREFIXE_COMPTE_PARTICIPANT = '4110'
+# Journaux du remboursement à l'assuré (cf. comptabilite-factures.md Phase 3,
+# décodé sur la table `compta`) : RIB = payé par la banque, RIC = par compensation.
+JOURNAL_REMB_BANQUE = 'RIB'
+JOURNAL_REMB_COMPENSE = 'RIC'
 
 
 class EcritureCompta(models.Model):
@@ -314,3 +359,121 @@ class EcritureCompta(models.Model):
 
     def __str__(self):
         return f'{self.codej} {self.comptegen} D{self.debit}/C{self.credit}'
+
+
+# ===========================================================================
+# Ordre de Paiement (§18, captures 61-62)
+#
+# Émettre un chèque / ordre de virement « à l'ordre de » quelqu'un, avec un
+# motif, sans facture derrière. Alimente le chéquier (équivalent `table_cheques`)
+# et se retrouve sur l'écran « Edition Lettres Chèques/Ordre de Virement ».
+# ===========================================================================
+
+
+class Banque(models.Model):
+    """
+    Une banque émettrice = un journal de banque (B1..B10) et un compte 521xxx.
+    Référentiel (cf. capture 62). Les écritures de paiement passent par son
+    journal et créditent son compte.
+    """
+
+    code = models.CharField('Code', max_length=5, unique=True)  # B1..B10
+    libelle = models.CharField('Banque', max_length=100)
+    reseau = models.CharField('Réseau', max_length=50, blank=True)  # CREDIT DU SENEGAL / ECOBANK
+    compte = models.CharField('Compte (521xxx)', max_length=12, blank=True)
+    actif = models.BooleanField('Active', default=True)
+    cree_le = models.DateTimeField('Créée le', auto_now_add=True)
+    modifie_le = models.DateTimeField('Modifiée le', auto_now=True)
+
+    class Meta:
+        ordering = ['code']
+        verbose_name = 'Banque'
+        verbose_name_plural = 'Banques'
+
+    def __str__(self):
+        return f'{self.code} - {self.libelle}'
+
+    @classmethod
+    def prochain_code(cls):
+        """Prochain code « B{n} » (numérotation du référentiel)."""
+        nums = [
+            int(c[1:])
+            for c in cls.objects.values_list('code', flat=True)
+            if c and c[0] in ('B', 'b') and c[1:].isdigit()
+        ]
+        return f'B{(max(nums) + 1) if nums else 1}'
+
+
+# Modes de paiement d'un ordre (le titre de l'écran : chèque / virement).
+MODE_CHEQUE = 'C'
+MODE_VIREMENT = 'V'
+MODES_PAIEMENT = [
+    (MODE_CHEQUE, 'Chèque'),
+    (MODE_VIREMENT, 'Virement'),
+]
+
+
+class OrdrePaiement(models.Model):
+    """
+    Un ordre de paiement libre (chèque / virement). Le N° d'enregistrement et le
+    N° de pièce (chèque) sont posés par le serveur ; le reste est saisi au modal
+    « Etablir » (mode, date, montant, motif, à l'ordre de, banque).
+    """
+
+    numero_enreg = models.PositiveIntegerField('N° Enreg.', unique=True)
+    date_saisie = models.DateField('Date saisie', auto_now_add=True)
+    mode_paiement = models.CharField(
+        'Mode de paiement', max_length=1, choices=MODES_PAIEMENT, default=MODE_CHEQUE,
+    )
+    date_piece = models.DateField('Date pièce (chèque)', null=True, blank=True)
+    numero_piece = models.CharField('N° pièce (chèque)', max_length=20, blank=True)
+    montant = models.PositiveIntegerField('Montant', default=0)
+    a_ordre_de = models.CharField("À l'ordre de", max_length=150, blank=True)
+    motif = models.CharField('Motif', max_length=200, blank=True)
+    banque = models.ForeignKey(
+        Banque, on_delete=models.PROTECT, related_name='ordres', verbose_name='Banque',
+        null=True, blank=True,
+    )
+    # Drapeau « à imprimer » (lettre chèque / ordre de virement), cf. to_print.
+    a_imprimer = models.BooleanField('À imprimer', default=True)
+    actif = models.BooleanField('Valide', default=True)
+
+    saisi_par = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='+', verbose_name='Saisi par',
+    )
+    cree_le = models.DateTimeField('Créé le', auto_now_add=True)
+    modifie_le = models.DateTimeField('Modifié le', auto_now=True)
+
+    class Meta:
+        ordering = ['-numero_enreg']
+        verbose_name = 'Ordre de paiement'
+        verbose_name_plural = 'Ordres de paiement'
+
+    def __str__(self):
+        return f'Ordre {self.numero_enreg} - {self.a_ordre_de} ({self.montant})'
+
+    @property
+    def exercice(self):
+        """Exercice = année de la pièce (à défaut, de la saisie)."""
+        jour = self.date_piece or self.date_saisie
+        return str(jour.year) if jour else str(date.today().year)
+
+    @classmethod
+    def prochain_enreg(cls):
+        """Prochain N° d'enregistrement (séquence globale)."""
+        dernier = cls.objects.aggregate(m=models.Max('numero_enreg'))['m'] or 0
+        return dernier + 1
+
+    @classmethod
+    def prochain_numero_piece(cls, banque):
+        """Prochain N° de chèque d'une banque, sur 7 chiffres (chéquier)."""
+        if banque is None:
+            return ''
+        nums = [
+            int(n)
+            for n in cls.objects.filter(banque=banque)
+            .values_list('numero_piece', flat=True)
+            if n and n.isdigit()
+        ]
+        return f'{(max(nums) + 1) if nums else 1:07d}'
