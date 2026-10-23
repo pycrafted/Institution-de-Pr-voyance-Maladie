@@ -62,6 +62,10 @@ class Command(BaseCommand):
             '--seed', type=int, default=None,
             help='Graine aléatoire, pour un résultat reproductible.',
         )
+        parser.add_argument(
+            '--matricules', action='store_true',
+            help='Renumérote aussi les matricules, hors de la plage réelle.',
+        )
 
     def handle(self, *args, **options):
         if options['seed'] is not None:
@@ -115,9 +119,42 @@ class Command(BaseCommand):
                         benef.nom = nom_map[benef.nom]
                     benef.save(update_fields=['prenoms', 'nom', 'modifie_le'])
 
+        renumerotes = self._renumeroter(participants, familles) if options['matricules'] else 0
+
         self.stdout.write(
             self.style.SUCCESS(
                 f'Anonymisation terminée : {len(participants)} participant(s) et '
-                f'{len(beneficiaires)} bénéficiaire(s), {len(nom_map)} nom(s) remappé(s).'
+                f'{len(beneficiaires)} bénéficiaire(s), {len(nom_map)} nom(s) remappé(s), '
+                f'{renumerotes} matricule(s) renuméroté(s).'
             )
         )
+
+    def _renumeroter(self, participants, familles):
+        """
+        Donne à chaque participant un matricule hors de la plage réelle, et
+        refait ceux de sa famille dans la même forme.
+
+        Un matricule est un identifiant direct : celui de la base de
+        présentation était jusqu'ici un vrai, que les ressources humaines
+        auraient rattaché à un nom en une requête. Les nouveaux partent de
+        9001, où LAMPS n'en a aucun (les vrais vont de 0000 à 1059).
+
+        Rien ne référence une fiche par son matricule - les documents pointent
+        sur la fiche elle-même - donc la renumérotation ne casse aucun lien.
+        """
+        poses = 0
+        with transaction.atomic():
+            for rang, participant in enumerate(participants, start=1):
+                nouveau = '%04d' % (9000 + rang)
+                societe = participant.adherent.code if participant.adherent_id else ''
+                for benef in familles.get(participant.id, []):
+                    # « 02-0760-31 » : société, matricule, type + rang. Seul le
+                    # matricule change ; le reste dit la place dans la famille.
+                    fin = (benef.matricule_benef or '').rsplit('-', 1)[-1]
+                    benef.matricule_benef = '-'.join(x for x in (societe, nouveau, fin) if x)
+                    benef.save(update_fields=['matricule_benef', 'modifie_le'])
+                    poses += 1
+                participant.matricule = nouveau
+                participant.save(update_fields=['matricule', 'modifie_le'])
+                poses += 1
+        return poses

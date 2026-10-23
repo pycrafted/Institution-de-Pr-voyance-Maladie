@@ -27,7 +27,10 @@ from donnees_de_base.models import (
     Medicament,
     StructureEntite,
 )
+from adherents.models import Adherent
+from parametres.models import InformationsIPM
 from participants.models import Participant
+from traitements.models import Banque
 
 # --- Médicaments fictifs : dénominations génériques internationales (publiques),
 # sans aucun rapport avec le catalogue réel (noms de marques). ---
@@ -99,6 +102,44 @@ POOLS = {'DIR': DIR_NOMS, 'DEP': DEP_NOMS, 'SRV': SRV_NOMS}
 # Journal structurel à garder (imputation facture).
 JOURNAL_STRUCTUREL = 'IF'
 
+# --- Identité de l'institution et de ses sociétés ----------------------------
+# Rien de tout cela n'est anodin : le nom de l'IPM, celui des quatre sociétés
+# adhérentes, les banques et leurs comptes, le contact et son portable
+# désignent des organisations et une personne réelles. Une base de
+# présentation ne doit rien en laisser passer.
+INSTITUTION = {
+    'intitule': 'IPM DEMONSTRATION',
+    'adresse': 'Zone de Demonstration',
+    'telephone': '33 800 00 01',
+    'fax': '33 800 00 02',
+    'boite_postale': 'BP 1000',
+    'email': 'contact@ipm-demo.sn',
+    'contact_nom': 'Responsable Demonstration',
+    'contact_telephone': '+221 77 000 00 00',
+    'contact_email': 'responsable@ipm-demo.sn',
+    'logo': '',
+    'latitude': '',
+    'longitude': '',
+}
+
+# Les codes (01..04) et le régime (IPM / MSS) pilotent les taux, les
+# participants et la liquidation : ils restent. Seul l'intitulé change.
+SOCIETES = {
+    '01': 'IPM SOCIETE ALPHA',
+    '02': 'IPM SOCIETE BETA',
+    '03': 'MUTUELLE GAMMA',
+    '04': 'MUTUELLE DELTA',
+}
+
+# Banques fictives, dans l'ordre des codes B1..B10. Le compte 521xxx reste
+# celui de la structure comptable ; seul le nom change.
+BANQUES = [
+    'BANQUE ALPHA DEMO', 'BANQUE BRAVO DEMO', 'BANQUE CHARLIE DEMO',
+    'BANQUE DELTA DEMO', 'BANQUE ECHO DEMO', 'BANQUE FOXTROT DEMO',
+    'BANQUE GOLF DEMO', 'BANQUE HOTEL DEMO', 'BANQUE INDIA DEMO',
+    'BANQUE JULIET DEMO',
+]
+
 
 class Command(BaseCommand):
     help = "Rend les nomenclatures de la base de présentation distinctes de la vraie base."
@@ -110,14 +151,56 @@ class Command(BaseCommand):
             n_div = self._reduire_fournisseurs_divers(garde=9)
             n_str = self._structures()
             n_jou = self._journaux(total_cible=26)
+            n_ipm = self._institution()
+            n_soc = self._societes()
+            n_bqe = self._banques()
 
         self.stdout.write(
             self.style.SUCCESS(
                 f'Présentation distinguée : médicaments={n_med}, articles={n_art}, '
-                f'fournisseurs divers={n_div}, structures={n_str}, journaux={n_jou}. '
+                f'fournisseurs divers={n_div}, structures={n_str}, journaux={n_jou}, '
+                f'institution={n_ipm}, sociétés={n_soc}, banques={n_bqe}. '
                 '(spécialités / types de prestations / types de bénéficiaire laissés : structurels.)'
             )
         )
+
+    def _institution(self):
+        """Le nom, l'adresse, les contacts et le logo de l'IPM elle-même."""
+        poses = 0
+        for infos in InformationsIPM.objects.all():
+            for champ, valeur in INSTITUTION.items():
+                setattr(infos, champ, valeur)
+            infos.save()
+            poses += 1
+        return poses
+
+    def _societes(self):
+        """Les quatre adhérents : l'intitulé seul, le code et le régime restent."""
+        poses = 0
+        for adherent in Adherent.objects.all():
+            libelle = SOCIETES.get(adherent.code)
+            if not libelle:
+                continue
+            adherent.libelle = libelle
+            # Coordonnées de l'adhérent : celles de la SAR, à ne pas montrer.
+            adherent.adresse = 'Zone de Demonstration'
+            adherent.telephone = '33 800 00 01'
+            adherent.focal_nom = 'Point Focal Demo'
+            adherent.focal_telephone = '+221 77 000 00 00'
+            adherent.focal_email = 'focal@ipm-demo.sn'
+            adherent.save()
+            poses += 1
+        return poses
+
+    def _banques(self):
+        """Les banques émettrices : nom et réseau fictifs, compte conservé."""
+        poses = 0
+        for rang, banque in enumerate(Banque.objects.order_by('code')):
+            banque.libelle = BANQUES[rang % len(BANQUES)]
+            banque.reseau = banque.libelle
+            banque.save()
+            poses += 1
+        return poses
 
     @staticmethod
     def _remplacer(modele, libelles, prefixe_code, extra=None):

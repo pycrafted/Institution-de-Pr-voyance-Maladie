@@ -45,7 +45,12 @@ SEXES = [('M', 'Homme'), ('F', 'Femme')]
 
 class Participant(models.Model):
     # --- Identité ------------------------------------------------------------
-    matricule = models.CharField('Matricule', max_length=20, unique=True)
+    # Non unique à lui seul : dans LAMPS, un même salarié peut être rattaché à
+    # DEUX sociétés (l'IPM et une mutuelle). 163 des 664 participants réels
+    # sont dans ce cas. Ce qui l'identifie est donc le couple société +
+    # matricule - ce que LAMPS écrit « 01-0708 », et que l'application affiche
+    # déjà ainsi (cf. mobile.serializers.matricule_affiche).
+    matricule = models.CharField('Matricule', max_length=20)
     nom = models.CharField('Nom', max_length=100, blank=True)
     prenoms = models.CharField('Prénom(s)', max_length=150, blank=True)
     sexe = models.CharField('Sexe', max_length=1, choices=SEXES, blank=True)
@@ -71,9 +76,9 @@ class Participant(models.Model):
     categorie = models.CharField('Catégorie professionnelle', max_length=20, blank=True)
     # Codes du référentiel « Structure » (DIR001, DEP004, SRV007) : comme le
     # rattachement d'une entité à sa parente, c'est le code que l'écran manie.
-    direction = models.CharField('Direction', max_length=6, blank=True)
-    departement = models.CharField('Département', max_length=6, blank=True)
-    service = models.CharField('Service', max_length=6, blank=True)
+    direction = models.CharField('Direction', max_length=10, blank=True)
+    departement = models.CharField('Département', max_length=10, blank=True)
+    service = models.CharField('Service', max_length=10, blank=True)
 
     # --- Contrat IPM ---------------------------------------------------------
     # PROTECT : un adhérent qui porte encore des participants ne se supprime
@@ -112,6 +117,11 @@ class Participant(models.Model):
         ordering = ['matricule']
         verbose_name = 'Participant'
         verbose_name_plural = 'Participants'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['adherent', 'matricule'], name='participant_unique_par_societe'
+            )
+        ]
 
     def __str__(self):
         return f'{self.matricule} - {self.prenoms} {self.nom}'.strip()
@@ -171,6 +181,9 @@ class Beneficiaire(models.Model):
     date_naissance = models.DateField('Date de naissance', null=True, blank=True)
     lieu_naissance = models.CharField('Lieu de naissance', max_length=100, blank=True)
     sexe = models.CharField('Sexe', max_length=1, choices=SEXES, blank=True)
+    # Photo d'identité (URL de données base64), posée depuis l'app mobile par le
+    # titulaire, comme la sienne. Figure sur la carte d'ayant droit à présenter.
+    photo = models.TextField('Photo d’identité', blank=True)
     etat = models.CharField('État', max_length=12, choices=ETATS, default='Actif')
     actif = models.BooleanField('Actif', default=True)
 

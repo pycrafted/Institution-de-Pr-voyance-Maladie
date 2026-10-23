@@ -21,11 +21,12 @@ class StructureEntite(Referentiel):
         ('SRV', 'Service'),
     ]
 
-    code = models.CharField('Code', max_length=6, unique=True)
+    # 10 et non 6 : les codes réels de LAMPS vont jusqu'à « DEPT003 ».
+    code = models.CharField('Code', max_length=10, unique=True)
     type = models.CharField('Type', max_length=3, choices=TYPES, blank=True)
     # Code de l'entité parente ('' pour une direction, au sommet). On stocke le
     # code plutôt qu'une clé étrangère : c'est ce code que manipule le frontend.
-    parent = models.CharField('Rattachement', max_length=6, blank=True)
+    parent = models.CharField('Rattachement', max_length=10, blank=True)
 
     class Meta:
         ordering = ['code']
