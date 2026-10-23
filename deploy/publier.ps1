@@ -34,7 +34,14 @@ Write-Host "== Projet : $projet" -ForegroundColor Cyan
 Write-Host '== Build du front' -ForegroundColor Cyan
 Push-Location $projet
 try {
-    & npm run build
+    # Vite écrit ses avertissements sur la sortie d'erreur. Sous PowerShell
+    # 5.1, avec $ErrorActionPreference = 'Stop', cela suffit à arrêter le
+    # script alors que le build a réussi : on relâche la règle le temps de
+    # l'appel, et seul le code de sortie fait foi.
+    $arretAvant = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { & npm run build 2>&1 | ForEach-Object { "$_" } }
+    finally { $ErrorActionPreference = $arretAvant }
     if ($LASTEXITCODE -ne 0) { throw "npm run build a échoué (code $LASTEXITCODE)" }
 }
 finally { Pop-Location }

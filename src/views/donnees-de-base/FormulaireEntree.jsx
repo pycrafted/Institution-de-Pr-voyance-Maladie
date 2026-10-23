@@ -28,6 +28,7 @@ import {
   reporterPropositions,
   texteOption,
 } from './optionsChamp'
+import SelectRecherche from './SelectRecherche'
 import './actes.scss'
 
 /**
@@ -681,6 +682,33 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
     )
   }
 
+  // Bascule segmentée générique à partir d'options (ex. Compense / Banque) :
+  // deux positions, l'active en sombre, comme dans LAMPS.
+  if (col.type === 'bascule') {
+    const opts = optionsDe(col, valeurs, entrees)
+    return (
+      <div className="ddb-groupe">
+        <label>{col.libelleForm || col.libelle}</label>
+        <div
+          className="ddb-etat ddb-bascule"
+          role="group"
+          aria-label={col.libelleForm || col.libelle}
+        >
+          {opts.map((o) => (
+            <button
+              key={o.valeur}
+              type="button"
+              className={`ddb-etat-choix${valeur === o.valeur ? ' ddb-bascule-actif' : ''}`}
+              onClick={() => onChanger(col, o.valeur)}
+            >
+              {o.libelle}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   // Choix fermé rendu en boutons radio (sexe, type de contrat…).
   if (col.type === 'radio') {
     return (
@@ -751,6 +779,9 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
     .filter(Boolean)
     .join(' ')
 
+  // Message d'aide propre au champ (ex. « pas d'épouse », « 2 enfants : choisissez »).
+  const aide = col.message ? col.message(valeurs, entrees) : null
+
   return (
     <div className={classes}>
       <label htmlFor={identifiant}>
@@ -759,23 +790,21 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
       </label>
 
       {col.options ? (
-        <select
+        // Liste déroulante AVEC recherche (combobox) : essentielle pour les
+        // longues listes. Le libellé flottant reste dans le champ tant qu'il est
+        // vide (placeholder ''), remonte à l'ouverture (focus) ou dès qu'il porte
+        // une valeur. Effaçable seulement si le champ n'est pas obligatoire.
+        <SelectRecherche
           id={identifiant}
-          className="ddb-champ ddb-champ-liste"
           value={valeur}
-          onChange={(e) => onChanger(col, e.target.value)}
-          autoFocus={autoFocus}
-          // Champ grisé (`desactive`) : montré, jamais saisi ici.
+          options={optionsDe(col, valeurs, entrees)}
+          texte={(option) => texteOption(option, col)}
+          placeholder={flottant ? '' : requis ? 'Choisir…' : '- Aucun -'}
+          effacable={!requis}
           disabled={col.desactive}
-        >
-          {/* Vide : c'est le libellé, posé dans le champ, qui dit quoi choisir. */}
-          <option value="">{flottant ? '' : requis ? 'Choisir…' : '- Aucun -'}</option>
-          {optionsDe(col, valeurs, entrees).map((option) => (
-            <option key={option.valeur} value={option.valeur}>
-              {texteOption(option, col)}
-            </option>
-          ))}
-        </select>
+          autoFocus={autoFocus}
+          onChange={(v) => onChanger(col, v)}
+        />
       ) : (
         <div className={`ddb-champ-enveloppe${col.prefixe ? ' ddb-champ-prefixe' : ''}`}>
           {col.prefixe && <span className="ddb-prefixe">{col.prefixe}</span>}
@@ -795,6 +824,7 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
       )}
 
       {erreur && <span className="ddb-champ-erreur">{erreur}</span>}
+      {!erreur && aide && <span className="ddb-champ-aide">{aide}</span>}
     </div>
   )
 }

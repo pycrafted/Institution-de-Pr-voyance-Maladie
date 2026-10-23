@@ -3,7 +3,7 @@
   "societe": "01",
   "prestation": "00",
   "typeBenef": "1",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -11,7 +11,7 @@
   "societe": "01",
   "prestation": "00",
   "typeBenef": "2",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -19,7 +19,7 @@
   "societe": "01",
   "prestation": "00",
   "typeBenef": "3",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -27,7 +27,7 @@
   "societe": "01",
   "prestation": "00",
   "typeBenef": "4",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -35,7 +35,7 @@
   "societe": "01",
   "prestation": "00",
   "typeBenef": "5",
-  "taux": 50,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -43,7 +43,7 @@
   "societe": "01",
   "prestation": "00",
   "typeBenef": "6",
-  "taux": 50,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -51,7 +51,7 @@
   "societe": "01",
   "prestation": "01",
   "typeBenef": "1",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -59,7 +59,7 @@
   "societe": "01",
   "prestation": "01",
   "typeBenef": "2",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -67,7 +67,7 @@
   "societe": "01",
   "prestation": "01",
   "typeBenef": "3",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -75,7 +75,7 @@
   "societe": "01",
   "prestation": "01",
   "typeBenef": "4",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -83,7 +83,7 @@
   "societe": "01",
   "prestation": "01",
   "typeBenef": "5",
-  "taux": 50,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -91,7 +91,7 @@
   "societe": "01",
   "prestation": "01",
   "typeBenef": "6",
-  "taux": 50,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -99,7 +99,7 @@
   "societe": "01",
   "prestation": "02",
   "typeBenef": "1",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -107,7 +107,7 @@
   "societe": "01",
   "prestation": "02",
   "typeBenef": "2",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -115,7 +115,7 @@
   "societe": "01",
   "prestation": "02",
   "typeBenef": "3",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -123,7 +123,7 @@
   "societe": "01",
   "prestation": "02",
   "typeBenef": "4",
-  "taux": 80,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -131,7 +131,7 @@
   "societe": "01",
   "prestation": "02",
   "typeBenef": "5",
-  "taux": 50,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -139,7 +139,7 @@
   "societe": "01",
   "prestation": "02",
   "typeBenef": "6",
-  "taux": 50,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -147,52 +147,2436 @@
   "societe": "01",
   "prestation": "03",
   "typeBenef": "1",
-  "taux": 80,
-  "plafond": 500000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "01",
   "prestation": "03",
   "typeBenef": "2",
-  "taux": 80,
-  "plafond": 500000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "01",
   "prestation": "03",
   "typeBenef": "3",
-  "taux": 80,
-  "plafond": 500000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "01",
   "prestation": "03",
   "typeBenef": "4",
-  "taux": 80,
-  "plafond": 500000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "01",
   "prestation": "03",
   "typeBenef": "5",
-  "taux": 50,
-  "plafond": 500000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "01",
   "prestation": "03",
   "typeBenef": "6",
-  "taux": 50,
-  "plafond": 500000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "01",
+  "prestation": "04",
+  "typeBenef": "1",
+  "taux": 100,
+  "plafond": 175000,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "04",
+  "typeBenef": "2",
+  "taux": 100,
+  "plafond": 100000,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "04",
+  "typeBenef": "3",
+  "taux": 100,
+  "plafond": 100000,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "04",
+  "typeBenef": "4",
+  "taux": 100,
+  "plafond": 100000,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "04",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "04",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "05",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "05",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "05",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "05",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "05",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "05",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "06",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "06",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "06",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "06",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "06",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "06",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "07",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "07",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "07",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "07",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "07",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "07",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "08",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "08",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "09",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "09",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "09",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "09",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "09",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "10",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "10",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "10",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "10",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "10",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "10",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "11",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "11",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "11",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "11",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "11",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "11",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "12",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "12",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "12",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "12",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "12",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "12",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "13",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "13",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "13",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "13",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "13",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "13",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "14",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "14",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "14",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "14",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "14",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "14",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "15",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "15",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "15",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "15",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "15",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "15",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "16",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "16",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "16",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "16",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "16",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "16",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "17",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "17",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "17",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "17",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "17",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "17",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "18",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "18",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "18",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "18",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "18",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "18",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "19",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "19",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "19",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "19",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "19",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "19",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "20",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "20",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "20",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "20",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "20",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "20",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "21",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "21",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "21",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "21",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "21",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "21",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "22",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "22",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "22",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "22",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "22",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "22",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "23",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "23",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "23",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "23",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "23",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "24",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "24",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "24",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "24",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "24",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "24",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "25",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "25",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "25",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "25",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "25",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "25",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "26",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "26",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "26",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "26",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "26",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "26",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "27",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "27",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "27",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "27",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "27",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "27",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "28",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "28",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "28",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "28",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "28",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "29",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "29",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "29",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "29",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "29",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "30",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "30",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "30",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "30",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "30",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "30",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "31",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "31",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "31",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "31",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "31",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "31",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "32",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "32",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "32",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "32",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "32",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "33",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "33",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "33",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "33",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "33",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "34",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "34",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "34",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "34",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "34",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "35",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "35",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "35",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "35",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "35",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "36",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "36",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "36",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "36",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "36",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "37",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "37",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "37",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "37",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "37",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "38",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "38",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "38",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "38",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "38",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "39",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "39",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "39",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "39",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "39",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "40",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "40",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "40",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "40",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "40",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "41",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "41",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "41",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "41",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "41",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "42",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "42",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "42",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "42",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "42",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "43",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "43",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "43",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "43",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "43",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "44",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "44",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "44",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "44",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "44",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "45",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "45",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "45",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "45",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "45",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "46",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "46",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "46",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "46",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "46",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "47",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "47",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "47",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "47",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "47",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "48",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "48",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "48",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "48",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "48",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "49",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "49",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "49",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "49",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "49",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "50",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "50",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "50",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "50",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "51",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "51",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "51",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "51",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "51",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "51",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "52",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "52",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "52",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "52",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "59",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "59",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "59",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "59",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "59",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "59",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "99",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "99",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "99",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "01",
+  "prestation": "99",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "00",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "00",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "00",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "00",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "00",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "00",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "01",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "01",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "01",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "01",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "01",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "01",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "02",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "02",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "02",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "02",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "02",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "02",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "03",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "03",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "03",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "03",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "03",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "03",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
   "prestation": "04",
   "typeBenef": "1",
   "taux": 100,
@@ -200,7 +2584,7 @@
   "forfait": 0
  },
  {
-  "societe": "01",
+  "societe": "02",
   "prestation": "04",
   "typeBenef": "2",
   "taux": 100,
@@ -208,7 +2592,7 @@
   "forfait": 0
  },
  {
-  "societe": "01",
+  "societe": "02",
   "prestation": "04",
   "typeBenef": "3",
   "taux": 100,
@@ -216,7 +2600,7 @@
   "forfait": 0
  },
  {
-  "societe": "01",
+  "societe": "02",
   "prestation": "04",
   "typeBenef": "4",
   "taux": 100,
@@ -224,1459 +2608,19 @@
   "forfait": 0
  },
  {
-  "societe": "01",
-  "prestation": "04",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 250000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "04",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 250000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "05",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "05",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "05",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "05",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "05",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "05",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "06",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "06",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "06",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "06",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "06",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "06",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "07",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "07",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "07",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "07",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "07",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "07",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "08",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "08",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "08",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "08",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "08",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "08",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "09",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "09",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "09",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "09",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "09",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "09",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "10",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "10",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "10",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "10",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "10",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "10",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "11",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "11",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "11",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "11",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "11",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "11",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "12",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "12",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "12",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "12",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "12",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "12",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "13",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "13",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "13",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "13",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "13",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "13",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "14",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "14",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "14",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "14",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "14",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "14",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "15",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "15",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "15",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "15",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "15",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "15",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "16",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 1000000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "16",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 1000000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "16",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 1000000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "16",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 1000000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "16",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 1000000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "16",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 1000000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "17",
-  "typeBenef": "1",
-  "taux": 50,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "17",
-  "typeBenef": "2",
-  "taux": 50,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "17",
-  "typeBenef": "3",
-  "taux": 50,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "17",
-  "typeBenef": "4",
-  "taux": 50,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "17",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "17",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "18",
-  "typeBenef": "1",
-  "taux": 50,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "18",
-  "typeBenef": "2",
-  "taux": 50,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "18",
-  "typeBenef": "3",
-  "taux": 50,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "18",
-  "typeBenef": "4",
-  "taux": 50,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "18",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "18",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "19",
-  "typeBenef": "1",
-  "taux": 100,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "19",
-  "typeBenef": "2",
-  "taux": 100,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "19",
-  "typeBenef": "3",
-  "taux": 100,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "19",
-  "typeBenef": "4",
-  "taux": 100,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "19",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "19",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 150000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "20",
-  "typeBenef": "1",
-  "taux": 100,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "20",
-  "typeBenef": "2",
-  "taux": 100,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "20",
-  "typeBenef": "3",
-  "taux": 100,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "20",
-  "typeBenef": "4",
-  "taux": 100,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "20",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "20",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "21",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "21",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "21",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "21",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "21",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "21",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 100000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "22",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "01",
-  "prestation": "22",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "01",
-  "prestation": "22",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "01",
-  "prestation": "22",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "01",
-  "prestation": "22",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "01",
-  "prestation": "22",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "01",
-  "prestation": "23",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "01",
-  "prestation": "23",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "01",
-  "prestation": "23",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "01",
-  "prestation": "23",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "01",
-  "prestation": "23",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "01",
-  "prestation": "23",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "01",
-  "prestation": "24",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 1500000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "24",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 1500000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "24",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 1500000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "24",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 1500000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "24",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 1500000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "24",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 1500000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "25",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "25",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "25",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "25",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "25",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "25",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "26",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "26",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "26",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "26",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "26",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "26",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "27",
-  "typeBenef": "1",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "27",
-  "typeBenef": "2",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "27",
-  "typeBenef": "3",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "27",
-  "typeBenef": "4",
-  "taux": 80,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "27",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "27",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "28",
-  "typeBenef": "1",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "28",
-  "typeBenef": "2",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "28",
-  "typeBenef": "3",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "28",
-  "typeBenef": "4",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "28",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "28",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "29",
-  "typeBenef": "1",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "29",
-  "typeBenef": "2",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "29",
-  "typeBenef": "3",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "29",
-  "typeBenef": "4",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "29",
-  "typeBenef": "5",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "01",
-  "prestation": "29",
-  "typeBenef": "6",
-  "taux": 50,
-  "plafond": 300000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "00",
-  "typeBenef": "1",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "00",
-  "typeBenef": "2",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "00",
-  "typeBenef": "3",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "00",
-  "typeBenef": "4",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "00",
-  "typeBenef": "5",
-  "taux": 55,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "00",
-  "typeBenef": "6",
-  "taux": 55,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "01",
-  "typeBenef": "1",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "01",
-  "typeBenef": "2",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "01",
-  "typeBenef": "3",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "01",
-  "typeBenef": "4",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "01",
-  "typeBenef": "5",
-  "taux": 55,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "01",
-  "typeBenef": "6",
-  "taux": 55,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "02",
-  "typeBenef": "1",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "02",
-  "typeBenef": "2",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "02",
-  "typeBenef": "3",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "02",
-  "typeBenef": "4",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "02",
-  "typeBenef": "5",
-  "taux": 55,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "02",
-  "typeBenef": "6",
-  "taux": 55,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "03",
-  "typeBenef": "1",
-  "taux": 85,
-  "plafond": 750000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "03",
-  "typeBenef": "2",
-  "taux": 85,
-  "plafond": 750000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "03",
-  "typeBenef": "3",
-  "taux": 85,
-  "plafond": 750000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "03",
-  "typeBenef": "4",
-  "taux": 85,
-  "plafond": 750000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "03",
-  "typeBenef": "5",
-  "taux": 55,
-  "plafond": 750000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "03",
-  "typeBenef": "6",
-  "taux": 55,
-  "plafond": 750000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "04",
-  "typeBenef": "1",
-  "taux": 100,
-  "plafond": 375000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "04",
-  "typeBenef": "2",
-  "taux": 100,
-  "plafond": 375000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "04",
-  "typeBenef": "3",
-  "taux": 100,
-  "plafond": 375000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "04",
-  "typeBenef": "4",
-  "taux": 100,
-  "plafond": 375000,
-  "forfait": 0
- },
- {
   "societe": "02",
   "prestation": "04",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 375000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "04",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 375000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -1715,7 +2659,7 @@
   "societe": "02",
   "prestation": "05",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1723,7 +2667,7 @@
   "societe": "02",
   "prestation": "05",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1763,7 +2707,7 @@
   "societe": "02",
   "prestation": "06",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1771,7 +2715,7 @@
   "societe": "02",
   "prestation": "06",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1811,7 +2755,7 @@
   "societe": "02",
   "prestation": "07",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1819,7 +2763,7 @@
   "societe": "02",
   "prestation": "07",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1827,47 +2771,23 @@
   "societe": "02",
   "prestation": "08",
   "typeBenef": "1",
-  "taux": 85,
-  "plafond": 0,
+  "taux": 100,
+  "plafond": 500000,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "08",
   "typeBenef": "2",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "08",
-  "typeBenef": "3",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "08",
-  "typeBenef": "4",
-  "taux": 85,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "08",
-  "typeBenef": "5",
-  "taux": 55,
-  "plafond": 0,
+  "taux": 100,
+  "plafond": 500000,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "08",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1907,7 +2827,7 @@
   "societe": "02",
   "prestation": "09",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1915,7 +2835,7 @@
   "societe": "02",
   "prestation": "09",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1955,7 +2875,7 @@
   "societe": "02",
   "prestation": "10",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -1963,7 +2883,7 @@
   "societe": "02",
   "prestation": "10",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2003,7 +2923,7 @@
   "societe": "02",
   "prestation": "11",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2011,7 +2931,7 @@
   "societe": "02",
   "prestation": "11",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2051,7 +2971,7 @@
   "societe": "02",
   "prestation": "12",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2059,7 +2979,7 @@
   "societe": "02",
   "prestation": "12",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2099,7 +3019,7 @@
   "societe": "02",
   "prestation": "13",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2107,7 +3027,7 @@
   "societe": "02",
   "prestation": "13",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2147,7 +3067,7 @@
   "societe": "02",
   "prestation": "14",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2155,7 +3075,7 @@
   "societe": "02",
   "prestation": "14",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2195,7 +3115,7 @@
   "societe": "02",
   "prestation": "15",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2203,7 +3123,7 @@
   "societe": "02",
   "prestation": "15",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2212,7 +3132,7 @@
   "prestation": "16",
   "typeBenef": "1",
   "taux": 85,
-  "plafond": 1500000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2220,7 +3140,7 @@
   "prestation": "16",
   "typeBenef": "2",
   "taux": 85,
-  "plafond": 1500000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2228,7 +3148,7 @@
   "prestation": "16",
   "typeBenef": "3",
   "taux": 85,
-  "plafond": 1500000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2236,215 +3156,215 @@
   "prestation": "16",
   "typeBenef": "4",
   "taux": 85,
-  "plafond": 1500000,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "16",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 1500000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "16",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 1500000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "17",
   "typeBenef": "1",
-  "taux": 55,
-  "plafond": 300000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "17",
   "typeBenef": "2",
-  "taux": 55,
-  "plafond": 300000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "17",
   "typeBenef": "3",
-  "taux": 55,
-  "plafond": 300000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "17",
   "typeBenef": "4",
-  "taux": 55,
-  "plafond": 300000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "17",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 300000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "17",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 300000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "18",
   "typeBenef": "1",
-  "taux": 55,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "18",
   "typeBenef": "2",
-  "taux": 55,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "18",
   "typeBenef": "3",
-  "taux": 55,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "18",
   "typeBenef": "4",
-  "taux": 55,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "18",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 225000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "18",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 225000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "19",
   "typeBenef": "1",
-  "taux": 100,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "19",
   "typeBenef": "2",
-  "taux": 100,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "19",
   "typeBenef": "3",
-  "taux": 100,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "19",
   "typeBenef": "4",
-  "taux": 100,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "19",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 225000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "19",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 225000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "20",
   "typeBenef": "1",
-  "taux": 100,
-  "plafond": 150000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "20",
   "typeBenef": "2",
-  "taux": 100,
-  "plafond": 150000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "20",
   "typeBenef": "3",
-  "taux": 100,
-  "plafond": 150000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "20",
   "typeBenef": "4",
-  "taux": 100,
-  "plafond": 150000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "20",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 150000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "20",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 150000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2452,7 +3372,7 @@
   "prestation": "21",
   "typeBenef": "1",
   "taux": 85,
-  "plafond": 150000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2460,7 +3380,7 @@
   "prestation": "21",
   "typeBenef": "2",
   "taux": 85,
-  "plafond": 150000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2468,7 +3388,7 @@
   "prestation": "21",
   "typeBenef": "3",
   "taux": 85,
-  "plafond": 150000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2476,23 +3396,23 @@
   "prestation": "21",
   "typeBenef": "4",
   "taux": 85,
-  "plafond": 150000,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "21",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 150000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "21",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 150000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2501,7 +3421,7 @@
   "typeBenef": "1",
   "taux": 85,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "02",
@@ -2509,7 +3429,7 @@
   "typeBenef": "2",
   "taux": 85,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "02",
@@ -2517,7 +3437,7 @@
   "typeBenef": "3",
   "taux": 85,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "02",
@@ -2525,78 +3445,70 @@
   "typeBenef": "4",
   "taux": 85,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "22",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "22",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "23",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "23",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "23",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "23",
   "typeBenef": "4",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "02",
-  "prestation": "23",
-  "typeBenef": "5",
-  "taux": 55,
-  "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "23",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "24",
   "typeBenef": "1",
   "taux": 85,
-  "plafond": 2250000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2604,7 +3516,7 @@
   "prestation": "24",
   "typeBenef": "2",
   "taux": 85,
-  "plafond": 2250000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2612,7 +3524,7 @@
   "prestation": "24",
   "typeBenef": "3",
   "taux": 85,
-  "plafond": 2250000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2620,23 +3532,23 @@
   "prestation": "24",
   "typeBenef": "4",
   "taux": 85,
-  "plafond": 2250000,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "24",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 2250000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "24",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 2250000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2644,7 +3556,7 @@
   "prestation": "25",
   "typeBenef": "1",
   "taux": 85,
-  "plafond": 300000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2652,7 +3564,7 @@
   "prestation": "25",
   "typeBenef": "2",
   "taux": 85,
-  "plafond": 300000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2660,7 +3572,7 @@
   "prestation": "25",
   "typeBenef": "3",
   "taux": 85,
-  "plafond": 300000,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2668,23 +3580,23 @@
   "prestation": "25",
   "typeBenef": "4",
   "taux": 85,
-  "plafond": 300000,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "25",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 300000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "25",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 300000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
@@ -2723,7 +3635,7 @@
   "societe": "02",
   "prestation": "26",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2731,7 +3643,7 @@
   "societe": "02",
   "prestation": "26",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2771,7 +3683,7 @@
   "societe": "02",
   "prestation": "27",
   "typeBenef": "5",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2779,7 +3691,7 @@
   "societe": "02",
   "prestation": "27",
   "typeBenef": "6",
-  "taux": 55,
+  "taux": 0,
   "plafond": 0,
   "forfait": 0
  },
@@ -2787,103 +3699,479 @@
   "societe": "02",
   "prestation": "28",
   "typeBenef": "1",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "28",
   "typeBenef": "2",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "28",
   "typeBenef": "3",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "28",
   "typeBenef": "4",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "28",
   "typeBenef": "5",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "28",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 0,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "29",
   "typeBenef": "1",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "29",
   "typeBenef": "2",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "29",
   "typeBenef": "3",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "29",
   "typeBenef": "4",
-  "taux": 55,
-  "plafond": 450000,
-  "forfait": 0
- },
- {
-  "societe": "02",
-  "prestation": "29",
-  "typeBenef": "5",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "02",
   "prestation": "29",
   "typeBenef": "6",
-  "taux": 55,
-  "plafond": 450000,
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "30",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "30",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "30",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "30",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "30",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "30",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "31",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "32",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "33",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "47",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "47",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "47",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "47",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "47",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "47",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "48",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "48",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "48",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "48",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "48",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "48",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "50",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "50",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "50",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "50",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "51",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "51",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "51",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "51",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "51",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "51",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "52",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "52",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "52",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "52",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "52",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "52",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "59",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "59",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "59",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "59",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "59",
+  "typeBenef": "5",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "59",
+  "typeBenef": "6",
+  "taux": 0,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "99",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "99",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "99",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "99",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "02",
+  "prestation": "99",
+  "typeBenef": "5",
+  "taux": 50,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "00",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2891,7 +4179,7 @@
   "societe": "03",
   "prestation": "00",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2899,7 +4187,7 @@
   "societe": "03",
   "prestation": "00",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2907,23 +4195,7 @@
   "societe": "03",
   "prestation": "00",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "00",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "00",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2931,7 +4203,7 @@
   "societe": "03",
   "prestation": "01",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2939,7 +4211,7 @@
   "societe": "03",
   "prestation": "01",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2947,7 +4219,7 @@
   "societe": "03",
   "prestation": "01",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2955,23 +4227,7 @@
   "societe": "03",
   "prestation": "01",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "01",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "01",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2979,7 +4235,7 @@
   "societe": "03",
   "prestation": "02",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2987,7 +4243,7 @@
   "societe": "03",
   "prestation": "02",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -2995,7 +4251,7 @@
   "societe": "03",
   "prestation": "02",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3003,23 +4259,7 @@
   "societe": "03",
   "prestation": "02",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "02",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "02",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3027,103 +4267,71 @@
   "societe": "03",
   "prestation": "03",
   "typeBenef": "1",
-  "taux": 75,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "03",
   "typeBenef": "2",
-  "taux": 75,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "03",
   "typeBenef": "3",
-  "taux": 75,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "03",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 450000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "03",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 450000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "03",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 450000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "04",
   "typeBenef": "1",
-  "taux": 95,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "04",
   "typeBenef": "2",
-  "taux": 95,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "04",
   "typeBenef": "3",
-  "taux": 95,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "04",
   "typeBenef": "4",
-  "taux": 95,
-  "plafond": 225000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "04",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 225000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "04",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 225000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "05",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3131,7 +4339,7 @@
   "societe": "03",
   "prestation": "05",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3139,7 +4347,7 @@
   "societe": "03",
   "prestation": "05",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3147,23 +4355,7 @@
   "societe": "03",
   "prestation": "05",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "05",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "05",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3171,7 +4363,7 @@
   "societe": "03",
   "prestation": "06",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3179,7 +4371,7 @@
   "societe": "03",
   "prestation": "06",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3187,7 +4379,7 @@
   "societe": "03",
   "prestation": "06",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3195,23 +4387,7 @@
   "societe": "03",
   "prestation": "06",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "06",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "06",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3219,7 +4395,7 @@
   "societe": "03",
   "prestation": "07",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3227,7 +4403,7 @@
   "societe": "03",
   "prestation": "07",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3235,7 +4411,7 @@
   "societe": "03",
   "prestation": "07",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3243,23 +4419,7 @@
   "societe": "03",
   "prestation": "07",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "07",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "07",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3267,7 +4427,7 @@
   "societe": "03",
   "prestation": "08",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3275,7 +4435,7 @@
   "societe": "03",
   "prestation": "08",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3283,7 +4443,7 @@
   "societe": "03",
   "prestation": "08",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3291,23 +4451,7 @@
   "societe": "03",
   "prestation": "08",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "08",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "08",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3315,7 +4459,7 @@
   "societe": "03",
   "prestation": "09",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3323,7 +4467,7 @@
   "societe": "03",
   "prestation": "09",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3331,7 +4475,7 @@
   "societe": "03",
   "prestation": "09",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3339,23 +4483,7 @@
   "societe": "03",
   "prestation": "09",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "09",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "09",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3363,7 +4491,7 @@
   "societe": "03",
   "prestation": "10",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3371,7 +4499,7 @@
   "societe": "03",
   "prestation": "10",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3379,7 +4507,7 @@
   "societe": "03",
   "prestation": "10",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3387,23 +4515,7 @@
   "societe": "03",
   "prestation": "10",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "10",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "10",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3411,7 +4523,7 @@
   "societe": "03",
   "prestation": "11",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3419,7 +4531,7 @@
   "societe": "03",
   "prestation": "11",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3427,7 +4539,7 @@
   "societe": "03",
   "prestation": "11",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3435,23 +4547,7 @@
   "societe": "03",
   "prestation": "11",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "11",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "11",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3459,7 +4555,7 @@
   "societe": "03",
   "prestation": "12",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3467,7 +4563,7 @@
   "societe": "03",
   "prestation": "12",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3475,7 +4571,7 @@
   "societe": "03",
   "prestation": "12",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3483,23 +4579,7 @@
   "societe": "03",
   "prestation": "12",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "12",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "12",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3507,7 +4587,7 @@
   "societe": "03",
   "prestation": "13",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3515,7 +4595,7 @@
   "societe": "03",
   "prestation": "13",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3523,7 +4603,7 @@
   "societe": "03",
   "prestation": "13",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3531,23 +4611,7 @@
   "societe": "03",
   "prestation": "13",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "13",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "13",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3555,7 +4619,7 @@
   "societe": "03",
   "prestation": "14",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3563,7 +4627,7 @@
   "societe": "03",
   "prestation": "14",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3571,7 +4635,7 @@
   "societe": "03",
   "prestation": "14",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3579,23 +4643,7 @@
   "societe": "03",
   "prestation": "14",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "14",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "14",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3603,7 +4651,7 @@
   "societe": "03",
   "prestation": "15",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3611,7 +4659,7 @@
   "societe": "03",
   "prestation": "15",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3619,7 +4667,7 @@
   "societe": "03",
   "prestation": "15",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3627,23 +4675,7 @@
   "societe": "03",
   "prestation": "15",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "15",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "15",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -3651,487 +4683,327 @@
   "societe": "03",
   "prestation": "16",
   "typeBenef": "1",
-  "taux": 75,
-  "plafond": 900000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "16",
   "typeBenef": "2",
-  "taux": 75,
-  "plafond": 900000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "16",
   "typeBenef": "3",
-  "taux": 75,
-  "plafond": 900000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "16",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 900000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "16",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 900000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "16",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 900000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "17",
   "typeBenef": "1",
-  "taux": 45,
-  "plafond": 180000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "17",
   "typeBenef": "2",
-  "taux": 45,
-  "plafond": 180000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "17",
   "typeBenef": "3",
-  "taux": 45,
-  "plafond": 180000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "17",
   "typeBenef": "4",
-  "taux": 45,
-  "plafond": 180000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "17",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 180000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "17",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 180000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "18",
   "typeBenef": "1",
-  "taux": 45,
-  "plafond": 135000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "18",
   "typeBenef": "2",
-  "taux": 45,
-  "plafond": 135000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "18",
   "typeBenef": "3",
-  "taux": 45,
-  "plafond": 135000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "18",
   "typeBenef": "4",
-  "taux": 45,
-  "plafond": 135000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "18",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 135000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "18",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 135000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "19",
   "typeBenef": "1",
-  "taux": 95,
-  "plafond": 135000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "19",
   "typeBenef": "2",
-  "taux": 95,
-  "plafond": 135000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "19",
   "typeBenef": "3",
-  "taux": 95,
-  "plafond": 135000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "19",
   "typeBenef": "4",
-  "taux": 95,
-  "plafond": 135000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "19",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 135000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "19",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 135000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "20",
   "typeBenef": "1",
-  "taux": 95,
-  "plafond": 90000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "20",
   "typeBenef": "2",
-  "taux": 95,
-  "plafond": 90000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "20",
   "typeBenef": "3",
-  "taux": 95,
-  "plafond": 90000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "20",
   "typeBenef": "4",
-  "taux": 95,
-  "plafond": 90000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "20",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 90000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "20",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 90000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "21",
   "typeBenef": "1",
-  "taux": 75,
-  "plafond": 90000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "21",
   "typeBenef": "2",
-  "taux": 75,
-  "plafond": 90000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "21",
   "typeBenef": "3",
-  "taux": 75,
-  "plafond": 90000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "21",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 90000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "21",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 90000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "21",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 90000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "22",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "22",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "22",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "22",
   "typeBenef": "4",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "03",
-  "prestation": "22",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "03",
-  "prestation": "22",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 5000
+  "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "23",
   "typeBenef": "1",
-  "taux": 65,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "23",
   "typeBenef": "2",
-  "taux": 65,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "23",
   "typeBenef": "3",
-  "taux": 65,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "23",
   "typeBenef": "4",
-  "taux": 65,
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "03",
-  "prestation": "23",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 15000
- },
- {
-  "societe": "03",
-  "prestation": "23",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "24",
   "typeBenef": "1",
-  "taux": 75,
-  "plafond": 1350000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "24",
   "typeBenef": "2",
-  "taux": 75,
-  "plafond": 1350000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "24",
   "typeBenef": "3",
-  "taux": 75,
-  "plafond": 1350000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "24",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 1350000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "24",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 1350000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "24",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 1350000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "25",
   "typeBenef": "1",
-  "taux": 75,
-  "plafond": 180000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "25",
   "typeBenef": "2",
-  "taux": 75,
-  "plafond": 180000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "25",
   "typeBenef": "3",
-  "taux": 75,
-  "plafond": 180000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "25",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 180000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "25",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 180000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "25",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 180000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "26",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -4139,7 +5011,7 @@
   "societe": "03",
   "prestation": "26",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -4147,7 +5019,7 @@
   "societe": "03",
   "prestation": "26",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -4155,23 +5027,7 @@
   "societe": "03",
   "prestation": "26",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "26",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "26",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -4179,7 +5035,7 @@
   "societe": "03",
   "prestation": "27",
   "typeBenef": "1",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -4187,7 +5043,7 @@
   "societe": "03",
   "prestation": "27",
   "typeBenef": "2",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -4195,7 +5051,7 @@
   "societe": "03",
   "prestation": "27",
   "typeBenef": "3",
-  "taux": 75,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -4203,23 +5059,7 @@
   "societe": "03",
   "prestation": "27",
   "typeBenef": "4",
-  "taux": 75,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "27",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "27",
-  "typeBenef": "6",
-  "taux": 45,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -4227,1351 +5067,1103 @@
   "societe": "03",
   "prestation": "28",
   "typeBenef": "1",
-  "taux": 45,
-  "plafond": 270000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "28",
   "typeBenef": "2",
-  "taux": 45,
-  "plafond": 270000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "28",
   "typeBenef": "3",
-  "taux": 45,
-  "plafond": 270000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "28",
   "typeBenef": "4",
-  "taux": 45,
-  "plafond": 270000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "28",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 270000,
-  "forfait": 0
- },
- {
-  "societe": "03",
-  "prestation": "28",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 270000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "29",
   "typeBenef": "1",
-  "taux": 45,
-  "plafond": 270000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "29",
   "typeBenef": "2",
-  "taux": 45,
-  "plafond": 270000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "29",
   "typeBenef": "3",
-  "taux": 45,
-  "plafond": 270000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
   "prestation": "29",
   "typeBenef": "4",
-  "taux": 45,
-  "plafond": 270000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
-  "prestation": "29",
-  "typeBenef": "5",
-  "taux": 45,
-  "plafond": 270000,
+  "prestation": "30",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "03",
-  "prestation": "29",
-  "typeBenef": "6",
-  "taux": 45,
-  "plafond": 270000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "00",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "00",
+  "prestation": "30",
   "typeBenef": "2",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "00",
+  "societe": "03",
+  "prestation": "30",
   "typeBenef": "3",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "00",
+  "societe": "03",
+  "prestation": "30",
   "typeBenef": "4",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "00",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "00",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "01",
+  "societe": "03",
+  "prestation": "31",
   "typeBenef": "1",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "01",
+  "societe": "03",
+  "prestation": "31",
   "typeBenef": "2",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "01",
+  "societe": "03",
+  "prestation": "31",
   "typeBenef": "3",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "01",
+  "societe": "03",
+  "prestation": "31",
   "typeBenef": "4",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "01",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "01",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "02",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "02",
+  "societe": "03",
+  "prestation": "32",
   "typeBenef": "2",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "02",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "02",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "02",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "02",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "03",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 400000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "03",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 400000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "03",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 400000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "03",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 400000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "03",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 400000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "03",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 400000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "04",
-  "typeBenef": "1",
-  "taux": 90,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "04",
-  "typeBenef": "2",
-  "taux": 90,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "04",
-  "typeBenef": "3",
-  "taux": 90,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "04",
-  "typeBenef": "4",
-  "taux": 90,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "04",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "04",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 200000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "05",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "05",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "05",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "05",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "05",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "05",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "06",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "06",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "06",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "06",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "06",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "06",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "07",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "07",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "07",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "07",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "07",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "07",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "08",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "08",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "08",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "08",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "08",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "08",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "09",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "09",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "09",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "09",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "09",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "09",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "10",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "10",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "10",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "10",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "10",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "10",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "11",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "11",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "11",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "11",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "11",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "11",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "12",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "12",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "12",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "12",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "12",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "12",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "13",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "13",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "13",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "13",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "13",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "13",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "14",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "14",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "14",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "14",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "14",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "14",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "15",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "15",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "15",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "15",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "15",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "15",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "16",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 800000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "16",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 800000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "16",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 800000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "16",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 800000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "16",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 800000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "16",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 800000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "17",
-  "typeBenef": "1",
-  "taux": 40,
-  "plafond": 160000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "17",
-  "typeBenef": "2",
-  "taux": 40,
-  "plafond": 160000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "17",
-  "typeBenef": "3",
-  "taux": 40,
-  "plafond": 160000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "17",
-  "typeBenef": "4",
-  "taux": 40,
-  "plafond": 160000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "17",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 160000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "17",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 160000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "18",
-  "typeBenef": "1",
-  "taux": 40,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "18",
-  "typeBenef": "2",
-  "taux": 40,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "18",
-  "typeBenef": "3",
-  "taux": 40,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "18",
-  "typeBenef": "4",
-  "taux": 40,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "18",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "18",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "19",
-  "typeBenef": "1",
-  "taux": 90,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "19",
-  "typeBenef": "2",
-  "taux": 90,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "19",
-  "typeBenef": "3",
-  "taux": 90,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "19",
-  "typeBenef": "4",
-  "taux": 90,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "19",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "19",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 120000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "20",
-  "typeBenef": "1",
-  "taux": 90,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "20",
-  "typeBenef": "2",
-  "taux": 90,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "20",
-  "typeBenef": "3",
-  "taux": 90,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "20",
-  "typeBenef": "4",
-  "taux": 90,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "20",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "20",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "21",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "21",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "21",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "21",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "21",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "21",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 80000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "22",
-  "typeBenef": "1",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "04",
-  "prestation": "22",
-  "typeBenef": "2",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "04",
-  "prestation": "22",
-  "typeBenef": "3",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "04",
-  "prestation": "22",
-  "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "04",
-  "prestation": "22",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "04",
-  "prestation": "22",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 5000
- },
- {
-  "societe": "04",
-  "prestation": "23",
+  "societe": "03",
+  "prestation": "44",
   "typeBenef": "1",
   "taux": 60,
-  "plafond": 0,
-  "forfait": 15000
+  "plafond": 120000,
+  "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "23",
+  "societe": "03",
+  "prestation": "44",
   "typeBenef": "2",
   "taux": 60,
-  "plafond": 0,
-  "forfait": 15000
+  "plafond": 120000,
+  "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "23",
+  "societe": "03",
+  "prestation": "44",
   "typeBenef": "3",
   "taux": 60,
-  "plafond": 0,
-  "forfait": 15000
+  "plafond": 120000,
+  "forfait": 0
  },
  {
-  "societe": "04",
-  "prestation": "23",
+  "societe": "03",
+  "prestation": "44",
   "typeBenef": "4",
   "taux": 60,
+  "plafond": 120000,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "47",
+  "typeBenef": "1",
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "47",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "47",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "47",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "55",
+  "typeBenef": "1",
+  "taux": 60,
+  "plafond": 60000,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "55",
+  "typeBenef": "2",
+  "taux": 60,
+  "plafond": 60000,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "55",
+  "typeBenef": "3",
+  "taux": 60,
+  "plafond": 60000,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "55",
+  "typeBenef": "4",
+  "taux": 60,
+  "plafond": 60000,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "99",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "99",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "99",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "03",
+  "prestation": "99",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "00",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "00",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "00",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "00",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "01",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "01",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "01",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "01",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "02",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "02",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "02",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "02",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "03",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "03",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "03",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "03",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "04",
+  "typeBenef": "1",
+  "taux": 100,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "04",
+  "typeBenef": "2",
+  "taux": 100,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "04",
+  "typeBenef": "3",
+  "taux": 100,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "04",
+  "typeBenef": "4",
+  "taux": 100,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "05",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "05",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "05",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "05",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "06",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "06",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "06",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "06",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "07",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "07",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "07",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "07",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "08",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "08",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "08",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "08",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "09",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "09",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "09",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "09",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "10",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "10",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "10",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "10",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "11",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "11",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "11",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "11",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "12",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "12",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "12",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "12",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "13",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "13",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "13",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "13",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "14",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "14",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "14",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "14",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "15",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "15",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "15",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "15",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "16",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "16",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "16",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "16",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "17",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "17",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "17",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "17",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "18",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "18",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "18",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "18",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "19",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "19",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "19",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "19",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "20",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "20",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "20",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "20",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "21",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "21",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "21",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "21",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "22",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "22",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "22",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "22",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "23",
-  "typeBenef": "5",
-  "taux": 40,
+  "typeBenef": "1",
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "23",
-  "typeBenef": "6",
-  "taux": 40,
+  "typeBenef": "2",
+  "taux": 85,
   "plafond": 0,
-  "forfait": 15000
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "23",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "23",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "24",
   "typeBenef": "1",
-  "taux": 70,
-  "plafond": 1200000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "24",
   "typeBenef": "2",
-  "taux": 70,
-  "plafond": 1200000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "24",
   "typeBenef": "3",
-  "taux": 70,
-  "plafond": 1200000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "24",
   "typeBenef": "4",
-  "taux": 70,
-  "plafond": 1200000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "24",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 1200000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "24",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 1200000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "25",
   "typeBenef": "1",
-  "taux": 70,
-  "plafond": 160000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "25",
   "typeBenef": "2",
-  "taux": 70,
-  "plafond": 160000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "25",
   "typeBenef": "3",
-  "taux": 70,
-  "plafond": 160000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "25",
   "typeBenef": "4",
-  "taux": 70,
-  "plafond": 160000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "25",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 160000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "25",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 160000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "26",
   "typeBenef": "1",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -5579,7 +6171,7 @@
   "societe": "04",
   "prestation": "26",
   "typeBenef": "2",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -5587,7 +6179,7 @@
   "societe": "04",
   "prestation": "26",
   "typeBenef": "3",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -5595,23 +6187,7 @@
   "societe": "04",
   "prestation": "26",
   "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "26",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "26",
-  "typeBenef": "6",
-  "taux": 40,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -5619,7 +6195,7 @@
   "societe": "04",
   "prestation": "27",
   "typeBenef": "1",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -5627,7 +6203,7 @@
   "societe": "04",
   "prestation": "27",
   "typeBenef": "2",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -5635,7 +6211,7 @@
   "societe": "04",
   "prestation": "27",
   "typeBenef": "3",
-  "taux": 70,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -5643,23 +6219,7 @@
   "societe": "04",
   "prestation": "27",
   "typeBenef": "4",
-  "taux": 70,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "27",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 0,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "27",
-  "typeBenef": "6",
-  "taux": 40,
+  "taux": 85,
   "plafond": 0,
   "forfait": 0
  },
@@ -5667,96 +6227,224 @@
   "societe": "04",
   "prestation": "28",
   "typeBenef": "1",
-  "taux": 40,
-  "plafond": 240000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "28",
   "typeBenef": "2",
-  "taux": 40,
-  "plafond": 240000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "28",
   "typeBenef": "3",
-  "taux": 40,
-  "plafond": 240000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "28",
   "typeBenef": "4",
-  "taux": 40,
-  "plafond": 240000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "28",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 240000,
-  "forfait": 0
- },
- {
-  "societe": "04",
-  "prestation": "28",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 240000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "29",
   "typeBenef": "1",
-  "taux": 40,
-  "plafond": 240000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "29",
   "typeBenef": "2",
-  "taux": 40,
-  "plafond": 240000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "29",
   "typeBenef": "3",
-  "taux": 40,
-  "plafond": 240000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
   "prestation": "29",
   "typeBenef": "4",
-  "taux": 40,
-  "plafond": 240000,
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
-  "prestation": "29",
-  "typeBenef": "5",
-  "taux": 40,
-  "plafond": 240000,
+  "prestation": "30",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  },
  {
   "societe": "04",
-  "prestation": "29",
-  "typeBenef": "6",
-  "taux": 40,
-  "plafond": 240000,
+  "prestation": "30",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "30",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "30",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "44",
+  "typeBenef": "1",
+  "taux": 60,
+  "plafond": 120000,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "44",
+  "typeBenef": "2",
+  "taux": 60,
+  "plafond": 120000,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "44",
+  "typeBenef": "3",
+  "taux": 60,
+  "plafond": 120000,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "44",
+  "typeBenef": "4",
+  "taux": 60,
+  "plafond": 120000,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "47",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "47",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "47",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "47",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "55",
+  "typeBenef": "1",
+  "taux": 60,
+  "plafond": 60000,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "55",
+  "typeBenef": "2",
+  "taux": 60,
+  "plafond": 60000,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "55",
+  "typeBenef": "3",
+  "taux": 60,
+  "plafond": 60000,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "55",
+  "typeBenef": "4",
+  "taux": 60,
+  "plafond": 60000,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "99",
+  "typeBenef": "1",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "99",
+  "typeBenef": "2",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "99",
+  "typeBenef": "3",
+  "taux": 85,
+  "plafond": 0,
+  "forfait": 0
+ },
+ {
+  "societe": "04",
+  "prestation": "99",
+  "typeBenef": "4",
+  "taux": 85,
+  "plafond": 0,
   "forfait": 0
  }
 ]

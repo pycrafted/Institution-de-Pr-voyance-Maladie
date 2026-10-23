@@ -24,13 +24,13 @@ from donnees_de_base.models import (
 )
 
 # Lien de parenté entre le bénéficiaire et le participant (liste fermée).
+# « AUTRE » (code 6) retiré volontairement : fourre-tout non souhaité.
 TYPES_BENEFICIAIRES = [
     'PARTICIPANT',
     'EPOUSE',
     'ENFANT',
     'EPOUX',
     'ASCENDANT',
-    'AUTRE',
 ]
 
 # Natures de prestation, reprises à l'identique de LAMPS (plan comptable réel,

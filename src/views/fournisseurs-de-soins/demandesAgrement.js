@@ -68,6 +68,7 @@ const colonneNumero = FOURNISSEURS_DE_SOINS.colonnes.find((c) => c.nom === 'code
 
 export const DEMANDES_AGREMENT = {
   cle: 'demandes-agrement',
+  vide: 'Aucune demande d’agrément',
   libelle: 'Demandes d’agrément',
   nouveau: 'Nouvelle demande',
   modifier: 'Modifier la demande',

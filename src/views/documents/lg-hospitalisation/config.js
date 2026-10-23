@@ -69,6 +69,7 @@ const choisie = (valeurs) => Boolean(valeurs.typeStructure)
 
 export const LG_HOSPITALISATION = {
   cle: 'lg-hospitalisation',
+  vide: 'Aucune LG hospitalisation',
   libelle: 'LG Hospitalisation',
   nouveau: 'Nouvelle lettre',
   modifier: 'Modifier la lettre de garantie hospitalisation',

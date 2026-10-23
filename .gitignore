@@ -63,3 +63,6 @@ docs/lamps/
 pwa/node_modules/
 pwa/dist/
 pwa/dev-dist/
+
+# Vrais noms (participants/fournisseurs) mis de côté avant anonymisation - JAMAIS publiés.
+backend/noms_reels/

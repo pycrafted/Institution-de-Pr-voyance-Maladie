@@ -48,6 +48,7 @@ const montantFr = (n) => entier(n).toLocaleString('fr-FR')
 
 export const BONS_OPTIQUE = {
   cle: 'bons-optique',
+  vide: 'Aucun bon optique',
   libelle: 'Bons Optique',
   nouveau: 'Nouveau bon',
   modifier: 'Modifier le bon optique',

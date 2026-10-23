@@ -154,6 +154,7 @@ export const FAMILLES = [
 export const REFERENTIELS = [
   {
     cle: 'structure',
+    vide: 'Aucune structure',
     libelle: 'Structure',
     famille: 'organisation',
     icone: cilSitemap,
@@ -227,6 +228,7 @@ export const REFERENTIELS = [
   },
   {
     cle: 'types-beneficiaires',
+    vide: 'Aucun type de bénéficiaire',
     libelle: 'Type Bénéficiaire',
     famille: 'adherents',
     icone: cilPeople,
@@ -261,6 +263,7 @@ export const REFERENTIELS = [
   },
   {
     cle: 'types-prestations',
+    vide: 'Aucune nature de prestation',
     libelle: 'Types de Prestations',
     famille: 'medical',
     icone: cilMedicalCross,
@@ -305,6 +308,7 @@ export const REFERENTIELS = [
   },
   {
     cle: 'specialites',
+    vide: 'Aucune spécialité',
     libelle: 'Spécialités',
     famille: 'medical',
     icone: cilHospital,
@@ -348,6 +352,7 @@ export const REFERENTIELS = [
   },
   {
     cle: 'medicaments',
+    vide: 'Aucun médicament',
     libelle: 'Médicaments',
     famille: 'medical',
     icone: cilHealing,
@@ -432,6 +437,7 @@ export const REFERENTIELS = [
   },
   {
     cle: 'articles-achat',
+    vide: 'Aucun article',
     libelle: 'Articles Achat',
     famille: 'achats',
     icone: cilCart,
@@ -490,6 +496,7 @@ export const REFERENTIELS = [
   },
   {
     cle: 'journaux-comptables',
+    vide: 'Aucun journal comptable',
     libelle: 'Journaux Comptable',
     famille: 'comptabilite',
     icone: cilCalculator,
@@ -537,6 +544,7 @@ export const REFERENTIELS = [
   },
   {
     cle: 'fournisseurs-divers',
+    vide: 'Aucun fournisseur divers',
     libelle: 'Fournisseurs Divers',
     famille: 'achats',
     icone: cilTruck,

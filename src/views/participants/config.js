@@ -108,6 +108,7 @@ export const REGIONS = [
 
 export const PARTICIPANTS = {
   cle: 'participants',
+  vide: 'Aucun participant',
   libelle: 'Participants',
   nouveau: 'Nouveau participant',
   modifier: 'Modifier le participant',
@@ -662,6 +663,7 @@ export const PARTICIPANTS_RETRAITES = listeParticipants({
 /** Onglet Familles : les bénéficiaires rattachés aux participants. */
 export const FAMILLES = {
   cle: 'beneficiaires',
+  vide: 'Aucun bénéficiaire',
   libelle: 'Familles',
   sansCreation: true,
   // Modification au clic sur la ligne (panneau + ligne en rouge), comme les
@@ -728,6 +730,16 @@ export const FAMILLES = {
   },
 
   colonnes: [
+    {
+      // Portrait de la carte d'ayant droit, comme la photo du participant et
+      // à la même place : en tête de l'identité. Le participant la pose le
+      // plus souvent depuis l'application mobile, pour les siens ; le
+      // gestionnaire la voit alors ici, et peut la poser lui aussi.
+      nom: 'photo',
+      libelle: 'Photo',
+      libelleForm: 'Photo d’identité',
+      type: 'photo',
+    },
     {
       // Composé par le serveur : société, matricule du participant, code du
       // type et rang dans ce type (« 02-0949-21 »). Modifiable, il aurait fini

@@ -74,6 +74,7 @@ export const SECTIONS_REFERENCES = [
 
 export const FOURNISSEURS_DE_SOINS = {
   cle: 'fournisseurs-de-soins',
+  vide: 'Aucun fournisseur de soins',
   libelle: 'Tous les fournisseurs',
   // Pas de titre au-dessus de la liste : l'onglet « Tous les Fournisseurs » et
   // l'en-tête de la page (cf. FournisseursDeSoins.jsx) disent déjà ce qu'on

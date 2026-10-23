@@ -37,6 +37,7 @@ const SPECIALITE_PHARMACIE = '06'
 
 export const BONS_PHARMACIE = {
   cle: 'bons-pharmacie',
+  vide: 'Aucun bon de pharmacie',
   libelle: 'Bons de Pharmacie',
   nouveau: 'Nouveau bon',
   modifier: 'Modifier le bon',

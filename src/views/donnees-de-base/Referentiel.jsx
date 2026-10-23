@@ -26,7 +26,6 @@ import CIcon from '@coreui/icons-react'
 import {
   cilCloudDownload,
   cilCloudUpload,
-  cilInbox,
   cilActionUndo,
   cilBan,
   cilPencil,
@@ -71,6 +70,9 @@ const COULEUR_STATUT = {
   Echue: 'danger',
   Reglée: 'success',
   Annulée: 'dark',
+  // États du remboursement (Traitements → Remboursement).
+  'Non réglé': 'secondary',
+  Réglé: 'success',
 }
 
 /**
@@ -1116,20 +1118,7 @@ const Referentiel = ({ referentiel, onStats }) => {
                 ))}
 
               {!chargement && visibles.length === 0 && (
-                <LigneVide
-                  nbColonnes={nbColonnes}
-                  recherche={recherche}
-                  nouveau={nouveau}
-                  // Un référentiel peut retirer le bouton du tableau vide quand
-                  // celui de l'en-tête, juste au-dessus, suffit.
-                  onCreer={
-                    referentiel.sansCreation ||
-                    referentiel.sansCreationTableauVide ||
-                    creationDockee
-                      ? null
-                      : ouvrirCreation
-                  }
-                />
+                <LigneVide nbColonnes={nbColonnes} recherche={recherche} vide={referentiel.vide} />
               )}
 
               {!chargement &&
@@ -1379,24 +1368,17 @@ const Referentiel = ({ referentiel, onStats }) => {
 }
 
 /** Ligne d'état vide : distingue « référentiel vide » de « recherche sans résultat ». */
-const LigneVide = ({ nbColonnes, recherche, nouveau, onCreer }) => (
+const LigneVide = ({ nbColonnes, recherche, vide }) => (
   <CTableRow>
     <CTableDataCell colSpan={nbColonnes} className="ddb-etat-vide">
-      <CIcon icon={cilInbox} size="xl" className="d-block mx-auto mb-2 text-body-secondary" />
       {recherche ? (
         <>
           Aucun résultat pour <strong>« {recherche} »</strong>
         </>
       ) : (
-        <>
-          <div className="mb-2">Aucune entrée</div>
-          {onCreer && (
-            <button type="button" className="ddb-bouton-nouveau" onClick={onCreer}>
-              <CIcon icon={cilPlus} className="ddb-bouton-nouveau-icone" />
-              {nouveau}
-            </button>
-          )}
-        </>
+        // Message propre au tableau (« Aucun fournisseur », « Aucune facture »…),
+        // plus parlant que « Aucune entrée ».
+        vide || 'Aucune entrée'
       )}
     </CTableDataCell>
   </CTableRow>

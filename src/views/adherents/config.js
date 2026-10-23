@@ -33,6 +33,7 @@ const compteDuCode = (code) => (code ? `463${String(code).padStart(3, '0')}` : '
 
 export const ADHERENTS = {
   cle: 'adherents',
+  vide: 'Aucun adhérent',
   libelle: 'Adhérents',
   nouveau: 'Nouvel adhérent',
   modifier: 'Modifier l’adhérent',
