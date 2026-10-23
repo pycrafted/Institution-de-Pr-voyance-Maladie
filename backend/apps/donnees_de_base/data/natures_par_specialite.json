@@ -1,0 +1,280 @@
+[
+ {
+  "specialite": "00",
+  "observations": 1504,
+  "natures": [
+   "00",
+   "12",
+   "14",
+   "01",
+   "11"
+  ]
+ },
+ {
+  "specialite": "01",
+  "observations": 2889,
+  "natures": [
+   "01"
+  ]
+ },
+ {
+  "specialite": "02",
+  "observations": 1265,
+  "natures": [
+   "02",
+   "22",
+   "14",
+   "24",
+   "59"
+  ]
+ },
+ {
+  "specialite": "03",
+  "observations": 1898,
+  "natures": [
+   "00",
+   "03",
+   "01",
+   "02",
+   "09",
+   "15",
+   "11",
+   "19",
+   "14",
+   "22",
+   "47",
+   "18",
+   "07",
+   "05",
+   "44",
+   "10",
+   "21",
+   "13",
+   "16",
+   "24",
+   "12",
+   "08",
+   "28",
+   "45"
+  ]
+ },
+ {
+  "specialite": "05",
+  "observations": 4605,
+  "natures": [
+   "05",
+   "31"
+  ]
+ },
+ {
+  "specialite": "06",
+  "observations": 13,
+  "natures": [
+   "06"
+  ]
+ },
+ {
+  "specialite": "07",
+  "observations": 1353,
+  "natures": [
+   "07",
+   "00"
+  ]
+ },
+ {
+  "specialite": "08",
+  "observations": 18554,
+  "natures": [
+   "00",
+   "08",
+   "07",
+   "09",
+   "01",
+   "13",
+   "03",
+   "14",
+   "02",
+   "15",
+   "10",
+   "11",
+   "22",
+   "19",
+   "20",
+   "18",
+   "44",
+   "12"
+  ]
+ },
+ {
+  "specialite": "09",
+  "observations": 2259,
+  "natures": [
+   "09",
+   "00",
+   "13"
+  ]
+ },
+ {
+  "specialite": "10",
+  "observations": 1032,
+  "natures": [
+   "10"
+  ]
+ },
+ {
+  "specialite": "11",
+  "observations": 616,
+  "natures": [
+   "11",
+   "35",
+   "00"
+  ]
+ },
+ {
+  "specialite": "12",
+  "observations": 466,
+  "natures": [
+   "12",
+   "00",
+   "14"
+  ]
+ },
+ {
+  "specialite": "13",
+  "observations": 1978,
+  "natures": [
+   "13",
+   "37",
+   "00"
+  ]
+ },
+ {
+  "specialite": "15",
+  "observations": 742,
+  "natures": [
+   "15",
+   "19",
+   "00",
+   "03",
+   "44"
+  ]
+ },
+ {
+  "specialite": "16",
+  "observations": 23,
+  "natures": [
+   "16",
+   "00"
+  ]
+ },
+ {
+  "specialite": "17",
+  "observations": 145,
+  "natures": [
+   "17",
+   "00",
+   "07",
+   "03",
+   "01",
+   "10",
+   "09",
+   "02",
+   "47",
+   "13",
+   "44",
+   "14",
+   "20",
+   "15"
+  ]
+ },
+ {
+  "specialite": "18",
+  "observations": 163,
+  "natures": [
+   "18",
+   "38",
+   "02"
+  ]
+ },
+ {
+  "specialite": "19",
+  "observations": 622,
+  "natures": [
+   "19",
+   "14",
+   "02"
+  ]
+ },
+ {
+  "specialite": "20",
+  "observations": 82,
+  "natures": [
+   "20",
+   "07",
+   "00",
+   "03",
+   "11",
+   "15",
+   "01"
+  ]
+ },
+ {
+  "specialite": "21",
+  "observations": 397,
+  "natures": [
+   "21",
+   "09"
+  ]
+ },
+ {
+  "specialite": "26",
+  "observations": 82,
+  "natures": [
+   "47",
+   "26",
+   "57",
+   "00",
+   "19"
+  ]
+ },
+ {
+  "specialite": "27",
+  "observations": 721,
+  "natures": [
+   "00",
+   "27",
+   "01",
+   "03",
+   "12",
+   "11",
+   "14",
+   "18",
+   "10",
+   "15",
+   "22",
+   "09"
+  ]
+ },
+ {
+  "specialite": "47",
+  "observations": 59,
+  "natures": [
+   "47",
+   "00",
+   "57"
+  ]
+ },
+ {
+  "specialite": "99",
+  "observations": 7,
+  "natures": [
+   "31",
+   "22",
+   "00",
+   "19",
+   "09",
+   "13",
+   "01"
+  ]
+ }
+]

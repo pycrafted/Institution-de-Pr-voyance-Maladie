@@ -1625,6 +1625,106 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   }
 }
 
+// ---- Liste déroulante AVEC recherche (combobox, cf. SelectRecherche.jsx) ----
+.ddb-combo {
+  position: relative;
+}
+
+// Le déclencheur réutilise le cadre des champs ; on neutralise le style bouton.
+.ddb-combo-declencheur {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  text-align: left;
+
+  .ddb-combo-valeur {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Champ vide : le texte (placeholder) se lit en gris pâle, comme un select vide.
+.ddb-groupe-vide .ddb-combo-valeur {
+  color: $ddb-texte-pale;
+}
+
+.ddb-combo-panneau {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid $ddb-bordure;
+  border-radius: $ddb-rayon;
+  box-shadow: 0 10px 30px rgba(17, 21, 29, 0.12);
+  overflow: hidden;
+}
+
+.ddb-combo-recherche {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid $ddb-bordure;
+  padding: 0.6rem 0.85rem;
+  font: inherit;
+  outline: none;
+}
+
+.ddb-combo-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.ddb-combo-option {
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ddb-combo-surligne {
+  background: rgba(229, 38, 33, 0.08);
+}
+
+.ddb-combo-coche {
+  font-weight: 600;
+}
+
+.ddb-combo-option-effacer {
+  color: $ddb-texte-doux;
+  font-style: italic;
+}
+
+.ddb-combo-aucun {
+  padding: 0.6rem 0.7rem;
+  color: $ddb-texte-doux;
+  font-size: 0.88rem;
+}
+
+/* Titre d'un groupe d'options (natures d'une spécialité, puis « Autres
+   natures ») : un repère, pas un choix - d'où le curseur par défaut. */
+.ddb-combo-groupe {
+  padding: 0.55rem 0.7rem 0.2rem;
+  color: $ddb-texte-doux;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: default;
+}
+
+.ddb-combo-groupe + .ddb-combo-option {
+  margin-top: 0;
+}
+
 .ddb-groupe:focus-within label {
   color: $ddb-rouge;
 }
@@ -1645,6 +1745,14 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   font-size: 0.74rem;
   font-weight: 500;
   color: $ddb-rouge;
+  margin-top: 0.4rem;
+}
+
+// Message d'aide d'un champ (ex. « pas d'épouse », « 2 enfants : choisissez »).
+.ddb-champ-aide {
+  display: block;
+  font-size: 0.74rem;
+  color: $ddb-texte-doux;
   margin-top: 0.4rem;
 }
 
@@ -1740,6 +1848,14 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   background: $ddb-rouge;
   color: #fff;
   box-shadow: 0 2px 6px -2px rgba(229, 38, 33, 0.6);
+}
+
+// Bascule générique (ex. Compense / Banque) : l'option active en sombre, comme
+// dans LAMPS (où « Banque » sélectionné est en noir).
+.ddb-bascule-actif {
+  background: $ddb-encre;
+  color: #fff;
+  box-shadow: 0 2px 6px -2px rgba(17, 21, 29, 0.5);
 }
 
 // « Actualiser » : repère hérité de LAMPS, posé juste après le champ de

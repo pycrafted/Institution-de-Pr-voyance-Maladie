@@ -47,6 +47,28 @@ export const EXERCICES = (() => {
 export const libelleTypeBenef = (code) =>
   actifs('types-beneficiaires').find((t) => t.code === code)?.libelle || ''
 
+/**
+ * Les bénéficiaires possibles pour (participant + type) choisis, en
+ * { valeur, libelle }. « Participant » = lui-même ; les autres types = ses
+ * ayants droit de ce type.
+ */
+export const beneficiairesPossibles = (valeurs) => {
+  const { matriculePart, typeBenef } = valeurs
+  if (!matriculePart || !typeBenef) return []
+  const type = libelleTypeBenef(typeBenef)
+  if (type === 'PARTICIPANT') {
+    const p = actifs('participants').find((e) => e.matricule === matriculePart)
+    return p ? [{ valeur: p.matricule, libelle: `${p.prenoms} ${p.nom}` }] : []
+  }
+  return actifs('beneficiaires')
+    .filter((b) => b.matriculePart === matriculePart && b.typeBenef === type)
+    .map((b) => ({ valeur: b.matriculeBenef, libelle: `${b.prenoms} ${b.nom}` }))
+}
+
+/** Mot courant d'un type de bénéficiaire, pour les messages. */
+const MOT_TYPE = { EPOUSE: 'épouse', EPOUX: 'époux', ENFANT: 'enfant', ASCENDANT: 'ascendant' }
+const pluriel = (mot) => (mot === 'époux' ? 'époux' : `${mot}s`)
+
 /** Date ISO rendue à la française : c'est ainsi qu'elle se lit sur un document. */
 export const dateFr = (iso) => {
   if (!iso) return ''
@@ -70,6 +92,38 @@ export const fournisseursDeSpecialite = (code) =>
         .filter((f) => f.specialite === code)
         .map((f) => ({ valeur: f.code, libelle: f.libelle }))
     : []
+
+/**
+ * Natures de prestation RANGEES pour une spécialité de prestataire : celles
+ * que cette spécialité donne vraiment d'abord (dans l'ordre du relevé), les
+ * autres ensuite, sous « Autres natures ».
+ *
+ * Le classement ne sort pas d'une idée de ce qui va ensemble : il vient des
+ * lettres de garantie réelles de LAMPS, relevé spécialité par spécialité et
+ * porté par le référentiel (`naturesCourantes`, cf.
+ * backend/apps/donnees_de_base/natures_courantes.py). Un cardiologue n'a plus
+ * à chercher sa consultation parmi 63 lignes où figure l'échographie.
+ *
+ * Rien n'est retiré : une spécialité sans relevé garde la liste entière, et
+ * les natures rares restent à portée, en dessous.
+ */
+export const naturesDeSpecialite = (codeSpecialite, dejaPortee) => {
+  const toutes = optionsReferentiel('types-prestations', dejaPortee)
+  const specialite = actifs('specialites').find((s) => s.code === codeSpecialite)
+  const courantes = specialite?.naturesCourantes || []
+  if (!courantes.length) return toutes
+
+  const rang = new Map(courantes.map((code, i) => [code, i]))
+  const devant = toutes
+    .filter((o) => rang.has(o.valeur))
+    .sort((a, b) => rang.get(a.valeur) - rang.get(b.valeur))
+  const derriere = toutes.filter((o) => !rang.has(o.valeur))
+  if (!derriere.length) return devant
+  return [
+    ...devant.map((o) => ({ ...o, groupe: specialite.libelle })),
+    ...derriere.map((o) => ({ ...o, groupe: 'Autres natures' })),
+  ]
+}
 
 /** Raison sociale d'un fournisseur de soins, d'après son code. */
 export const nomFournisseur = (code) =>
@@ -210,8 +264,22 @@ export const colonnesBeneficiaire = () => [
     largeur: '110px',
     requis: true,
     afficherCode: true,
-    options: () =>
-      actifs('types-beneficiaires').map((t) => ({ valeur: t.code, libelle: t.libelle })),
+    // Le type du conjoint suit le sexe du participant : un homme a une épouse
+    // (pas d'époux), une femme un époux (pas d'épouse). On retire donc l'autre.
+    // `dependDe` : changer de participant réinitialise le type s'il devient invalide.
+    dependDe: 'matriculePart',
+    options: (valeurs) => {
+      const p = actifs('participants').find((e) => e.matricule === valeurs.matriculePart)
+      const sexe = p?.sexe
+      return actifs('types-beneficiaires')
+        .filter((t) => {
+          const lib = (t.libelle || '').toUpperCase()
+          if (sexe === 'M' && lib === 'EPOUX') return false
+          if (sexe === 'F' && lib === 'EPOUSE') return false
+          return true
+        })
+        .map((t) => ({ valeur: t.code, libelle: t.libelle }))
+    },
   },
   {
     // Les deux conditions comptent : un même participant a souvent une
@@ -223,19 +291,26 @@ export const colonnesBeneficiaire = () => [
     mono: true,
     requis: true,
     dependDe: 'matriculePart',
-    options: (valeurs) => {
+    options: beneficiairesPossibles,
+    // Un seul bénéficiaire possible (le participant lui-même, ou son unique
+    // épouse/époux/enfant/ascendant) : on le pré-remplit, pas de clic inutile.
+    // Zéro ou plusieurs : on laisse vide, et le message ci-dessous guide.
+    valeurProposee: (valeurs) => {
+      const liste = beneficiairesPossibles(valeurs)
+      return liste.length === 1 ? liste[0].valeur : ''
+    },
+    // Aide selon le nombre d'ayants droit de ce type (hors « Participant ») :
+    // 0 → il n'en a pas ; plusieurs → inviter à choisir ; 1 → rien (auto-rempli).
+    message: (valeurs) => {
       const { matriculePart, typeBenef } = valeurs
-      if (!matriculePart || !typeBenef) return []
+      if (!matriculePart || !typeBenef) return null
       const type = libelleTypeBenef(typeBenef)
-      // Le participant est bénéficiaire de ses propres soins : il ne figure
-      // pas dans la table des ayants droit, qui ne porte que sa famille.
-      if (type === 'PARTICIPANT') {
-        const p = actifs('participants').find((e) => e.matricule === matriculePart)
-        return p ? [{ valeur: p.matricule, libelle: `${p.prenoms} ${p.nom}` }] : []
-      }
-      return actifs('beneficiaires')
-        .filter((b) => b.matriculePart === matriculePart && b.typeBenef === type)
-        .map((b) => ({ valeur: b.matriculeBenef, libelle: `${b.prenoms} ${b.nom}` }))
+      if (type === 'PARTICIPANT') return null
+      const mot = MOT_TYPE[type] || type.toLowerCase()
+      const liste = beneficiairesPossibles(valeurs)
+      if (liste.length === 0) return `Ce participant n'a pas d'${mot}.`
+      if (liste.length > 1) return `${liste.length} ${pluriel(mot)} : choisissez dans la liste.`
+      return null
     },
   },
   {

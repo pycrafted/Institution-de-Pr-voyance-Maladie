@@ -20,13 +20,13 @@ import { cilPrint } from '@coreui/icons'
 
 import {
   BARRE_DOCUMENTS,
-  actifs,
   colonneNumeroFacture,
   colonneRemboursementIntegral,
   colonnesBeneficiaire,
   colonnesEmission,
   colonnesPrescripteur,
   fournisseursDeSpecialite,
+  naturesDeSpecialite,
   nomFournisseur,
   optionsSpecialites,
   ouvrirPdf,
@@ -34,6 +34,7 @@ import {
 
 export const LETTRES_GARANTIE = {
   cle: 'lettres-garantie',
+  vide: 'Aucune lettre de garantie',
   libelle: 'Lettres de Garantie',
   nouveau: 'Nouvelle lettre',
   modifier: 'Modifier la lettre de garantie',
@@ -115,14 +116,16 @@ export const LETTRES_GARANTIE = {
     {
       // Les natures de prestation sont le référentiel « Types de prestation »
       // des données de base (00 VISITE, 01 ANALYSES BIO-MEDICALES…), comme la
-      // liste de l'origine.
+      // liste de l'origine. La spécialité du prestataire les RANGE - elle n'en
+      // retire aucune - d'après ce que cette spécialité donne vraiment dans
+      // les lettres réelles de LAMPS (cf. naturesDeSpecialite).
       nom: 'naturePrestation',
       libelle: 'Nature prestation',
       libelleForm: 'Nature prestation',
       largeur: '200px',
       afficherCode: true,
-      options: () =>
-        actifs('types-prestations').map((t) => ({ valeur: t.code, libelle: t.libelle })),
+      options: (valeurs) =>
+        naturesDeSpecialite(valeurs.specialitePrestataire, valeurs.naturePrestation),
     },
     colonneNumeroFacture(),
 
