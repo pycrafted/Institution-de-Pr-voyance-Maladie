@@ -1,13 +1,14 @@
 # Déploiement cloud : Vercel (fronts) + Render (API)
 
 Trois déploiements indépendants, depuis le même dépôt GitHub
-(`pycrafted/Institution-de-Pr-voyance-Maladie`, branche `main`) :
+(`pycrafted/Institution-de-Pr-voyance-Maladie`, branche `main`), mis en place le
+24 octobre 2026 :
 
-| Quoi | Dossier | Hébergeur | Adresse (exemple) |
+| Quoi | Dossier | Hébergeur | Adresse |
 | --- | --- | --- | --- |
-| API Django | `backend/` | Render (web service + PostgreSQL) | `https://ipm-api.onrender.com` |
-| Application IPM (gestion) | racine (`src/`) | Vercel, projet n° 1 | `https://ipm-app.vercel.app` |
-| IPM Mobile (PWA) | `pwa/` | Vercel, projet n° 2 | `https://ipm-mobile.vercel.app` |
+| API Django | `backend/` | Render (web service `ipm-api` + PostgreSQL `ipm-db`) | `https://ipm-api-5e19.onrender.com` |
+| Application IPM (gestion) | racine (`src/`) | Vercel, projet `ipm-app` | `https://ipm-app-phi.vercel.app` |
+| IPM Mobile (PWA) | `pwa/` | Vercel, projet `ipm-mobile` (Root Directory `pwa`) | `https://ipm-mobile.vercel.app` |
 
 Contrairement à IIS (une seule origine, `/api` relayé), les fronts appellent
 ici l'API **sur une autre origine** : l'adresse de l'API est fixée au build
@@ -50,7 +51,7 @@ Une fois les deux fronts en ligne, revenir ici (**Environment**) et renseigner
 virgule, sans `/` final :
 
 ```
-https://ipm-app.vercel.app,https://ipm-mobile.vercel.app
+https://ipm-app-phi.vercel.app,https://ipm-mobile.vercel.app
 ```
 
 Render redéploie seul après la modification.

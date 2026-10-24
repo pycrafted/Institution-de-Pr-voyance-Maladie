@@ -463,6 +463,9 @@ FOURNISSEURS_DE_SOINS = [
     ("CABINET INFIRMIER LES PARCELLES", '27', "PARCELLES ASSAINIES - DAKAR"),
 ]
 
+# Spécialité refuge des fiches dont le code n'existe plus (cf. migration 0019).
+SPE_REFUGE = '40'  # AUTRES FOURNISSEURS
+
 # Conventions dénoncées : la fiche reste, le prestataire sort du circuit.
 _FDS_SUSPENDUS = {3, 18, 29, 44, 57}
 
@@ -482,6 +485,10 @@ def _fournisseurs_de_soins():
     porte ses pièces et sa banque, une sur quatre son interlocuteur.
     """
     specialites = {s.code: s for s in Specialite.objects.all()}
+    # Le jeu cite des spécialités que la migration 0019 a retirées pour coller
+    # au LAMPS (« 24 », « 29 ») ; comme elle, on rabat ces fiches sur la
+    # spécialité refuge. Sans cela, une base neuve ne se remplit pas.
+    refuge = specialites[SPE_REFUGE]
     lignes = []
     for i, (libelle, code_specialite, adresse) in enumerate(FOURNISSEURS_DE_SOINS):
         complet = i % 3 == 0
@@ -491,7 +498,7 @@ def _fournisseurs_de_soins():
                 # Quatre chiffres, comme l'application d'origine (« 0001 »).
                 'code': f'{i + 1:04d}',
                 'libelle': libelle,
-                'specialite': specialites[code_specialite],
+                'specialite': specialites.get(code_specialite, refuge),
                 'adresse': adresse,
                 'telephone': f'33 8{39 + i % 55} {10 + (i * 7) % 89} {10 + (i * 13) % 89}',
                 'mobile': (
