@@ -13,14 +13,13 @@ les deux pages. Polices et tailles étalonnées sur les lettres du modèle :
 Times pour les valeurs, Arial Black pour la société et le fournisseur.
 """
 
-from pathlib import Path
-
 import pymupdf
 from django.utils import timezone
 
+from .modeles import modele
 from .impression import TYPOGRAPHIE, _age, _fr, _nommer, _polices
 
-MODELE = Path(__file__).resolve().parent / 'modeles' / 'bon_optique.pdf'
+MODELE = modele('bon_optique.pdf')
 
 BLANC = (1, 1, 1)
 GRIS_CLAIR = (0.96, 0.96, 0.96)

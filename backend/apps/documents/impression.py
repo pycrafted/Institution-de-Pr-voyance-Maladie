@@ -18,7 +18,9 @@ from pathlib import Path
 import pymupdf
 from django.utils import timezone
 
-MODELE = Path(__file__).resolve().parent / 'modeles' / 'bon_pharmacie.pdf'
+from .modeles import modele
+
+MODELE = modele('bon_pharmacie.pdf')
 
 # Polices du modèle :
 #   - Times : la Times-Roman intégrée aux PDF, de mêmes dimensions que la Times

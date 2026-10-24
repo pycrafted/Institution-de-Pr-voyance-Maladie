@@ -1,0 +1,68 @@
+# Infrastructure Render du backend IPM (« Blueprint »).
+#
+# Un service web Django (gunicorn) et sa base PostgreSQL. Les deux fronts
+# (src/ à la racine et pwa/) sont hébergés à part, sur Vercel - cf.
+# deploy/CLOUD.md pour l'ensemble.
+#
+# Sur Render : New → Blueprint → ce dépôt. Les variables marquées
+# « sync: false » sont demandées à la création ; les autres sont fixées ici.
+
+services:
+  - type: web
+    name: ipm-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    # « bash » explicite : le bit d'exécution ne survit pas forcément à un
+    # commit fait depuis Windows.
+    buildCommand: bash build.sh
+    # gunicorn écoute sur le port que Render lui donne ; WEB_CONCURRENCY fixe
+    # le nombre de processus (2 : le palier gratuit n'a qu'un demi-cœur).
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
+    # Page qui répond 200 sans jeton : sert à Render pour savoir que le
+    # service est debout.
+    healthCheckPath: /admin/login/
+    autoDeployTrigger: commit
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: WEB_CONCURRENCY
+        value: 2
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      # Le nom public « ipm-api.onrender.com » est ajouté automatiquement
+      # (RENDER_EXTERNAL_HOSTNAME, cf. config/settings.py) : cette variable ne
+      # sert qu'à un éventuel nom de domaine propre.
+      - key: DJANGO_ALLOWED_HOSTS
+        value: localhost,127.0.0.1
+      # Origines des deux fronts Vercel, séparées par des virgules - à
+      # compléter une fois leurs adresses connues (ex. :
+      # https://ipm-app.vercel.app,https://ipm-mobile.vercel.app).
+      - key: DJANGO_CORS_ORIGINS
+        sync: false
+      # Modèles PDF officiels (bon_pharmacie.pdf, bon_optique.pdf,
+      # lettre_garantie.pdf), hors dépôt : à déposer en « Secret Files » du
+      # service, Render les place sous /etc/secrets.
+      - key: IPM_MODELES_DIR
+        value: /etc/secrets
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ipm-db
+          property: connectionString
+      # Premier compte (front + /admin/), créé au premier build puis ignoré.
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false
+      - key: DJANGO_SUPERUSER_EMAIL
+        sync: false
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false
+
+databases:
+  - name: ipm-db
+    plan: free
+    region: frankfurt
+    databaseName: ipm
+    user: ipm

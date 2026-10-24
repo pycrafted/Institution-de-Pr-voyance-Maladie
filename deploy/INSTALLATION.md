@@ -1,5 +1,7 @@
 # Déploiement IPM sur IIS
 
+> Hébergement cloud (fronts sur Vercel, API sur Render) : voir [CLOUD.md](CLOUD.md).
+
 Mise en réseau local de l'application sur le serveur **SAR-INTEGRATION**
 (10.113.243.179), en HTTP sur le port 80.
 

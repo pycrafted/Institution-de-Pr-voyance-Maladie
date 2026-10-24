@@ -14,14 +14,13 @@ les deux pages. Le tableau des actes, la remise et le montant total restent
 vides, comme à l'origine.
 """
 
-from pathlib import Path
-
 import pymupdf
 from django.utils import timezone
 
+from .modeles import modele
 from .impression import TYPOGRAPHIE, _age, _fr, _nommer, _polices
 
-MODELE = Path(__file__).resolve().parent / 'modeles' / 'lettre_garantie.pdf'
+MODELE = modele('lettre_garantie.pdf')
 
 BLANC = (1, 1, 1)
 GRIS_CLAIR = (0.96, 0.96, 0.96)
