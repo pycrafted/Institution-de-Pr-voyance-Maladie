@@ -43,6 +43,17 @@ if [ "${IPM_ANONYMISER:-}" = "1" ]; then
     python manage.py anonymiser_participants --matricules --eviter-schema lamps
 fi
 
+# Lot de test : réduit la base à une trentaine de participants et les
+# anonymise en noms FRANÇAIS. Dans une entreprise sénégalaise, un « Bernard
+# Lefèvre » ne se confond avec personne - là où un tirage de noms du pays
+# finit par reconstituer de vraies identités.
+#
+# IPM_JEU_TEST=<nombre> sur Render (« 30 » par exemple). Destructif : les
+# autres fiches sont retirées. À retirer après le déploiement.
+if [ -n "${IPM_JEU_TEST:-}" ]; then
+    python manage.py jeu_de_test --participants "${IPM_JEU_TEST}"
+fi
+
 # Premier compte, pour pouvoir se connecter au front et à /admin/. Les trois
 # variables DJANGO_SUPERUSER_USERNAME / _EMAIL / _PASSWORD se renseignent sur
 # Render (render.yaml les déclare). Compte déjà créé : la commande échoue, on
