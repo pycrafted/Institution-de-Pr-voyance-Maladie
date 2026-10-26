@@ -9,7 +9,9 @@ code (Render : les « Secret Files » sont déposés sous /etc/secrets), la
 variable ``IPM_MODELES_DIR`` désigne le dossier qui les contient.
 """
 
+import base64
 import os
+import tempfile
 from pathlib import Path
 
 import pymupdf
@@ -36,9 +38,29 @@ class ModeleAbsent(APIException):
     default_code = 'modele_absent'
 
 
+def _depuis_base64(chemin):
+    """
+    Variante texte du modèle : ``<nom>.b64`` à côté de l'emplacement attendu.
+
+    Les « Secret Files » de Render ne prennent que du texte ; un PDF y est donc
+    déposé encodé en base64. Décodé une fois dans le dossier temporaire, puis
+    réutilisé : le fichier décodé survit tant que le processus tourne.
+    """
+    source = chemin.with_name(chemin.name + '.b64')
+    if not source.is_file():
+        return None
+    cible = Path(tempfile.gettempdir()) / 'ipm-modeles' / chemin.name
+    if not cible.is_file() or cible.stat().st_mtime < source.stat().st_mtime:
+        cible.parent.mkdir(parents=True, exist_ok=True)
+        cible.write_bytes(base64.b64decode(source.read_text()))
+    return cible
+
+
 def ouvrir_modele(chemin):
     """Ouvre le PDF modèle ``chemin`` avec PyMuPDF, ou lève ``ModeleAbsent``."""
     chemin = Path(chemin)
+    if not chemin.is_file():
+        chemin = _depuis_base64(chemin) or chemin
     if not chemin.is_file():
         raise ModeleAbsent(
             f'Modèle PDF « {chemin.name} » absent du serveur (attendu dans {chemin.parent}).'
