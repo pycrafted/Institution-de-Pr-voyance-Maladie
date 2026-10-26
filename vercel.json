@@ -3,7 +3,7 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "build",
-  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- . ':(exclude)pwa' ':(exclude)backend' ':(exclude)deploy' ':(exclude)render.yaml'",
+  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- . ':(exclude)pwa' ':(exclude)backend' ':(exclude)deploy' ':(exclude)render.yaml' 2>/dev/null; test $? -eq 0",
   "rewrites": [
     {
       "source": "/(.*)",
