@@ -57,6 +57,8 @@
 .accueil-famille::-webkit-scrollbar {
   display: none;
 }
+/* La vignette est plus haute que large depuis qu'elle a la forme d'une photo
+   d'identité : la rangée doit lui laisser la place. */
 .accueil-famille__membre {
   appearance: none;
   border: 0;

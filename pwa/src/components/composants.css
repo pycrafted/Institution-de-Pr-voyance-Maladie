@@ -1314,6 +1314,16 @@ ion-modal.ipm-feuille {
   object-fit: cover;
   display: block;
 }
+
+/* Forme « identité » : le rectangle arrondi des photos de la carte
+   d'adhérent, pour que le même visage se reconnaisse d'un écran à l'autre.
+   Le liseré clair et l'ombre sont ceux de la carte, adoucis - ici le fond
+   n'est pas rouge. */
+.ipm-avatar--identite {
+  border-radius: 12px;
+  border: 2px solid var(--ipm-surface);
+  box-shadow: var(--ombre-1);
+}
 /* Les trois teintes de la charte (jetons --av-*, cf. variables.css). */
 .ipm-avatar--1 {
   background: var(--av-1-fond);

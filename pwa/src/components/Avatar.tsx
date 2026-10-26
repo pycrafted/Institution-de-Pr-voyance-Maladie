@@ -36,20 +36,46 @@ interface Props {
    * cerclé — les teintes douces y deviendraient illisibles.
    */
   ton?: 'douce' | 'marque'
+  /**
+   * « ronde » : la pastille habituelle.
+   * « identite » : le rectangle arrondi des photos de la carte d'adhérent,
+   * dans les proportions d'une photo d'identité. `taille` est alors la
+   * LARGEUR, la hauteur suit.
+   */
+  forme?: 'ronde' | 'identite'
   className?: string
 }
 
-/** Pastille ronde : le portrait s'il existe, sinon les initiales. */
-export default function Avatar({ nom, photo, taille = 40, ton = 'douce', className }: Props) {
+/** Proportions de la photo de la carte d'adhérent (4,75em sur 6em). */
+const RAPPORT_IDENTITE = 6 / 4.75
+
+/** Le portrait s'il existe, sinon les initiales. */
+export default function Avatar({
+  nom,
+  photo,
+  taille = 40,
+  ton = 'douce',
+  forme = 'ronde',
+  className,
+}: Props) {
+  const identite = forme === 'identite'
   const style: CSSProperties = {
     width: taille,
-    height: taille,
+    height: identite ? Math.round(taille * RAPPORT_IDENTITE) : taille,
     fontSize: taille * 0.38,
   }
   const teinte = photo || ton !== 'douce' ? '' : ` ipm-avatar--${indiceTeinte(nom)}`
   return (
     <span
-      className={`ipm-avatar ipm-avatar--${ton}${teinte}${className ? ` ${className}` : ''}`}
+      className={[
+        'ipm-avatar',
+        `ipm-avatar--${ton}`,
+        identite && 'ipm-avatar--identite',
+        teinte.trim(),
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       style={style}
       aria-hidden="true"
     >

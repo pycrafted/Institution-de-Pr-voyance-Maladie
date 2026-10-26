@@ -162,7 +162,14 @@ export default function Accueil() {
                       setCartePleinEcran(membre.matricule)
                     }}
                   >
-                    <Avatar nom={membre.nomComplet} photo={membre.photo} taille={56} />
+                    {/* La forme de la photo de la carte d'adhérent : le
+                        même visage se reconnaît d'un écran à l'autre. */}
+                    <Avatar
+                      nom={membre.nomComplet}
+                      photo={membre.photo}
+                      taille={56}
+                      forme="identite"
+                    />
                     <span className="accueil-famille__nom">{membre.prenoms}</span>
                   </button>
                 </li>
