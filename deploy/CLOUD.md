@@ -111,34 +111,37 @@ variable `DJANGO_CORS_ORIGIN_REGEXES`, par exemple
   jeu d'essai, à lancer depuis le **Shell** du service Render :
   `python manage.py remplir_donnees_demo`).
 
-## Vraies données (reprise LAMPS)
+## Vraies données
 
-Le dump PostgreSQL de l'application d'origine (`lamps.dump`, hors dépôt) est
-chargé dans la base Render **dans un schéma à part, `lamps`** : le schéma
-`public` reste celui de Django. Rien dans l'application ne lit `lamps`
-directement ; il sert de base d'analyse et de source aux commandes de reprise.
+Depuis le 26 octobre 2026, la base Render est une **restauration de `ipm_dev`**,
+la base de développement aux vraies données (dump `dump/ipm_dev-20261023.dump`,
+hors dépôt : `*.dump` et `*.sql` sont ignorés par git). Les seeds de
+démonstration du build (`IPM_JEU_DEMO`) sont désactivés et doivent le rester.
 
-Depuis un poste autorisé (Render → base `ipm-db` → *Access Control*, ajouter
-l'IP du poste), avec `psql` et le pilote `psycopg2` installés :
+Le dump LAMPS d'origine (`lamps.dump`, base `db_sar`) est aussi chargé dans la
+même base, **dans un schéma à part `lamps`**, qui tient le rôle de la base
+d'analyse `lamps_analyse` du poste de développement. Django ne regarde que
+`public` (`search_path=public` dans `settings.py`) ; les commandes
+`importer_*` peuvent lire `lamps` en passant `PGOPTIONS="-c search_path=lamps"`
+et les options `--hote --port --base --utilisateur --motdepasse` de la base
+Render elle-même.
 
-1. `pg_restore --no-owner --no-privileges -f lamps.sql lamps.dump`, puis
-   réécrire `public.` en `lamps.` dans le SQL (hors lignes de données), retirer
-   les fonctions C de pgcrypto (`$libdir`) et `SET transaction_timeout`, et
-   charger : `psql "<chaîne externe>" -v ON_ERROR_STOP=1 --single-transaction -f lamps_schema.sql`.
-2. Exporter les deux tables que lisent les commandes de reprise, en latin-1 :
-   `\copy (select * from lamps.fournisseurs) to 'lamps-fournisseurs.csv' csv header`
-   et de même pour `lamps.plancompta` (exporter en UTF-8 puis convertir si un
-   caractère typographique bloque).
-3. Lancer les commandes contre Render, depuis `backend/` :
-   `DATABASE_URL=<chaîne externe> python manage.py importer_adherents --fichier lamps-plancompta.csv`
-   et `… importer_fournisseurs_soins --fichier lamps-fournisseurs.csv --purge`.
+### Remettre une nouvelle sauvegarde de `ipm_dev`
 
-Fait le 26 octobre 2026 : 4 adhérents réels, 411 fournisseurs de soins réels.
-Les participants et bénéficiaires réels n'ont pas de commande de reprise à ce
-jour (`lamps.participants`, `lamps.beneficiaires`).
+Depuis un poste autorisé (Render → `ipm-db` → *Access Control* : ajouter l'IP
+du poste, la retirer après), avec `psql` :
 
-Ces données sont nominatives : retirer l'IP du poste de l'*Access Control*
-après l'opération, et ne jamais commiter le dump ni les CSV.
+```
+pg_dump -Fp --no-owner --no-privileges ipm_dev > ipm_dev.sql    # sur le poste de dev
+psql "<chaîne externe>" -c "select pg_terminate_backend(pid) from pg_stat_activity where usename = current_user and pid <> pg_backend_pid()"
+( echo "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"; grep -v '^SET transaction_timeout' ipm_dev.sql )   | psql "<chaîne externe>" -v ON_ERROR_STOP=1 --single-transaction
+```
+
+Le schéma `lamps` n'est pas touché. Vérifier ensuite `python manage.py migrate --check`
+avec `DATABASE_URL` : le dump doit porter les mêmes migrations que le code déployé.
+
+Ces données sont nominatives : ne jamais commiter un dump, et retirer l'IP du
+poste de l'*Access Control* après l'opération.
 
 ## Mises à jour
 

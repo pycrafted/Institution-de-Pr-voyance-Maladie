@@ -149,7 +149,14 @@ if os.getenv('DATABASE_URL'):
             'HOST': _url.hostname or '',
             'PORT': str(_url.port or 5432),
             'CONN_MAX_AGE': int(os.getenv('DB_CONN_MAX_AGE', '60')),
-            'OPTIONS': {'sslmode': os.getenv('DB_SSLMODE', 'require')},
+            'OPTIONS': {
+                'sslmode': os.getenv('DB_SSLMODE', 'require'),
+                # Django ne regarde que le schéma public, même si PGOPTIONS
+                # pose un autre search_path pour un outil lancé à côté (les
+                # commandes importer_* lisent le schéma « lamps » de la même
+                # base, cf. deploy/CLOUD.md).
+                'options': '-c search_path=public',
+            },
         }
     }
 elif os.getenv('DB_NAME'):

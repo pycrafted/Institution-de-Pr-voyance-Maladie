@@ -14,14 +14,17 @@ pip install -r requirements.txt
 python manage.py collectstatic --noinput
 python manage.py migrate --noinput
 
-# Référentiels (types de bénéficiaires, prestations…) : idempotent.
-python manage.py seed_donnees_de_base
+# Banques (B1..B10) : référentiel sans donnée personnelle, idempotent, confirmé
+# sur la vraie base.
+python manage.py seed_banques
 
-# Jeu de démonstration, pour pouvoir se servir de l'application IPM Mobile :
-# les quatre adhérents et l'équipe DSI (mot de passe mobile « 0000 »). Activé
-# par IPM_JEU_DEMO=1 sur Render. L'équipe refuse de s'installer par-dessus des
-# participants existants : on s'en contente, c'est qu'elle est déjà là.
+# Jeu de DÉMONSTRATION (IPM_JEU_DEMO=1 sur Render) : référentiels fictifs,
+# adhérents et équipe DSI (mot de passe mobile « 0000 »). À ne JAMAIS activer
+# sur une base qui porte les vraies données : seed_donnees_de_base y ajouterait
+# des fiches fictives à côté des réelles. La base Render est, depuis le
+# 26/10/2026, une restauration de la vraie base ipm_dev (cf. deploy/CLOUD.md).
 if [ "${IPM_JEU_DEMO:-}" = "1" ]; then
+    python manage.py seed_donnees_de_base
     python manage.py seed_adherents
     python manage.py seed_equipe_dsi || echo "Équipe de démonstration déjà en place."
 fi
