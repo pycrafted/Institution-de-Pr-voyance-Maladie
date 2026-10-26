@@ -39,12 +39,20 @@ Fichiers : `render.yaml` (Blueprint), `backend/build.sh`,
    si le nom était libre, sinon Render ajoute un suffixe). Vérifier :
    - `https://<api>/admin/login/` → page de connexion habillée (statiques OK) ;
    - `https://<api>/api/auth/me/` → `401` en JSON (API vivante et fermée).
-5. **Modèles PDF officiels** (hors dépôt : en-tête SAR, cachet). Dans le
-   service → **Environment → Secret Files**, ajouter les trois fichiers avec
-   exactement ces noms : `bon_pharmacie.pdf`, `bon_optique.pdf`,
-   `lettre_garantie.pdf`. Render les place sous `/etc/secrets/`, dossier que
-   `IPM_MODELES_DIR` désigne déjà. Sans eux, l'impression d'un bon répond 500 ;
-   tout le reste fonctionne.
+5. **Modèles PDF officiels** (hors dépôt : en-tête SAR, cachet). Les Secret
+   Files de Render ne prennent que du texte : chaque PDF y est déposé **encodé
+   en base64**, sous le nom du fichier suivi de `.b64` (`bon_pharmacie.pdf.b64`,
+   `bon_optique.pdf.b64`, `lettre_garantie.pdf.b64`). Render les place sous
+   `/etc/secrets/` (`IPM_MODELES_DIR`), et `documents/modeles.py` les décode au
+   premier usage. Par l'API, depuis `backend/apps/documents/modeles/` :
+
+   ```
+   python -c "import base64,json,sys; print(json.dumps([{'name': n+'.b64', 'content': base64.b64encode(open(n,'rb').read()).decode()} for n in sys.argv[1:]]))" bon_pharmacie.pdf bon_optique.pdf lettre_garantie.pdf > secrets.json
+   curl -X PUT -H "Authorization: Bearer $RENDER_API_KEY" -H "Content-Type: application/json" https://api.render.com/v1/services/<srv>/secret-files -d @secrets.json
+   ```
+
+   (`PUT` remplace la liste entière.) Sans eux, l'impression d'un bon répond
+   503 « Modèle PDF absent » ; tout le reste fonctionne.
 
 Une fois les deux fronts en ligne, revenir ici (**Environment**) et renseigner
 `DJANGO_CORS_ORIGINS` avec leurs deux origines exactes, séparées par une
