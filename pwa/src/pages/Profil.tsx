@@ -73,6 +73,11 @@ export default function Profil() {
           <IonRefresherContent />
         </IonRefresher>
 
+        {/* La barre d'actions est fixe au-dessus : sans cette réserve, la
+            première carte commençait dessous (comme à l'accueil et dans les
+            listes, qui ouvrent par la même zone sûre). */}
+        <div className="ipm-zone-sure" />
+
         {/* Ce que l'IPM sait de l'employé, rubrique par rubrique. Rien ne s'y
             modifie : ces informations se corrigent à l'IPM, et la photo
             s'envoie depuis la feuille « Photos d'identité » de l'accueil. */}

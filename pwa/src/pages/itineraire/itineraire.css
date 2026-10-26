@@ -39,9 +39,10 @@
   filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.88) saturate(0.55);
 }
 
-/* La mention des sources, obligatoire, mais discrète — sous la zone sûre. */
+/* La mention des sources, obligatoire, mais discrète — sous la zone sûre ET
+   sous la barre d'actions, fixe au-dessus de la carte comme de tout écran. */
 .itineraire .leaflet-top.leaflet-right {
-  top: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + 4px);
+  top: calc(var(--barre-haut) + var(--ion-safe-area-top, env(safe-area-inset-top)) + 4px);
 }
 .itineraire .leaflet-control-attribution {
   margin: 0 8px 0 0;
@@ -137,7 +138,8 @@
   cursor: pointer;
 }
 .itineraire__retour {
-  top: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + 12px);
+  /* Sous la barre d'actions (fixe, --barre-haut), sans quoi elle le couvrait. */
+  top: calc(var(--barre-haut) + var(--ion-safe-area-top, env(safe-area-inset-top)) + 12px);
   left: var(--gouttiere);
 }
 /* Au-dessus de la feuille, à droite : sous le pouce. */
