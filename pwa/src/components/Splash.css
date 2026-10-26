@@ -11,10 +11,11 @@
   inset: 0;
   z-index: 10;
   overflow: hidden;
-  /* Cf. FOND_LANCEMENT dans Splash.tsx : exception assumée au thème, pour
-     que le relais avec l'image de lancement d'iOS ne saute pas. */
-  background: #1d1d1b;
-  background-image: linear-gradient(160deg, #1d1d1b 0%, #33302c 100%);
+  /* Cf. FOND_LANCEMENT dans Splash.tsx : le fond de l'application, repris à
+     l'identique par les images de lancement d'iOS et par le manifeste, pour
+     que le relais ne saute pas. Un aplat, sans dégradé : une image PNG ne
+     reproduirait pas exactement le même. */
+  background: #f8f1f0;
   container-type: size;
 }
 
@@ -52,7 +53,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(29, 27, 27, 0.35);
   animation: splash-point 1s ease-in-out infinite;
 }
 .splash__points span:nth-child(2) {
@@ -72,7 +73,7 @@
   font-size: 0.8125rem;
   font-weight: 600;
   letter-spacing: 0.18em;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(29, 27, 27, 0.55);
   opacity: 0;
   animation: splash-apparition 0.4s ease-out 0.3s forwards;
 }

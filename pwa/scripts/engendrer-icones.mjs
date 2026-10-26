@@ -64,6 +64,17 @@ function icoAutourDunPng(png, cote) {
   return Buffer.concat([entete, description, png])
 }
 
+/**
+ * Les ecrans de lancement d'iOS, en pixels de l'appareil. Ils doivent
+ * reproduire EXACTEMENT ce que peint le composant Splash : meme fond, logo
+ * centre a 42 % de la largeur et remonte de 5 % de la hauteur. Sans quoi le
+ * relais entre l'image du systeme et la page ferait un saut.
+ */
+const LANCEMENTS = [
+  '1080x2340', '1125x2436', '1170x2532', '1179x2556', '1206x2622', '1242x2208',
+  '1242x2688', '1284x2778', '1290x2796', '1320x2868', '750x1334', '828x1792',
+]
+
 const logo = await readFile(resolve(RACINE, 'public/logo-sar.png'))
 const logoEnLigne = `data:image/png;base64,${logo.toString('base64')}`
 
@@ -101,6 +112,30 @@ try {
       await writeFile(resolve(RACINE, 'public/favicon.ico'), ico)
       console.log(`${'favicon.ico'.padEnd(32)} ${cote}x${cote}  ${ico.length} octets`)
     }
+  }
+
+  for (const taille of LANCEMENTS) {
+    const [largeur, hauteur] = taille.split('x').map(Number)
+    const page = await navigateur.newPage({
+      viewport: { width: largeur, height: hauteur },
+      deviceScaleFactor: 1,
+    })
+    await page.setContent(`
+      <style>
+        html, body { margin: 0; width: ${largeur}px; height: ${hauteur}px; background: ${FOND}; }
+        .centre {
+          position: absolute; left: 50%; top: 50%;
+          transform: translate(-50%, -50%) translateY(-${Math.round(hauteur * 0.05)}px);
+        }
+        img { width: ${Math.round(largeur * 0.42)}px; display: block; }
+      </style>
+      <div class="centre"><img src="${logoEnLigne}" alt=""></div>
+    `)
+    await page.evaluate(() => document.querySelector('img').decode())
+    const png = await page.screenshot()
+    await writeFile(resolve(RACINE, `public/splash/lancement-${taille}.png`), png)
+    await page.close()
+    console.log(`splash/lancement-${taille}.png`.padEnd(32), `${png.length} octets`)
   }
 } finally {
   await navigateur.close()

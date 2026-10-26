@@ -20,7 +20,7 @@ import './Splash.css'
  * sombre celle-ci changerait, et le relais avec l'image de lancement d'iOS
  * ferait un saut de couleur.
  */
-export const FOND_LANCEMENT = '#1D1D1B'
+export const FOND_LANCEMENT = '#f8f1f0'
 
 interface MotifProps {
   /** Pose le logo sur une pastille de marque (icône d'application). */
@@ -74,7 +74,7 @@ export default function Splash() {
       aria-busy="true"
     >
       <div className="splash__logo">
-        <LogoSar largeur={160} ton="blanc" />
+        <LogoSar largeur={160} />
       </div>
       <div className="splash__points" aria-hidden="true">
         <span />
@@ -82,7 +82,7 @@ export default function Splash() {
         <span />
       </div>
       <p className="splash__pied" aria-hidden="true">
-        IPM SAR
+        IPM
       </p>
     </div>
   )

@@ -52,12 +52,12 @@ export default defineConfig({
         scope: '/',
         display: 'standalone',
         orientation: 'portrait',
-        // Barre d'état et écran de lancement généré par Android : le noir
-        // SAR, haut du dégradé de marque (--deg-marque). Mêmes valeurs que
-        // les <meta name="theme-color"> d'index.html et que les PNG de
-        // public/splash/ — sans quoi le lancement ferait un saut de couleur.
-        theme_color: '#1D1D1B',
-        background_color: '#1D1D1B',
+        // Barre d'état et écran de lancement engendré par Android : le fond
+        // de l'application. Mêmes valeurs que le <meta name="theme-color">
+        // d'index.html, que les PNG de public/splash/ et que FOND_LANCEMENT
+        // dans Splash.tsx - sans quoi le lancement ferait un saut de couleur.
+        theme_color: '#f8f1f0',
+        background_color: '#f8f1f0',
         categories: ['medical', 'health'],
         // `?v=` : Chrome ne refait l'icône de l'écran d'accueil que si le
         // MANIFESTE a changé - il ne retélécharge pas les fichiers pour
