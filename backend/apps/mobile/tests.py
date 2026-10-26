@@ -21,6 +21,8 @@ from django.core.cache import cache
 from django.db import OperationalError
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
+
+from participants.models.participant import REGIME_MUTUELLE
 from rest_framework.test import APITestCase
 
 from adherents.models import Adherent
@@ -169,6 +171,31 @@ class IdentificationTests(Fixture):
         # Le jeton rendu ouvre bien les vues mobiles.
         self.client.credentials(HTTP_AUTHORIZATION=f'Participant {reponse.data["jeton"]}')
         self.assertEqual(self.client.get(f'{URL}moi/').status_code, 200)
+
+    def test_le_matricule_seul_suffit_meme_rattache_a_deux_societes(self):
+        """
+        L'application est celle de l'AGENT : il tape son matricule, pas le
+        code de sa société. S'il porte deux dossiers - 150 matricules réels
+        sont dans ce cas - on lui ouvre celui qui vaut aujourd'hui : actif
+        d'abord, l'IPM avant la mutuelle, le plus récemment souscrit ensuite.
+        """
+        mutuelle = Adherent.objects.create(
+            code='03', libelle='CMM CR-SAR', type=REGIME_MUTUELLE, compte='401003'
+        )
+        ancien = Participant.objects.create(
+            adherent=mutuelle, matricule='1204', nom='NDIAYE', prenoms='Moustapha',
+            etat='Actif', date_souscription=date(2015, 1, 1),
+        )
+        ancien.definir_mot_de_passe('0000')
+        ancien.save()
+
+        reponse = self.post('1204', '0000')
+        self.assertEqual(reponse.status_code, 200)
+        # Le dossier IPM l'emporte sur celui de la mutuelle.
+        self.assertEqual(reponse.data['participant']['societe']['code'], '01')
+
+        # Le préfixe reste toléré : il figure sur sa carte.
+        self.assertEqual(self.post('03-1204', '0000').data['participant']['societe']['code'], '03')
 
     def test_matricule_affiche(self):
         self.assertEqual(self.post('01-1204', '0000').status_code, 200)

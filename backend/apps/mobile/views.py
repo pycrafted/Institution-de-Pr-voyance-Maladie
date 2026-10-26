@@ -37,6 +37,7 @@ from donnees_de_base.models import TypeBeneficiaire
 from donnees_de_base.models.fournisseur_de_soins import CODE_FOURNISSEURS_DIVERS
 from donnees_de_base.natures_courantes import ordonner
 from participants.models import Participant
+from participants.models.participant import REGIME_MUTUELLE
 from participants.serializers.participant import TYPE_PARTICIPANT
 
 from .authentification import (
@@ -182,14 +183,13 @@ class IdentificationView(APIView):
         # plutôt que de lui être réclamés.
         if matricule.isdigit():
             matricule = matricule.zfill(4)
-        # Le matricule seul ne désigne pas toujours une personne : un salarié
-        # rattaché à deux sociétés (l'IPM et une mutuelle) en porte le même des
-        # deux côtés. Quand le préfixe est donné, il tranche ; sans lui, on ne
-        # choisit pas à sa place.
+        # L'application mobile est celle de l'AGENT : son matricule suffit à
+        # l'identifier, sans le code de sa société. Le préfixe reste toléré,
+        # parce qu'il figure sur sa carte.
         candidats = Participant.objects.select_related('adherent').filter(matricule=matricule)
         if societe:
             candidats = candidats.filter(adherent__code=societe)
-        participant = candidats.first() if len(candidats[:2]) == 1 else None
+        participant = _le_dossier_courant(candidats)
         if participant is None:
             # Même temps de réponse qu'un matricule connu : le chiffrement
             # du mot de passe est fait quand même, pour ne rien révéler.
@@ -400,6 +400,37 @@ class PrescripteursView(VueParticipant):
         if specialite is None:
             raise ValidationError({'specialite': ['Spécialité inconnue.']})
         return Response([representer_fournisseur(f) for f in prescripteurs(specialite)])
+
+
+def _le_dossier_courant(candidats):
+    """
+    Le dossier que désigne un matricule donné seul.
+
+    Un même agent peut en porter plusieurs : 150 matricules réels sont
+    rattachés à deux sociétés, et 68 d'entre eux ont deux dossiers actifs -
+    l'IPM et une mutuelle pour un retraité, ou MOO puis CADRES pour une
+    promotion dont l'ancien dossier est resté ouvert. On tranche toujours,
+    dans cet ordre :
+
+      1. un dossier actif plutôt qu'un dossier fermé ;
+      2. l'IPM plutôt que la mutuelle - un agent en activité s'y rattache ;
+      3. le plus récemment souscrit, qui est sa situation d'aujourd'hui.
+
+    Refuser serait pire que choisir : l'agent n'a aucun moyen de savoir
+    lequel de ses dossiers l'application attend.
+    """
+    fiches = list(candidats)
+    if not fiches:
+        return None
+    return sorted(
+        fiches,
+        key=lambda p: (
+            p.etat != 'Actif',
+            bool(p.adherent_id) and p.adherent.type == REGIME_MUTUELLE,
+            -(p.date_souscription.toordinal() if p.date_souscription else 0),
+            -p.pk,
+        ),
+    )[0]
 
 
 class NaturesPrestationView(VueParticipant):
