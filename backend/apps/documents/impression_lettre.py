@@ -17,7 +17,7 @@ vides, comme à l'origine.
 import pymupdf
 from django.utils import timezone
 
-from .modeles import modele
+from .modeles import modele, ouvrir_modele
 from .impression import TYPOGRAPHIE, _age, _fr, _nommer, _polices
 
 MODELE = modele('lettre_garantie.pdf')
@@ -121,7 +121,7 @@ def lettre_garantie_pdf(lettre, edite_par):
     participant quand c'est lui qui l'ouvre sur son téléphone.
     """
     valeurs = _valeurs(lettre, edite_par)
-    doc = pymupdf.open(MODELE)
+    doc = ouvrir_modele(MODELE)
     for page in doc:
         # 1. Repeindre l'intérieur des cadres de leur fond : les valeurs du
         #    modèle disparaissent, les bordures restent.

@@ -16,7 +16,7 @@ Times pour les valeurs, Arial Black pour la société et le fournisseur.
 import pymupdf
 from django.utils import timezone
 
-from .modeles import modele
+from .modeles import modele, ouvrir_modele
 from .impression import TYPOGRAPHIE, _age, _fr, _nommer, _polices
 
 MODELE = modele('bon_optique.pdf')
@@ -142,7 +142,7 @@ def _valeurs(bon, utilisateur):
 
 def rendre(valeurs):
     """Le modèle rempli de ces valeurs (original et copie), en octets PDF."""
-    doc = pymupdf.open(MODELE)
+    doc = ouvrir_modele(MODELE)
     for page in doc:
         # 1. Repeindre l'intérieur des cadres de leur fond : les valeurs du
         #    modèle disparaissent, les bordures restent.

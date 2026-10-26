@@ -18,7 +18,7 @@ from pathlib import Path
 import pymupdf
 from django.utils import timezone
 
-from .modeles import modele
+from .modeles import modele, ouvrir_modele
 
 MODELE = modele('bon_pharmacie.pdf')
 
@@ -158,7 +158,7 @@ def _polices(page):
 def bon_pharmacie_pdf(bon, edite_par):
     """Le bon imprimé (original et copie), en octets PDF."""
     valeurs = _valeurs(bon, edite_par)
-    doc = pymupdf.open(MODELE)
+    doc = ouvrir_modele(MODELE)
     for page in doc:
         # 1. Effacer les valeurs du modèle, sans rien peindre par-dessus et sans
         #    toucher aux cadres, aux fonds colorés ni aux images.

@@ -252,4 +252,27 @@ STORAGES = {
     'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
 }
 
+# ---------------------------------------------------------------------------
+# Journaux
+# ---------------------------------------------------------------------------
+# Hors DEBUG, Django n'écrit nulle part la trace d'une erreur 500 (il la
+# réserve à un courriel aux ADMINS, qu'on n'a pas) : sur Render, on ne voyait
+# que la ligne d'accès de gunicorn. Les erreurs de requête vont donc sur la
+# sortie d'erreur, que Render (et le service IIS) journalisent.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {'simple': {'format': '%(levelname)s %(name)s : %(message)s'}},
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        'django.security': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+    },
+}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
