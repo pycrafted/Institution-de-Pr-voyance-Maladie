@@ -37,7 +37,32 @@ const ICONES = [
   { fichier: 'icons/icone-maskable-512.png', cote: 512, part: 0.46, rayon: 0 },
   { fichier: 'icons/apple-touch-icon.png', cote: 180, part: 0.64, rayon: 0 },
   { fichier: 'icons/favicon-32.png', cote: 32, part: 0.86, rayon: 0 },
+  // Source du favicon.ico, assemblé juste après.
+  { fichier: 'icons/favicon-48.png', cote: 48, part: 0.86, rayon: 0 },
 ]
+
+/**
+ * Un .ico qui ENCAPSULE un PNG : le format l'autorise depuis Vista, et tous
+ * les navigateurs d'aujourd'hui le lisent. Six octets d'en-tête, seize de
+ * description, puis le PNG tel quel - plus simple que de produire un vrai
+ * bitmap, et plus léger.
+ */
+function icoAutourDunPng(png, cote) {
+  const entete = Buffer.alloc(6)
+  entete.writeUInt16LE(0, 0) // réservé
+  entete.writeUInt16LE(1, 2) // type : icône
+  entete.writeUInt16LE(1, 4) // une seule image
+  const description = Buffer.alloc(16)
+  description.writeUInt8(cote < 256 ? cote : 0, 0) // largeur
+  description.writeUInt8(cote < 256 ? cote : 0, 1) // hauteur
+  description.writeUInt8(0, 2) // couleurs de la palette : aucune
+  description.writeUInt8(0, 3) // réservé
+  description.writeUInt16LE(1, 4) // plans
+  description.writeUInt16LE(32, 6) // bits par pixel
+  description.writeUInt32LE(png.length, 8)
+  description.writeUInt32LE(entete.length + description.length, 12)
+  return Buffer.concat([entete, description, png])
+}
 
 const logo = await readFile(resolve(RACINE, 'public/logo-sar.png'))
 const logoEnLigne = `data:image/png;base64,${logo.toString('base64')}`
@@ -70,6 +95,12 @@ try {
     await writeFile(resolve(RACINE, 'public', fichier), png)
     await page.close()
     console.log(`${fichier.padEnd(32)} ${cote}x${cote}  ${png.length} octets`)
+
+    if (fichier.endsWith('favicon-48.png')) {
+      const ico = icoAutourDunPng(png, cote)
+      await writeFile(resolve(RACINE, 'public/favicon.ico'), ico)
+      console.log(`${'favicon.ico'.padEnd(32)} ${cote}x${cote}  ${ico.length} octets`)
+    }
   }
 } finally {
   await navigateur.close()

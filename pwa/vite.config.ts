@@ -59,11 +59,16 @@ export default defineConfig({
         theme_color: '#1D1D1B',
         background_color: '#1D1D1B',
         categories: ['medical', 'health'],
+        // `?v=` : Chrome ne refait l'icône de l'écran d'accueil que si le
+        // MANIFESTE a changé - il ne retélécharge pas les fichiers pour
+        // comparer. Changer le dessin sans changer l'URL laisse donc
+        // l'ancienne icône en place, même après réinstallation. À incrémenter
+        // à chaque refonte des icônes.
         icons: [
-          { src: '/icons/icone-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icone-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icone-192.png?v=2', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icone-512.png?v=2', sizes: '512x512', type: 'image/png', purpose: 'any' },
           {
-            src: '/icons/icone-maskable-512.png',
+            src: '/icons/icone-maskable-512.png?v=2',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
