@@ -13,7 +13,7 @@
 
 import { IonIcon } from '@ionic/react'
 import { chevronDown } from 'ionicons/icons'
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 
 export function Section({ titre, children }: { titre: string; children: ReactNode }) {
   return (
@@ -123,6 +123,86 @@ export function Choix({
           )}
         </p>
       )}
+    </div>
+  )
+}
+
+
+interface PropsSaisie {
+  libelle: string
+  requis?: boolean
+  valeur: string
+  onChanger: (valeur: string) => void
+  type?: 'text' | 'password'
+  placeholder?: string
+  /** Icône posée dans le cadre, à gauche. */
+  icone?: string
+  /** Bouton posé dans le cadre, à droite (voir le mot de passe…). */
+  action?: ReactNode
+  erreur?: string | null
+  inputMode?: 'text' | 'numeric'
+  autoComplete?: string
+  enterKeyHint?: 'next' | 'go'
+  reference?: Ref<HTMLInputElement>
+  onEntree?: () => void
+}
+
+/** Champ de saisie, dans la même forme que le menu : un `input` natif. */
+export function Saisie({
+  libelle,
+  requis,
+  valeur,
+  onChanger,
+  type = 'text',
+  placeholder,
+  icone,
+  action,
+  erreur,
+  inputMode,
+  autoComplete,
+  enterKeyHint,
+  reference,
+  onEntree,
+}: PropsSaisie) {
+  const id = `champ-${libelle.toLocaleLowerCase('fr-FR').replace(/[^a-z]+/g, '-')}`
+  return (
+    <div className="ipm-formulaire__champ">
+      <label className="ipm-formulaire__libelle" htmlFor={id}>
+        {libelle}
+        {requis && <span className="ipm-formulaire__requis"> *</span>}
+      </label>
+      <div className="ipm-formulaire__cadre">
+        {icone && (
+          <IonIcon className="ipm-formulaire__icone" icon={icone} aria-hidden="true" />
+        )}
+        <input
+          id={id}
+          ref={reference}
+          type={type}
+          className={[
+            'ipm-formulaire__saisie',
+            icone && 'ipm-formulaire__saisie--avec-icone',
+            action && 'ipm-formulaire__saisie--avec-action',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+          value={valeur}
+          placeholder={placeholder}
+          inputMode={inputMode}
+          autoComplete={autoComplete}
+          enterKeyHint={enterKeyHint}
+          aria-invalid={Boolean(erreur)}
+          onChange={(e) => onChanger(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && onEntree) {
+              e.preventDefault()
+              onEntree()
+            }
+          }}
+        />
+        {action}
+      </div>
+      {erreur && <p className="ipm-formulaire__erreur">{erreur}</p>}
     </div>
   )
 }

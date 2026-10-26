@@ -1,56 +1,125 @@
-/*
- * Écran d'identification (pages/Identification.tsx). Préfixe identification__.
- *
- * Tout l'habillage (cadre des champs, bouton, carte, bandeau) vient de la
- * charte : ce fichier ne pose que la mise en page propre à l'écran, et pas
- * une seule couleur en dur (§1).
- */
+/* Écran d'identification (pages/Identification.tsx). Préfixe identification__. */
 
 /*
- * §5 : la carte blanche remonte de 28 px sur le bandeau plein, qui a réservé
- * sa hauteur (.ipm-bandeau--chevauche). 28 et non 24 : la carte est ici la
- * seule surface de l'écran, et ce chevauchement un peu plus franc la pose
- * comme une fiche glissée sous le bandeau.
+ * Le fond de l'application, comme tous les autres écrans : aucun aplat de
+ * marque, aucune feuille blanche rapportée. Ce qui porte l'écran, c'est la
+ * carte en haut - l'objet que l'employé vient chercher.
  */
-.identification {
-  --identification-chevauchement: 28px;
+.identification__page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + max(var(--e-24), 7vh))
+    var(--gouttiere) calc(var(--e-32) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  box-sizing: border-box;
 }
 
-.identification__chevauchement {
-  margin-top: calc(-1 * var(--identification-chevauchement));
-  padding-inline: var(--gouttiere);
+/* --- L'aperçu de la carte d'adhérent ------------------------------------ */
+
+/* Deux cartes au format bancaire, la seconde dépassant derrière : la pile
+   d'un portefeuille. Largeur bornée pour qu'elle reste une vignette, et non
+   une carte grandeur nature. */
+.identification__cartes {
   position: relative;
-  z-index: 1;
+  align-self: center;
+  width: min(62%, 220px);
+  margin-bottom: var(--e-32);
 }
 
 .identification__carte {
-  padding: var(--e-24) var(--e-20) var(--e-20);
+  position: relative;
+  display: block;
+  aspect-ratio: 1.586;
+  border-radius: 14px;
+  background: var(--deg-rouge);
+  box-shadow: var(--ombre-3);
+}
+/* Celle du dessous : décalée, inclinée, plus sombre - elle n'existe que pour
+   donner l'épaisseur d'une pile. */
+.identification__carte--dessous {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-7deg) translateY(6px);
+  filter: brightness(0.82);
+}
+.identification__carte--dessus {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px 16px;
+  transform: rotate(2deg);
+  overflow: hidden;
+}
+
+/* Le guillochage de la vraie carte, repris à l'identique. */
+.identification__filigrane {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.08) 0 34%, transparent 34.5%),
+    radial-gradient(circle at 74% 96%, rgba(255, 255, 255, 0.08) 0 26%, transparent 26.5%),
+    radial-gradient(circle at 104% 74%, rgba(255, 255, 255, 0.08) 0 20%, transparent 20.5%);
+}
+
+.identification__carte--dessus .ipm-logo {
+  position: relative;
+}
+
+/* Deux traits à la place des champs : la carte est vierge tant qu'on n'est
+   pas identifié, et rien n'y laisse croire à une donnée. */
+.identification__lignes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.identification__lignes i {
+  display: block;
+  height: 6px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.35);
+}
+.identification__lignes i:first-child {
+  width: 68%;
+}
+.identification__lignes i:last-child {
+  width: 44%;
+}
+
+/* --- Le corps ----------------------------------------------------------- */
+
+/* Colonne : le formulaire suit le titre, et la signature est poussée au pied
+   de l'écran par sa marge automatique - le vide se range sous le bouton,
+   jamais entre deux éléments qui se répondent. */
+.identification__corps {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .identification__titre {
   margin: 0;
   font: var(--t-titre);
-  font-size: 1.625rem;
+  font-size: 1.875rem;
   letter-spacing: -0.02em;
   color: var(--ipm-texte);
 }
 
-.identification__intro {
-  margin: var(--e-8) 0 var(--e-24);
+.identification__accroche {
+  margin: var(--e-4) 0 var(--e-24);
   font: var(--t-corps);
   color: var(--ipm-texte-doux);
 }
 
-/* Avis au-dessus du formulaire : session expirée, déconnexion volontaire. */
+/* Session expirée, déconnexion volontaire. */
 .identification__avis {
   display: flex;
   align-items: flex-start;
   gap: var(--e-8);
-  /* Posé dans la carte : le plus petit rayon de l'échelle, pour ne pas
-     concurrencer le --r-xl de la carte qui l'entoure. */
   margin: 0 0 var(--e-20);
   padding: var(--e-12);
-  border-radius: var(--r-xs);
+  border-radius: var(--r-md);
   font: var(--t-secondaire);
   background: var(--st-valide-doux);
   color: var(--st-valide-texte);
@@ -72,7 +141,7 @@
   gap: var(--e-8);
   margin-bottom: var(--e-16);
   padding: var(--e-12);
-  border-radius: var(--r-xs);
+  border-radius: var(--r-md);
   font: var(--t-secondaire);
   color: var(--ipm-rouge-texte);
   background: var(--ipm-rouge-doux);
@@ -84,54 +153,23 @@
   font-size: 18px;
 }
 
+/* Les champs sont déjà dans la gouttière de la page. */
+.identification__corps .ipm-formulaire {
+  padding: 0;
+}
+
 .identification__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--e-4);
+  margin-top: var(--e-24);
 }
 
-/* Lien discret sous le bouton : cible touchable de 44 px sans déplacer le
-   texte (minimum d'Apple). */
-.identification__aide {
-  appearance: none;
-  border: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding-inline: var(--e-12);
-  background: none;
-  font: var(--t-secondaire);
-  font-weight: 600;
-  color: var(--ipm-texte-doux);
-  cursor: pointer;
-  transition: opacity var(--mvt-appui) var(--mvt-courbe);
-}
-.identification__aide:active {
-  opacity: 0.55;
-}
-.identification__aide ion-icon {
-  font-size: 18px;
-}
-
-.identification__aide-texte {
-  margin: 0 0 var(--e-12);
-}
-
-.identification__pied {
-  padding: var(--e-24) var(--e-32)
-    calc(var(--e-24) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+/* Le nom de l'institution ferme l'écran, discrètement. */
+.identification__institution {
+  margin: auto 0 0;
+  padding-top: var(--e-32);
   text-align: center;
   font: var(--t-secondaire);
+  white-space: nowrap;
   color: var(--ipm-texte-doux);
-}
-.identification__pied p {
-  margin: 0;
-}
-.identification__version {
-  margin-top: 6px !important;
-  opacity: 0.8;
 }
 
 @keyframes identification-secousse {

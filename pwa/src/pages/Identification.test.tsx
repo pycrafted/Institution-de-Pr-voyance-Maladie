@@ -1,42 +1,19 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { beforeAll, describe, expect, it, vi } from 'vitest'
 
-import type { ReactNode } from 'react'
-
 import { ErreurApi } from '../api'
 import { preparerIonic, rendreEcran, uneSession } from './accueil/outils-test'
 import Identification from './Identification'
 
-// La feuille est simulée : Ionic ne sait pas présenter une fenêtre sous jsdom
-// (il lui manque son « framework delegate »). Le vrai composant est couvert
-// par components/composants.test.tsx.
-vi.mock('../components/Feuille', () => ({
-  default: ({
-    ouverte,
-    titre,
-    children,
-  }: {
-    ouverte: boolean
-    titre?: ReactNode
-    children: ReactNode
-  }) =>
-    ouverte ? (
-      <div role="dialog" aria-label="Feuille">
-        {titre}
-        {children}
-      </div>
-    ) : null,
-}))
-
 beforeAll(() => preparerIonic())
 
-function saisir(container: HTMLElement, rang: number, valeur: string) {
-  const champ = container.querySelectorAll('ion-input')[rang]
-  if (!champ) throw new Error('Champ absent')
-  fireEvent(champ, new CustomEvent('ionInput', { detail: { value: valeur } }))
-}
-const saisirMatricule = (container: HTMLElement, valeur: string) => saisir(container, 0, valeur)
-const saisirMotDePasse = (container: HTMLElement, valeur: string) => saisir(container, 1, valeur)
+// Depuis la refonte, les deux champs sont des `input` natifs du vocabulaire
+// des formulaires (ipm-formulaire), plus des ion-input.
+const champ = (libelle: string | RegExp) => screen.getByLabelText(libelle) as HTMLInputElement
+const saisirMatricule = (valeur: string) =>
+  fireEvent.change(champ('Matricule'), { target: { value: valeur } })
+const saisirMotDePasse = (valeur: string) =>
+  fireEvent.change(champ('Mot de passe'), { target: { value: valeur } })
 
 function anonyme(surcharge: Parameters<typeof uneSession>[0] = {}) {
   return uneSession({ statut: 'anonyme', participant: null, beneficiaires: [], ...surcharge })
@@ -45,29 +22,29 @@ function anonyme(surcharge: Parameters<typeof uneSession>[0] = {}) {
 describe('Identification', () => {
   it('accueille l’employé', () => {
     rendreEcran(<Identification />, anonyme())
-    expect(screen.getByRole('heading', { name: 'Bienvenue' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Connexion' })).toBeInTheDocument()
+    expect(screen.getByText('Institution de Prévoyance Maladie')).toBeInTheDocument()
     expect(screen.getByText('Continuer')).toBeInTheDocument()
     expect(screen.queryByText(/session a expiré/)).toBeNull()
   })
 
-  it('ouvre l’écran par un bandeau de marque, chevauché par une carte blanche', () => {
+  it('ouvre sur l’aperçu de la carte d’adhérent, vierge', () => {
     const { container } = rendreEcran(<Identification />, anonyme())
-    // §1 : plus d'écran entièrement gris-blanc, une surface de marque d'abord.
-    const bandeau = container.querySelector('.ipm-bandeau')
-    expect(bandeau).toHaveClass('ipm-bandeau--plein', 'ipm-bandeau--chevauche')
-    expect(screen.getByRole('heading', { name: 'IPM Mobile' })).toBeInTheDocument()
-    const chevauchement = container.querySelector('.identification__chevauchement')
-    expect(chevauchement?.querySelector('.ipm-carte--flottante')).not.toBeNull()
+    expect(container.querySelectorAll('.identification__carte')).toHaveLength(2)
+    expect(screen.getByAltText('SAR')).toBeInTheDocument()
+    // Ni bandeau de marque, ni feuille rapportée : l'écran est sur le fond
+    // de l'application, comme tous les autres.
+    expect(container.querySelector('.identification__banniere')).toBeNull()
+    expect(container.querySelector('.ipm-bandeau')).toBeNull()
+    expect(container.querySelector('.ipm-carte--flottante')).toBeNull()
   })
 
   it('présente les deux champs sans liste ni filet', () => {
     const { container } = rendreEcran(<Identification />, anonyme())
-    // §1 : le filet gris entre les deux champs, c'est exactement ce que la
-    // refonte supprime. Plus d'ion-item ni d'ion-list sur cet écran.
     expect(container.querySelector('ion-item')).toBeNull()
     expect(container.querySelector('ion-list')).toBeNull()
-    // Deux cadres de champ de la charte : le matricule et le mot de passe.
-    expect(container.querySelectorAll('.ipm-champ__cadre')).toHaveLength(2)
+    // Deux cadres du meme vocabulaire que les formulaires de demande.
+    expect(container.querySelectorAll('.ipm-formulaire__cadre')).toHaveLength(2)
   })
 
   it('dit que la session a expiré', () => {
@@ -82,16 +59,28 @@ describe('Identification', () => {
 
   it('sans mot de passe, le réclame au lieu d’appeler le serveur', async () => {
     const session = anonyme()
-    const { container } = rendreEcran(<Identification />, session)
-    saisirMatricule(container, '0949')
+    rendreEcran(<Identification />, session)
+    saisirMatricule('0949')
     fireEvent.click(screen.getByText('Continuer'))
     expect(await screen.findByText('Saisissez votre mot de passe.')).toBeInTheDocument()
     expect(session.identifier).not.toHaveBeenCalled()
   })
 
-  it('masque le mot de passe à la saisie', () => {
-    const { container } = rendreEcran(<Identification />, anonyme())
-    expect(container.querySelectorAll('ion-input')[1]).toHaveAttribute('type', 'password')
+  it('masque le mot de passe à la saisie, et sait le montrer', () => {
+    rendreEcran(<Identification />, anonyme())
+    expect(champ('Mot de passe')).toHaveAttribute('type', 'password')
+
+    fireEvent.click(screen.getByLabelText('Voir le mot de passe'))
+    expect(champ('Mot de passe')).toHaveAttribute('type', 'text')
+
+    fireEvent.click(screen.getByLabelText('Masquer le mot de passe'))
+    expect(champ('Mot de passe')).toHaveAttribute('type', 'password')
+  })
+
+  it('accueille d’une ligne, et signe du nom de l’institution', () => {
+    rendreEcran(<Identification />, anonyme())
+    expect(screen.getByText('Vos documents IPM, dans votre poche.')).toBeInTheDocument()
+    expect(screen.getByText('Institution de Prévoyance Maladie')).toBeInTheDocument()
   })
 
   it('sans matricule, le réclame', async () => {
@@ -105,9 +94,9 @@ describe('Identification', () => {
 
   it('identifie avec le matricule nettoyé et le mot de passe', async () => {
     const identifier = vi.fn((_matricule: string, _motDePasse: string) => Promise.resolve())
-    const { container } = rendreEcran(<Identification />, anonyme({ identifier }))
-    saisirMatricule(container, '01 0949')
-    saisirMotDePasse(container, '0000')
+    rendreEcran(<Identification />, anonyme({ identifier }))
+    saisirMatricule('01 0949')
+    saisirMotDePasse('0000')
     fireEvent.click(screen.getByText('Continuer'))
     await waitFor(() => expect(identifier).toHaveBeenCalledWith('01-0949', '0000'))
   })
@@ -121,18 +110,21 @@ describe('Identification', () => {
         }),
       ),
     )
-    const { container } = rendreEcran(<Identification />, anonyme({ identifier }))
-    saisirMatricule(container, '0949')
-    saisirMotDePasse(container, '0001')
+    rendreEcran(<Identification />, anonyme({ identifier }))
+    saisirMatricule('0949')
+    saisirMotDePasse('0001')
     fireEvent.click(screen.getByText('Continuer'))
     const alerte = await screen.findByText('Matricule ou mot de passe incorrect.')
     expect(alerte.closest('[role="alert"]')).not.toBeNull()
   })
 
-  it('explique le matricule dans une feuille', () => {
+  it('va à l’essentiel : le logo, le titre, les deux champs, le bouton', () => {
     rendreEcran(<Identification />, anonyme())
-    expect(screen.queryByRole('dialog')).toBeNull()
-    fireEvent.click(screen.getByText('Où trouver mon matricule ?'))
-    expect(screen.getByRole('dialog')).toHaveTextContent(/carte IPM/)
+    // Ni phrase d'introduction, ni lien d'aide, ni pied de page : l'écran
+    // ne porte plus que ce qu'on y fait.
+    expect(screen.queryByText(/Identifiez-vous pour demander/)).toBeNull()
+    expect(screen.queryByText('Où trouver mon matricule ?')).toBeNull()
+    expect(screen.queryByText(/mot de passe vous est remis/)).toBeNull()
+    expect(screen.queryByText(/IPM Mobile/)).toBeNull()
   })
 })

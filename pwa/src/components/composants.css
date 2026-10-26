@@ -1654,12 +1654,56 @@ select.ipm-formulaire__saisie {
   opacity: 0.55;
   cursor: default;
 }
+/* Le champ actif se voit : sans cela rien ne dit où l'on tape. */
+.ipm-formulaire__saisie:focus {
+  outline: none;
+  border-color: var(--ipm-rouge);
+  box-shadow: 0 0 0 3px rgba(var(--ipm-rouge-rgb), 0.15);
+}
+/* Bouton posé dans le cadre, à droite (voir/masquer le mot de passe). */
+.ipm-formulaire__action {
+  position: absolute;
+  inset-inline-end: var(--e-8);
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: none;
+  color: var(--ipm-texte-doux);
+  font-size: 20px;
+  cursor: pointer;
+}
+.ipm-formulaire__saisie--avec-action {
+  padding-inline-end: calc(var(--e-8) + 40px);
+}
 .ipm-formulaire__chevron {
   position: absolute;
   inset-inline-end: var(--e-16);
   pointer-events: none;
   font-size: 20px;
   color: var(--ipm-texte-doux);
+}
+/* Icône posée DANS le cadre, à gauche : la saisie lui laisse la place. */
+.ipm-formulaire__icone {
+  position: absolute;
+  inset-inline-start: var(--e-16);
+  pointer-events: none;
+  font-size: 20px;
+  color: var(--ipm-texte-doux);
+}
+.ipm-formulaire__saisie--avec-icone {
+  padding-inline-start: calc(var(--e-16) + 20px + var(--e-12));
+}
+.ipm-formulaire__saisie::placeholder {
+  font-weight: 400;
+  color: var(--ipm-texte-doux);
+  opacity: 0.75;
+}
+/* Le champ refusé se signale par son cadre, pas seulement par son message. */
+.ipm-formulaire__saisie[aria-invalid='true'] {
+  border-color: var(--ipm-rouge);
 }
 /* Nombre d'articles et date, côte à côte comme à l'écran web. */
 .ipm-formulaire__ligne {
@@ -1675,6 +1719,11 @@ select.ipm-formulaire__saisie {
   margin: 0 0 var(--e-12);
   font: var(--t-secondaire);
   color: var(--ipm-texte-doux);
+}
+/* Sous un champ, le message dit ce qui ne va pas : il se lit en rouge. */
+.ipm-formulaire__champ > .ipm-formulaire__erreur {
+  margin: var(--e-8) 0 0;
+  color: var(--ipm-rouge-texte);
 }
 .ipm-formulaire__reessayer {
   appearance: none;
