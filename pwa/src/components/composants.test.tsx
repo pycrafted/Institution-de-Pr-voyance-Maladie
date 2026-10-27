@@ -39,19 +39,26 @@ function rendre(noeud: ReactNode) {
 }
 
 describe('§3.1 barre d’onglets flottante', () => {
-  it('porte la classe flottante et ses quatre onglets', () => {
+  it('porte la classe flottante, trois onglets et « Mes retenues »', () => {
     const { container } = rendre(<BarreOngletsFlottante />)
     const barre = container.querySelector('ion-tab-bar')
     expect(barre).toHaveClass('ipm-onglets')
     const boutons = Array.from(container.querySelectorAll('ion-tab-button'))
-    expect(boutons.map((b) => b.getAttribute('tab'))).toEqual(ONGLETS.map((o) => o.cle))
-    expect(boutons.map((b) => b.getAttribute('href'))).toEqual(ONGLETS.map((o) => o.href))
+    expect(boutons.map((b) => b.getAttribute('tab'))).toEqual([
+      ...ONGLETS.map((o) => o.cle),
+      'retenues',
+    ])
+    expect(boutons.slice(0, 3).map((b) => b.getAttribute('href'))).toEqual(
+      ONGLETS.map((o) => o.href),
+    )
+    expect(boutons[3]).toHaveTextContent('Mes retenues')
   })
 
-  it('mène aux quatre écrans principaux, dont l’annuaire des structures', () => {
+  it('mène aux trois écrans principaux, dont l’annuaire des structures', () => {
     // L'annuaire est un onglet et non un raccourci de l'accueil : c'est ce
     // qu'on consulte en cherchant où se soigner, il doit être à un toucher.
-    expect(ONGLETS.map((o) => o.href)).toEqual(['/accueil', '/bons', '/conventionnes', '/profil'])
+    // Le profil a rejoint la barre du haut.
+    expect(ONGLETS.map((o) => o.href)).toEqual(['/accueil', '/bons', '/conventionnes'])
     expect(ONGLETS.map((o) => o.libelle)).toContain('Structures')
   })
 })

@@ -85,7 +85,7 @@ describe('barre d’actions', () => {
       'Passer en mode sombre',
       'Photos d’identité',
       'Notifications',
-      'Se déconnecter',
+      'Mon profil',
     ])
   })
 
@@ -207,15 +207,11 @@ describe('barre d’actions', () => {
     expect(simulations.poserPhoto).not.toHaveBeenCalled()
   })
 
-  it('ne déconnecte jamais sans confirmation', async () => {
-    const session = uneSession()
-    rendreEcran(<BarreActions />, session)
-    fireEvent.click(screen.getByLabelText('Se déconnecter'))
-    // Elle efface les bons du téléphone : on demande avant de le faire.
-    const feuille = screen.getByRole('dialog')
-    expect(feuille).toHaveTextContent('Se déconnecter d’IPM Mobile ?')
-    expect(session.deconnecter).not.toHaveBeenCalled()
-    fireEvent.click(within(feuille).getByText('Se déconnecter'))
-    await vi.waitFor(() => expect(session.deconnecter).toHaveBeenCalledWith('volontaire'))
+  it('mène au profil, où se trouve la déconnexion', async () => {
+    rendreEcran(<BarreActions />)
+    fireEvent.click(screen.getByLabelText('Mon profil'))
+    await vi.waitFor(() => expect(window.location.pathname).toBe('/profil'))
+    expect(screen.queryByLabelText('Se déconnecter')).toBeNull()
+    window.history.replaceState(null, '', '/')
   })
 })
