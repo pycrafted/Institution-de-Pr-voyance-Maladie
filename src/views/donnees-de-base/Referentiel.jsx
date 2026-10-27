@@ -73,6 +73,9 @@ const COULEUR_STATUT = {
   // États du remboursement (Traitements → Remboursement).
   'Non réglé': 'secondary',
   Réglé: 'success',
+  // Demandes de réinitialisation de photo (Participants).
+  'En attente': 'warning',
+  Refusée: 'danger',
 }
 
 /**
@@ -234,7 +237,13 @@ const Referentiel = ({ referentiel, onStats }) => {
 
   const [entrees, setEntrees] = useState([])
   const [chargement, setChargement] = useState(true)
-  const [segmentActif, setSegmentActif] = useState(segments?.valeurs[0].valeur || null)
+  // Le premier segment, sauf si l'adresse en demande un autre de la liste
+  // (« ?segment=a-valider ») : la cloche des notifications y mène.
+  const [segmentActif, setSegmentActif] = useState(() => {
+    const demande = new URLSearchParams(window.location.search).get('segment')
+    if (demande && segments?.valeurs.some((s) => s.valeur === demande)) return demande
+    return segments?.valeurs[0].valeur || null
+  })
   const [recherche, setRecherche] = useState('')
   // Un filtre peut partir d'une valeur (`defaut`) : l'exercice en cours, par
   // exemple, comme l'application d'origine.

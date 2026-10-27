@@ -21,7 +21,9 @@
  * contrôlée (le fournisseur est un opticien).
  */
 
-import { cilPrint } from '@coreui/icons'
+import { cilBan, cilCheckCircle, cilPrint } from '@coreui/icons'
+
+import { executerAction } from '../../../services/referentiels'
 
 import {
   BARRE_DOCUMENTS,
@@ -45,6 +47,13 @@ const entier = (valeur) => {
 
 /** Montant en francs CFA, lu comme sur le bon : « 263 160 ». */
 const montantFr = (n) => entier(n).toLocaleString('fr-FR')
+
+/**
+ * Un bon d'optique émis depuis le mobile moins de deux ans après le précédent
+ * du même bénéficiaire : il attend la décision de l'IPM (cf. le serveur,
+ * BonOptique.precedent_dans_le_delai).
+ */
+const enAttente = (b) => b.validation === 'En attente'
 
 export const BONS_OPTIQUE = {
   cle: 'bons-optique',
@@ -71,12 +80,52 @@ export const BONS_OPTIQUE = {
     reactive: 'rétabli',
   },
 
-  // Barre des Bons de pharmacie (cf. commun.js).
+  // Barre des Bons de pharmacie (cf. commun.js), plus un filtre « À valider » :
+  // les bons d'optique pris depuis le mobile avant les deux ans, que l'IPM
+  // accorde ou refuse.
   ...BARRE_DOCUMENTS,
+  segments: {
+    valeurs: [
+      ...BARRE_DOCUMENTS.segments.valeurs,
+      { valeur: 'a-valider', libelle: 'À valider', filtre: enAttente },
+    ],
+  },
 
   // Impression individuelle, comme les bons de pharmacie : le bon au modèle
   // de l'application d'origine, original et copie fournisseur, en PDF.
   actionsLigne: [
+    {
+      cle: 'valider',
+      libelle: 'Accorder le bon',
+      icone: cilCheckCircle,
+      classe: 'ddb-action-succes',
+      visible: enAttente,
+      confirmer: (b) =>
+        `Accorder le bon ${b.code} ?
+
+` +
+        `${b.beneficiaire || b.participant} a déjà eu un bon d’optique il y a moins de deux ans. ` +
+        'Accordé, le bon devient imprimable depuis le mobile.',
+      executer: async (b) => {
+        await executerAction('bons-optique', b.id, 'valider')
+        return `Bon ${b.code} accordé`
+      },
+    },
+    {
+      cle: 'refuser',
+      libelle: 'Refuser le bon',
+      icone: cilBan,
+      classe: 'ddb-action-danger',
+      danger: true,
+      visible: enAttente,
+      confirmer: (b) => `Refuser le bon ${b.code} ?
+
+Il sera annulé.`,
+      executer: async (b) => {
+        await executerAction('bons-optique', b.id, 'refuser')
+        return `Bon ${b.code} refusé et annulé`
+      },
+    },
     {
       cle: 'pdf',
       libelle: 'Imprimer le bon (PDF)',
@@ -97,6 +146,7 @@ export const BONS_OPTIQUE = {
     'fournisseur',
     'montantNet',
     'numeroFacture',
+    'validation',
   ],
 
   colonnes: [
@@ -144,6 +194,15 @@ export const BONS_OPTIQUE = {
       prestataireDe: 'codeFournisseur',
     },
     colonneRemboursementIntegral(),
+
+    // --- Validation (renouvellement avant deux ans) ------------------------
+    {
+      nom: 'validation',
+      libelle: 'Validation',
+      largeur: '110px',
+      calcule: true,
+      valeurTableau: (b) => b.validation || '-',
+    },
 
     // --- Montant net (colonne de la liste, calculé par le serveur) ---------
     {

@@ -424,7 +424,9 @@ $navbar-hauteur: 4.25rem;
 
   @media (prefers-reduced-motion: reduce) {
     .nav-link {
-      transition: background-color 0.14s ease, color 0.14s ease;
+      transition:
+        background-color 0.14s ease,
+        color 0.14s ease;
       &:hover {
         transform: none;
       }
@@ -769,4 +771,87 @@ $navbar-hauteur: 4.25rem;
   outline: none;
   box-shadow: 0 0 0 3px rgba(229, 38, 33, 0.22);
   border-radius: 8px;
+}
+
+// --- Cloche des notifications (components/header/Notifications.jsx) --------
+.app-notifs {
+  position: relative;
+}
+.app-notifs-cloche {
+  position: relative;
+}
+.app-notifs-pastille {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.1rem;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: $sar-red;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+}
+.app-notifs-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 1050;
+  width: 22rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.5rem;
+  border: 1px solid $openkm-card-border;
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.12);
+}
+.app-notifs-titre {
+  padding: 0.4rem 0.6rem 0.6rem;
+  font-weight: 700;
+}
+.app-notifs-vide {
+  margin: 0;
+  padding: 0.6rem;
+  color: $texte-doux;
+}
+.app-notifs-element {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.6rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.app-notifs-element:hover {
+  background: rgba($sar-red, 0.06);
+}
+.app-notifs-nombre {
+  flex: none;
+  min-width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: rgba($sar-red, 0.1);
+  color: $sar-red;
+  font-weight: 700;
+  line-height: 2rem;
+  text-align: center;
+}
+.app-notifs-textes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.app-notifs-libelle {
+  font-weight: 600;
+}
+.app-notifs-message {
+  font-size: 0.85rem;
+  color: $texte-doux;
 }

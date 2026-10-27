@@ -198,3 +198,11 @@ $prt-noir: #11151d;
   color: $prt-texte-doux;
   font-size: 0.95rem;
 }
+
+// Vignette de la photo visée par une demande de réinitialisation.
+.prt-vignette-photo {
+  width: 36px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 6px;
+}

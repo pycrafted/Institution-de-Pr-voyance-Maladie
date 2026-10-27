@@ -16,7 +16,15 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { COffcanvas, COffcanvasBody, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCloudUpload, cilPencil, cilPlus, cilTrash, cilUser, cilX } from '@coreui/icons'
+import {
+  cilCloudUpload,
+  cilPencil,
+  cilPlus,
+  cilReload,
+  cilTrash,
+  cilUser,
+  cilX,
+} from '@coreui/icons'
 
 import { erreursDeChamps, messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
@@ -103,31 +111,59 @@ const ChampPhoto = ({ col, valeur, onChanger }) => {
           )}
         </span>
 
-        <div className="ddb-photo-actions">
-          <button
-            type="button"
-            className="ddb-photo-bouton"
-            onClick={() => champFichier.current?.click()}
-          >
-            <CIcon icon={cilCloudUpload} className="ddb-photo-bouton-icone" />
-            {valeur ? 'Remplacer' : 'Ajouter une photo'}
-          </button>
-
-          {valeur && (
-            <button type="button" className="ddb-photo-retirer" onClick={() => onChanger(col, '')}>
-              <CIcon icon={cilTrash} className="ddb-photo-retirer-icone" />
-              Retirer
+        {col.reinitialisable ? (
+          // Photo d'identité d'un participant ou d'un ayant droit : elle se
+          // pose depuis l'application mobile, par le titulaire. L'IPM ne la
+          // remplace pas ; elle peut seulement l'effacer, pour que le
+          // titulaire en repose une (cf. Demandes de photo).
+          <div className="ddb-photo-actions">
+            {valeur ? (
+              <button
+                type="button"
+                className="ddb-photo-retirer"
+                onClick={() => onChanger(col, '')}
+              >
+                <CIcon icon={cilReload} className="ddb-photo-retirer-icone" />
+                Réinitialiser
+              </button>
+            ) : null}
+            <span className="ddb-photo-aide">
+              {valeur
+                ? 'La photo se pose depuis l’application mobile. La réinitialiser l’efface : le titulaire en reposera une.'
+                : 'Aucune photo : le titulaire la pose depuis l’application mobile.'}
+            </span>
+          </div>
+        ) : (
+          <div className="ddb-photo-actions">
+            <button
+              type="button"
+              className="ddb-photo-bouton"
+              onClick={() => champFichier.current?.click()}
+            >
+              <CIcon icon={cilCloudUpload} className="ddb-photo-bouton-icone" />
+              {valeur ? 'Remplacer' : 'Ajouter une photo'}
             </button>
-          )}
 
-          <input
-            ref={champFichier}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={(e) => choisir(e.target.files?.[0])}
-          />
-        </div>
+            {valeur && (
+              <button
+                type="button"
+                className="ddb-photo-retirer"
+                onClick={() => onChanger(col, '')}
+              >
+                <CIcon icon={cilTrash} className="ddb-photo-retirer-icone" />
+                Retirer
+              </button>
+            )}
+
+            <input
+              ref={champFichier}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => choisir(e.target.files?.[0])}
+            />
+          </div>
+        )}
       </div>
 
       {erreur && <span className="ddb-champ-erreur">{erreur}</span>}

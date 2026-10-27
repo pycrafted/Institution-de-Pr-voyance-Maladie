@@ -152,6 +152,9 @@ export const PARTICIPANTS = {
       libelle: 'Photo',
       libelleForm: 'Photo d’identité',
       type: 'photo',
+      // Posée depuis le mobile par le titulaire ; l'IPM ne fait que la
+      // réinitialiser (cf. demandesPhoto.js).
+      reinitialisable: true,
     },
     {
       nom: 'matricule',
@@ -739,6 +742,9 @@ export const FAMILLES = {
       libelle: 'Photo',
       libelleForm: 'Photo d’identité',
       type: 'photo',
+      // Posée depuis le mobile par le titulaire ; l'IPM ne fait que la
+      // réinitialiser (cf. demandesPhoto.js).
+      reinitialisable: true,
     },
     {
       // Composé par le serveur : société, matricule du participant, code du

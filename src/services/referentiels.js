@@ -36,6 +36,8 @@ const ENDPOINTS_API = {
   // « beneficiaires » : les familles, rattachées à un participant.
   participants: '/participants',
   beneficiaires: '/beneficiaires',
+  // Demandes de réinitialisation de photo, déposées depuis le mobile.
+  'demandes-photo': '/demandes-photo',
   // Module Documents (cf. backend/apps/documents).
   'bons-pharmacie': '/bons-pharmacie',
   'lettres-garantie': '/lettres-garantie',
@@ -70,12 +72,60 @@ const magasin = {}
  * fois au démarrage de l'application, avant d'afficher les écrans qui lisent
  * ces données de façon synchrone.
  */
+/**
+ * Les listes courtes qui alimentent les menus déroulants de presque tous les
+ * écrans : elles se chargent d'abord, et c'est elles seules que la connexion
+ * attend. Les autres - catalogue des médicaments, bons, factures, taux… -
+ * sont lourdes et propres à un écran, qui les lit de toute façon à son
+ * ouverture : elles suivent en arrière-plan, deux à la fois, pour ne pas
+ * saturer un petit serveur (l'hébergement gratuit ne traite que quelques
+ * requêtes en même temps).
+ */
+const ESSENTIELS = [
+  'types-beneficiaires',
+  'types-prestations',
+  'specialites',
+  'adherents',
+  'structure',
+  'journaux-comptables',
+  'banques',
+  'articles-achat',
+  'actes',
+  'fournisseurs-divers',
+  'fournisseurs-de-soins',
+  'participants',
+]
+
+// Une liste déjà en route n'est pas redemandée : l'écran qui l'ouvre pendant
+// le préchargement attend la même réponse.
+const enCours = {}
+
+function charger(cle) {
+  if (!enCours[cle]) {
+    enCours[cle] = request(`${ENDPOINTS_API[cle]}/`)
+      .then((lignes) => {
+        magasin[cle] = lignes
+        return lignes
+      })
+      .finally(() => {
+        delete enCours[cle]
+      })
+  }
+  return enCours[cle]
+}
+
 export async function prechargerReferentiels() {
-  await Promise.all(
-    Object.entries(ENDPOINTS_API).map(async ([cle, chemin]) => {
-      magasin[cle] = await request(`${chemin}/`)
-    }),
-  )
+  await Promise.all(ESSENTIELS.filter(servrParApi).map((cle) => charger(cle).catch(() => {})))
+  // Le reste, sans le faire attendre : deux à la fois.
+  const reste = Object.keys(ENDPOINTS_API).filter((cle) => !ESSENTIELS.includes(cle))
+  const suivant = async () => {
+    while (reste.length) {
+      const cle = reste.shift()
+      if (!magasin[cle]) await charger(cle).catch(() => {})
+    }
+  }
+  suivant()
+  suivant()
 }
 
 // Le suffixe de version force le rechargement du jeu de départ quand celui-ci
@@ -166,8 +216,7 @@ export async function listerEntrees(cleReferentiel) {
   if (servrParApi(cleReferentiel)) {
     // On rafraîchit le store au passage : l'écran affiche des données fraîches
     // et les lectures synchrones profitent de la même mise à jour.
-    magasin[cleReferentiel] = await request(`${ENDPOINTS_API[cleReferentiel]}/`)
-    return [...magasin[cleReferentiel]]
+    return [...(await charger(cleReferentiel))]
   }
   const tout = chargerTout()
   return differer([...(tout[cleReferentiel] || [])])

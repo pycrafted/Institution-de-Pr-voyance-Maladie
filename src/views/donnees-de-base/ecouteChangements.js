@@ -25,8 +25,12 @@ import { useEffect, useRef } from 'react'
 import { ecritureEnVol } from '../../services/api'
 import { ecoutable, etatReferentiel } from '../../services/referentiels'
 
-/** Rythme de croisière : assez court pour que l'apparition paraisse immédiate. */
-const DELAI = 3000
+/**
+ * Rythme de croisière : 10 s. À 3 s, chaque liste ouverte envoyait vingt
+ * requêtes par minute, qui passaient devant celles de l'utilisateur sur un
+ * petit serveur. Un bon émis au mobile apparaît en moins de dix secondes.
+ */
+const DELAI = 10000
 /**
  * Serveur muet ou en erreur : on espace (3 s → 6 s → 12 s…) plutôt que de
  * marteler une machine déjà en peine. Plafonné, pour retrouver le rythme normal

@@ -1,5 +1,6 @@
 /**
- * Bloc de droite de la barre supérieure : paramètres, identité, déconnexion.
+ * Bloc de droite de la barre supérieure : identité, notifications,
+ * paramètres, déconnexion.
  *
  * Trois cibles à plat, un clic chacune, aucun menu déroulant - la maquette de
  * référence n'affiche ni chevron ni avatar à côté du nom.
@@ -15,6 +16,7 @@ import CIcon from '@coreui/icons-react'
 import { cilAccountLogout, cilSettings } from '@coreui/icons'
 
 import { AUTH_EVENT, getMe, logout } from '../../services/api'
+import Notifications from './Notifications'
 
 const AppHeaderActions = () => {
   const navigate = useNavigate()
@@ -62,6 +64,9 @@ const AppHeaderActions = () => {
       </Link>
 
       <span className="app-navbar-filet" aria-hidden="true" />
+
+      {/* Ce qui attend l'IPM : demandes de photo, bons d'optique à valider. */}
+      <Notifications />
 
       <CTooltip content="Paramètres">
         <Link to="/parametres" className="app-navbar-icone" aria-label="Paramètres">
