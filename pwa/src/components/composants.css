@@ -670,7 +670,8 @@ button.ipm-carte-identite__portrait {
      l'icone et le libelle. Un carre fige (l'ancien aspect-ratio taille pour
      trois) la laissait a moitie vide. La hauteur suit donc le contenu, avec un
      plancher qui garde une cible confortable au doigt et une grille reguliere. */
-  min-height: 116px;
+  /* Sans icône, plus basse : le libellé seul n'a pas besoin de 116 px. */
+  min-height: 76px;
   display: flex;
   flex-direction: column;
   /* Contenu centré : icône puis libellé. */
@@ -694,6 +695,8 @@ button.ipm-carte-identite__portrait {
 }
 /* Document à venir : la même carte, éteinte d'un cran. */
 .ipm-tuile--avenir {
+  /* Place pour la puce « Bientôt » au-dessus du libellé. */
+  padding-top: var(--e-32);
   background: var(--ipm-surface-2);
   color: var(--ipm-texte-doux);
   box-shadow: none;
@@ -724,8 +727,10 @@ button.ipm-carte-identite__portrait {
 /* Puce « Bientôt » au coin de la carte à venir. */
 .ipm-tuile__puce {
   position: absolute;
-  top: var(--e-12);
-  inset-inline-end: var(--e-12);
+  /* Collée au coin : sans icône, la carte est basse et le libellé, centré,
+     passerait sinon sous la puce. */
+  top: var(--e-8);
+  inset-inline-end: var(--e-8);
   padding: 3px 8px;
   border-radius: var(--r-pill);
   background: var(--ipm-surface);
@@ -853,6 +858,9 @@ div.ipm-carte-liste {
 }
 .ipm-cercle--traite {
   color: var(--st-traite-texte);
+}
+.ipm-cercle--attente {
+  color: var(--st-attente-texte);
 }
 .ipm-cercle--expire {
   color: var(--st-expire-texte);
@@ -1373,6 +1381,10 @@ ion-modal.ipm-feuille {
   background: var(--st-traite-doux);
   color: var(--st-traite-texte);
 }
+.ipm-statut--attente {
+  background: var(--st-attente-doux);
+  color: var(--st-attente-texte);
+}
 .ipm-statut--expire {
   background: var(--st-expire-doux);
   color: var(--st-expire-texte);
@@ -1745,4 +1757,97 @@ select.ipm-formulaire__saisie {
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* Cases à cocher d'un formulaire (les articles du bon d'optique) : une ligne
+   par article, la case à gauche, toute la ligne touchable. */
+.ipm-formulaire__cases {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin-bottom: var(--e-16);
+}
+.ipm-formulaire__case {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  min-height: 52px;
+  padding: 0 var(--e-16);
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte);
+  cursor: pointer;
+}
+.ipm-formulaire__case:has(.ipm-formulaire__coche:checked) {
+  border-color: var(--ipm-rouge-texte);
+}
+.ipm-formulaire__coche {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  flex: none;
+  accent-color: var(--ipm-rouge-texte);
+}
+.ipm-formulaire__coche:disabled {
+  opacity: 0.55;
+}
+
+/* Pastille de non-lus sur la cloche de la barre d'actions. */
+.ipm-barre-actions__icone {
+  position: relative;
+  display: inline-flex;
+}
+.ipm-barre-actions__pastille {
+  position: absolute;
+  top: -4px;
+  right: -9px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-rouge);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 17px;
+  text-align: center;
+}
+
+/* Feuille « Notifications » : une carte par décision de l'IPM. */
+.notifs__liste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+  margin: 0 0 var(--e-16);
+  padding: 0;
+  list-style: none;
+}
+.notifs__element {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: var(--e-12) var(--e-16);
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte);
+  text-align: left;
+}
+.notifs__element:disabled {
+  opacity: 1;
+  cursor: default;
+}
+.notifs__titre {
+  font-weight: 700;
+}
+.notifs__message {
+  font-size: 0.875rem;
+  color: var(--ipm-texte-doux);
+}
+.notifs__date {
+  font-size: 0.75rem;
+  color: var(--ipm-texte-doux);
 }

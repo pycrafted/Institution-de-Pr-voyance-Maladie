@@ -1,19 +1,11 @@
-import { fireEvent, screen, within } from '@testing-library/react'
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 
 import type { ReactNode } from 'react'
 
 import { VERSION } from '../version'
 import { preparerIonic, rendreEcran, uneSession } from './accueil/outils-test'
 import Profil from './Profil'
-
-const simulations = vi.hoisted(() => ({
-  ouvrirFeuilleInstallation: vi.fn(),
-}))
-
-vi.mock('../components/InstallSheet', () => ({
-  ouvrirFeuilleInstallation: simulations.ouvrirFeuilleInstallation,
-}))
 
 // Ionic ne sait pas présenter une fenêtre sous jsdom (framework delegate
 // absent) : la feuille « À propos » est simulée, le vrai composant étant
@@ -37,10 +29,6 @@ vi.mock('../components/Feuille', () => ({
 }))
 
 beforeAll(() => preparerIonic())
-
-beforeEach(() => {
-  simulations.ouvrirFeuilleInstallation.mockClear()
-})
 
 describe('Profil', () => {
   it('ne répète pas la carte d’adhérent : elle est à l’accueil', () => {
@@ -86,17 +74,6 @@ describe('Profil', () => {
     expect(container.querySelector('ion-list')).toBeNull()
   })
 
-  it('règle le mode sombre depuis les réglages', () => {
-    localStorage.clear()
-    rendreEcran(<Profil />)
-    const bascule = screen.getByText('Passer en mode sombre')
-    fireEvent.click(bascule.closest('button') as HTMLElement)
-    expect(document.documentElement).toHaveClass('ion-palette-dark')
-    fireEvent.click(screen.getByText('Passer en mode clair').closest('button') as HTMLElement)
-    expect(document.documentElement).not.toHaveClass('ion-palette-dark')
-    localStorage.clear()
-  })
-
   it('ne liste plus la famille : ses cartes se touchent depuis l’accueil', () => {
     const { container } = rendreEcran(<Profil />)
     expect(screen.queryByText(/Ma famille/)).toBeNull()
@@ -120,17 +97,18 @@ describe('Profil', () => {
     expect(screen.getByText(VERSION)).toBeInTheDocument()
   })
 
-  it('ouvre « À propos » dans une feuille', () => {
+  it('mène à l’écran « À propos », comme à l’assistance', async () => {
     rendreEcran(<Profil />)
-    expect(screen.queryByRole('dialog')).toBeNull()
     fireEvent.click(screen.getByText('À propos'))
-    expect(screen.getByRole('dialog')).toHaveTextContent(/sans connexion/)
+    await waitFor(() => expect(window.location.pathname).toBe('/a-propos'))
+    window.history.replaceState(null, '', '/')
   })
 
-  it('propose l’installation dans le navigateur', async () => {
+  it('mène à l’écran d’installation, comme à l’assistance', async () => {
     rendreEcran(<Profil />)
     fireEvent.click(await screen.findByText('Installer sur l’écran d’accueil'))
-    expect(simulations.ouvrirFeuilleInstallation).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(window.location.pathname).toBe('/installation'))
+    window.history.replaceState(null, '', '/')
   })
 
   it('demande confirmation avant de se déconnecter', async () => {

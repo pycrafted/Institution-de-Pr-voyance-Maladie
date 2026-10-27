@@ -48,11 +48,11 @@ describe('§3.1 barre d’onglets flottante', () => {
     expect(boutons.map((b) => b.getAttribute('href'))).toEqual(ONGLETS.map((o) => o.href))
   })
 
-  it('mène aux quatre écrans principaux, dont l’annuaire des conventionnés', () => {
+  it('mène aux quatre écrans principaux, dont l’annuaire des structures', () => {
     // L'annuaire est un onglet et non un raccourci de l'accueil : c'est ce
     // qu'on consulte en cherchant où se soigner, il doit être à un toucher.
     expect(ONGLETS.map((o) => o.href)).toEqual(['/accueil', '/bons', '/conventionnes', '/profil'])
-    expect(ONGLETS.map((o) => o.libelle)).toContain('Conventionnés')
+    expect(ONGLETS.map((o) => o.libelle)).toContain('Structures')
   })
 })
 
@@ -193,28 +193,29 @@ describe('§3.4 cartes de service et raccourcis', () => {
     expect(ouvrir).toHaveBeenCalledWith(documentParCle('bon-pharmacie'))
   })
 
-  it('pose le rouge sur l’icône, pas sur toute la carte du document ouvert', () => {
+  it('ne peint pas toute la carte du document ouvert en rouge', () => {
     const { container } = rendre(<GrilleServices onOuvrir={vi.fn()} onIndisponible={vi.fn()} />)
     const carte = screen.getByLabelText('Bon de pharmacie')
     expect(carte).toHaveClass('ipm-tuile--ouverte')
     expect(carte).not.toHaveClass('ipm-tuile--rouge')
-    expect(container.querySelector('.ipm-tuile--ouverte .ipm-tuile__icone')).not.toBeNull()
+    // Plus d'icône sur la carte : le libellé seul.
+    expect(container.querySelector('.ipm-tuile__icone')).toBeNull()
   })
 
   it('éteint un document à venir, le dit, mais le laisse touchable', () => {
     const ouvrir = vi.fn()
     const indisponible = vi.fn()
     const { container } = rendre(<GrilleServices onOuvrir={ouvrir} onIndisponible={indisponible} />)
-    const carte = screen.getByLabelText("Bon d'optique, bientôt disponible")
+    const carte = screen.getByLabelText('LG hospitalisation, bientôt disponible')
     // Éteinte d'un cran par rapport à un document ouvert (§3.4).
     expect(carte).toHaveClass('ipm-tuile--avenir')
     // Surtout pas aria-disabled : la carte réagit (elle ouvre la feuille).
     expect(carte).not.toHaveAttribute('aria-disabled')
     expect(
-      container.querySelector('[data-service="bon-optique"] .ipm-tuile__puce')?.textContent,
+      container.querySelector('[data-service="hospitalisation"] .ipm-tuile__puce')?.textContent,
     ).toBe('Bientôt')
     fireEvent.click(carte)
-    expect(indisponible).toHaveBeenCalledWith(documentParCle('bon-optique'))
+    expect(indisponible).toHaveBeenCalledWith(documentParCle('hospitalisation'))
     expect(ouvrir).not.toHaveBeenCalled()
   })
 })

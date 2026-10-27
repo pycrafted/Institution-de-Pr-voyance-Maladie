@@ -52,9 +52,10 @@ describe('Identification', () => {
     expect(screen.getByText(/Votre session a expiré/)).toBeInTheDocument()
   })
 
-  it('confirme une déconnexion volontaire', () => {
+  it('n’affiche aucun avis après une déconnexion volontaire', () => {
     rendreEcran(<Identification />, anonyme({ motifDeconnexion: 'volontaire' }))
-    expect(screen.getByText(/Vous êtes déconnecté/)).toBeInTheDocument()
+    expect(screen.queryByText(/Vous êtes déconnecté/)).toBeNull()
+    expect(screen.queryByRole('status')).toBeNull()
   })
 
   it('sans mot de passe, le réclame au lieu d’appeler le serveur', async () => {

@@ -22,7 +22,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import { haptique } from '../hooks/haptique'
 
 /** Teinte du cercle d'icône : un statut de document, la marque, ou neutre. */
-export type TeinteCarte = 'valide' | 'traite' | 'expire' | 'annule' | 'rouge' | 'neutre'
+export type TeinteCarte = 'valide' | 'attente' | 'traite' | 'expire' | 'annule' | 'rouge' | 'neutre'
 
 interface Props {
   /** Icône ionicons dessinée dans le cercle 44 de gauche. */

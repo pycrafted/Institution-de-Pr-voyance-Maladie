@@ -30,7 +30,6 @@ import {
   callOutline,
   chevronDown,
   cloudOfflineOutline,
-  locationOutline,
   medicalOutline,
   navigateOutline,
   warningOutline,
@@ -65,11 +64,11 @@ export default function Conventionnes() {
   const enLigne = useOnline()
   const [specialite, setSpecialite] = useState(TOUS)
 
-  /** « Toutes les catégories », puis une entrée par spécialité, avec son compte. */
+  /** « Toutes les structures », puis une entrée par spécialité, avec son compte. */
   const categories = useMemo(() => {
     if (!structures) return []
     return [
-      { cle: TOUS, libelle: 'Toutes les catégories', nombre: structures.length },
+      { cle: TOUS, libelle: 'Toutes les structures', nombre: structures.length },
       ...filtresSpecialites(structures).map((f) => ({
         cle: f.code,
         libelle: f.libelle,
@@ -134,7 +133,7 @@ export default function Conventionnes() {
         teinte="neutre"
         titre="Aucune structure trouvée"
         message="Aucune structure dans cette catégorie."
-        action={{ libelle: 'Toutes les catégories', onClick: toutAfficher, secondaire: true }}
+        action={{ libelle: 'Toutes les structures', onClick: toutAfficher, secondaire: true }}
       />
     )
   } else {
@@ -176,12 +175,13 @@ export default function Conventionnes() {
              pharmacie »), pas un nom. Un `select` natif ouvre le sélecteur du
              téléphone, celui que l'employé connaît déjà. */
           <div className="ipm-menu-categorie">
-            <label className="ipm-menu-categorie__libelle" htmlFor="conventionnes-categorie">
-              Catégorie
-            </label>
+            {/* Pas de libellé visible : le choix affiché (« Toutes les
+                structures », « Pharmacies »…) se suffit. Le nom reste porté
+                pour les lecteurs d'écran. */}
             <div className="ipm-menu-categorie__cadre">
               <select
                 id="conventionnes-categorie"
+                aria-label="Catégorie"
                 className="ipm-menu-categorie__choix"
                 value={specialite}
                 onChange={(e) => {
@@ -191,7 +191,7 @@ export default function Conventionnes() {
               >
                 {categories.map((categorie) => (
                   <option key={categorie.cle} value={categorie.cle}>
-                    {categorie.libelle} ({categorie.nombre})
+                    {categorie.libelle}
                   </option>
                 ))}
               </select>
@@ -230,20 +230,15 @@ function CarteStructure({ structure, rang }: { structure: Conventionne; rang: nu
     <CarteListe
       rang={rang}
       titre={nom}
+      // Le nom, puis la spécialité et l'adresse sur une ligne. Le numéro ne
+      // s'écrit plus : le bouton « Appeler » le compose, et le lecteur d'écran
+      // l'annonce (étiquette du bouton).
       details={
-        <>
+        <span>
           {specialite && <span className="conventionnes__specialite">{specialite}</span>}
-          <span className="conventionnes__ligne">
-            <IonIcon icon={locationOutline} aria-hidden="true" />
-            <span>{adresse || 'Adresse non communiquée'}</span>
-          </span>
-          <span className="conventionnes__ligne">
-            <IonIcon icon={callOutline} aria-hidden="true" />
-            <span className={numero ? 'ipm-chiffres' : undefined}>
-              {numero || 'Téléphone non communiqué'}
-            </span>
-          </span>
-        </>
+          {specialite && adresse ? ' · ' : ''}
+          {adresse}
+        </span>
       }
       puce={
         <span className="conventionnes__actions">
@@ -251,7 +246,7 @@ function CarteStructure({ structure, rang }: { structure: Conventionne; rang: nu
             <a
               className="conventionnes__action ipm-cercle--neutre ipm-appui"
               href={lien}
-              aria-label={`Appeler ${nom}`}
+              aria-label={`Appeler ${nom}${numero ? ` au ${numero}` : ''}`}
               onClick={() => haptique.leger()}
             >
               <IonIcon icon={callOutline} aria-hidden="true" />

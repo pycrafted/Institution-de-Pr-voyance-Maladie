@@ -11,7 +11,7 @@
  * réglage — ce que §4 interdit.
  *
  * Pourquoi un catalogue déclaratif ? L'IPM sait produire quatre documents
- * mais l'API mobile n'en expose qu'un aujourd'hui. Le jour où une API existe,
+ * mais l'API mobile n'en expose que trois aujourd'hui. Le jour où une API existe,
  * on bascule `disponible` et on renseigne `route` : aucun écran n'est à
  * retoucher, et la grille accepte sans modification un cinquième type.
  * Cf. README.md, « Ouvrir un nouveau service ».
@@ -76,8 +76,8 @@ export const DOCUMENTS: readonly TypeDocument[] = [
     libellePluriel: "Bons d'optique",
     description: "Bon à présenter chez l'opticien conventionné.",
     icone: eyeOutline,
-    route: null,
-    disponible: false,
+    route: ROUTE_ASSISTANT,
+    disponible: true,
   },
   {
     cle: 'lettre-garantie',

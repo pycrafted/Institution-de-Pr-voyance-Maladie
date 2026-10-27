@@ -118,12 +118,13 @@ export function lienTelephone(valeur: string | null | undefined): string | null 
  * permission que l'employé lui a déjà donnée — l'application n'a donc rien à
  * demander, ni rien à savoir de ses déplacements.
  *
- * Plans d'Apple sur iPhone, Google Maps ailleurs : chacun ouvre l'application
- * installée d'office sur le téléphone (et, à défaut, sa version web).
+ * Google Maps partout, iPhone compris : le lien ouvre l'application si elle
+ * est installée, sa version web sinon. Gratuit et sans clé : ce n'est qu'un
+ * lien, aucune API Google n'est appelée.
  * La position de la fiche si l'IPM l'a renseignée ; sinon le nom et l'adresse
  * écrite, que la carte cherche elle-même. Rien du tout : null, pas de bouton.
  */
-export function lienItineraire(structure: Conventionne, surIOS: boolean): string | null {
+export function lienItineraire(structure: Conventionne): string | null {
   let destination: string
   if (structure.position) {
     destination = `${structure.position.latitude},${structure.position.longitude}`
@@ -134,9 +135,7 @@ export function lienItineraire(structure: Conventionne, surIOS: boolean): string
     destination = [nom, structure.adresse, 'Sénégal'].filter(Boolean).join(', ')
   }
   const cible = encodeURIComponent(destination)
-  return surIOS
-    ? `https://maps.apple.com/?daddr=${cible}&dirflg=d`
-    : `https://www.google.com/maps/dir/?api=1&destination=${cible}`
+  return `https://www.google.com/maps/dir/?api=1&destination=${cible}&travelmode=driving`
 }
 
 /** Nom rendu lisible : « CLINIQUE DU CAP » → « Clinique du Cap ». */

@@ -24,10 +24,6 @@
   font-size: 20px;
 }
 
-.profil__a-propos {
-  margin: 0 0 var(--e-12);
-}
-
 /* --- Mes informations ---------------------------------------------------- */
 /*
  * Les rubriques dans une seule carte, en deux colonnes : le libellé au-dessus

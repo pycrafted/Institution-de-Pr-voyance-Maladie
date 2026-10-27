@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import Splash, { FOND_LANCEMENT } from './Splash'
+import { changerApparence } from '../theme/apparence'
+import Splash, { FOND_LANCEMENT, FOND_LANCEMENT_SOMBRE } from './Splash'
 
 function ajouterMeta(couleur: string, media: string): HTMLMetaElement {
   const meta = document.createElement('meta')
@@ -31,5 +32,16 @@ describe('Splash', () => {
     unmount()
     expect(clair.content).toBe('#f7f5f3')
     expect(sombre.content).toBe('#161413')
+  })
+
+  it('suit le mode sombre choisi dans l’application', () => {
+    const meta = ajouterMeta('#f7f5f3', '(prefers-color-scheme: light)')
+    changerApparence('sombre')
+    const { unmount } = render(<Splash />)
+    expect(meta.content).toBe(FOND_LANCEMENT_SOMBRE)
+    expect(document.documentElement).toHaveClass('ion-palette-dark')
+    unmount()
+    changerApparence('clair')
+    localStorage.clear()
   })
 })

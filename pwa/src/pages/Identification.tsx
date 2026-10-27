@@ -8,7 +8,6 @@
 import { IonContent, IonIcon, IonPage } from '@ionic/react'
 import {
   alertCircle,
-  checkmarkCircleOutline,
   eyeOffOutline,
   eyeOutline,
   idCardOutline,
@@ -72,9 +71,7 @@ export default function Identification() {
 
           <main className="identification__corps">
             <h1 className="identification__titre">Connexion</h1>
-            <p className="identification__accroche">
-              Vos documents IPM, dans votre poche.
-            </p>
+            <p className="identification__accroche">Vos documents IPM, dans votre poche.</p>
 
             <OfflineBanner />
 
@@ -84,12 +81,8 @@ export default function Identification() {
                 <span>Votre session a expiré. Identifiez-vous à nouveau pour continuer.</span>
               </div>
             )}
-            {motifDeconnexion === 'volontaire' && (
-              <div className="identification__avis" role="status">
-                <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />
-                <span>Vous êtes déconnecté. Les données de ce téléphone ont été effacées.</span>
-              </div>
-            )}
+            {/* Pas d'avis après une déconnexion volontaire : l'employé vient de la
+                demander, l'écran de connexion suffit à la confirmer. */}
 
             {/* Pas de bouton « submit » : l'envoi passe par « Continuer » ou
                 par la touche OK du clavier, jamais par un envoi implicite. */}

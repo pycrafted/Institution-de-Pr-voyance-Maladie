@@ -57,7 +57,7 @@ export default defineConfig({
         // les <meta name="theme-color"> d'index.html et que les PNG de
         // public/splash/ — sans quoi le lancement ferait un saut de couleur.
         theme_color: '#1D1D1B',
-        background_color: '#1D1D1B',
+        background_color: '#ECE4E3',
         categories: ['medical', 'health'],
         // `?v=` : Chrome ne refait l'icône de l'écran d'accueil que si le
         // MANIFESTE a changé - il ne retélécharge pas les fichiers pour

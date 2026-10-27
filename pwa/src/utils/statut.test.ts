@@ -22,6 +22,7 @@ describe('statuts', () => {
   it('libellés français et ordre des filtres', () => {
     expect(ORDRE_STATUTS.map((s) => infoStatut(s).libelle)).toEqual([
       'Valide',
+      'En attente',
       'Traité',
       'Expiré',
       'Annulé',

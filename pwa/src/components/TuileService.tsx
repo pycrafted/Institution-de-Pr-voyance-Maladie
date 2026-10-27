@@ -20,8 +20,6 @@
  * l'effet d'appui `scale(.97)`.
  */
 
-import { IonIcon } from '@ionic/react'
-
 import { haptique } from '../hooks/haptique'
 import { MENTION_BIENTOT, type TypeDocument } from '../services/catalogue'
 
@@ -59,7 +57,8 @@ export default function TuileService({ document, onOuvrir, onIndisponible }: Pro
           {MENTION_BIENTOT}
         </span>
       )}
-      <IonIcon className="ipm-tuile__icone" icon={document.icone} aria-hidden="true" />
+      {/* Plus d'icône sur la carte (essai demandé) : le libellé seul. L'icône
+          reste au catalogue (services/catalogue.ts), pour y revenir d'un geste. */}
       <span className="ipm-tuile__libelle">{document.libelle}</span>
     </button>
   )

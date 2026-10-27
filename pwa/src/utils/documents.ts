@@ -10,7 +10,11 @@
 import type { Bon, GenreDocument } from '../types/api'
 
 /** Les genres que l'API sait émettre, qui sont aussi des clés du catalogue. */
-export const GENRES_DOCUMENT: readonly GenreDocument[] = ['bon-pharmacie', 'lettre-garantie']
+export const GENRES_DOCUMENT: readonly GenreDocument[] = [
+  'bon-pharmacie',
+  'bon-optique',
+  'lettre-garantie',
+]
 
 export function estGenreDocument(valeur: string): valeur is GenreDocument {
   return (GENRES_DOCUMENT as readonly string[]).includes(valeur)
@@ -21,7 +25,7 @@ export function genreDe(document: Pick<Bon, 'genre'>): GenreDocument {
   return document.genre ?? 'bon-pharmacie'
 }
 
-/** Clé unique : « bon-pharmacie:12 », « lettre-garantie:12 ». */
+/** Clé unique : « bon-pharmacie:12 », « bon-optique:12 », « lettre-garantie:12 ». */
 export function cleDocument(document: Pick<Bon, 'genre' | 'id'>): string {
   return `${genreDe(document)}:${document.id}`
 }
@@ -31,11 +35,13 @@ export function memeDocument(a: Pick<Bon, 'genre' | 'id'>, b: Pick<Bon, 'genre' 
 }
 
 /**
- * Préfixe de la route du détail : /bons/:id, /bons/lettres/:id. Les lettres
- * restent sous /bons : l'onglet « Mes bons » reste allumé sur leur détail.
+ * Préfixe de la route du détail : /bons/:id, /bons/optique/:id,
+ * /bons/lettres/:id. Tout reste sous /bons : l'onglet « Mes bons » reste
+ * allumé sur le détail.
  */
 export const PREFIXE_ROUTE: Record<GenreDocument, string> = {
   'bon-pharmacie': '/bons',
+  'bon-optique': '/bons/optique',
   'lettre-garantie': '/bons/lettres',
 }
 
@@ -44,10 +50,11 @@ export function cheminDocument(document: Pick<Bon, 'genre' | 'id'>): string {
   return `${PREFIXE_ROUTE[genreDe(document)]}/${document.id}`
 }
 
-/** Genre lu dans un chemin de détail (« /bons/lettres/4 »), ou null. */
+/** Genre lu dans un chemin de détail (« /bons/lettres/4 », « /bons/optique/4 »), ou null. */
 export function genreDuChemin(chemin: string | undefined): GenreDocument | null {
   if (!chemin) return null
   if (/^\/bons\/lettres(\/|$)/.test(chemin)) return 'lettre-garantie'
+  if (/^\/bons\/optique(\/|$)/.test(chemin)) return 'bon-optique'
   if (/^\/bons(\/|$)/.test(chemin)) return 'bon-pharmacie'
   return null
 }

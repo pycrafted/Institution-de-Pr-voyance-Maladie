@@ -111,19 +111,19 @@ describe('Conventionnés', () => {
     expect(container.querySelector('ion-segment')).toBeNull()
   })
 
-  it('liste les catégories présentes, les plus fournies d’abord, avec leur compte', async () => {
+  it('liste les catégories présentes, les plus fournies d’abord', async () => {
     fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
     rendreEcran(<Conventionnes />)
     await screen.findByText('Pharmacie du Plateau')
 
     const libelles = Array.from(menu().options).map((o) => o.textContent)
     expect(libelles).toEqual([
-      'Toutes les catégories (4)',
-      'Pharmacies (2)',
-      'Cliniques (1)',
-      'Laboratoires d’analyses (1)',
+      'Toutes les structures',
+      'Pharmacies',
+      'Cliniques',
+      'Laboratoires d’analyses',
     ])
-    // Toutes les catégories au départ : l'annuaire entier.
+    // Toutes les structures au départ : l'annuaire entier.
     expect(menu().value).toBe('*')
   })
 
@@ -147,17 +147,18 @@ describe('Conventionnés', () => {
     rendreEcran(<Conventionnes />)
     await screen.findByText('Pharmacie du Plateau')
 
-    expect(screen.getByLabelText('Appeler Clinique du Cap')).toHaveAttribute(
+    expect(screen.getByLabelText(/^Appeler Clinique du Cap/)).toHaveAttribute(
       'href',
       'tel:338480000',
     )
-    expect(screen.getByLabelText("Appeler Pharmacie de l'Aeroport")).toHaveAttribute(
+    expect(screen.getByLabelText(/^Appeler Pharmacie de l'Aeroport/)).toHaveAttribute(
       'href',
       'tel:+221338201122',
     )
-    expect(screen.queryByLabelText('Appeler Bio 24')).toBeNull()
-    expect(screen.getByText('Téléphone non communiqué')).toBeInTheDocument()
-    expect(screen.getByText('Adresse non communiquée')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/^Appeler Bio 24/)).toBeNull()
+    // Le numéro ne s'écrit plus sur la carte : le bouton le compose et le dit.
+    expect(screen.getByLabelText(/^Appeler Clinique du Cap au /)).toBeInTheDocument()
+    expect(screen.queryByText('Téléphone non communiqué')).toBeNull()
   })
 
   it('chaque structure a son bouton « S’y rendre », qui ouvre la carte dans l’application', async () => {
@@ -186,7 +187,7 @@ describe('Conventionnés', () => {
     choisir('99') // aucune structure ne porte ce code
     expect(await screen.findByText('Aucune structure trouvée')).toBeInTheDocument()
 
-    fireEvent.click(screen.getByText('Toutes les catégories'))
+    fireEvent.click(screen.getByRole('button', { name: 'Toutes les structures' }))
     expect(await screen.findByText('Pharmacie du Plateau')).toBeInTheDocument()
     expect(menu().value).toBe('*')
   })

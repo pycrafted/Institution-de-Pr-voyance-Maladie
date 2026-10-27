@@ -45,10 +45,13 @@
  * au-dessus, « S'y rendre » en dessous. Cercles 44 de la charte : ce sont les
  * SEULES zones touchables de la carte, d'où des cibles pleine taille.
  */
+/* Côte à côte, et non empilés : la carte garde la hauteur de ses deux
+   lignes de texte au lieu de s'étirer pour loger les deux boutons. */
 .conventionnes__actions {
   display: flex;
-  flex-direction: column;
-  gap: var(--e-8);
+  flex-direction: row;
+  align-items: center;
+  gap: var(--e-4);
 }
 .conventionnes__action {
   display: grid;
@@ -66,4 +69,14 @@
   background: transparent;
   color: var(--ipm-texte);
   box-shadow: none;
+}
+
+/* Le nom de la structure est ce qu'on cherche : il passe sur deux lignes
+   plutôt que d'être coupé, et ne s'abrège qu'au-delà. */
+.conventionnes .ipm-carte-liste__titre {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
 }

@@ -8,7 +8,8 @@ import { chargerBons, etatBons, memoriserBon, reinitialiserBons } from './bons'
 
 const fetchMock = vi.fn<typeof fetch>()
 // Les bons répondent comme chaque test le décide ; les lettres de garantie,
-// lues en même temps (api/mobile.listerBons), par la liste `lettres`.
+// lues en même temps (api/mobile.listerBons), par la liste `lettres` ; les
+// bons d'optique, par une liste vide.
 const bonsMock = vi.fn<typeof fetch>()
 let lettres: Bon[] = []
 
@@ -19,7 +20,9 @@ beforeEach(async () => {
   fetchMock.mockImplementation((entree, init) =>
     String(entree).includes('/lettres-garantie/')
       ? Promise.resolve(reponseJson(lettres))
-      : bonsMock(entree, init),
+      : String(entree).includes('/bons-optique/')
+        ? Promise.resolve(reponseJson([]))
+        : bonsMock(entree, init),
   )
   configurerClient({ apiBase: '/api', jeton: 'J', fetch: fetchMock, surSessionExpiree: null })
   reinitialiserBons()

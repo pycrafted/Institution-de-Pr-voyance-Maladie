@@ -5,8 +5,8 @@
  * Plein écran, comme les cartes natives : la barre d'onglets s'efface, la
  * carte occupe tout, et flottent dessus un bouton retour et un bouton de
  * recentrage. En bas, une feuille dit l'essentiel — la structure, le temps et
- * la distance — et propose de lancer le guidage pas à pas dans Plans ou
- * Google Maps (seules capables de guider à la voix) ou d'appeler.
+ * la distance — et propose de lancer le guidage pas à pas dans Google Maps
+ * (capable de guider à la voix) ou d'appeler.
  *
  * Chaque obstacle a son message plutôt qu'une carte muette : localisation
  * refusée, page non sécurisée (HTTP), structure pas encore localisée par
@@ -38,7 +38,6 @@ import { BoutonPrincipal } from '../components/Boutons'
 import EtatVide from '../components/EtatVide'
 import { haptique } from '../hooks/haptique'
 import { nomPropre } from '../utils/libelles'
-import { estIOS } from '../utils/plateforme'
 import type { CarteHandle } from './itineraire/Carte'
 import { dureeAPied, formaterDistance, formaterDuree } from './itineraire/trajet'
 import { useGeolocalisation, type EtatLocalisation } from './itineraire/useGeolocalisation'
@@ -91,7 +90,7 @@ export default function Itineraire({ match }: ItineraireProps) {
             icone={searchOutline}
             teinte="neutre"
             titre="Structure introuvable"
-            message="Elle ne figure plus dans l’annuaire des conventionnés de votre IPM."
+            message="Elle ne figure plus dans l’annuaire des structures de votre IPM."
             action={{ libelle: 'Retour à l’annuaire', onClick: retour, secondaire: true }}
           />
         </IonContent>
@@ -100,7 +99,7 @@ export default function Itineraire({ match }: ItineraireProps) {
   }
 
   const telephone = structure ? lienTelephone(structure.telephone) : null
-  const guidage = structure ? lienItineraire(structure, estIOS()) : null
+  const guidage = structure ? lienItineraire(structure) : null
 
   return (
     <IonPage className="itineraire">
@@ -164,7 +163,7 @@ export default function Itineraire({ match }: ItineraireProps) {
                     icone={navigateOutline}
                     onClick={() => window.open(guidage, '_blank', 'noopener,noreferrer')}
                   >
-                    {estIOS() ? 'Guidage dans Plans' : 'Guidage dans Google Maps'}
+                    Guidage dans Google Maps
                   </BoutonPrincipal>
                 )}
                 {telephone && (

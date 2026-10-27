@@ -18,26 +18,38 @@
  * donc à la barre et non à un écran.
  */
 
-import { IonIcon } from '@ionic/react'
+import { IonIcon, useIonRouter } from '@ionic/react'
 // Icônes PLEINES, comme la barre du bas : en mode Material, elle rend le
 // variant plein (`md={iconePleine}`), jamais celui au trait. Les deux barres
 // doivent se répondre.
 import { camera, logOut, moon, notifications, sunny } from 'ionicons/icons'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { haptique } from '../hooks/haptique'
+import { useNotifications } from '../hooks/useNotifications'
 import { useSession } from '../session'
 import { basculerApparence, useApparence } from '../theme/apparence'
 import { BoutonPrincipal } from './Boutons'
 import Feuille from './Feuille'
 import FeuilleChoix from './FeuilleChoix'
 import PhotosModal from './PhotosModal'
+import { dateHeure } from '../utils/format'
 
 export default function BarreActions() {
   const { deconnecter } = useSession()
   const sombre = useApparence() === 'sombre'
   const [photosOuvertes, setPhotosOuvertes] = useState(false)
   const [notifsOuvertes, setNotifsOuvertes] = useState(false)
+  const notifs = useNotifications()
+  const routeur = useIonRouter()
+  // La cloche ouverte : on relit, et tout ce qu'elle montre devient lu.
+  useEffect(() => {
+    if (notifsOuvertes) void notifs.relire()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notifsOuvertes])
+  useEffect(() => {
+    if (notifsOuvertes) notifs.marquerLues()
+  }, [notifsOuvertes, notifs])
   // Déconnexion : jamais sans confirmation, elle efface les bons du téléphone.
   const [deconnexionDemandee, setDeconnexionDemandee] = useState(false)
 
@@ -66,7 +78,10 @@ export default function BarreActions() {
       cle: 'notifications',
       icone: notifications,
       libelle: 'Notifications',
-      etiquette: 'Notifications',
+      etiquette: notifs.nonLues
+        ? `Notifications : ${notifs.nonLues} nouvelle${notifs.nonLues > 1 ? 's' : ''}`
+        : 'Notifications',
+      pastille: notifs.nonLues,
       agir: () => {
         haptique.leger()
         setNotifsOuvertes(true)
@@ -95,7 +110,14 @@ export default function BarreActions() {
             aria-label={action.etiquette}
             onClick={action.agir}
           >
-            <IonIcon icon={action.icone} aria-hidden="true" />
+            <span className="ipm-barre-actions__icone">
+              <IonIcon icon={action.icone} aria-hidden="true" />
+              {'pastille' in action && action.pastille ? (
+                <span className="ipm-barre-actions__pastille" aria-hidden="true">
+                  {action.pastille > 9 ? '9+' : action.pastille}
+                </span>
+              ) : null}
+            </span>
             <span className="ipm-barre-actions__libelle">{action.libelle}</span>
           </button>
         ))}
@@ -109,7 +131,30 @@ export default function BarreActions() {
         titre="Notifications"
         icone={notifications}
       >
-        <p className="ipm-feuille-texte">Vous n’avez aucune notification pour le moment.</p>
+        {notifs.notifications.length === 0 ? (
+          <p className="ipm-feuille-texte">Vous n’avez aucune notification pour le moment.</p>
+        ) : (
+          <ul className="notifs__liste">
+            {notifs.notifications.map((n) => (
+              <li key={n.id}>
+                <button
+                  type="button"
+                  className="notifs__element ipm-appui"
+                  disabled={!n.lien}
+                  onClick={() => {
+                    if (!n.lien) return
+                    setNotifsOuvertes(false)
+                    routeur.push(n.lien, 'forward', 'push')
+                  }}
+                >
+                  <span className="notifs__titre">{n.titre}</span>
+                  <span className="notifs__message">{n.message}</span>
+                  <span className="notifs__date">{dateHeure(n.date)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         <BoutonPrincipal onClick={() => setNotifsOuvertes(false)}>Compris</BoutonPrincipal>
       </Feuille>
 

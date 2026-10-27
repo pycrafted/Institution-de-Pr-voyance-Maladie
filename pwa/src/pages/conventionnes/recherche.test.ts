@@ -105,27 +105,25 @@ describe('lienItineraire', () => {
 
   it('mène à la position de la fiche, depuis celle du téléphone', () => {
     // Aucune origine dans le lien : la carte part de là où est l'employé.
-    expect(lienItineraire(localisee, false)).toBe(
-      'https://www.google.com/maps/dir/?api=1&destination=14.6597%2C-17.4383',
-    )
-    expect(lienItineraire(localisee, true)).toBe(
-      'https://maps.apple.com/?daddr=14.6597%2C-17.4383&dirflg=d',
+    expect(lienItineraire(localisee)).toBe(
+      'https://www.google.com/maps/dir/?api=1&destination=14.6597%2C-17.4383&travelmode=driving',
     )
   })
 
   it('sans position, confie le nom et l’adresse à la carte', () => {
-    expect(lienItineraire(CAP, false)).toBe(
+    expect(lienItineraire(CAP)).toBe(
       'https://www.google.com/maps/dir/?api=1&destination=' +
-        encodeURIComponent('Clinique du Cap, Avenue Pasteur, Plateau, Sénégal'),
+        encodeURIComponent('Clinique du Cap, Avenue Pasteur, Plateau, Sénégal') +
+        '&travelmode=driving',
     )
     // Sans adresse non plus : le nom et le pays suffisent à la carte.
-    expect(lienItineraire(BIO, true)).toBe(
-      `https://maps.apple.com/?daddr=${encodeURIComponent('Bio 24, Sénégal')}&dirflg=d`,
+    expect(lienItineraire(BIO)).toBe(
+      `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent('Bio 24, Sénégal')}&travelmode=driving`,
     )
   })
 
   it('rien à chercher : pas de lien', () => {
-    expect(lienItineraire(structure({ libelle: '', adresse: null }), false)).toBeNull()
+    expect(lienItineraire(structure({ libelle: '', adresse: null }))).toBeNull()
   })
 })
 

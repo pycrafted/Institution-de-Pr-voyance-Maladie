@@ -81,6 +81,10 @@
   --st-traite: #2563eb;
   --st-traite-doux: rgba(37, 99, 235, 0.12);
   --st-traite-texte: #1d4ed8;
+  /* En attente de l'IPM (bon d'optique pris avant les deux ans) : ambre. */
+  --st-attente: #d97706;
+  --st-attente-doux: rgba(217, 119, 6, 0.12);
+  --st-attente-texte: #9a5406;
   --st-expire: #6b7280;
   --st-expire-doux: rgba(107, 114, 128, 0.12);
   --st-expire-texte: #5a6170;
@@ -145,11 +149,15 @@
   --e-24: 24px;
   --e-32: 32px;
   /* Marge latérale de TOUT le contenu : aucun bloc ne touche le bord. */
-  --gouttiere: 16px;
+  /* De 16 px (petit téléphone) à 40 px (tablette) : la marge suit la largeur. */
+  --gouttiere: clamp(16px, 4.5vw, 40px);
   /* Entre deux cartes autonomes d'une même liste (jamais de filet). */
   --inter-cartes: 12px;
   /* Entre deux sections d'un écran. */
-  --inter-sections: 28px;
+  /* Suit la HAUTEUR de l'écran : un grand téléphone répartit son contenu
+     au lieu de laisser un vide sous la dernière section. */
+  --inter-sections: clamp(20px, 3.2vh, 44px);
+  --inter-sections: clamp(20px, 3.2dvh, 44px);
   /* Bas de page : la barre d'onglets flotte au-dessus du contenu. 12 px
      d'écart bas + 64 de barre + 12 d'air, PLUS la zone sûre — sur un iPhone
      13, l'indicateur d'accueil fait 34 px, qu'une valeur fixe oubliait. */
@@ -374,6 +382,9 @@
   --st-traite: #3b82f6;
   --st-traite-doux: rgba(59, 130, 246, 0.18);
   --st-traite-texte: #7cb0fb;
+  --st-attente: #f59e0b;
+  --st-attente-doux: rgba(245, 158, 11, 0.18);
+  --st-attente-texte: #fbbf24;
   --st-expire: #8e8c87;
   --st-expire-doux: rgba(163, 160, 153, 0.16);
   --st-expire-texte: #a3a099;

@@ -23,6 +23,8 @@ const simulations = vi.hoisted(() => ({
     Promise.resolve({ photo: 'data:image/jpeg;base64,zz' }),
   ),
   reduirePhoto: vi.fn((_f: File) => Promise.resolve('data:image/jpeg;base64,zz')),
+  demanderChangementPhoto: vi.fn((_m: string) => Promise.resolve({ demandePhoto: true })),
+  listerNotifications: vi.fn(() => Promise.resolve([] as unknown[])),
 }))
 
 vi.mock('../api', async (importOriginal) => {
@@ -31,6 +33,8 @@ vi.mock('../api', async (importOriginal) => {
     ...reel,
     poserPhoto: simulations.poserPhoto,
     poserPhotoBeneficiaire: simulations.poserPhotoBeneficiaire,
+    demanderChangementPhoto: simulations.demanderChangementPhoto,
+    listerNotifications: simulations.listerNotifications,
   }
 })
 
@@ -108,6 +112,31 @@ describe('barre d’actions', () => {
     expect(screen.getByRole('dialog')).toHaveTextContent('aucune notification')
   })
 
+  it('la cloche porte les décisions de l’IPM, et les marque lues à l’ouverture', async () => {
+    localStorage.clear()
+    simulations.listerNotifications.mockResolvedValue([
+      {
+        id: 'optique-40',
+        genre: 'bon-optique',
+        titre: 'Bon d’optique accordé',
+        message: 'Le bon BCI000040 est accordé.',
+        date: '2026-10-27T10:00:00+00:00',
+        lien: '/bons/optique/40',
+      },
+    ])
+    const { container } = rendreEcran(<BarreActions />)
+    await vi.waitFor(() =>
+      expect(container.querySelector('.ipm-barre-actions__pastille')?.textContent).toBe('1'),
+    )
+    fireEvent.click(screen.getByLabelText('Notifications : 1 nouvelle'))
+    expect(await screen.findByText('Bon d’optique accordé')).toBeInTheDocument()
+    await vi.waitFor(() =>
+      expect(container.querySelector('.ipm-barre-actions__pastille')).toBeNull(),
+    )
+    simulations.listerNotifications.mockResolvedValue([])
+    localStorage.clear()
+  })
+
   it('choisit, réduit et envoie une photo depuis la feuille « Photos »', async () => {
     const { container } = rendreEcran(<BarreActions />)
     fireEvent.click(screen.getByLabelText('Photos d’identité'))
@@ -121,17 +150,33 @@ describe('barre d’actions', () => {
     expect(simulations.poserPhoto).toHaveBeenCalledWith('data:image/jpeg;base64,zz')
   })
 
-  it('n’offre plus d’ajouter une photo déjà enregistrée', () => {
-    // Une photo ne se pose qu'une fois : la ligne devient un constat, et
-    // seule l'IPM peut la réinitialiser depuis son application.
+  it('une photo enregistrée ne se remplace pas : on demande son changement', async () => {
+    // Une photo ne se pose qu'une fois : « Changer » envoie une demande de
+    // réinitialisation, que l'IPM instruit depuis son application.
+    const session = uneSession({
+      participant: unParticipant({ photo: 'data:image/jpeg;base64,aa' }),
+    })
+    const { container } = rendreEcran(<BarreActions />, session)
+    fireEvent.click(screen.getByLabelText('Photos d’identité'))
+    const ligne = container.querySelector('.photos__ligne') as HTMLElement
+    expect(within(ligne).queryByText('Ajouter')).toBeNull()
+    fireEvent.click(within(ligne).getByText('Changer'))
+    await vi.waitFor(() => expect(simulations.demanderChangementPhoto).toHaveBeenCalledTimes(1))
+    expect(simulations.demanderChangementPhoto).toHaveBeenCalledWith(session.participant?.matricule)
+    await vi.waitFor(() => expect(session.rafraichir).toHaveBeenCalled())
+  })
+
+  it('une demande en attente se dit, sans rien proposer d’autre', () => {
     const { container } = rendreEcran(
       <BarreActions />,
-      uneSession({ participant: unParticipant({ photo: 'data:image/jpeg;base64,aa' }) }),
+      uneSession({
+        participant: unParticipant({ photo: 'data:image/jpeg;base64,aa', demandePhoto: true }),
+      }),
     )
     fireEvent.click(screen.getByLabelText('Photos d’identité'))
     const ligne = container.querySelector('.photos__ligne') as HTMLElement
-    expect(within(ligne).getByText('Enregistrée')).toBeInTheDocument()
-    expect(within(ligne).queryByText('Ajouter')).toBeNull()
+    expect(within(ligne).getByText('Demande envoyée')).toBeInTheDocument()
+    expect(within(ligne).queryByText('Changer')).toBeNull()
   })
 
   it('envoie la photo d’un ayant droit depuis la même feuille', async () => {

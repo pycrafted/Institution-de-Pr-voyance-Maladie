@@ -4,23 +4,27 @@
  *
  * Il prend le relais de l'écran de lancement d'iOS (public/splash/, généré
  * par scripts/generer-icones.py) SANS saut visible : même fond de marque,
- * même logo, même taille et même position. Le logo apparaît en fondu, puis
- * trois points de chargement si la lecture de la session traîne.
+ * même logo, même taille et même position. Le nom « IPM SAR » apparaît en
+ * fondu juste sous le logo.
  */
 
 import { useLayoutEffect } from 'react'
 
+import { useApparence } from '../theme/apparence'
 import LogoSar from './LogoSar'
 import './Splash.css'
 
 /**
- * Fond de l'écran de lancement : le noir SAR, haut du dégradé de marque.
+ * Fond de l'écran de lancement : un rose pâle, le logo SAR rouge dessus.
  * Identique aux PNG de public/splash/ et à `background_color` du manifest.
  * Volontairement une constante et non une variable de thème : en mode
  * sombre celle-ci changerait, et le relais avec l'image de lancement d'iOS
  * ferait un saut de couleur.
  */
-export const FOND_LANCEMENT = '#1D1D1B'
+export const FOND_LANCEMENT = '#ECE4E3'
+
+/** Le même écran en mode sombre : le fond sombre de l'application, logo rouge. */
+export const FOND_LANCEMENT_SOMBRE = '#111110'
 
 interface MotifProps {
   /** Pose le logo sur une pastille de marque (icône d'application). */
@@ -65,7 +69,10 @@ function useCouleurBarreEtat(couleur: string) {
 }
 
 export default function Splash() {
-  useCouleurBarreEtat(FOND_LANCEMENT)
+  // Le mode choisi par l'employé (clair ou sombre), déjà posé sur <html> au
+  // démarrage : l'écran de chargement le suit, fond et barre d'état.
+  const sombre = useApparence() === 'sombre'
+  useCouleurBarreEtat(sombre ? FOND_LANCEMENT_SOMBRE : FOND_LANCEMENT)
   return (
     <div
       className="splash"
@@ -73,17 +80,17 @@ export default function Splash() {
       aria-label="Chargement d'IPM Mobile"
       aria-busy="true"
     >
+      {/* Le nom juste sous le logo, sans points de chargement. */}
       <div className="splash__logo">
-        <LogoSar largeur={160} ton="blanc" />
+        <LogoSar largeur={160} />
+        <p className="splash__nom" aria-hidden="true">
+          IPM SAR
+        </p>
+        {/* Barre de progression continue, comme le site de la SAR. */}
+        <div className="splash__barre" aria-hidden="true">
+          <span />
+        </div>
       </div>
-      <div className="splash__points" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
-      <p className="splash__pied" aria-hidden="true">
-        IPM SAR
-      </p>
     </div>
   )
 }

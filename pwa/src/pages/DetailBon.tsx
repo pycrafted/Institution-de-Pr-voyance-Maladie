@@ -1,5 +1,5 @@
 /**
- * Détail d'un document (/bons/:id, /bons/lettres/:id) — SPEC_DESIGN §5.
+ * Détail d'un document (/bons/:id, /bons/optique/:id, /bons/lettres/:id) — SPEC_DESIGN §5.
  *
  *   1. bandeau de marque compact (§3.2) : le numéro du bon, ce que le
  *      pharmacien regarde d'abord, avec le statut et « valable jusqu'au … »
@@ -68,16 +68,19 @@ export default function DetailBon({ match, location }: DetailBonProps) {
   // Par prudence, l'identifiant se relit aussi dans l'URL : un match sans
   // paramètres (route par défaut d'Ionic) ne doit pas donner « introuvable ».
   const id = lireIdentifiant(
-    match.params.id ?? /^\/bons\/(?:lettres\/)?(\d+)\/?$/.exec(location?.pathname ?? '')?.[1],
+    match.params.id ??
+      /^\/bons\/(?:lettres\/|optique\/)?(\d+)\/?$/.exec(location?.pathname ?? '')?.[1],
   )
-  // Le genre se lit dans le chemin (/bons, /bons/lettres) : c'est lui qui dit à
+  // Le genre se lit dans le chemin (/bons, /bons/optique, /bons/lettres) : c'est lui qui dit à
   // quelle liste de l'API l'identifiant appartient.
   const genre = genreDuChemin(match.path) ?? genreDuChemin(location?.pathname) ?? 'bon-pharmacie'
   const { bon, erreur, introuvable, recharger } = useDetailBon(genre, id)
   // Bon modifié par l'IPM depuis la mise en cache du PDF, même lors d'une
   // visite précédente : l'empreinte enregistrée avec le PDF ne correspond
   // plus, et usePdfBon le retélécharge.
-  const apercu = usePdfBon(genre, id, bon ? empreinteImpression(bon) : null)
+  // Un bon en attente de l'IPM ne s'imprime pas encore : rien à télécharger.
+  const enAttente = bon?.statut === 'attente'
+  const apercu = usePdfBon(genre, enAttente ? null : id, bon ? empreinteImpression(bon) : null)
   const enLigne = useOnline()
   const routeur = useIonRouter()
   const [presenterToast] = useIonToast()
@@ -158,7 +161,11 @@ export default function DetailBon({ match, location }: DetailBonProps) {
         <p className="detail-bon__explication">{explicationStatut(bon.statut, genre)}</p>
 
         <div className="ipm-carte detail-bon__apercu">
-          {apercu.pdf ? (
+          {enAttente ? (
+            <div className="detail-bon__apercu-attente">
+              <span>Le bon s’affichera ici dès que l’IPM l’aura accordé.</span>
+            </div>
+          ) : apercu.pdf ? (
             <PdfViewer
               pdf={apercu.pdf}
               libellesPages={PAGES_DU_BON}

@@ -8,6 +8,7 @@
 
 import type {
   Bon,
+  CodeLibelle,
   Conventionne,
   Fournisseur,
   GenreDocument,
@@ -16,6 +17,8 @@ import type {
   MoiReponse,
   NaturePrestation,
   NouveauBonCorps,
+  NouveauBonOptiqueCorps,
+  NotificationMobile,
   NouvelleLettreCorps,
   Specialite,
 } from '../types/api'
@@ -70,6 +73,24 @@ export function poserPhotoBeneficiaire(matricule: string, photo: string, { signa
   )
 }
 
+/** Les décisions de l'IPM des deux derniers mois (photos, bons d'optique), récentes d'abord. */
+export function listerNotifications({ signal }: Signal = {}) {
+  return requete<NotificationMobile[]>('/mobile/notifications/', { signal })
+}
+
+/**
+ * Demande à l'IPM de réinitialiser une photo déjà posée : la sienne (son
+ * matricule) ou celle d'un ayant droit (son matricule bénéficiaire). L'IPM
+ * l'instruit ; réinitialisée, la photo se repose comme la première fois.
+ */
+export function demanderChangementPhoto(matricule: string, { signal }: Signal = {}) {
+  return requete<{ demandePhoto: boolean }>('/mobile/moi/demandes-photo/', {
+    methode: 'POST',
+    corps: { matricule },
+    signal,
+  })
+}
+
 /**
  * Toutes les structures conventionnées, toutes spécialités confondues, par
  * libellé — l'annuaire de l'écran « Conventionnés ».
@@ -96,20 +117,22 @@ export function listerPrescripteurs(specialite: string, { signal }: Signal = {})
 /** Chemin de l'API de chaque genre de document. */
 const CHEMIN_API: Record<GenreDocument, string> = {
   'bon-pharmacie': '/mobile/bons-pharmacie/',
+  'bon-optique': '/mobile/bons-optique/',
   'lettre-garantie': '/mobile/lettres-garantie/',
 }
 
 /**
  * Tous les documents du participant (y compris émis par IPM) : ses bons de
- * pharmacie et ses lettres de garantie, lus ensemble. Le tri est fait par
- * data/bons.trierBons.
+ * pharmacie, ses bons d'optique et ses lettres de garantie, lus ensemble. Le
+ * tri est fait par data/bons.trierBons.
  */
 export async function listerBons({ signal }: Signal = {}) {
-  const [bons, lettres] = await Promise.all([
+  const [bons, optiques, lettres] = await Promise.all([
     requete<Bon[]>(CHEMIN_API['bon-pharmacie'], { signal }),
+    requete<Bon[]>(CHEMIN_API['bon-optique'], { signal }),
     requete<Bon[]>(CHEMIN_API['lettre-garantie'], { signal }),
   ])
-  return [...bons, ...lettres]
+  return [...bons, ...optiques, ...lettres]
 }
 
 export function lireBon(genre: GenreDocument, id: number, { signal }: Signal = {}) {
@@ -117,10 +140,7 @@ export function lireBon(genre: GenreDocument, id: number, { signal }: Signal = {
 }
 
 /** Natures de prestation qu'une lettre de garantie peut couvrir. */
-export function listerNaturesPrestation(
-  specialite?: string | null,
-  { signal }: Signal = {},
-) {
+export function listerNaturesPrestation(specialite?: string | null, { signal }: Signal = {}) {
   // La spécialité du prestataire range la liste : un cardiologue voit
   // « CONSULTATION CARDIOLOGIE » en tête, l'échographie avec les autres.
   const requis = specialite ? `?specialite=${encodeURIComponent(specialite)}` : ''
@@ -130,6 +150,21 @@ export function listerNaturesPrestation(
 /** Crée une lettre. 400 : erreurs par champ de NouvelleLettreCorps dans ErreurApi.champs. */
 export function creerLettre(corps: NouvelleLettreCorps, { signal }: Signal = {}) {
   return requete<Bon>(CHEMIN_API['lettre-garantie'], { methode: 'POST', corps, signal })
+}
+
+/** Les opticiens conventionnés, où présenter un bon d'optique. */
+export function listerOpticiens({ signal }: Signal = {}) {
+  return requete<Fournisseur[]>('/mobile/opticiens/', { signal })
+}
+
+/** Les articles qu'un bon d'optique peut commander (montures, verres…). */
+export function listerArticlesOptique({ signal }: Signal = {}) {
+  return requete<CodeLibelle[]>('/mobile/articles-optique/', { signal })
+}
+
+/** Crée un bon d'optique. 400 : erreurs par champ de NouveauBonOptiqueCorps dans ErreurApi.champs. */
+export function creerBonOptique(corps: NouveauBonOptiqueCorps, { signal }: Signal = {}) {
+  return requete<Bon>(CHEMIN_API['bon-optique'], { methode: 'POST', corps, signal })
 }
 
 /** Crée un bon. 400 : erreurs par champ de NouveauBonCorps dans ErreurApi.champs. */

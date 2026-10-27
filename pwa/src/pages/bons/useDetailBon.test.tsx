@@ -47,6 +47,12 @@ describe('empreinteImpression', () => {
     )
     expect(empreinteImpression({ ...bon, nbArticles: 5 })).not.toBe(empreinteImpression(bon))
   })
+
+  it('change quand le bon expire : son PDF se refait, tamponné « EXPIRÉ »', () => {
+    const bon = unBon()
+    expect(empreinteImpression({ ...bon, statut: 'expire' })).not.toBe(empreinteImpression(bon))
+    expect(empreinteImpression({ ...bon, statut: 'annule' })).toBe(empreinteImpression(bon))
+  })
 })
 
 describe('useDetailBon', () => {

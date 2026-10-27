@@ -53,7 +53,7 @@ export const ONGLETS: readonly Onglet[] = [
     // l'icône du bon de pharmacie.
     cle: 'conventionnes',
     href: '/conventionnes',
-    libelle: 'Conventionnés',
+    libelle: 'Structures',
     icone: locationOutline,
     iconePleine: location,
   },
