@@ -56,7 +56,7 @@ EQUIPE = [
             ('EPOUSE', 'Adama', 'NDIAYE', 'F', '1963-05-20'),
             ('ENFANT', 'Ousmane', 'CISSE', 'M', '1990-01-15'),
             ('ENFANT', 'Awa', 'CISSE', 'F', '1993-08-09'),
-            ('AUTRE', 'Souleymane', 'CISSE', 'M', '2005-03-11'),
+            ('ENFANT', 'Souleymane', 'CISSE', 'M', '2005-03-11'),
         ],
     },
     {

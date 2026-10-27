@@ -14,11 +14,13 @@ utilisateur IPM - et un utilisateur IPM n'est pas un participant.
 """
 
 import base64
+from datetime import timedelta
 import binascii
 import ipaddress
 import re
 
 from django.contrib.auth.hashers import make_password
+from django.utils import timezone
 from django.db import IntegrityError, OperationalError, transaction
 from django.db.models import Count, Q
 from django.http import Http404, HttpResponse
@@ -29,14 +31,22 @@ from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, SimpleRateThrottle
 from rest_framework.views import APIView
 
+from documents.cache_pdf import pdf_en_cache
+from documents.tampon import tamponner_expire
 from documents.impression import bon_pharmacie_pdf
 from documents.impression_lettre import lettre_garantie_pdf
-from documents.models import BonPharmacie, LettreGarantie
-from documents.serializers import BonPharmacieSerializer, LettreGarantieSerializer
+from documents.impression_optique import bon_optique_pdf
+from documents.models import BonOptique, BonPharmacie, LettreGarantie
+from documents.models.bon_optique import VALIDATION_EN_ATTENTE
+from documents.serializers import (
+    BonOptiqueSerializer,
+    BonPharmacieSerializer,
+    LettreGarantieSerializer,
+)
 from donnees_de_base.models import TypeBeneficiaire
 from donnees_de_base.models.fournisseur_de_soins import CODE_FOURNISSEURS_DIVERS
 from donnees_de_base.natures_courantes import ordonner
-from participants.models import Participant
+from participants.models import DemandePhoto, Participant
 from participants.models.participant import REGIME_MUTUELLE
 from participants.serializers.participant import TYPE_PARTICIPANT
 
@@ -47,10 +57,17 @@ from .authentification import (
     peut_se_servir,
 )
 from .serializers import (
+    statut,
+    VALIDITE_BON,
     CHAMPS_IPM_LETTRE,
+    CHAMPS_IPM_OPTIQUE,
     IdentificationSerializer,
+    NouveauBonOptiqueSerializer,
     NouveauBonSerializer,
     NouvelleLettreSerializer,
+    articles_optique,
+    opticiens,
+    representer_bon_optique,
     erreurs_mobile,
     ayants_droit_servis,
     conventionnes,
@@ -289,12 +306,12 @@ def valider_photo(valeur):
 # serait invérifiable. La règle est donc posée ICI, côté serveur, et pas
 # seulement dans l'écran : une requête forgée se heurte à la même réponse.
 PHOTO_DEJA_POSEE = (
-    'Votre photo est déjà enregistrée. Pour la remplacer, adressez-vous à '
-    'l’IPM : elle seule peut la réinitialiser.'
+    'Votre photo est déjà enregistrée. Pour la remplacer, demandez sa '
+    'réinitialisation : l’IPM l’instruira.'
 )
 PHOTO_DEJA_POSEE_BENEF = (
     'La photo de cet ayant droit est déjà enregistrée. Pour la remplacer, '
-    'adressez-vous à l’IPM : elle seule peut la réinitialiser.'
+    'demandez sa réinitialisation : l’IPM l’instruira.'
 )
 
 
@@ -349,6 +366,39 @@ class BeneficiairePhotoView(VueParticipant):
         beneficiaire.photo = valeur
         beneficiaire.save(update_fields=['photo', 'modifie_le'])
         return Response({'photo': beneficiaire.photo})
+
+
+class DemandePhotoView(VueParticipant):
+    """
+    Demander la réinitialisation d'une photo déjà posée (POST) : la sienne, ou
+    celle d'un de ses ayants droit. L'IPM l'instruit depuis l'application de
+    gestion (Participants → Demandes de photo) ; réinitialisée, la photo
+    redevient vide et se repose depuis le mobile.
+
+    Corps : ``{"matricule": "<matricule bénéficiaire, ou le sien>", "motif": "…"}``.
+    """
+
+    def post(self, request):
+        participant = request.auth
+        matricule = str(request.data.get('matricule') or '').strip()
+        motif = str(request.data.get('motif') or '').strip()[:255]
+        if not matricule or matricule == participant.matricule:
+            personne, beneficiaire = participant, None
+        else:
+            beneficiaire = participant.beneficiaires.filter(matricule_benef=matricule).first()
+            if beneficiaire is None:
+                raise NotFound('Cet ayant droit n’est pas rattaché à votre dossier.')
+            personne = beneficiaire
+        if not personne.photo:
+            raise ValidationError(
+                {'photo': ['Aucune photo n’est enregistrée : ajoutez-la directement.']}
+            )
+        if DemandePhoto.en_attente_pour(personne):
+            raise ValidationError(
+                {'photo': ['Une demande est déjà en cours pour cette photo.']}
+            )
+        DemandePhoto.objects.create(participant=participant, beneficiaire=beneficiaire, motif=motif)
+        return Response({'demandePhoto': True}, status=status.HTTP_201_CREATED)
 
 
 class ConventionnesView(VueParticipant):
@@ -489,6 +539,20 @@ def enregistrer_avec_numero(serializer_ipm, modele, donnees):
     raise AssertionError('inaccessible')
 
 
+def pdf_mobile(document, edite_par, fabriquer):
+    """
+    Le PDF montré à l'employé. Un document expiré se consulte encore, mais son
+    PDF porte en plein milieu le tampon « EXPIRÉ » : téléchargé ou imprimé, il
+    ne peut plus être présenté. L'application IPM, elle, imprime le document
+    sans tampon.
+    """
+    if statut(document) != 'expire':
+        return pdf_en_cache(document, edite_par, fabriquer)
+    return pdf_en_cache(
+        document, edite_par, lambda d, e: tamponner_expire(fabriquer(d, e)), variante='expire'
+    )
+
+
 def bons_du_participant(participant):
     """
     Tous les bons du participant, qu'ils aient été émis au mobile ou à IPM -
@@ -549,7 +613,7 @@ class BonPdfView(VueBon):
     def get(self, request, pk):
         bon = self.bon(request, pk)
         # « édité par » : le participant lui-même, sous son matricule affiché.
-        contenu = bon_pharmacie_pdf(bon, matricule_affiche(request.auth))
+        contenu = pdf_mobile(bon, matricule_affiche(request.auth), bon_pharmacie_pdf)
         reponse = HttpResponse(contenu, content_type='application/pdf')
         reponse['Content-Disposition'] = f'inline; filename="{bon.code}.pdf"'
         return reponse
@@ -616,7 +680,151 @@ class LettrePdfView(VueLettre):
 
     def get(self, request, pk):
         lettre = self.lettre(request, pk)
-        contenu = lettre_garantie_pdf(lettre, matricule_affiche(request.auth))
+        contenu = pdf_mobile(lettre, matricule_affiche(request.auth), lettre_garantie_pdf)
         reponse = HttpResponse(contenu, content_type='application/pdf')
         reponse['Content-Disposition'] = f'inline; filename="{lettre.code}.pdf"'
         return reponse
+
+
+# ---------------------------------------------------------------------------
+# Bons d'optique
+# ---------------------------------------------------------------------------
+
+
+class OpticiensView(VueParticipant):
+    """Les opticiens conventionnés, où présenter un bon d'optique."""
+
+    def get(self, request):
+        return Response([representer_fournisseur(f) for f in opticiens()])
+
+
+class ArticlesOptiqueView(VueParticipant):
+    """Les articles qu'un bon d'optique peut commander (nomenclature, spécialité optique)."""
+
+    def get(self, request):
+        return Response([{'code': a.code, 'libelle': a.libelle} for a in articles_optique()])
+
+
+def bons_optique_du_participant(participant):
+    """Tous les bons d'optique du participant, émis au mobile ou à IPM, et eux seuls."""
+    return BonOptique.objects.filter(participant=participant).select_related(
+        'adherent', 'type_benef', 'participant__adherent', 'beneficiaire', 'fournisseur',
+        'specialite', 'prescripteur', 'cree_par',
+    )
+
+
+class BonsOptiqueView(VueParticipant):
+    """Les bons d'optique du participant, et l'émission d'un nouveau."""
+
+    def get(self, request):
+        bons = bons_optique_du_participant(request.auth).order_by('-cree_le', '-id')
+        return Response([representer_bon_optique(bon) for bon in bons])
+
+    def post(self, request):
+        participant = request.auth
+        saisie = NouveauBonOptiqueSerializer(data=request.data, context={'participant': participant})
+        saisie.is_valid(raise_exception=True)
+        bon, erreurs = enregistrer_avec_numero(BonOptiqueSerializer, BonOptique, saisie.donnees_ipm())
+        if erreurs:
+            return Response(
+                erreurs_mobile(erreurs, CHAMPS_IPM_OPTIQUE), status=status.HTTP_400_BAD_REQUEST
+            )
+        # Premier bon des deux ans : automatique. Sinon, il attend l'IPM.
+        if bon.precedent_dans_le_delai():
+            bon.validation = VALIDATION_EN_ATTENTE
+            bon.save(update_fields=['validation', 'modifie_le'])
+        bon = bons_optique_du_participant(participant).get(pk=bon.pk)
+        return Response(representer_bon_optique(bon), status=status.HTTP_201_CREATED)
+
+
+class VueBonOptique(VueParticipant):
+    def bon(self, request, pk):
+        # Comme un bon de pharmacie : celui d'un autre répond comme un bon inexistant.
+        bon = bons_optique_du_participant(request.auth).filter(pk=pk).first()
+        if bon is None:
+            raise Http404
+        return bon
+
+
+class BonOptiqueView(VueBonOptique):
+    def get(self, request, pk):
+        return Response(representer_bon_optique(self.bon(request, pk)))
+
+
+class BonOptiquePdfView(VueBonOptique):
+    """Le bon d'optique imprimé officiel, celui qu'IPM imprime (original et copie)."""
+
+    def get(self, request, pk):
+        bon = self.bon(request, pk)
+        if bon.en_attente:
+            # Un bon non encore accordé ne doit pas pouvoir être présenté.
+            return Response(
+                {'detail': 'Ce bon attend la validation de l’IPM : il s’imprimera une fois accordé.'},
+                status=status.HTTP_409_CONFLICT,
+            )
+        contenu = pdf_mobile(bon, matricule_affiche(request.auth), bon_optique_pdf)
+        reponse = HttpResponse(contenu, content_type='application/pdf')
+        reponse['Content-Disposition'] = f'inline; filename="{bon.code}.pdf"'
+        return reponse
+
+
+# ---------------------------------------------------------------------------
+# Notifications
+# ---------------------------------------------------------------------------
+
+# Ce que la cloche du mobile remonte : les décisions de l'IPM des deux
+# derniers mois. Plus ancien, l'employé l'a vu ou n'en a plus l'usage.
+FENETRE_NOTIFICATIONS = timedelta(days=60)
+
+
+class NotificationsView(VueParticipant):
+    """
+    Les réponses de l'IPM aux demandes de l'employé : photo réinitialisée ou
+    conservée, bon d'optique accordé ou refusé. Rien n'est stocké à part :
+    elles se lisent sur les demandes et les bons eux-mêmes. Le téléphone
+    retient seul ce qu'il a déjà montré (date de dernière lecture).
+    """
+
+    def get(self, request):
+        participant = request.auth
+        depuis = timezone.now() - FENETRE_NOTIFICATIONS
+        elements = []
+        demandes = (
+            DemandePhoto.objects.filter(participant=participant, traite_le__gte=depuis)
+            .exclude(statut='En attente')
+            .select_related('beneficiaire')
+        )
+        for d in demandes:
+            qui = d.beneficiaire.nom_complet if d.beneficiaire_id else 'vous'
+            accorde = d.statut == 'Traitée'
+            elements.append({
+                'id': f'photo-{d.id}',
+                'genre': 'photo',
+                'titre': 'Photo réinitialisée' if accorde else 'Changement de photo refusé',
+                'message': (
+                    f'Vous pouvez poser une nouvelle photo pour {qui} depuis « Photos ».'
+                    if accorde
+                    else f'L’IPM conserve la photo actuelle de {qui}.'
+                ),
+                'date': d.traite_le.isoformat(),
+                'lien': None,
+            })
+        bons = BonOptique.objects.filter(
+            participant=participant, valide_le__gte=depuis, validation__in=['Validé', 'Refusé']
+        )
+        for b in bons:
+            accorde = b.validation == 'Validé'
+            elements.append({
+                'id': f'optique-{b.id}',
+                'genre': 'bon-optique',
+                'titre': 'Bon d’optique accordé' if accorde else 'Bon d’optique refusé',
+                'message': (
+                    f'Le bon {b.code} est accordé : vous pouvez le présenter à l’opticien.'
+                    if accorde
+                    else f'Le bon {b.code} a été refusé par l’IPM.'
+                ),
+                'date': b.valide_le.isoformat(),
+                'lien': f'/bons/optique/{b.id}',
+            })
+        elements.sort(key=lambda e: e['date'], reverse=True)
+        return Response(elements)

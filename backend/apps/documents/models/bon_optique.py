@@ -32,6 +32,30 @@ from participants.models import Beneficiaire, Participant
 
 PREFIXE = 'BCI'
 
+# --- Renouvellement ---------------------------------------------------------
+# Une paire de lunettes se renouvelle tous les DEUX ANS, jour pour jour, et le
+# compte est tenu par bénéficiaire (le participant et chacun de ses ayants
+# droit ont leur propre cycle). Le premier bon de la période est automatique ;
+# un autre bon dans la période n'est pas refusé d'office - LAMPS en accepte
+# une part - : il attend la décision de l'IPM, qui le valide ou le refuse.
+VALIDATION_EN_ATTENTE = 'En attente'
+VALIDATION_ACCORDEE = 'Validé'
+VALIDATION_REFUSEE = 'Refusé'
+VALIDATIONS = [
+    ('', 'Sans objet'),
+    (VALIDATION_EN_ATTENTE, VALIDATION_EN_ATTENTE),
+    (VALIDATION_ACCORDEE, VALIDATION_ACCORDEE),
+    (VALIDATION_REFUSEE, VALIDATION_REFUSEE),
+]
+
+
+def deux_ans_apres(jour):
+    """Le même jour deux ans plus tard ; un 29 février donne le 1er mars."""
+    try:
+        return jour.replace(year=jour.year + 2)
+    except ValueError:
+        return date(jour.year + 2, 3, 1)
+
 
 class BonOptique(models.Model):
     # « BCI000297 » : numéro attribué par le serveur (cf. prochain_code).
@@ -87,6 +111,18 @@ class BonOptique(models.Model):
     montant_remise = models.PositiveIntegerField('Montant remise', default=0)
     remboursement_integral = models.BooleanField('Remboursement intégral', default=False)
 
+    # --- Validation (renouvellement avant deux ans) --------------------------
+    # Vide : bon ordinaire. « En attente » : émis depuis le mobile alors que le
+    # bénéficiaire a déjà eu un bon d'optique il y a moins de deux ans ; il ne
+    # s'imprime pas tant que l'IPM ne l'a pas validé. Refusé, il est aussi
+    # annulé (actif=False).
+    validation = models.CharField('Validation', max_length=12, choices=VALIDATIONS, blank=True)
+    valide_le = models.DateTimeField('Validation le', null=True, blank=True)
+    valide_par = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, related_name='+',
+        null=True, blank=True, verbose_name='Validation par',
+    )
+
     # --- Traitement ----------------------------------------------------------
     numero_facture = models.CharField('N° facture', max_length=20, blank=True)
     traite = models.BooleanField('Traité', default=False)
@@ -131,6 +167,38 @@ class BonOptique(models.Model):
     @property
     def montant_net(self):
         return self.montant_total - self.montant_remise
+
+    @property
+    def en_attente(self):
+        return self.validation == VALIDATION_EN_ATTENTE
+
+    def precedent_dans_le_delai(self):
+        """
+        Le dernier bon d'optique valable du même bénéficiaire émis moins de
+        deux ans avant celui-ci, ou None. Un bon annulé (ou refusé) ne compte
+        pas : il n'a rien donné.
+        """
+        autres = BonOptique.objects.filter(
+            participant_id=self.participant_id,
+            beneficiaire_id=self.beneficiaire_id,
+            actif=True,
+            date__lte=self.date,
+        ).exclude(pk=self.pk).order_by('-date', '-id')
+        precedent = autres.first()
+        if precedent and deux_ans_apres(precedent.date) > self.date:
+            return precedent
+        return None
+
+    def decider(self, accorde, utilisateur=None):
+        """Décision de l'IPM sur un bon en attente : validé, ou refusé (et annulé)."""
+        from django.utils import timezone
+
+        self.validation = VALIDATION_ACCORDEE if accorde else VALIDATION_REFUSEE
+        if not accorde:
+            self.actif = False
+        self.valide_le = timezone.now()
+        self.valide_par = utilisateur if getattr(utilisateur, 'is_authenticated', False) else None
+        self.save(update_fields=['validation', 'actif', 'valide_le', 'valide_par', 'modifie_le'])
 
     @classmethod
     def prochain_code(cls):

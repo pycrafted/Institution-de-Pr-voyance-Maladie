@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 
 from donnees_de_base.views.base import ReferentielViewSet
 
+from ..cache_pdf import pdf_en_cache
 from ..impression import bon_pharmacie_pdf
 from ..models import BonPharmacie
 from ..serializers import BonPharmacieSerializer
@@ -44,7 +45,7 @@ class BonPharmacieViewSet(ReferentielViewSet):
         """
         bon = self.get_object()
         reponse = HttpResponse(
-            bon_pharmacie_pdf(bon, request.user.username), content_type='application/pdf'
+            pdf_en_cache(bon, request.user.username, bon_pharmacie_pdf), content_type='application/pdf'
         )
         reponse['Content-Disposition'] = f'inline; filename="{bon.code}.pdf"'
         return reponse

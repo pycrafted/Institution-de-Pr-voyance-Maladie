@@ -16,7 +16,8 @@ from adherents.models import Adherent
 from donnees_de_base.models import TypeBeneficiaire
 from donnees_de_base.serializers.fournisseur_de_soins import DateOuVide
 
-from ..models import Beneficiaire, Participant
+from ..models import Beneficiaire, DemandePhoto, Participant
+from ..models.demande_photo import EN_ATTENTE
 from ..models.participant import SORTIES
 
 # Libellé du type « le participant lui-même » dans le référentiel.
@@ -30,6 +31,34 @@ AGE_MINIMUM_EMBAUCHE = 16
 # de bénéficiaire et le sexe se répondent. Les autres types (enfant,
 # ascendant) n'imposent rien.
 SEXE_DU_CONJOINT = {'EPOUSE': 'F', 'EPOUX': 'M'}
+
+
+PHOTO_NON_MODIFIABLE = (
+    'La photo d’identité se pose depuis l’application mobile, par le titulaire. '
+    'L’IPM peut seulement la réinitialiser.'
+)
+
+
+class PhotoReinitialisableMixin:
+    """
+    La photo d'identité, vue de l'application IPM : lisible, et seulement
+    effaçable. En modification, une photo envoyée doit être la même que celle
+    de la fiche, ou vide (réinitialisation) ; toute autre est refusée. Effacée,
+    elle satisfait les demandes de réinitialisation en attente.
+    """
+
+    def validate_photo(self, valeur):
+        if self.instance is not None and valeur and valeur != self.instance.photo:
+            raise serializers.ValidationError(PHOTO_NON_MODIFIABLE)
+        return valeur
+
+    def update(self, instance, validated_data):
+        reinitialisee = bool(instance.photo) and 'photo' in validated_data and not validated_data['photo']
+        objet = super().update(instance, validated_data)
+        if reinitialisee:
+            requete = self.context.get('request')
+            DemandePhoto.clore_pour(objet, getattr(requete, 'user', None))
+        return objet
 
 
 def texte(source):
@@ -58,7 +87,7 @@ class ChampsRequisMixin:
         return super().validate(attrs)
 
 
-class ParticipantSerializer(ChampsRequisMixin, serializers.ModelSerializer):
+class ParticipantSerializer(PhotoReinitialisableMixin, ChampsRequisMixin, serializers.ModelSerializer):
     # Obligatoire, mais contrôlé avec les autres (CHAMPS_REQUIS) pour un même
     # message ; le doublon, lui, se dit ici.
     matricule = serializers.CharField(
@@ -230,7 +259,7 @@ class ParticipantSerializer(ChampsRequisMixin, serializers.ModelSerializer):
                 attrs[champ_date] = None
 
 
-class BeneficiaireSerializer(serializers.ModelSerializer):
+class BeneficiaireSerializer(PhotoReinitialisableMixin, serializers.ModelSerializer):
     # Composé par le serveur, jamais saisi : « 02-0949-21 » est la société,
     # le matricule du participant, le code du type et le rang dans ce type.
     # Modifiable, il aurait fini par désigner un autre participant que celui
@@ -341,3 +370,60 @@ class BeneficiaireSerializer(serializers.ModelSerializer):
     def get_codeSoc(self, beneficiaire):
         adherent = beneficiaire.participant.adherent
         return adherent.code if adherent else ''
+
+
+class DemandePhotoSerializer(serializers.ModelSerializer):
+    """Une demande de réinitialisation, telle que la liste de l'IPM l'affiche."""
+
+    dateDemande = serializers.DateTimeField(source='cree_le', read_only=True)
+    traiteLe = serializers.DateTimeField(source='traite_le', read_only=True)
+    traitePar = serializers.SerializerMethodField()
+    codeSoc = serializers.SerializerMethodField()
+    matriculePart = serializers.SerializerMethodField()
+    participant = serializers.SerializerMethodField()
+    matriculeBenef = serializers.SerializerMethodField()
+    beneficiaire = serializers.SerializerMethodField()
+    typeBenef = serializers.SerializerMethodField()
+    photo = serializers.SerializerMethodField()
+    # Une demande close se grise dans la liste, comme une fiche inactive.
+    actif = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DemandePhoto
+        fields = [
+            'id', 'statut', 'motif', 'dateDemande', 'traiteLe', 'traitePar',
+            'codeSoc', 'matriculePart', 'participant',
+            'matriculeBenef', 'beneficiaire', 'typeBenef', 'photo', 'actif',
+        ]
+        read_only_fields = fields
+
+    def get_actif(self, demande):
+        return demande.statut == EN_ATTENTE
+
+    def get_traitePar(self, demande):
+        return demande.traite_par.username if demande.traite_par_id else ''
+
+    def get_codeSoc(self, demande):
+        adherent = demande.participant.adherent
+        return adherent.code if adherent else ''
+
+    def get_matriculePart(self, demande):
+        return demande.participant.matricule
+
+    def get_participant(self, demande):
+        return demande.participant.nom_complet
+
+    def get_matriculeBenef(self, demande):
+        return demande.beneficiaire.matricule_benef if demande.beneficiaire_id else ''
+
+    def get_beneficiaire(self, demande):
+        return demande.beneficiaire.nom_complet if demande.beneficiaire_id else 'Lui-même'
+
+    def get_typeBenef(self, demande):
+        if demande.beneficiaire_id and demande.beneficiaire.type_benef_id:
+            return demande.beneficiaire.type_benef.libelle
+        return TYPE_PARTICIPANT
+
+    def get_photo(self, demande):
+        """La photo actuelle de la personne visée : l'IPM voit ce qu'elle efface."""
+        return demande.personne.photo or ''

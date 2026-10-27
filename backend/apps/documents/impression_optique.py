@@ -114,7 +114,9 @@ def _valeurs(bon, utilisateur):
         'cree_le': f'Crée le : {_fr(bon.date)}',
         'cree_par': f'par : {bon.cree_par.username}' if bon.cree_par_id else 'par :',
         'edite_le': f"édité le : {timezone.localtime().strftime('%d/%m/%Y à %H:%M')}",
-        'edite_par': f'par : {utilisateur.username}',
+        # L'identifiant de l'utilisateur IPM, ou le matricule affiché du
+        # participant quand c'est lui qui l'ouvre sur son téléphone (mobile).
+        'edite_par': f"par : {getattr(utilisateur, 'username', utilisateur) or ''}",
         'code': bon.code,
         'participant': participant.nom_complet.upper() if participant else '',
         # Le matricule seul, sans le code de la société : « 0949 » à l'origine.
@@ -172,5 +174,9 @@ def rendre(valeurs):
 
 
 def bon_optique_pdf(bon, utilisateur):
-    """Le bon imprimé (original et copie fournisseur), en octets PDF."""
+    """
+    Le bon imprimé (original et copie fournisseur), en octets PDF.
+    ``utilisateur`` : qui l'imprime - l'utilisateur IPM, ou le matricule
+    affiché du participant (chaîne) depuis l'application mobile.
+    """
     return rendre(_valeurs(bon, utilisateur))

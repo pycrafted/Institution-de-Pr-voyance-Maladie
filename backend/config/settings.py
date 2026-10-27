@@ -275,4 +275,19 @@ LOGGING = {
     },
 }
 
+# ---------------------------------------------------------------------------
+# Caches
+# ---------------------------------------------------------------------------
+# « default » : limitation de débit de l'identification mobile. « pdf » : les
+# documents imprimés déjà fabriqués (documents/cache_pdf.py), une soixantaine
+# au plus par processus (~25 Mo), pour tenir dans la mémoire d'un petit serveur.
+CACHES = {
+    'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'},
+    'pdf': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'ipm-pdf',
+        'OPTIONS': {'MAX_ENTRIES': 60},
+    },
+}
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
