@@ -72,10 +72,11 @@ body {
 }
 
 $navbar-hauteur: 4.25rem;
+// La barre des pages, au bas de l'écran.
+$pages-hauteur: 2.9rem;
 
 .wrapper {
   width: 100%;
-  padding-inline: var(--cui-sidebar-occupy-start, 0) var(--cui-sidebar-occupy-end, 0);
   // La barre supérieure est fixe : sans ce retrait, le haut du contenu
   // passerait dessous.
   padding-top: $navbar-hauteur;
@@ -89,6 +90,14 @@ $navbar-hauteur: 4.25rem;
   padding-top: 0.75rem !important;
 }
 
+// La barre des pages est fixe au bas de l'écran : le contenu lui laisse sa
+// hauteur, et seulement quand elle est là. Le tableau de bord n'a pas de
+// pages, et n'a donc aucune raison de garder une marge basse (le drapeau est
+// posé par <AppNavPages />).
+body.app-a-barre-pages .wrapper {
+  padding-bottom: $pages-hauteur;
+}
+
 // -----------------------------------------------------------------------------
 // BARRE SUPÉRIEURE - logo, nom de l'institution, utilisateur
 // -----------------------------------------------------------------------------
@@ -96,7 +105,7 @@ $navbar-hauteur: 4.25rem;
   // Fixée en haut, à droite du menu, qui occupe toute la hauteur de l'écran
   // (cf. DefaultLayout : la barre suit le menu, elle reçoit donc sa largeur).
   position: fixed;
-  inset: 0 0 auto var(--cui-sidebar-occupy-start, 0);
+  inset: 0 0 auto 0;
   z-index: 1032;
   height: $navbar-hauteur;
   display: flex;
@@ -113,26 +122,17 @@ $navbar-hauteur: 4.25rem;
   display: flex;
   align-items: center;
   gap: 0.9rem;
-  min-width: 0;
+  flex: 0 0 auto;
   text-decoration: none;
 }
 
-// Le logo SAR, suivi du nom de l'institution.
+// Le logo de l'IPM, seul à gauche de la barre (2026-11-05). Il remplace le
+// nom écrit en toutes lettres, qui prenait la largeur d'une colonne de
+// tableau sur chaque page pour dire une chose qu'on sait déjà.
 .app-navbar-logo {
-  height: 36px;
+  height: 42px;
   flex: 0 0 auto;
   object-fit: contain;
-}
-
-.app-navbar-nom {
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: $sar-red;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 // --- Zone de droite : utilisateur | outils ---
@@ -141,82 +141,8 @@ $navbar-hauteur: 4.25rem;
   align-items: center;
   gap: 0.35rem;
   flex: 0 0 auto;
-  // Poussé en bout de barre : entre la marque et lui, le fil d'Ariane.
+  // Poussé en bout de barre, face à la marque.
   margin-left: auto;
-}
-
-// Bouton du menu : il fixe le rail déplié, ou rappelle le menu sur petit écran.
-.app-navbar-menu {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.35rem;
-  height: 2.35rem;
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 0.5rem;
-  background: transparent;
-  color: #64748b;
-  transition:
-    background-color 0.12s ease,
-    color 0.12s ease;
-
-  svg {
-    width: 1.15rem;
-    height: 1.15rem;
-  }
-
-  &:hover {
-    background-color: #f1f5f9;
-    color: $sar-black;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $sar-red;
-    outline-offset: 1px;
-  }
-}
-
-// Fil d'Ariane : « Accueil / Fichiers / Paramètres », comme à l'origine. Il
-// s'efface sur les écrans étroits, où la marque et l'identité priment.
-.app-navbar-fil {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  min-width: 0;
-  padding-left: 1rem;
-  border-left: 1px solid $openkm-card-border;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: #64748b;
-  white-space: nowrap;
-  overflow: hidden;
-
-  a {
-    color: #64748b;
-    text-decoration: none;
-
-    &:hover {
-      color: $sar-red;
-    }
-  }
-}
-
-.app-navbar-fil-separateur {
-  color: #cbd5e1;
-}
-
-.app-navbar-fil-courant {
-  font-weight: 600;
-  color: $sar-black;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 1199.98px) {
-  .app-navbar-fil {
-    display: none;
-  }
 }
 
 .app-navbar-icone {
@@ -244,6 +170,15 @@ $navbar-hauteur: 4.25rem;
   }
 }
 
+// L'écran ouvert : même pavé noir que la page ouverte en bas, en rond cette
+// fois puisque la cible l'est. Profil et Paramètres n'appartiennent à aucune
+// section : sans cette marque, rien ne dirait qu'on y est.
+.app-navbar-icone-actif,
+.app-navbar-icone-actif:hover {
+  background-color: $sar-black;
+  color: #fff;
+}
+
 // Le rouge est réservé à la sortie.
 .app-navbar-icone-sortie:hover {
   color: $sar-red;
@@ -256,243 +191,202 @@ $navbar-hauteur: 4.25rem;
   background-color: $openkm-card-border;
 }
 
-// Utilisateur : nom et rôle, puis l'avatar à ses initiales - comme le menu
-// utilisateur d'OpsDigital.
-.app-navbar-identite {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.25rem 0.9rem 0.25rem 0.3rem;
-  border-radius: 999px;
-  text-decoration: none;
-  transition: background-color 0.14s ease;
-
-  &:hover {
-    background-color: $openkm-content-bg;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $sar-red;
-    outline-offset: 1px;
-  }
-}
-
-// Pastille d'avatar : initiales sur un dégradé rouge SAR.
-.app-navbar-avatar {
-  flex: 0 0 auto;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: linear-gradient(140deg, #ff5a52, $sar-red);
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  box-shadow: 0 2px 6px rgba(229, 38, 33, 0.3);
-}
-
-.app-navbar-identite-texte {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  line-height: 1.25;
+// -----------------------------------------------------------------------------
+// LES SECTIONS - le premier niveau, au centre de la barre supérieure
+// -----------------------------------------------------------------------------
+//
+// Elles remplacent le menu latéral (2026-11-05). Les écrans de l'IPM sont
+// larges - onze colonnes sur un aperçu d'écritures - et une colonne de
+// navigation prenait 15 % de la largeur en permanence pour une liste qu'on
+// consulte trois fois par jour. La même navigation à l'horizontale rend cette
+// place au tableau, et c'est le gabarit d'OpsDigital.
+.app-sections {
+  // Au centre de la barre supérieure, entre le logo et les trois icônes.
+  // Elle a d'abord eu sa propre rangée sous l'en-tête ; cinq mots n'ont pas
+  // besoin d'une barre à eux, et celle-ci coûtait 3 rem de hauteur sur
+  // chaque écran.
+  flex: 1 1 auto;
   min-width: 0;
-}
-
-.app-navbar-identite-nom {
-  max-width: 14rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: $sar-black;
-}
-
-.app-navbar-identite-role {
-  font-size: 0.75rem;
-  color: $texte-doux;
-}
-
-.app-navbar-avatar {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.4rem;
-  height: 2.4rem;
-  flex: 0 0 auto;
-  border-radius: 50%;
-  background-color: $sar-black;
-  color: #fff;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  box-shadow:
-    0 0 0 2px #fff,
-    0 0 0 3px $openkm-card-border;
 }
 
-// Sur écran étroit, le titre de l'institution et le nom ne tiennent plus :
-// il reste le logo, l'avatar et les deux icônes.
-@media (max-width: 767.98px) {
-  .app-navbar-nom,
-  .app-navbar-identite-texte {
+// La piste défile si l'écran est étroit plutôt que de passer à deux lignes :
+// la hauteur de l'en-tête ne doit pas changer d'une section à l'autre.
+//
+// Le masque est ce qui rend le défilement lisible : sans lui, une section
+// trop longue se coupait en plein mot contre le logo, et « TABLEAU DE BORD »
+// se lisait « DE BORD ». Le dégradé l'efface au lieu de la trancher, ce qui
+// dit aussi qu'il y a quelque chose au-delà du bord.
+.app-sections-piste {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  padding-inline: 1rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 1.25rem,
+    #000 calc(100% - 1.25rem),
+    transparent 100%
+  );
+
+  &::-webkit-scrollbar {
     display: none;
   }
+}
 
-  .app-navbar-identite {
-    padding: 0.2rem;
+.app-section {
+  flex: 0 0 auto;
+  border-radius: 0.45rem;
+  padding: 0.45rem 1rem;
+  color: $texte-doux;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease;
+
+  &:hover {
+    background-color: rgba(17, 21, 29, 0.05);
+    color: $sar-black;
   }
 }
 
-// -----------------------------------------------------------------------------
-// MENU LATÉRAL - sombre, comme OpsDigital
-// -----------------------------------------------------------------------------
-// Sur toute la hauteur de l'écran ; la barre supérieure commence à sa droite.
-.sidebar {
-  --cui-sidebar-bg: #{$sar-black};
-  --cui-sidebar-color: rgba(255, 255, 255, 0.72);
-  --cui-sidebar-border-width: 0;
-  --cui-sidebar-border-color: transparent;
-  // Léger dégradé vertical : un peu de profondeur, sans quitter le charbon SAR.
-  background-image: linear-gradient(180deg, #1e2027 0%, #{$sar-black} 100%);
+// La section ouverte se peint en rouge de marque, comme l'onglet actif
+// d'OpsDigital : c'est le seul endroit de l'écran où l'on doit savoir d'un
+// coup d'œil où l'on se trouve.
+.app-section-active,
+.app-section-active:hover {
+  background-color: $sar-red;
+  color: #fff;
+}
 
-  &.sidebar-fixed {
-    top: 0;
-  }
+// Section hors service : elle garde sa place et son intitulé - la voir
+// disparaître laisserait croire à une panne - mais n'est plus un lien.
+.app-section-inerte {
+  flex: 0 0 auto;
+  padding: 0.45rem 1rem;
+  color: rgba(100, 116, 139, 0.45);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+}
 
-  // Le filet clair de CoreUI (`border-end`) n'a pas lieu d'être sur un menu
-  // sombre.
-  &.border-end {
-    border-right: 0 !important;
+// -----------------------------------------------------------------------------
+// BARRE DES PAGES - le second niveau, au bas de l'écran
+// -----------------------------------------------------------------------------
+//
+// La section se choisit rarement et vit en haut ; la page se change souvent
+// et vit sous la main, au bord de l'écran. « Traitements » porte neuf pages :
+// la piste défile plutôt que de se replier sur deux lignes.
+.app-pages {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 1031;
+  height: $pages-hauteur;
+  display: flex;
+  align-items: stretch;
+  background-color: #fff;
+  border-top: 1px solid $openkm-card-border;
+  box-shadow: 0 -1px 3px rgba(16, 24, 40, 0.05);
+}
+
+.app-pages-piste {
+  display: flex;
+  align-items: stretch;
+  gap: 0.15rem;
+  width: 100%;
+  padding-inline: 1rem;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  // Même dégradé qu'en haut : sur un écran étroit, la pastille de la page
+  // ouverte se faisait trancher net contre le bord. Elle s'efface au lieu
+  // d'être coupée, et le fondu dit qu'il reste des pages à dérouler.
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 1rem,
+    #000 calc(100% - 1rem),
+    transparent 100%
+  );
+}
+
+.app-page {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-block: 0.42rem;
+  border-radius: 0.5rem;
+  padding: 0 0.9rem;
+  color: $texte-doux;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease;
+
+  &:hover {
+    background-color: rgba(17, 21, 29, 0.05);
+    color: $sar-black;
   }
 }
 
-// À déclarer sur .sidebar-nav et non sur .sidebar : CoreUI pose ces variables
-// sur .sidebar-nav, une valeur héritée du parent serait écrasée.
-.sidebar-nav {
-  --cui-sidebar-nav-link-color: rgba(255, 255, 255, 0.7);
-  --cui-sidebar-nav-link-icon-color: rgba(255, 255, 255, 0.68);
-  --cui-sidebar-nav-link-hover-color: #fff;
-  --cui-sidebar-nav-link-hover-bg: rgba(255, 255, 255, 0.06);
-  --cui-sidebar-nav-link-hover-icon-color: rgba(255, 255, 255, 0.85);
-  --cui-sidebar-nav-link-active-color: #fff;
-  // L'entrée courante s'éclaircit au lieu de se peindre : sur un menu sombre,
-  // un voile blanc à 10 % suffit à dire « vous êtes ici », et ne fait pas
-  // concurrence au contenu. Le rouge de marque est réservé aux actions.
-  --cui-sidebar-nav-link-active-bg: rgba(255, 255, 255, 0.1);
-  --cui-sidebar-nav-link-active-icon-color: #fff;
-  --cui-sidebar-nav-link-border-radius: 0.5rem;
-  --cui-sidebar-nav-link-padding-x: 0.85rem;
-  --cui-sidebar-nav-link-padding-y: 0.62rem;
-  --cui-sidebar-nav-link-icon-width: 1.05rem;
-  --cui-sidebar-nav-link-icon-height: 1.05rem;
-  --cui-sidebar-nav-link-icon-margin: 0.75rem;
-  // Sections dépliantes (« Fichiers », « Documents ») : le chevron se lit sur
-  // le noir, le groupe ouvert ne se colore pas, ses pages se décalent d'un cran.
-  --cui-sidebar-nav-group-bg: transparent;
-  --cui-sidebar-nav-group-indicator-color: rgba(255, 255, 255, 0.45);
-  --cui-sidebar-nav-group-indicator-hover-color: #fff;
-  --cui-sidebar-nav-group-toggle-show-color: #fff;
-  // Le décalage des pages d'une section : plus léger qu'avant, la puce disant
-  // désormais le retrait. Sans cela, « Fournisseurs de Soins » ne tiendrait
-  // plus sur sa ligne.
-  --cui-sidebar-nav-group-items-padding-x: 0.55rem;
-  --cui-sidebar-nav-title-color: rgba(255, 255, 255, 0.38);
-  --cui-sidebar-nav-title-padding-x: 1.6rem;
-  --cui-sidebar-nav-title-padding-y: 0;
+// La page ouverte : un pavé noir à texte blanc, choisi par le métier sur
+// modèle (2026-11-06). Deux états précédents ont été écartés : le filet
+// rouge sous l'intitulé, qui courait au ras du bord bas de l'écran où il se
+// mêlait à la bordure de la barre, puis une pastille rouge pâle, trop proche
+// du rouge de la section ouverte en haut. Le noir tranche sur le blanc de la
+// barre sans rivaliser avec le rouge de marque, qui reste au seul étage des
+// sections.
+.app-page-active,
+.app-page-active:hover {
+  background-color: $sar-black;
+  color: #fff;
+}
 
-  padding-top: 0.5rem;
+.app-page-inerte {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 0 0.85rem;
+  color: rgba(100, 116, 139, 0.45);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+}
 
-  .nav-link {
-    position: relative;
-    margin-inline: 0.85rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition:
-      background-color 0.14s ease,
-      color 0.14s ease,
-      transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
-
-    // Léger glissement au survol : l'entrée répond au pointeur.
-    &:hover {
-      transform: translateX(2px);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .nav-link {
-      transition: background-color 0.14s ease, color 0.14s ease;
-      &:hover {
-        transform: none;
-      }
-    }
-  }
-
-  .nav-link + .nav-link,
-  .nav-item + .nav-item {
-    margin-top: 0.15rem;
-  }
-
-  // L'entrée courante : un voile clair et un liseré d'un pixel, rien de plus.
-  // Ni barre de couleur au bord du menu, ni pastille contrastée : ce sont deux
-  // signaux pour une seule information, et ils tirent l'œil vers la colonne
-  // alors que le travail se fait à droite.
-  .nav-link.active {
-    font-weight: 600;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
-  }
-
-  // Au doigt levé : l'enfoncement se voit le temps du clic, sans déplacement.
-  .nav-link:active {
-    background-color: rgba(255, 255, 255, 0.14);
-  }
-
-  // Les pages d'une section portent une puce ronde ; les sections, elles, ont
-  // une icône. Un coup d'œil suffit alors à distinguer ce qui ouvre un écran
-  // de ce qui déplie une liste.
-  .nav-group-items .nav-link {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
+@media (max-width: 575.98px) {
+  .app-section,
+  .app-section-inerte {
     padding-inline: 0.7rem;
-
-    &::before {
-      content: '';
-      flex: 0 0 auto;
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background-color: currentcolor;
-      opacity: 0.38;
-      transition:
-        opacity 0.12s ease,
-        transform 0.12s ease;
-    }
-
-    &:hover::before {
-      opacity: 0.7;
-    }
-
-    // La page ouverte : sa puce est pleine et légèrement plus grosse.
-    &.active::before {
-      opacity: 1;
-      transform: scale(1.25);
-    }
+    font-size: 0.76rem;
   }
 
-  .nav-title {
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    margin-top: 1.4rem;
-    margin-bottom: 0.55rem;
-  }
-
-  .nav-title:first-child {
-    margin-top: 0.75rem;
+  .app-page,
+  .app-page-inerte {
+    padding-inline: 0.6rem;
+    font-size: 0.72rem;
   }
 }
 
@@ -701,8 +595,125 @@ $navbar-hauteur: 4.25rem;
 }
 
 // -----------------------------------------------------------------------------
-// TABLES - en-tête clair, lignes aérées (TailAdmin)
+// TABLEAUX - une seule définition pour toute l'application
 // -----------------------------------------------------------------------------
+//
+// **Le tableau est défini ici, et nulle part ailleurs** (2026-11-06).
+//
+// Il a existé six définitions concurrentes : celle des référentiels, celle du
+// grand livre, un en-tête noir aux Cotisations, un autre encore dans les
+// modals, un cinquième au bon d'achat, et la règle `.table` de ce fichier.
+// Elles disaient presque la même chose - à 0,02 rem près - mais pas tout à
+// fait, et l'écart se voyait en passant d'un écran à l'autre.
+//
+// Pire que l'écart : elles étaient écrites `.x-tableau thead th`, toutes à la
+// **même spécificité**. Entre deux règles de même poids, c'est l'ordre de
+// chargement qui tranche - et les vues étant chargées à la demande, cet ordre
+// change selon la page par laquelle on arrive. Résultat : le Plan Comptable
+// réclamait des lignes serrées et restait aéré, les Retenues réclamaient un
+// en-tête noir et l'affichaient gris. Du style mort qui mentait sur ce qu'on
+// voyait.
+//
+// Une seule règle, donc, dans la feuille globale - chargée avant toutes les
+// autres, sur toutes les pages, y compris celles qui n'importent pas la
+// feuille des référentiels.
+//
+// `.ddb-tableau` est l'ancien nom, gardé tel quel : il est posé dans une
+// vingtaine d'endroits et renommer n'aurait rien changé à l'écran. Le
+// nouveau code écrit `.tableau`.
+
+$tableau-entete-fond: #f7f9fc;
+// L'intitulé de colonne est en **noir** depuis le 2026-11-06, sur demande du
+// métier. L'ardoise `#475569` d'avant le posait à mi-chemin entre le fond et
+// la donnée, et sur un tableau à treize colonnes on cherchait sa colonne.
+$tableau-entete-encre: #17181d;
+$tableau-filet: #eef2f6;
+$tableau-survol: #f8fafc;
+
+.tableau-conteneur,
+.ddb-tableau-conteneur {
+  border: 1px solid $openkm-card-border;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.tableau,
+.ddb-tableau {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  --cui-table-hover-bg: #{$tableau-survol};
+
+  thead th {
+    background-color: $tableau-entete-fond;
+    color: $tableau-entete-encre;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 1px solid $openkm-card-border;
+    padding: 0.85rem 1rem;
+    white-space: nowrap;
+  }
+
+  // Une cellule ne revient pas à la ligne : quand les colonnes ne tiennent
+  // plus dans la carte, le tableau défile à l'horizontale.
+  tbody td {
+    font-size: 0.875rem;
+    color: $sar-black;
+    border-color: $tableau-filet;
+    padding: 0.8rem 1rem;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  // Statuts : pastilles teintées de leur couleur.
+  .badge {
+    border-radius: 999px;
+    padding: 0.32rem 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 600 !important;
+    letter-spacing: 0.01em;
+  }
+
+  @each $couleur in primary, secondary, success, info, warning, danger, dark {
+    .badge.bg-#{$couleur} {
+      background-color: rgba(var(--cui-#{$couleur}-rgb), 0.12) !important;
+      color: var(--cui-#{$couleur}-text-emphasis) !important;
+    }
+  }
+}
+
+// **Le mode serré**, pour les écrans où une ligne est une écriture et non une
+// personne : grand livre, extrait de compte, saisie du journal, aperçus avant
+// comptabilisation. On y suit des colonnes de chiffres, et il faut pouvoir en
+// embrasser une vingtaine d'un coup d'oeil, comme dans LAMPS.
+//
+// Les listes de personnes - participants, adhérents, cotisations, retenues -
+// gardent l'aéré : on y lit une ligne à la fois.
+//
+// Deux classes sur le même élément : la règle pèse plus lourd que la base et
+// l'emporte quel que soit l'ordre de chargement. C'est précisément ce qui
+// manquait aux six définitions d'avant.
+.tableau.tableau-dense,
+.ddb-tableau.tableau-dense {
+  thead th {
+    padding: 0.6rem 0.75rem;
+  }
+
+  tbody td {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.75rem;
+  }
+}
+
+// Les tableaux de CoreUI non repris par les deux classes ci-dessus suivent la
+// même charte, pour qu'un composant maison et un composant de la bibliothèque
+// ne se distinguent pas à l'oeil.
 .table-sm {
   > :not(caption) > * > * {
     padding: 0.5rem 0.5rem;
@@ -710,15 +721,15 @@ $navbar-hauteur: 4.25rem;
 }
 
 .table > thead {
-  background-color: $openkm-thead-bg;
+  background-color: $tableau-entete-fond;
 
   th {
     border-bottom: 1px solid $openkm-card-border;
-    font-weight: 600;
+    color: $tableau-entete-encre;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
-    color: #475569;
   }
 }
 

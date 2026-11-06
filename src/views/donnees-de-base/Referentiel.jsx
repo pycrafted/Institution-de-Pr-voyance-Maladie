@@ -70,6 +70,9 @@ const COULEUR_STATUT = {
   Echue: 'danger',
   Reglée: 'success',
   Annulée: 'dark',
+  // Statuts d'un bon d'achat (Traitements → Bons d'Achats).
+  'En Cours': 'warning',
+  Traité: 'success',
   // États du remboursement (Traitements → Remboursement).
   'Non réglé': 'secondary',
   Réglé: 'success',
@@ -115,6 +118,11 @@ const ICONE_OEIL = [
  * Prédicat d'un segment : soit celui qu'il déclare (filtre sur un booléen),
  * soit l'égalité sur le champ discriminant du référentiel.
  */
+// Valeur envoyée au serveur quand aucun exercice n'est choisi : il rend alors
+// tout l'historique (cf. backend, FiltreExerciceMixin). Sans elle, le serveur
+// retomberait sur l'année en cours et l'écran mentirait sur « Tous ».
+const TOUS_EXERCICES = 'tous'
+
 const predicatSegment = (segments, segment) => {
   if (!segment) return () => true
   if (segment.filtre) return segment.filtre
@@ -273,18 +281,37 @@ const Referentiel = ({ referentiel, onStats }) => {
    * message d'erreur : l'utilisateur n'a rien demandé, il n'a pas à être
    * dérangé si le réseau hoquette.
    */
+  /**
+   * Filtres que le SERVEUR applique (l'exercice), par opposition à ceux qui
+   * trient une liste déjà rapatriée. Ils bornent la réponse : sans eux,
+   * « Bons de Pharmacie » demanderait 66 429 lignes et 36 Mo à chaque
+   * ouverture, et immobiliserait un fil du serveur une minute durant.
+   *
+   * Vide ici veut dire « tous » : le serveur, lui, retomberait sur l'année en
+   * cours faute d'indication, et l'écran mentirait sur ce qu'il montre.
+   */
+  const champsServeur = useMemo(
+    () => (referentiel.filtres || []).filter((f) => f.serveur).map((f) => f.champ),
+    [referentiel.filtres],
+  )
+  const parametresServeur = useMemo(
+    () =>
+      Object.fromEntries(champsServeur.map((champ) => [champ, filtres[champ] || TOUS_EXERCICES])),
+    [champsServeur, filtres],
+  )
+
   const recharger = useCallback(
     async ({ silencieux = false } = {}) => {
       try {
         if (!silencieux) setChargement(true)
-        setEntrees(await listerEntrees(cle))
+        setEntrees(await listerEntrees(cle, parametresServeur))
       } catch (e) {
         if (!silencieux) toast.error(`Chargement impossible : ${messageErreur(e)}`)
       } finally {
         if (!silencieux) setChargement(false)
       }
     },
-    [cle],
+    [cle, parametresServeur],
   )
 
   // La page monte ce composant avec une `key` sur la clé du référentiel :
@@ -309,7 +336,12 @@ const Referentiel = ({ referentiel, onStats }) => {
   // Mise à jour automatique du tableau : un bon émis depuis le mobile, ou par
   // un collègue, paraît ici en quelques secondes. Active pour tout référentiel
   // servi par l'API ; les rares écrans qui n'en sont pas se taisent d'eux-mêmes.
-  useEcouteChangements({ cle, occupe: ecranOccupe, recharger: rechargerEnFond })
+  useEcouteChangements({
+    cle,
+    occupe: ecranOccupe,
+    recharger: rechargerEnFond,
+    parametres: parametresServeur,
+  })
 
   // Les lignes qui arrivent d'elles-mêmes ne sont plus teintées : le tableau
   // se met à jour en silence. L'écoute de fond, elle, continue de tourner
@@ -321,6 +353,12 @@ const Referentiel = ({ referentiel, onStats }) => {
    */
   const definitionSegment = segments?.valeurs.find((s) => s.valeur === segmentActif)
 
+  // Combien de lignes cette vue a le droit de montrer. Sans consigne, toutes.
+  const limiteAffichage =
+    typeof referentiel.limiteAffichage === 'function'
+      ? referentiel.limiteAffichage(entrees.length)
+      : (referentiel.limiteAffichage ?? Infinity)
+
   const visibles = useMemo(() => {
     const terme = recherche.trim().toLowerCase()
     const dansLeSegment = predicatSegment(segments, definitionSegment)
@@ -329,7 +367,21 @@ const Referentiel = ({ referentiel, onStats }) => {
         // Filtre de base du référentiel : partitionne une même source en vues
         // (participants actifs vs retraités), avant tout autre filtre.
         .filter(referentiel.filtreBase || (() => true))
+        // Le segment d'abord, la restriction ensuite - et dans cet ordre.
+        //
+        // L'inverse paraissait plus sûr, mais il vidait des onglets qui ont
+        // des lignes : les dix premières structures par code sont six
+        // départements et quatre services, donc l'onglet **Directions**,
+        // celui sur lequel l'écran ouvre, affichait « Aucune structure »
+        // alors que la base en porte huit. Un agent en concluait que le
+        // référentiel était vide.
         .filter(dansLeSegment)
+        // Restriction d'affichage : une page peut ne montrer qu'une part de
+        // ses lignes (`limiteAffichage`, un nombre ou une fonction du total).
+        // Posée avant la recherche et les filtres, pour que ce qui est masqué
+        // le reste partout et ne ressorte pas par une recherche.
+        // Rien n'est retiré de la base : voir DonneesDeBase.jsx.
+        .slice(0, limiteAffichage)
         .filter((e) => etatEnColonne || activiteParSegments || afficherInactifs || e.actif)
         .filter((e) =>
           Object.entries(filtres).every(([champ, valeur]) => !valeur || e[champ] === valeur),
@@ -360,6 +412,7 @@ const Referentiel = ({ referentiel, onStats }) => {
     segments,
     definitionSegment,
     referentiel.filtreBase,
+    limiteAffichage,
   ])
 
   // Compté dans le segment ouvert : un service désactivé ne concerne pas

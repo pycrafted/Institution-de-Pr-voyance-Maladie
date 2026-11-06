@@ -23,6 +23,13 @@ const Reglements = React.lazy(() => import('./views/traitements/Reglements'))
 const Remboursements = React.lazy(() => import('./views/traitements/Remboursements'))
 const OrdresPaiement = React.lazy(() => import('./views/traitements/OrdresPaiement'))
 const Suspensions = React.lazy(() => import('./views/traitements/Suspensions'))
+const BonsAchats = React.lazy(() => import('./views/traitements/BonsAchats'))
+const Cotisations = React.lazy(() => import('./views/traitements/Cotisations'))
+const Retenues = React.lazy(() => import('./views/traitements/Retenues'))
+const SaisieJournal = React.lazy(() => import('./views/traitements/SaisieJournal'))
+const JournalCentral = React.lazy(() => import('./views/comptabilite/JournalCentral'))
+const PlanComptable = React.lazy(() => import('./views/comptabilite/PlanComptable'))
+const InterrogationComptes = React.lazy(() => import('./views/comptabilite/InterrogationComptes'))
 const PageAVenir = React.lazy(() => import('./views/a-venir/PageAVenir'))
 
 export const routes = [
@@ -37,16 +44,43 @@ export const routes = [
   { path: '/documents/bons-optique', name: 'Bons Optique', element: BonsOptique },
   { path: '/parametres', name: 'Paramètres', element: Parametres },
   {
+    path: '/comptabilite/journal-central',
+    name: 'Journal Central',
+    element: JournalCentral,
+  },
+  {
+    path: '/comptabilite/plan-comptable',
+    name: 'Plan Comptable Général',
+    element: PlanComptable,
+  },
+  {
+    path: '/comptabilite/interrogation-compte',
+    name: 'Interrogation Compte',
+    element: InterrogationComptes,
+  },
+  {
     path: '/documents/lg-hospitalisation',
     name: 'LG Hospitalisation',
     element: LgHospitalisation,
   },
   { path: '/traitements/factures', name: 'Factures', element: Factures },
   { path: '/traitements/factures/:id', name: 'Traitement facture', element: Factures },
-  { path: '/traitements/reglements', name: 'Règlements', element: Reglements },
-  { path: '/traitements/remboursements', name: 'Remboursement', element: Remboursements },
-  { path: '/traitements/ordres-paiement', name: 'Ordre de Paiement', element: OrdresPaiement },
+  { path: '/traitements/reglements', name: 'Règlements Factures', element: Reglements },
+  {
+    path: '/traitements/remboursements',
+    name: 'Remboursement Frais Médicaux',
+    element: Remboursements,
+  },
+  { path: '/traitements/ordres-paiement', name: 'Ordres de Paiements', element: OrdresPaiement },
   { path: '/traitements/suspensions', name: 'Suspensions', element: Suspensions },
+  { path: '/traitements/bons-achats', name: "Bons d'Achats", element: BonsAchats },
+  { path: '/traitements/cotisations', name: 'Cotisations', element: Cotisations },
+  {
+    path: '/traitements/retenues',
+    name: 'Retenues Frais Médicaux',
+    element: Retenues,
+  },
+  { path: '/traitements/saisie-journal', name: 'Saisie Journal', element: SaisieJournal },
 
   // Sections annoncées dans le menu, écran d'attente en attendant leur
   // développement. Retirer l'entrée de pagesAVenir.js et déclarer la vraie

@@ -2,6 +2,7 @@
 
 from .acte import Acte
 from .article_achat import ArticleAchat
+from .compte_comptable import CompteComptable
 from .demande_agrement import DemandeAgrement
 from .fournisseur_de_soins import FournisseurDeSoins
 from .fournisseur_divers import FournisseurDivers
@@ -24,4 +25,5 @@ __all__ = [
     'FournisseurDeSoins',
     'DemandeAgrement',
     'StructureEntite',
+    'CompteComptable',
 ]

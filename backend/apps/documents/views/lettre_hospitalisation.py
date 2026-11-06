@@ -1,12 +1,13 @@
 """Vue des lettres de garantie hospitalisation."""
 
 from donnees_de_base.views.base import ReferentielViewSet
+from donnees_de_base.views.exercice import FiltreExerciceMixin
 
 from ..models import LettreHospitalisation
 from ..serializers import LettreHospitalisationSerializer
 
 
-class LettreHospitalisationViewSet(ReferentielViewSet):
+class LettreHospitalisationViewSet(FiltreExerciceMixin, ReferentielViewSet):
     """
     Même socle que les autres documents : lister, créer (numéro attribué par
     le serveur), modifier, annuler, modifier en lot. Sans import Excel, et
@@ -25,6 +26,8 @@ class LettreHospitalisationViewSet(ReferentielViewSet):
         'prescripteur',
         'cree_par',
     )
+    # L'exercice se lit sur la date d'émission du document.
+    champ_exercice = 'date'
     serializer_class = LettreHospitalisationSerializer
     importer = None
 

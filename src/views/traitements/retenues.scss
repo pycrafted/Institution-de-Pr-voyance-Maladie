@@ -1,0 +1,462 @@
+// Page « Retenues Frais Médicaux » (captures 86 à 91).
+//
+// Elle reprend la feuille du Journal Central - même titre, mêmes sélecteurs,
+// même tableau à bandeau d'encre - et la grammaire de boutons des
+// Cotisations, dont elle est le pendant : la cotisation appelle la recette,
+// la retenue récupère l'avance.
+//
+// Ce qui lui est propre tient en une idée : **le dépassement se voit**. La
+// ligne où la paie a prélevé plus que la dette porte un fond ambré et son
+// écart en clair à côté du montant qui le cause. LAMPS n'en disait rien, et
+// sa production porte 310 cas pour 8 563 422 F.
+
+$rfm-rouge: #e52621;
+$rfm-encre: #11151d;
+$rfm-doux: #6b7280;
+$rfm-bordure: #d9dde2;
+$rfm-vert: #1f9d55;
+$rfm-bleu: #4a9fd8;
+$rfm-ambre: #b45309;
+
+.rfm-page {
+  padding-top: 1.25rem;
+}
+
+// --- L'en-tête de la campagne ------------------------------------------------
+//
+// Trois lignes en italique, comme l'original : la période, la campagne nommée
+// en entier, puis le décompte et les totaux.
+.rfm-entete {
+  margin: 0.75rem 0 0.9rem;
+  font-style: italic;
+  line-height: 1.35;
+
+  p {
+    margin: 0;
+  }
+}
+
+.rfm-entete-periode {
+  font-weight: 700;
+  color: $rfm-encre;
+}
+
+.rfm-entete-titre {
+  font-weight: 600;
+  color: $rfm-encre;
+  font-size: 0.92rem;
+}
+
+.rfm-entete-total {
+  font-weight: 600;
+  color: $rfm-rouge;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rfm-entete-vide {
+  color: $rfm-doux;
+}
+
+// --- Le signalement des dépassements ------------------------------------------
+//
+// Ambre et non rouge : ce n'est pas une erreur à corriger, c'est un fait à
+// connaître. L'argent est déjà prélevé sur le bulletin, et la comptabilité
+// doit suivre la paie. On informe, on n'interdit pas.
+.rfm-alerte {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.9rem;
+  border: 1px solid rgba(180, 83, 9, 0.3);
+  border-left: 3px solid $rfm-ambre;
+  border-radius: 0.35rem;
+  background: rgba(180, 83, 9, 0.07);
+  padding: 0.55rem 0.75rem;
+  color: darken($rfm-ambre, 6%);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.rfm-lien {
+  border: none;
+  background: none;
+  padding: 0;
+  color: $rfm-ambre;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: underline;
+
+  &:hover {
+    color: darken($rfm-ambre, 12%);
+  }
+}
+
+// --- La barre de filtres et de boutons ------------------------------------------
+.rfm-barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.rfm-barre-boutons {
+  justify-content: flex-end;
+}
+
+.rfm-large {
+  min-width: 250px;
+}
+
+.rfm-recherche {
+  min-width: 190px;
+}
+
+// Le filtre « Anomalies » de l'original, en case plutôt qu'en bouton : c'est
+// un état de la liste, pas une action.
+.rfm-bascule {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid $rfm-bordure;
+  border-radius: 0.35rem;
+  background: #fff;
+  padding: 0.38rem 0.7rem;
+  color: $rfm-encre;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.rfm-bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid $rfm-bordure;
+  border-radius: 0.35rem;
+  background: #fff;
+  padding: 0.38rem 0.75rem;
+  color: $rfm-encre;
+  font-size: 0.9rem;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: darken($rfm-bordure, 10%);
+  }
+
+  // Pâli plutôt que caché : l'action existe, elle n'est simplement pas
+  // disponible ici. Le circuit étant contraignant - appel, puis import, puis
+  // comptabilisation -, c'est la pâleur qui en montre l'ordre, et l'infobulle
+  // qui dit pourquoi.
+  &:disabled {
+    opacity: 0.45;
+  }
+}
+
+.rfm-icone {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: none;
+}
+
+.rfm-bouton-encre {
+  background: $rfm-encre;
+  border-color: $rfm-encre;
+  color: #fff;
+}
+
+.rfm-bouton-vert {
+  background: $rfm-vert;
+  border-color: $rfm-vert;
+  color: #fff;
+}
+
+.rfm-bouton-bleu {
+  background: $rfm-bleu;
+  border-color: $rfm-bleu;
+  color: #fff;
+}
+
+.rfm-bouton-azur {
+  background: lighten($rfm-bleu, 28%);
+  border-color: lighten($rfm-bleu, 22%);
+  color: darken($rfm-bleu, 22%);
+}
+
+// --- Le tableau -------------------------------------------------------------
+// Bordure et arrondi viennent de `.tableau-conteneur` ; ce cadre ne porte que
+// le défilement.
+.rfm-tableau-cadre {
+  overflow-x: auto;
+}
+
+// Une ligne est un **agent**, pas une écriture : aéré commun, comme la liste
+// des participants. L'en-tête noir déclaré ici n'a jamais été visible à
+// l'écran - même poids que la règle commune, chargée après lui.
+.rfm-tableau {
+  .rfm-case {
+    width: 38px;
+    text-align: center;
+  }
+
+  tbody td {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Les trois colonnes de montant se lisent en colonne : les chiffres doivent
+  // s'aligner, sinon on ne voit pas que la paie ne suit pas la proposition.
+  tbody td.text-end {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// Une campagne comptabilisée est figée : ses écritures sont parties au grand
+// livre. En retrait, sans disparaître - on la consulte encore.
+.rfm-fige td {
+  color: $rfm-doux;
+  background: rgba(107, 114, 128, 0.06);
+}
+
+// La ligne où la paie a prélevé au-delà de la dette.
+.rfm-excede td {
+  background: rgba(180, 83, 9, 0.08);
+}
+
+.rfm-ecart {
+  margin-left: 0.4rem;
+  border-radius: 0.3rem;
+  background: rgba(180, 83, 9, 0.16);
+  padding: 0.08rem 0.35rem;
+  color: darken($rfm-ambre, 6%);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.rfm-vide {
+  color: $rfm-doux;
+  padding: 1.4rem 0.6rem;
+  text-align: center;
+}
+
+.rfm-badge {
+  display: inline-block;
+  border-radius: 0.3rem;
+  padding: 0.12rem 0.45rem;
+  background: rgba(107, 114, 128, 0.14);
+  color: $rfm-doux;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.rfm-badge-ok {
+  background: rgba(31, 157, 85, 0.16);
+  color: darken($rfm-vert, 8%);
+}
+
+// --- L'aperçu des écritures ---------------------------------------------------
+//
+// La pièce peut porter plus de cent lignes - une par participant servi. On la
+// borne en hauteur plutôt que d'allonger le modal hors de l'écran : les deux
+// totaux, qui sont ce qu'on vient vérifier, doivent rester sous les yeux.
+.rfm-apercu {
+  max-height: 46vh;
+  overflow: auto;
+
+  // Le libelle est le meme sur toutes les lignes : il s'ellipse plutot que
+  // de pousser les montants hors de l'ecran.
+  td:nth-child(9) {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+  }
+}
+
+// La contrepartie unique de la société : un seul débit 463 pour tous les
+// crédits nominatifs. C'est **la ligne qui équilibre la pièce**, et elle est
+// la dernière - donc sous le pli dès que la campagne dépasse une dizaine
+// d'agents. On l'épingle au bas du défilement : le contenu reste celui de
+// l'original, c'est le design qui la met sous les yeux.
+.rfm-contrepartie td {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  background: #eef0f3;
+  box-shadow: inset 0 1px 0 rgba(17, 21, 29, 0.18);
+  font-weight: 600;
+}
+
+// --- Les trois filtres d'affichage ------------------------------------------
+//
+// Voir tout / Anomalies / Normales, en segments colles comme dans l'original :
+// ce sont trois etats d'une meme liste, pas trois actions.
+.rfm-segments {
+  display: inline-flex;
+  border: 1px solid $rfm-bordure;
+  border-radius: 0.35rem;
+  overflow: hidden;
+}
+
+.rfm-segment {
+  border: none;
+  border-left: 1px solid $rfm-bordure;
+  background: #fff;
+  padding: 0.38rem 0.8rem;
+  color: $rfm-encre;
+  font-size: 0.9rem;
+  white-space: nowrap;
+
+  &:first-child {
+    border-left: none;
+  }
+
+  &:hover:not(.rfm-segment-actif) {
+    background: rgba(17, 21, 29, 0.05);
+  }
+}
+
+.rfm-segment-actif {
+  background: $rfm-encre;
+  color: #fff;
+}
+
+// --- Le pied du tableau -----------------------------------------------------
+.rfm-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  color: $rfm-doux;
+  font-size: 0.88rem;
+}
+
+.rfm-par-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.rfm-compteur {
+  font-variant-numeric: tabular-nums;
+}
+
+.rfm-page-bouton {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid $rfm-bordure;
+  border-radius: 0.35rem;
+  background: #fff;
+  padding: 0.3rem 0.5rem;
+  color: $rfm-encre;
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+// --- Les modals --------------------------------------------------------------
+.rfm-modal {
+  .ddb-groupe + .ddb-groupe {
+    margin-top: 0.85rem;
+  }
+}
+
+.rfm-requis {
+  color: $rfm-rouge;
+}
+
+.rfm-aide {
+  margin: 0.9rem 0 0;
+  color: $rfm-doux;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.rfm-note {
+  margin: 0 0 0.8rem;
+  border-left: 3px solid $rfm-bordure;
+  padding: 0.4rem 0.7rem;
+  background: rgba(107, 114, 128, 0.07);
+  color: $rfm-doux;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.rfm-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.1rem;
+}
+
+// Le fichier de la paie peut porter 160 lignes : on borne la hauteur pour que
+// le total reste sous les yeux, puisque c'est lui qu'on vient comparer.
+// Le cadre commun ferme le débordement horizontal ; on le rouvre, sinon les
+// cinq colonnes se feraient trancher sur un écran étroit.
+.rfm-import-tableau {
+  max-height: 46vh;
+  overflow: auto;
+}
+
+// **Le nombre que l'agent compare a son livre de paie imprime.** Gros, seul,
+// a droite : c'est le seul controle de tout le circuit, il ne se cherche pas.
+.rfm-import-total {
+  margin: 0.9rem 0 0;
+  text-align: right;
+  color: $rfm-encre;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+// La piece porte onze colonnes - celles du grand livre - et jusqu'a 162
+// lignes. Au gabarit xl de CoreUI, Debit et Credit sortaient du cadre : or ce
+// sont les deux seules colonnes que l'agent vient lire. Le modal prend donc
+// toute la largeur utile, et la table defile dans les deux sens si l'ecran
+// est plus etroit encore.
+.rfm-apercu-modal .modal-dialog {
+  max-width: min(1560px, 96vw);
+}
+
+// La barre de l'apercu : recherche a gauche, pagination a droite.
+.rfm-apercu-barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+
+  .rfm-par-page {
+    margin-left: auto;
+  }
+}
+
+// Les deux totaux, en rouge comme dans l'original : c'est la seule chose que
+// l'agent vient lire ici, et elle doit sauter aux yeux.
+.rfm-apercu-solde {
+  margin: 0.7rem 0 0;
+  text-align: right;
+  color: $rfm-rouge;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 991.98px) {
+  .rfm-barre-boutons {
+    justify-content: flex-start;
+  }
+
+  .rfm-large {
+    min-width: 100%;
+  }
+}

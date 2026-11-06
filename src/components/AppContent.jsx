@@ -59,9 +59,10 @@ const AppContent = () => {
               )
             )
           })}
-          {/* La racine et toute URL inconnue mènent à la vue de synthèse :
-              sans ce repli, une adresse erronée afficherait une page vide. */}
-          <Route path="*" element={<Navigate to="/tableau-de-bord" replace />} />
+          {/* La racine et toute URL inconnue mènent au premier écran de
+              travail : sans ce repli, une adresse erronée afficherait une
+              page vide. */}
+          <Route path="*" element={<Navigate to="/documents/bons-pharmacie" replace />} />
         </Routes>
       </Suspense>
     </CContainer>

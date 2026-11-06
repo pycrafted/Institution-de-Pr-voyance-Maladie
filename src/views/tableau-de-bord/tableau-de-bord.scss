@@ -566,56 +566,33 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // -----------------------------------------------------------------------------
-// Tableaux - même grammaire que « Données de base »
+// Tableaux - ceux de l'application, avec une seule particularité
 // -----------------------------------------------------------------------------
-.tdb-tableau-conteneur {
-  border: 1px solid $tdb-bordure;
-  border-radius: $tdb-rayon;
-  overflow: hidden;
-}
-
+//
+// Ce fichier recopiait mot pour mot le tableau commun - même gris d'en-tête,
+// mêmes 0,85 rem d'air. La copie est partie le 2026-11-06 : le balisage porte
+// désormais `.tableau-conteneur` et `.tableau` (cf. `scss/style.scss`).
+//
+// Ne reste ici que ce que le tableau commun ne prévoit pas : la **première
+// cellule de chaque ligne est un `<th>`** et non un `<td>` - c'est le nom du
+// mois, de la société ou de la catégorie, et il nomme sa ligne.
 .tdb-tableau {
-  width: 100%;
-  margin: 0;
-  border-collapse: collapse;
-
-  // En-tête clair, comme les tableaux des listes.
-  thead th {
-    background-color: #f7f9fc;
-    color: #475569;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    text-align: left;
-    padding: 0.85rem 1rem;
-    border-bottom: 1px solid $tdb-bordure;
-    white-space: nowrap;
-  }
-
-  tbody tr {
-    transition: background-color 0.1s ease;
-
-    &:hover td,
-    &:hover th {
-      background-color: #f8fafc;
-    }
-  }
-
-  tbody th,
-  tbody td {
+  tbody th {
     font-size: 0.875rem;
     font-weight: 400;
-    color: #1c2434;
+    color: #17181d;
     text-align: left;
     padding: 0.8rem 1rem;
     border-top: 1px solid #eef2f6;
     white-space: nowrap;
   }
 
-  tbody tr:first-child th,
-  tbody tr:first-child td {
+  tbody tr:first-child th {
     border-top: 0;
+  }
+
+  tbody tr:hover th {
+    background-color: #f8fafc;
   }
 }
 

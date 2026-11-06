@@ -794,60 +794,15 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
 }
 
 // -----------------------------------------------------------------------------
-// Tableau - en-tête clair, lignes aérées
+// Tableau - défini dans `scss/style.scss`
 // -----------------------------------------------------------------------------
-.ddb-tableau-conteneur {
-  border: 1px solid $ddb-bordure;
-  border-radius: $ddb-rayon;
-  overflow: hidden;
-}
-
-.ddb-tableau {
-  margin: 0;
-  --cui-table-hover-bg: #f8fafc;
-
-  thead th {
-    background-color: #f7f9fc;
-    color: #475569;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border-bottom: 1px solid $ddb-bordure;
-    padding: 0.85rem 1rem;
-    white-space: nowrap;
-  }
-
-  // Une cellule ne revient pas à la ligne : quand les colonnes ne tiennent
-  // plus dans la carte, le tableau défile à l'horizontale.
-  tbody td {
-    font-size: 0.875rem;
-    color: $ddb-encre;
-    border-color: #eef2f6;
-    padding: 0.8rem 1rem;
-    white-space: nowrap;
-  }
-
-  tbody tr:last-child td {
-    border-bottom: 0;
-  }
-
-  // Statuts : pastilles teintées de leur couleur, comme OpsDigital.
-  .badge {
-    border-radius: 999px;
-    padding: 0.32rem 0.7rem;
-    font-size: 0.72rem;
-    font-weight: 600 !important;
-    letter-spacing: 0.01em;
-  }
-
-  @each $couleur in primary, secondary, success, info, warning, danger, dark {
-    .badge.bg-#{$couleur} {
-      background-color: rgba(var(--cui-#{$couleur}-rgb), 0.12) !important;
-      color: var(--cui-#{$couleur}-text-emphasis) !important;
-    }
-  }
-}
+//
+// `.ddb-tableau-conteneur` et `.ddb-tableau` vivaient ici, et c'est de là que
+// les autres écrans les ont recopiés, chacun avec sa variante. Ils sont
+// remontés dans la feuille globale le 2026-11-06, où ils servent toute
+// l'application sous le nom `.tableau`. Ne restent ici que les états de ligne
+// propres aux référentiels : sélection, ligne en cours de modification,
+// entrée désactivée.
 
 .ddb-ligne {
   cursor: pointer;
@@ -1110,15 +1065,19 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   flex: 0 0 auto;
   border: 0;
   background: transparent;
-  padding: 0.9rem 0.75rem;
-  margin-bottom: 0;
+  border-radius: 0.5rem;
+  margin-block: 0.45rem;
+  padding: 0.5rem 0.9rem;
   color: $ddb-texte-doux;
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
-  transition: color 0.18s ease;
+  transition:
+    background-color 0.14s ease,
+    color 0.18s ease;
 
   &:hover {
+    background-color: rgba(17, 21, 29, 0.05);
     color: $ddb-noir;
   }
 
@@ -1128,31 +1087,26 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   }
 }
 
-.ddb-onglet-actif {
-  color: $ddb-noir;
-
-  // Soulignement rouge qui se déploie depuis le centre au changement d'onglet.
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0.6rem;
-    right: 0.6rem;
-    bottom: -1px;
-    height: 2.5px;
-    border-radius: 3px 3px 0 0;
-    background: $ddb-rouge;
-    animation: ddb-souligne 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
+// L'onglet ouvert porte un **pavé noir**, comme la page ouverte de la barre
+// du bas. Le filet rouge d'avant a été retiré le 2026-11-06 : le métier le
+// trouvait disgracieux, et le rouge de marque sert déjà aux boutons
+// d'action - un trait rouge sous un intitulé se lisait comme un bouton.
+// Le pavé apparaît en fondu au changement d'onglet, là où le filet se
+// déployait depuis le centre.
+.ddb-onglet-actif,
+.ddb-onglet-actif:hover {
+  background-color: $ddb-noir;
+  color: #fff;
+  animation: ddb-onglet-pose 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@keyframes ddb-souligne {
+@keyframes ddb-onglet-pose {
   from {
-    transform: scaleX(0);
-    opacity: 0;
+    opacity: 0.4;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ddb-onglet-actif::after {
+  .ddb-onglet-actif {
     animation: none;
   }
 }
@@ -1189,8 +1143,9 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   flex: 0 0 auto;
   border: 0;
   background: transparent;
-  padding: 0.55rem 0.75rem;
-  border-bottom: 2px solid transparent;
+  border-radius: 0.5rem;
+  margin-block: 0.3rem;
+  padding: 0.4rem 0.8rem;
   color: $ddb-texte-doux;
   font-size: 0.85rem;
   font-weight: 600;
@@ -1198,6 +1153,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   cursor: pointer;
 
   &:hover {
+    background-color: rgba(17, 21, 29, 0.05);
     color: $ddb-noir;
   }
 
@@ -1207,9 +1163,10 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   }
 }
 
-.ddb-sous-onglet-actif {
-  color: $ddb-noir;
-  border-bottom-color: $ddb-rouge;
+.ddb-sous-onglet-actif,
+.ddb-sous-onglet-actif:hover {
+  background-color: $ddb-noir;
+  color: #fff;
 }
 
 .ddb-sous-onglet-erreur:not(.ddb-sous-onglet-actif) {

@@ -23,8 +23,11 @@ import { oeil, oeilBarre } from '../../../assets/icones'
 import sarLogo from '../../../assets/sitesar.png'
 import './login.scss'
 
-// Après connexion : la page d'accueil, le tableau de bord.
-const ACCUEIL = '/tableau-de-bord'
+// Après connexion : les bons de pharmacie. C'est le document le plus émis de
+// l'IPM - 66 429 sur les 113 815 repris de LAMPS - et donc l'écran où l'on
+// passe ses journées. Le tableau de bord, lui, se consulte ; il n'ouvre pas
+// une journée de travail.
+const ACCUEIL = '/documents/bons-pharmacie'
 
 const SANS_ERREUR = { general: '', email: '', password: '' }
 

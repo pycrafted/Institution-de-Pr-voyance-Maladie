@@ -1,18 +1,22 @@
 /**
- * Bloc de droite de la barre supérieure : paramètres, identité, déconnexion.
+ * Bloc de droite de la barre supérieure : profil, paramètres, déconnexion.
  *
- * Trois cibles à plat, un clic chacune, aucun menu déroulant - la maquette de
- * référence n'affiche ni chevron ni avatar à côté du nom.
+ * **Trois icônes, et rien d'écrit** (2026-11-05). L'adresse de l'agent
+ * s'étalait en toutes lettres - « essai.rfm@sar.sn » - pour une information
+ * qu'il connaît déjà : c'est la sienne. Elle prenait la largeur d'une colonne
+ * de tableau à l'endroit le plus précieux de l'écran, et elle revenait sur
+ * chaque page. Le nom reste accessible - il s'affiche au survol de l'icône du
+ * profil, et la fiche est à un clic.
  *
- * Ordre : identité, filet, paramètres, déconnexion - la sortie occupe le
- * dernier rang, à l'extrémité de la barre.
+ * Trois cibles à plat, un clic chacune, aucun menu déroulant. La sortie
+ * occupe le dernier rang, à l'extrémité de la barre.
  */
 
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { CTooltip } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilAccountLogout, cilSettings } from '@coreui/icons'
+import { cilAccountLogout, cilSettings, cilUser } from '@coreui/icons'
 
 import { AUTH_EVENT, getMe, logout } from '../../services/api'
 
@@ -21,7 +25,7 @@ const AppHeaderActions = () => {
   const [user, setUser] = useState(null)
 
   // Au chargement puis à chaque changement d'auth/profil (connexion, nom…),
-  // on relit le profil pour garder la barre à jour.
+  // on relit le profil pour garder l'infobulle à jour.
   useEffect(() => {
     const refresh = () => getMe().then((u) => setUser(u))
     refresh()
@@ -35,38 +39,30 @@ const AppHeaderActions = () => {
     navigate('/login')
   }
 
-  // Le temps que le profil revienne, la place reste vide : afficher une
-  // identité provisoire reviendrait à montrer le nom de quelqu'un d'autre.
+  // Le nom ne s'affiche plus, mais il n'est pas perdu : l'infobulle le porte.
+  // Tant que le profil n'est pas revenu, l'icône annonce simplement « Profil »
+  // - montrer une identité provisoire reviendrait à montrer celle d'un autre.
   const nom = user ? [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email : ''
-  // Initiales pour la pastille d'avatar : prénom + nom, sinon la première
-  // lettre de l'e-mail.
-  const initiales = user
-    ? (
-        (user.first_name?.[0] || '') + (user.last_name?.[0] || '') ||
-        user.email?.[0] ||
-        ''
-      ).toUpperCase()
-    : ''
+
+  // Ces deux écrans ne figurent dans aucune section : la barre du bas est vide
+  // et aucune section ne s'allume quand on y est. Sans état actif sur
+  // l'icône, plus rien à l'écran ne dirait où l'on se trouve - c'est devenu
+  // vrai pour Paramètres le 2026-11-06, quand son doublon a quitté
+  // « Fichiers ».
+  const etat = ({ isActive }) => `app-navbar-icone${isActive ? ' app-navbar-icone-actif' : ''}`
 
   return (
     <div className="app-navbar-actions">
-      <Link to="/profil" className="app-navbar-identite">
-        {initiales && (
-          <span className="app-navbar-avatar" aria-hidden="true">
-            {initiales}
-          </span>
-        )}
-        <span className="app-navbar-identite-texte">
-          <span className="app-navbar-identite-nom">{nom}</span>
-        </span>
-      </Link>
-
-      <span className="app-navbar-filet" aria-hidden="true" />
+      <CTooltip content={nom || 'Profil'}>
+        <NavLink to="/profil" className={etat} aria-label={nom ? `Profil : ${nom}` : 'Profil'}>
+          <CIcon icon={cilUser} />
+        </NavLink>
+      </CTooltip>
 
       <CTooltip content="Paramètres">
-        <Link to="/parametres" className="app-navbar-icone" aria-label="Paramètres">
+        <NavLink to="/parametres" className={etat} aria-label="Paramètres">
           <CIcon icon={cilSettings} />
-        </Link>
+        </NavLink>
       </CTooltip>
 
       <CTooltip content="Déconnexion">

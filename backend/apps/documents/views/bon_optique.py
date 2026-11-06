@@ -4,13 +4,14 @@ from django.http import HttpResponse
 from rest_framework.decorators import action
 
 from donnees_de_base.views.base import ReferentielViewSet
+from donnees_de_base.views.exercice import FiltreExerciceMixin
 
 from ..impression_optique import bon_optique_pdf
 from ..models import BonOptique
 from ..serializers import BonOptiqueSerializer
 
 
-class BonOptiqueViewSet(ReferentielViewSet):
+class BonOptiqueViewSet(FiltreExerciceMixin, ReferentielViewSet):
     """
     Même socle que les bons de pharmacie : lister, créer (numéro BCI attribué
     par le serveur), modifier, annuler, modifier en lot, et le bon imprimé en
@@ -28,6 +29,8 @@ class BonOptiqueViewSet(ReferentielViewSet):
         'prescripteur',
         'cree_par',
     )
+    # L'exercice se lit sur la date d'émission du document.
+    champ_exercice = 'date'
     serializer_class = BonOptiqueSerializer
     importer = None
 

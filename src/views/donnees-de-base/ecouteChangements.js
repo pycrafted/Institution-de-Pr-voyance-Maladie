@@ -48,7 +48,10 @@ const REFUS_AVANT_ABANDON = 3
  *                     calme.
  * @param recharger    recharge la liste, sans indicateur de chargement
  */
-export function useEcouteChangements({ cle, occupe, recharger }) {
+export function useEcouteChangements({ cle, occupe, recharger, parametres }) {
+  // Sérialisés : l'effet ci-dessous se réabonnerait à chaque rendu si sa
+  // dépendance était l'objet lui-même, neuf à chaque fois.
+  const clefParametres = JSON.stringify(parametres || {})
   const rechargerRef = useRef(recharger)
   const occupeRef = useRef(occupe)
   // Changement repéré alors que l'écran était occupé : en attente d'un moment
@@ -102,7 +105,7 @@ export function useEcouteChangements({ cle, occupe, recharger }) {
       }
       enVol = true
       try {
-        const etat = await etatReferentiel(cle)
+        const etat = await etatReferentiel(cle, JSON.parse(clefParametres))
         if (!vivant) return
         delai = DELAI
         refus = 0
@@ -165,7 +168,10 @@ export function useEcouteChangements({ cle, occupe, recharger }) {
       document.removeEventListener('visibilitychange', reveiller)
       window.removeEventListener('focus', reveiller)
     }
-  }, [cle])
+    // `parametres` : changer d'exercice change le périmètre compté. Sans
+    // cette dépendance, l'écoute continuerait de relever l'ancien et verrait
+    // un écart à chaque tour.
+  }, [cle, clefParametres])
 
   // Changement mis en attente : appliqué dès que l'écran redevient disponible.
   useEffect(() => {

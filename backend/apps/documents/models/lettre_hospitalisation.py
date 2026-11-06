@@ -57,7 +57,9 @@ CATEGORIES = [
 
 class LettreHospitalisation(models.Model):
     # « LGH000001 » : numéro attribué par le serveur (cf. prochain_code).
-    code = models.CharField('Numéro', max_length=12, unique=True)
+    # 15 et non 12 : les numéros repris de LAMPS vont jusque-là - 95 bons y
+    # portent une référence saisie à la main (« 0056/10/11/2020 »).
+    code = models.CharField('Numéro', max_length=15, unique=True)
     # Date d'établissement ; l'exercice s'en déduit.
     date = models.DateField('Date', default=date.today)
 

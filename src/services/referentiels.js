@@ -47,6 +47,7 @@ const ENDPOINTS_API = {
   factures: '/factures',
   banques: '/banques',
   'ordres-paiement': '/ordres-paiement',
+  'bons-achats': '/bons-achats',
   remboursements: '/remboursements',
 }
 
@@ -162,11 +163,27 @@ export function listerEntreesSync(cleReferentiel) {
 /** Petite latence pour que les états de chargement soient réalistes. */
 const differer = (valeur) => new Promise((resolve) => setTimeout(() => resolve(valeur), 120))
 
-export async function listerEntrees(cleReferentiel) {
+/**
+ * Paramètres de requête, pour les listes que le serveur filtre lui-même.
+ *
+ * Les référentiels tiennent en quelques dizaines de fiches et partent en
+ * entier. Les documents et les factures, non : 66 429 bons de pharmacie font
+ * 36 Mo. Ceux-là déclarent un filtre `serveur` (l'exercice), qui voyage ici
+ * et borne la réponse - comme chaque écran de liste de l'application
+ * d'origine, qui commence par son sélecteur « Exercice ».
+ */
+const enRequete = (parametres) => {
+  const entrees = Object.entries(parametres || {}).filter(([, v]) => v !== undefined && v !== '')
+  return entrees.length ? `?${new URLSearchParams(entrees).toString()}` : ''
+}
+
+export async function listerEntrees(cleReferentiel, parametres) {
   if (servrParApi(cleReferentiel)) {
     // On rafraîchit le store au passage : l'écran affiche des données fraîches
     // et les lectures synchrones profitent de la même mise à jour.
-    magasin[cleReferentiel] = await request(`${ENDPOINTS_API[cleReferentiel]}/`)
+    magasin[cleReferentiel] = await request(
+      `${ENDPOINTS_API[cleReferentiel]}/${enRequete(parametres)}`,
+    )
     return [...magasin[cleReferentiel]]
   }
   const tout = chargerTout()
@@ -180,11 +197,13 @@ export async function listerEntrees(cleReferentiel) {
  * rapatrier. Voir l'écoute de fond (views/donnees-de-base/ecouteChangements.js)
  * et l'action `etat` du socle des référentiels côté backend.
  */
-export async function etatReferentiel(cleReferentiel) {
+export async function etatReferentiel(cleReferentiel, parametres) {
   if (!servrParApi(cleReferentiel)) {
     throw new Error(`« ${cleReferentiel} » n'est pas servi par l'API`)
   }
-  return request(`${ENDPOINTS_API[cleReferentiel]}/etat/`)
+  // Mêmes paramètres que la liste : l'état doit compter ce que la liste
+  // montre, sinon l'écoute verrait bouger un exercice qu'on ne regarde pas.
+  return request(`${ENDPOINTS_API[cleReferentiel]}/etat/${enRequete(parametres)}`)
 }
 
 /** Un référentiel dont l'état peut s'interroger : ceux que sert l'API. */

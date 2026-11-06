@@ -1,0 +1,184 @@
+// Page « Saisie Journal » (captures 84 et 85).
+//
+// Elle emprunte presque tout : la feuille du Journal Central pour les filtres
+// étiquetés et la pagination, celle des Cotisations pour le tableau à bandeau
+// d'encre et les boutons. Ne reste ici que ce qui lui est propre - les deux
+// soldes empilés de la capture 84, et la mise en page du modal de saisie, qui
+// est le seul formulaire de l'application à porter un tableau en son milieu.
+
+$sj-rouge: #e52621;
+$sj-encre: #11151d;
+$sj-doux: #6b7280;
+$sj-bordure: #d9dde2;
+$sj-vert: #1f9d55;
+
+.sj-page {
+  padding-top: 1.25rem;
+}
+
+// --- Les deux soldes, l'un sous l'autre -------------------------------------
+//
+// L'écran Cotisations les met côte à côte, celui-ci les empile : c'est ce que
+// montre la capture, et ça se lit mieux quand les deux nombres sont longs.
+.sj-soldes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0.35rem 0 0.9rem;
+  font-size: 0.85rem;
+  color: $sj-doux;
+
+  strong {
+    color: $sj-rouge;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+// --- La barre de filtres ----------------------------------------------------
+//
+// Les étiquettes au-dessus des listes alignent mal avec la recherche
+// flottante, qui porte la sienne à l'intérieur : on les recale par le bas.
+.sj-barre {
+  align-items: flex-end;
+
+  .cot-recherche {
+    margin-bottom: 0;
+  }
+}
+
+.sj-boutons {
+  margin-left: auto;
+}
+
+// ===========================================================================
+// Le modal de saisie (capture 85)
+// ===========================================================================
+
+.sj-modal {
+  .modal-body {
+    padding-top: 1rem;
+  }
+}
+
+// Deux colonnes par défaut, quatre pour la ligne N° pièce / dates / chèque.
+// L'interligne n'est pas cosmétique : les libellés de ces champs sont
+// « flottants », donc posés en absolu sur le bord du cadre. Ils ne réservent
+// aucune hauteur, et sans espace entre deux rangées celui du bas vient se
+// superposer à l'aide de la rangée du dessus.
+.sj-grille {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.35rem 1.25rem;
+  // Et entre deux grilles, où l'interligne ne joue pas : le formulaire en
+  // empile quatre, et le libellé flottant de la première ligne de l'une
+  // viendrait sur l'aide de la dernière ligne de l'autre.
+  margin-bottom: 1.35rem;
+
+  @media (max-width: 767px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sj-grille-4 {
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+
+  @media (max-width: 991px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 575px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+// La ligne de saisie : libellé large, les deux montants, puis le bouton qui
+// la pose dans le tableau.
+.sj-grille-ligne {
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  align-items: end;
+
+  @media (max-width: 991px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (max-width: 575px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.sj-large {
+  grid-column: span 1;
+}
+
+.sj-poser {
+  // Le bouton s'aligne sur le bas des champs voisins, qui portent une aide
+  // possible sous eux : on le cale sur la ligne de base du cadre.
+  padding-bottom: 0.1rem;
+
+  .cot-bouton {
+    white-space: nowrap;
+  }
+}
+
+// --- Le tableau des lignes déjà posées --------------------------------------
+// Bordure et arrondi viennent de `.tableau-conteneur`.
+.sj-lignes {
+  margin-top: 0.5rem;
+  max-height: 15rem;
+  overflow: auto;
+
+  .cot-tableau {
+    margin-bottom: 0;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+}
+
+.sj-retirer {
+  width: 36px;
+  text-align: center;
+
+  button {
+    border: none;
+    background: none;
+    color: $sj-doux;
+    padding: 0;
+    line-height: 1;
+
+    &:hover {
+      color: $sj-rouge;
+    }
+  }
+}
+
+// --- Le pied : les deux totaux, puis Annuler et Valider ---------------------
+.sj-pied {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.sj-totaux {
+  font-variant-numeric: tabular-nums;
+  color: $sj-doux;
+}
+
+// Vert dès que débit et crédit se rejoignent : c'est à cet instant, et pas
+// avant, que « Valider » devient possible.
+.sj-equilibre {
+  color: $sj-vert;
+  font-weight: 600;
+}
+
+.sj-ecart {
+  color: $sj-rouge;
+  font-style: normal;
+  font-weight: 600;
+}

@@ -59,6 +59,10 @@ def generer_ecritures(facture):
         'codej': JOURNAL_IMPUTATION,
         'date_piece': facture.date_facture,
         'date_compta': aujourdhui,
+        # Le mois comptable de la facture (`datetrait` dans l'application
+        # d'origine) : l'axe sur lequel le Journal Central range la ligne.
+        # Sans lui, l'écriture existe mais ne s'affiche nulle part.
+        'date_trait': facture.date_trait or aujourdhui.replace(day=1),
         'numfactfrs': facture.numero_fournisseur,
         'numfactipm': str(facture.id),
         'numfourn': code_fournisseur,
@@ -73,6 +77,11 @@ def generer_ecritures(facture):
         matri = liq.matricule_part.split('-')[-1] if liq.matricule_part else ''
         # Part IPM groupée par prestation ; ticket et assurance cumulés.
         par_prestation = {}
+        # Frais réel et frais exclus, groupés de la même façon : l'écriture
+        # porte sa propre liquidation (cf. EcritureCompta), ce qui permet de
+        # réauditer une charge depuis l'Interrogation Compte sans rouvrir le
+        # bon.
+        liquidation = {}
         qppart = 0
         qpassur = 0
         for acte in liq.actes or []:
@@ -80,11 +89,17 @@ def generer_ecritures(facture):
             par_prestation[code_presta] = par_prestation.get(code_presta, 0) + int(
                 acte.get('qpipm') or 0
             )
+            freel, fexclus = liquidation.get(code_presta, (0, 0))
+            liquidation[code_presta] = (
+                freel + int(acte.get('freel') or 0),
+                fexclus + int(acte.get('fexclus') or 0),
+            )
             qppart += int(acte.get('qppart') or 0)
             qpassur += int(acte.get('qpassur') or 0)
         # Bon rattaché sans détail d'actes : on retombe sur ses agrégats.
         if not liq.actes:
             par_prestation[''] = liq.qpipm
+            liquidation[''] = (liq.freel, liq.fexclus)
             qppart = liq.qppart
             qpassur = liq.qpassur
 
@@ -92,6 +107,7 @@ def generer_ecritures(facture):
         for code_presta, qpipm in par_prestation.items():
             if qpipm <= 0:
                 continue
+            freel, fexclus = liquidation.get(code_presta, (0, 0))
             rang += 1
             lignes.append(
                 EcritureCompta(
@@ -100,6 +116,7 @@ def generer_ecritures(facture):
                     comptegen=_compte_prestation(code_presta), comptetiers='',
                     libelle=_libelle_prestation(code_presta),
                     debit=qpipm, credit=0,
+                    frais_reel=freel, frais_exclus=fexclus,
                     codesoc=soc, matri=matri, **commun,
                 )
             )

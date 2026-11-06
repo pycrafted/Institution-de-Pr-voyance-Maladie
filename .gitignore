@@ -51,6 +51,9 @@ backend/apps/documents/modeles/
 src/assets/documents/
 # Captures d'écran et doc issues du LAMPS de production (données nominatives).
 docs/lamps/
+# Pièces déposées par le métier pour analyse (captures, modèles de fichiers) :
+# elles portent des matricules et des noms d'agents.
+look/
 # Dumps / exports de base de données.
 *.dump
 *.sql
@@ -66,3 +69,6 @@ pwa/dev-dist/
 
 # Vrais noms (participants/fournisseurs) mis de côté avant anonymisation - JAMAIS publiés.
 backend/noms_reels/
+
+# Fichiers generes par collectstatic (Django) : regeneres au deploiement, hors depot.
+backend/staticfiles/

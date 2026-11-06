@@ -673,8 +673,8 @@ const TableauDeBord = () => {
             />
           ) : (
             // Le jumeau tabulaire du graphique : même donnée, sans couleur.
-            <div className="tdb-tableau-conteneur tdb-tableau-jumeau">
-              <table className="tdb-tableau">
+            <div className="tableau-conteneur tdb-tableau-conteneur tdb-tableau-jumeau">
+              <table className="tableau tdb-tableau">
                 <thead>
                   <tr>
                     <th scope="col">Période</th>
@@ -934,8 +934,8 @@ const TableauDeBord = () => {
               </button>
             }
           />
-          <div className="tdb-tableau-conteneur">
-            <table className="tdb-tableau">
+          <div className="tableau-conteneur tdb-tableau-conteneur">
+            <table className="tableau tdb-tableau">
               <thead>
                 <tr>
                   <th scope="col">Dossier</th>

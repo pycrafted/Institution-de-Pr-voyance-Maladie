@@ -1,0 +1,346 @@
+/**
+ * Plan Comptable Général - ce que la page ajoute à l'habillage commun.
+ *
+ * Deux colonnes : la liste à gauche, le formulaire à droite, comme
+ * l'original. Le formulaire ne flotte pas dans une fenêtre : on clique une
+ * ligne, elle s'y charge. C'est ce qui rend la consultation du plan si
+ * rapide - on parcourt, on corrige, on passe au suivant.
+ */
+
+.pc-page {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- En-tête : titre, segments, export, recherche ----------------------- */
+
+.pc-entete {
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
+.pc-titre {
+  margin: 0 0 0.9rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.pc-barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Les six segments, collés comme dans l'original. */
+.pc-segments {
+  display: inline-flex;
+  border-radius: 0.3rem;
+  overflow: hidden;
+  border: 1px solid #d8d2d2;
+}
+
+.pc-segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  border-right: 1px solid #d8d2d2;
+  background: #fff;
+  padding: 0.42rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3a3535;
+  cursor: pointer;
+
+  &:last-child {
+    border-right: 0;
+  }
+
+  &:hover:not(.pc-segment--actif) {
+    background: #f6f2f2;
+  }
+}
+
+.pc-segment--actif {
+  background: #1d1b1b;
+  color: #fff;
+}
+
+/* Le compte de chaque segment : l'original ne le donne pas, mais il évite
+   d'ouvrir un onglet pour découvrir qu'il est vide. */
+.pc-segment-nombre {
+  font-weight: 500;
+  font-size: 0.72rem;
+  opacity: 0.6;
+}
+
+.pc-segment--actif .pc-segment-nombre {
+  opacity: 0.75;
+}
+
+.pc-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  border-radius: 0.3rem;
+  background: #2e7d32;
+  color: #fff;
+  padding: 0.42rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+}
+
+.pc-recherche {
+  margin-left: auto;
+  width: 18rem;
+  max-width: 100%;
+}
+
+/* --- Le corps : liste + formulaire -------------------------------------- */
+
+.pc-corps {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.pc-liste {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/**
+ * Le plan se parcourt : des lignes serrées, comme le grand livre. Le
+ * resserrement vient de `.tableau-dense` (cf. `scss/style.scss`) ; écrit ici,
+ * il ne s'appliquait pas - la règle commune pesait le même poids et arrivait
+ * après, si bien que le plan restait aéré malgré ces lignes.
+ *
+ * `width: 100%` : le tableau est un `<table>` nu, sans la classe `.table` de
+ * CoreUI qui porte cette largeur. Sans elle il se dimensionne sur son
+ * contenu, et laisse une bande vide entre lui et le formulaire.
+ */
+.pc-tableau {
+  width: 100%;
+}
+
+.pc-ligne {
+  cursor: pointer;
+
+  &:hover {
+    background: #faf6f6;
+  }
+}
+
+/* La ligne chargée dans le formulaire, au rose de l'original. */
+.pc-ligne--choisie,
+.pc-ligne--choisie:hover {
+  background: #f6b6bd;
+}
+
+.pc-ligne--inactive td {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.pc-numero {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.pc-droite {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-negatif {
+  color: #c62828;
+}
+
+.pc-action {
+  text-align: center;
+}
+
+.pc-corbeille {
+  border: 0;
+  background: transparent;
+  color: #d7263d;
+  cursor: pointer;
+  padding: 0.2rem;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  &:hover {
+    color: #a0172b;
+  }
+}
+
+.pc-vide {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #6b6b6b;
+}
+
+/* --- Le formulaire ------------------------------------------------------- */
+
+.pc-formulaire {
+  flex: 0 0 22rem;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border: 1px solid #e6e0e0;
+  border-radius: 0.5rem;
+  padding: 1.25rem;
+  background: #fff;
+}
+
+.pc-champ {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pc-libelle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3a3535;
+
+  em {
+    font-style: normal;
+    font-weight: 600;
+    color: #d7263d;
+    font-size: 0.75rem;
+  }
+}
+
+.pc-saisie {
+  height: 2.35rem;
+  width: 100%;
+  border: 1.5px solid #d8d2d2;
+  border-radius: 0.3rem;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+
+  &:disabled {
+    background: #f1ecec;
+    color: #6b6b6b;
+  }
+}
+
+/* Le solde n'est pas une saisie : il se lit, calculé sur les écritures. */
+.pc-saisie--calculee {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.pc-erreur {
+  font-size: 0.75rem;
+  color: #c62828;
+}
+
+.pc-note {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #4b5563;
+  background: #eef2f7;
+  border-radius: 0.35rem;
+  padding: 0.5rem 0.65rem;
+}
+
+.pc-boutons {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pc-nouveau,
+.pc-modifier {
+  border: 0;
+  border-radius: 0.3rem;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.pc-nouveau {
+  background: #1d1b1b;
+}
+
+.pc-modifier {
+  background: #d7263d;
+}
+
+/* --- Pagination ---------------------------------------------------------- */
+
+.pc-pagination {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.85rem 0.25rem 0;
+  font-size: 0.85rem;
+}
+
+.pc-taille {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .ddb-filtre {
+    width: 5rem;
+  }
+}
+
+.pc-position {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-fleches {
+  display: inline-flex;
+  gap: 0.25rem;
+
+  button {
+    border: 1px solid #d8d2d2;
+    background: #fff;
+    border-radius: 0.25rem;
+    min-width: 2.1rem;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .pc-corps {
+    flex-direction: column;
+  }
+
+  .pc-formulaire {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+}

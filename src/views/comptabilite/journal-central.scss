@@ -1,0 +1,297 @@
+/**
+ * Journal Central - ce que la page ajoute à l'habillage de « Données de base ».
+ *
+ * La page reprend le tableau à en-tête noir et les filtres communs ; seuls
+ * son bandeau de contrôle, sa pagination et le traitement des montants lui
+ * sont propres.
+ */
+
+.jc-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* --- En-tête : titre et états à gauche, filtres et boutons à droite ------ */
+
+.jc-entete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.jc-titre-bloc {
+  min-width: 0;
+  flex: 1 1 22rem;
+}
+
+.jc-titre {
+  margin: 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Le rappel du filtre courant, puis la période - comme dans l'original. */
+.jc-rappel {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.jc-periode {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  /* Le vert de l'original : il dit que la période accepte encore des
+     écritures. C'est une information d'état, pas une décoration. */
+  color: #2e7d32;
+}
+
+.jc-recherche {
+  margin-top: 0.9rem;
+  max-width: 20rem;
+}
+
+/* --- Filtres et boutons -------------------------------------------------- */
+
+.jc-outils {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.85rem;
+}
+
+.jc-filtres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+/**
+ * Étiquette au-dessus de sa liste.
+ *
+ * « Données de base » a les mêmes, mais ses règles vivent **à l'intérieur**
+ * de `.ddb-barre-outils`, que cette page n'utilise pas : reprises telles
+ * quelles, elles ne s'appliquaient pas du tout, et l'étiquette se posait à
+ * côté de la liste au lieu d'être au-dessus. D'où ces règles propres.
+ */
+.jc-filtre-groupe {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 11rem;
+  max-width: 100%;
+}
+
+.jc-filtre-etiquette {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b6b6b;
+}
+
+/* La liste occupe toute la largeur de son groupe : sans cela, le
+   `max-width` de `.ddb-filtre` laisse les quatre listes de largeurs
+   différentes, alignées n'importe comment. */
+.jc-filtre-groupe .ddb-filtre {
+  width: 100%;
+  max-width: none;
+}
+
+.jc-filtres .jc-etroit {
+  width: 7rem;
+}
+
+.jc-filtres .jc-large {
+  width: 16rem;
+}
+
+.jc-boutons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.jc-bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 0;
+  border-radius: 0.3rem;
+  padding: 0.42rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.jc-export {
+  background: #2e7d32;
+}
+.jc-gestion {
+  background: #d7263d;
+}
+.jc-actualiser {
+  background: #1d1b1b;
+}
+
+/* --- Le bandeau de contrôle ---------------------------------------------- */
+
+/**
+ * Il porte le total de TOUTE la période filtrée, pas celui des lignes
+ * affichées (cf. l'action `totaux` du backend). C'est la première chose que
+ * lit un comptable : tant que le solde est à zéro, la période tient.
+ */
+.jc-bandeau {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1d1b1b;
+  color: #fff;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.jc-separateur {
+  opacity: 0.55;
+}
+
+/**
+ * LAMPS affiche le solde en rouge qu'il soit juste ou faux, ce qui lui ôte
+ * toute valeur d'alerte. Ici le rouge ne sert qu'à l'écart ; un solde à zéro
+ * passe au vert.
+ */
+.jc-solde {
+  color: #ff6b6b;
+}
+
+.jc-equilibre .jc-solde {
+  color: #6ee7a8;
+}
+
+.jc-compte-lignes {
+  margin-left: auto;
+  font-weight: 500;
+  opacity: 0.75;
+}
+
+/* --- Le tableau ---------------------------------------------------------- */
+
+.jc-tableau-conteneur {
+  overflow-x: auto;
+}
+
+/**
+ * Un grand livre se lit en série : on y suit des colonnes de chiffres, pas
+ * des fiches. Les lignes y sont donc nettement plus serrées qu'ailleurs dans
+ * l'application - c'est ce qui permet d'en embrasser une vingtaine d'un coup
+ * d'oeil, comme dans l'original.
+ *
+ * Ce resserrement ne s'écrit plus ici : il vient de `.tableau-dense`, posée
+ * sur le tableau à côté de `.ddb-tableau` (cf. `scss/style.scss`). Les
+ * règles locales d'avant pesaient le même poids que la règle commune, et
+ * c'est l'ordre de chargement qui décidait laquelle l'emportait.
+ */
+.jc-tableau {
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.jc-droite {
+  text-align: right;
+}
+
+/* Un montant négatif est une ANNULATION (LAMPS contre-passe en négatif du
+   même côté). Il doit se voir : l'original se contente du signe moins. */
+.jc-negatif {
+  color: #c62828;
+  font-weight: 600;
+}
+
+/* Le compte et le matricule désignent des fiches : ils en portent la couleur,
+   comme dans l'original (compte en rouge, matricule en bleu). */
+.jc-compte {
+  color: #c62828;
+}
+
+.jc-matricule {
+  color: #1565c0;
+}
+
+.jc-vide {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: #6b6b6b;
+}
+
+/* --- Pagination ---------------------------------------------------------- */
+
+.jc-pagination {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.85rem;
+}
+
+.jc-taille {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .ddb-filtre {
+    width: 5rem;
+  }
+}
+
+.jc-position {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.jc-fleches {
+  display: inline-flex;
+  gap: 0.25rem;
+
+  button {
+    border: 1px solid #d8d2d2;
+    background: #fff;
+    border-radius: 0.25rem;
+    min-width: 2.1rem;
+    padding: 0.25rem 0.4rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .jc-entete {
+    flex-direction: column;
+  }
+
+  .jc-outils {
+    align-items: stretch;
+    width: 100%;
+  }
+}

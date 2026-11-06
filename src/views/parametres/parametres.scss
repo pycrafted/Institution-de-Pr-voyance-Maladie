@@ -28,17 +28,19 @@ $prm-ombre: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
   flex: 0 0 auto;
   border: 0;
   background: transparent;
-  padding: 0.9rem 0.75rem;
-  border-bottom: 2px solid transparent;
+  border-radius: 0.5rem;
+  margin-block: 0.35rem;
+  padding: 0.5rem 0.9rem;
   color: $prm-doux;
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
   transition:
-    color 0.12s ease,
-    border-color 0.12s ease;
+    background-color 0.14s ease,
+    color 0.12s ease;
 
   &:hover {
+    background-color: rgba(17, 21, 29, 0.05);
     color: $prm-encre;
   }
 
@@ -48,9 +50,14 @@ $prm-ombre: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
   }
 }
 
-.prm-onglet-actif {
-  color: $prm-encre;
-  border-bottom-color: $prm-rouge;
+// L'onglet ouvert porte un **pavé noir**, comme la page ouverte de la barre
+// du bas. Le filet rouge d'avant a été retiré le 2026-11-06 : le métier le
+// trouvait disgracieux, et le rouge de marque sert déjà aux boutons
+// d'action - un trait rouge sous un intitulé se lisait comme un bouton.
+.prm-onglet-actif,
+.prm-onglet-actif:hover {
+  background-color: $prm-encre;
+  color: #fff;
 }
 
 // --- Formulaires ----------------------------------------------------------------

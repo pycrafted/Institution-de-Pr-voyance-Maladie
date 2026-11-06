@@ -1,0 +1,270 @@
+// Page « Interrogation Compte » (captures 74 à 78).
+//
+// Elle reprend la feuille du Journal Central - mêmes filtres, même tableau,
+// même pagination - et n'ajoute que ce qui lui est propre : les six onglets,
+// les deux sélecteurs en ligne haute avec leurs flèches, le bandeau noir à
+// deux côtés, et la colonne à cocher du lettrage.
+
+$ic-rouge: #e52621;
+$ic-encre: #11151d;
+$ic-doux: #6b7280;
+$ic-bordure: #d9dde2;
+
+.ic-page {
+  padding-top: 1.25rem;
+}
+
+// --- Les six onglets --------------------------------------------------------
+.ic-onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0.75rem 0 1.25rem;
+  border-bottom: 1px solid $ic-bordure;
+}
+
+// L'onglet ouvert porte un **pavé noir**, comme la page ouverte de la barre
+// du bas. Le filet rouge d'avant a été retiré le 2026-11-06 : le métier le
+// trouvait disgracieux, et le rouge de marque sert déjà aux boutons
+// d'action - un trait rouge sous un intitulé se lisait comme un bouton.
+.ic-onglet {
+  border: none;
+  border-radius: 0.5rem;
+  background: none;
+  margin-block: 0.35rem;
+  padding: 0.5rem 0.9rem;
+  color: $ic-doux;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease;
+
+  &:hover {
+    background-color: rgba(17, 21, 29, 0.05);
+    color: $ic-encre;
+  }
+}
+
+.ic-onglet-actif,
+.ic-onglet-actif:hover {
+  background-color: $ic-encre;
+  color: #fff;
+  font-weight: 600;
+}
+
+// --- Ligne haute : les sélecteurs de l'onglet, et les flèches ---------------
+.ic-selecteurs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 0.9rem;
+}
+
+.ic-selecteur {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1 1 320px;
+  min-width: 0;
+  max-width: 480px;
+
+  // Le select prend toute la largeur de sa colonne : sans cela, les deux
+  // flèches ‹ › se retrouvent loin du sélecteur qu'elles font défiler.
+  select {
+    width: 100%;
+  }
+}
+
+// La recherche rejoint la ligne haute : la seconde ligne garde alors la
+// disposition de l'original - Exercice, Période, Type d'Ecriture, Société,
+// puis les trois boutons à droite.
+.ic-selecteurs .ic-recherche {
+  margin-left: auto;
+  min-width: 190px;
+}
+
+.ic-etiquette {
+  color: $ic-encre;
+  font-size: 0.95rem;
+}
+
+// Les deux flèches ‹ › : passer au tiers suivant sans rouvrir la liste.
+.ic-fleches {
+  display: flex;
+  gap: 0.35rem;
+  padding-bottom: 0.15rem;
+
+  button {
+    border: none;
+    background: none;
+    color: $ic-rouge;
+    font-size: 1.6rem;
+    line-height: 1;
+    padding: 0 0.3rem;
+
+    &:disabled {
+      opacity: 0.35;
+    }
+  }
+}
+
+// --- Seconde ligne : les filtres communs et les trois boutons ---------------
+.ic-filtres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 0.9rem;
+}
+
+.ic-recherche {
+  min-width: 190px;
+}
+
+.ic-boutons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ic-lettrage {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.ic-delettrer {
+  border: 1px solid $ic-bordure;
+  background: #fff;
+  border-radius: 0.35rem;
+  padding: 0.3rem 0.6rem;
+  color: $ic-doux;
+  font-size: 0.85rem;
+
+  &:disabled {
+    opacity: 0.45;
+  }
+}
+
+// « Imprimer Extrait » : le rouge de l'original, pâli quand il n'y a rien à
+// produire (ce que fait la capture 75, l'Export Excel avec lui).
+.ic-extrait {
+  background: $ic-rouge;
+  border-color: $ic-rouge;
+  color: #fff;
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+// La période : un résumé « 1 janv. 2026 - 31 déc. 2026 » qu'on déplie.
+.ic-periode {
+  position: relative;
+}
+
+.ic-periode-resume {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  border-bottom: 1px solid $ic-bordure;
+  background: none;
+  padding: 0.3rem 0.1rem;
+  color: $ic-encre;
+  white-space: nowrap;
+}
+
+.ic-periode-chevron {
+  width: 0.7rem;
+  height: 0.7rem;
+  color: $ic-doux;
+}
+
+.ic-periode-champs {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.6rem;
+  border: 1px solid $ic-bordure;
+  border-radius: 0.45rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(17, 21, 29, 0.12);
+}
+
+// --- Le bandeau noir --------------------------------------------------------
+.ic-bandeau {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.55rem 0.85rem;
+  background: $ic-encre;
+  color: #fff;
+  border-radius: 0.35rem 0.35rem 0 0;
+  font-size: 0.92rem;
+
+  strong {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.ic-solde {
+  color: $ic-rouge;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+}
+
+// « Solde sélection » : ce que disent les cases cochées. À zéro, le lot est
+// lettrable - c'est la seule chose que le bouton Lettrage vérifie.
+.ic-bandeau-selection {
+  color: $ic-rouge;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+// --- Le tableau -------------------------------------------------------------
+//
+// Onze colonnes (treize sur les Charges Techniques) : on resserre les cellules
+// pour que la dernière, « Crédit », reste sous les yeux sans faire défiler.
+// Le libellé, seul texte libre de la ligne, s'ellipse plutôt que de pousser
+// les montants hors de l'écran.
+.ic-tableau {
+  .ic-case {
+    width: 38px;
+    text-align: center;
+  }
+
+  // Le resserrement vient de `.tableau-dense`. L'en-tête noir déclaré ici
+  // n'a jamais été visible : même poids que la règle commune, chargée après.
+  tbody td {
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Une écriture lettrée : rapprochée, donc en retrait sans disparaître.
+.ic-lettree td {
+  color: $ic-doux;
+  background: rgba(107, 114, 128, 0.06);
+}
+
+@media (max-width: 991.98px) {
+  .ic-boutons {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .ic-selecteur {
+    flex-basis: 100%;
+    max-width: none;
+  }
+}

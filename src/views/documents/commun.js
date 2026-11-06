@@ -34,10 +34,17 @@ export const optionsReferentiel = (cle, ...dejaPortees) =>
     .filter((e) => e.actif !== false || dejaPortees.includes(e.code))
     .map((e) => ({ valeur: e.code, libelle: e.libelle }))
 
-/** Exercice comptable : l'année en cours et les deux précédentes. */
+/**
+ * Exercices proposés : l'année en cours et les sept précédentes.
+ *
+ * Deux années suffisaient tant que la base n'avait que des documents de
+ * démonstration. L'historique repris de LAMPS commence en 2019 - il faut
+ * pouvoir y remonter, d'autant que l'exercice est désormais ce qui borne la
+ * requête (`serveur: true`), et non plus un tri d'affichage.
+ */
 export const EXERCICES = (() => {
   const courant = new Date().getFullYear()
-  return [courant, courant - 1, courant - 2].map((an) => ({
+  return Array.from({ length: 8 }, (_, i) => courant - i).map((an) => ({
     valeur: String(an),
     libelle: String(an),
   }))
@@ -158,6 +165,9 @@ export const BARRE_DOCUMENTS = {
       etiquette: 'Exercice',
       libelle: 'Tous',
       options: EXERCICES,
+      // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
+      // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
+      serveur: true,
       defaut: () => String(new Date().getFullYear()),
       largeur: '7rem',
     },

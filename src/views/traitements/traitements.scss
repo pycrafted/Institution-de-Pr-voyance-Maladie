@@ -328,6 +328,53 @@ $trt-encre: #11151d;
   border-top: 1px solid $trt-bordure;
 }
 
+// --- Aperçu des écritures au journal (modal « Comptabiliser ») -------------
+// Un journal se lit en lignes serrées, chiffres alignés, et doit pouvoir
+// défiler : onze colonnes ne tiennent pas sur un écran étroit.
+
+// L'arrondi était à 0,4 rem ici et à 0,5 rem ailleurs ; il vient désormais de
+// `.tableau-conteneur`, comme la bordure.
+.trt-reg-tableau {
+  overflow-x: auto;
+
+  // Le resserrement vient de `.tableau-dense`, posée sur le tableau lui-même.
+  .ddb-tableau {
+    margin-bottom: 0;
+    width: 100%;
+  }
+}
+
+.trt-reg-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+// Le compte porté par la ligne, en rouge comme dans l'original : c'est lui
+// qu'on vérifie d'un coup d'œil avant de valider.
+.trt-reg-compte {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: #d7263d;
+}
+
+.trt-reg-solde {
+  margin: 0.75rem 0 0;
+  text-align: right;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #d7263d;
+
+  em {
+    font-style: italic;
+  }
+}
+
+.trt-reg-vide {
+  margin: 1.5rem 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b6b6b;
+}
+
 // Bouton « Edition » dans l'en-tête de la page des règlements.
 .trt-bouton-edition {
   display: inline-flex;
@@ -393,5 +440,177 @@ $trt-encre: #11151d;
 
   strong {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+
+// --- Bons d'Achats (captures 79-80) -----------------------------------------
+//
+// Le modal de saisie : l'en-tête du bon, la bande de saisie d'une ligne, le
+// tableau des lignes, puis les remarques en regard des quatre totaux - la
+// disposition du bon imprimé, dans l'ordre où on le remplit.
+
+.ba-sous-titre {
+  color: $trt-doux;
+  font-weight: 400;
+  font-size: 0.78em;
+  margin-left: 0.35rem;
+}
+
+.ba-requis {
+  color: $trt-rouge;
+}
+
+// Le prix du catalogue, posé dans le libellé à côté du champ modifiable.
+.ba-repere {
+  color: $trt-rouge;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.ba-entete {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+}
+
+// La bande de saisie d'une ligne : fond doux, bouton « Valider » en bout.
+.ba-saisie {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) repeat(4, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.5rem;
+  background: #f4f5f7;
+}
+
+.ba-valider {
+  white-space: nowrap;
+}
+
+// Bordure et arrondi viennent de `.tableau-conteneur`.
+.ba-tableau-cadre {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+// Les articles du bon suivent le tableau commun ; seul l'alignement des
+// chiffres est propre à cet écran.
+.ba-tableau {
+  tbody td {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.ba-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.ba-vide {
+  text-align: center;
+  color: $trt-doux;
+  padding: 1.25rem 0.7rem;
+  font-variant-numeric: normal;
+}
+
+.ba-retirer {
+  border: none;
+  background: none;
+  color: $trt-doux;
+  padding: 0.1rem 0.25rem;
+  line-height: 1;
+
+  &:hover {
+    color: $trt-rouge;
+  }
+}
+
+.ba-pied {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+.ba-pied-gauche {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+// Le contact de l'IPM offert au fournisseur (fiche Paramètres → Informations
+// Générales). L'origine l'affichait déjà ici, en rouge.
+.ba-contact-ipm {
+  margin: 0.25rem 0 0;
+  color: $trt-rouge;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.ba-totaux {
+  align-self: start;
+  border: 1px solid $trt-bordure;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.9rem;
+}
+
+.ba-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  color: $trt-doux;
+  font-size: 0.9rem;
+
+  strong {
+    color: $trt-encre;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.ba-total-fort {
+  border-top: 1px solid $trt-bordure;
+  margin-top: 0.2rem;
+  padding-top: 0.5rem;
+  color: $trt-rouge;
+  font-weight: 600;
+
+  strong {
+    font-size: 1.05rem;
+  }
+}
+
+.ba-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 1.25rem;
+}
+
+.ba-article-modal .ddb-groupe {
+  margin-bottom: 0.85rem;
+}
+
+@media (max-width: 991.98px) {
+  .ba-entete {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ba-saisie {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ba-pied {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .ba-entete,
+  .ba-saisie {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

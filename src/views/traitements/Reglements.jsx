@@ -28,6 +28,7 @@ import '../donnees-de-base/donnees-de-base.scss'
 import '../participants/participants.scss'
 import './traitements.scss'
 import ReglementModal from './ReglementModal'
+import ComptabiliserReglementModal from './ComptabiliserReglementModal'
 import EditionModal from './EditionModal'
 import { REGLEMENTS_SOINS, REGLEMENTS_DIVERS } from './config'
 
@@ -36,10 +37,20 @@ const ONGLETS = [
   { cle: 'divers', libelle: 'Fournisseurs Divers', referentiel: REGLEMENTS_DIVERS },
 ]
 
-/** Une facture est réglable tant qu'elle est comptabilisée (acompte compris). */
-const estReglable = (f) => f.etat === 'Comptabilisée'
+/**
+ * Une facture est réglable tant qu'elle est comptabilisée (acompte compris),
+ * et qu'elle n'est pas un remboursement : celle-là se règle à l'assuré, page
+ * « Remboursement Frais Médicaux », parce que le prestataire a déjà été payé
+ * par lui au comptoir.
+ */
+const estReglable = (f) => f.etat === 'Comptabilisée' && !f.remboursementTicket
 /** Un règlement existe dès qu'un montant a été réglé (acompte ou paiement complet). */
 const aUnReglement = (f) => f.etat === 'Payée' || Number(f.montantReglement) > 0
+/**
+ * Réglée mais pas encore passée au journal : c'est le second geste de
+ * l'application d'origine, son bouton « Comptabiliser » (capture 59).
+ */
+const estAcomptabiliser = (f) => Number(f.montantReglement) > 0 && !f.reglementComptabilise
 
 const Reglements = () => {
   const [onglet, setOnglet] = useState('soins')
@@ -47,6 +58,7 @@ const Reglements = () => {
   // Factures en cours de règlement (ouvre ReglementModal), édition, et clé de
   // rafraîchissement (remonte la liste après une action, relâche la sélection).
   const [facturesAregler, setFacturesAregler] = useState(null)
+  const [facturesAcomptabiliser, setFacturesAcomptabiliser] = useState(null)
   const [editionOuverte, setEditionOuverte] = useState(false)
   const [rafraichir, setRafraichir] = useState(0)
 
@@ -85,6 +97,20 @@ const Reglements = () => {
               return undefined
             }
             setFacturesAregler(cibles)
+            return undefined
+          },
+        },
+        {
+          libelle: 'Comptabiliser',
+          // Ouvre l'aperçu des écritures : la banque s'y choisit, le journal
+          // en découle, et rien n'est écrit avant « Valider ».
+          executer: (entrees) => {
+            const cibles = entrees.filter(estAcomptabiliser)
+            if (!cibles.length) {
+              toast.info('Aucun règlement à comptabiliser dans la sélection.')
+              return undefined
+            }
+            setFacturesAcomptabiliser(cibles)
             return undefined
           },
         },
@@ -185,6 +211,17 @@ const Reglements = () => {
         onFermer={() => setFacturesAregler(null)}
         onEnregistre={() => {
           setFacturesAregler(null)
+          rafraichirListe()
+        }}
+      />
+
+      <ComptabiliserReglementModal
+        key={`cpt-${(facturesAcomptabiliser || []).map((f) => f.id).join('-')}`}
+        factures={facturesAcomptabiliser}
+        visible={Boolean(facturesAcomptabiliser)}
+        onFermer={() => setFacturesAcomptabiliser(null)}
+        onEnregistre={() => {
+          setFacturesAcomptabiliser(null)
           rafraichirListe()
         }}
       />

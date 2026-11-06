@@ -2,6 +2,7 @@
 
 from .acte import ActeViewSet
 from .article_achat import ArticleAchatViewSet
+from .compte_comptable import CompteComptableViewSet
 from .demande_agrement import DemandeAgrementViewSet
 from .fournisseur_de_soins import FournisseurDeSoinsViewSet
 from .fournisseur_divers import FournisseurDiversViewSet
@@ -18,6 +19,7 @@ __all__ = [
     'SpecialiteViewSet',
     'ActeViewSet',
     'ArticleAchatViewSet',
+    'CompteComptableViewSet',
     'JournalComptableViewSet',
     'MedicamentViewSet',
     'FournisseurDiversViewSet',

@@ -9,6 +9,7 @@ branchement soit direct.
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    CompteComptableViewSet,
     ActeViewSet,
     ArticleAchatViewSet,
     DemandeAgrementViewSet,
@@ -36,5 +37,7 @@ router.register(
 )
 router.register('demandes-agrement', DemandeAgrementViewSet, basename='demande-agrement')
 router.register('structure', StructureEntiteViewSet, basename='structure-entite')
+# Plan Comptable Général (menu Comptabilité, capture 73).
+router.register('plan-comptable', CompteComptableViewSet, basename='compte-comptable')
 
 urlpatterns = router.urls

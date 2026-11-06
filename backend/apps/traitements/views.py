@@ -11,14 +11,24 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from donnees_de_base.views.base import ReferentielViewSet
+from donnees_de_base.views.exercice import FiltreExerciceMixin
 
 from datetime import date as _date
 
 from . import bons as bons_service
 from .comptabilisation import generer_ecritures
 from .editions import editer_liste_factures
-from .liquidation import liquider, taux_societe
-from .remboursement import generer_ecritures_remboursement
+from .impression_bon_achat import bon_achat_pdf
+from .liquidation import arrondi, liquider, taux_et_plafond
+from .reglement import (
+    generer_ecritures_annulation_reglement,
+    generer_ecritures_reglement,
+)
+from .remboursement import (
+    generer_ecritures_comptabilisation_remboursement,
+    generer_ecritures_reglement_remboursement,
+    ligne_banque_du_cheque,
+)
 from .models import (
     CODES_BON_MANUEL,
     ETAT_COMPTABILISEE,
@@ -30,6 +40,7 @@ from .models import (
     TYPE_DIVERS,
     TYPE_SOINS,
     Banque,
+    BonAchat,
     EcritureCompta,
     Facture,
     LiquidationBon,
@@ -37,6 +48,7 @@ from .models import (
 )
 from .serializers import (
     BanqueSerializer,
+    BonAchatSerializer,
     EcritureComptaSerializer,
     FactureSerializer,
     LiquidationBonSerializer,
@@ -52,6 +64,30 @@ _MOIS = [
 
 def _mois_traitement(jour):
     return f'{_MOIS[jour.month - 1]}-{jour.year}'
+
+
+def _premier_du_mois(jour):
+    """Le mois comptable, en date : toujours le 1er, comme `datetrait`."""
+    return jour.replace(day=1)
+
+
+def _poser_mois_comptable(facture, jour=None):
+    """
+    Fixe le mois comptable de la facture, s'il ne l'est pas déjà.
+
+    L'étiquette (« oct.-2026 ») et la date (2026-10-01) vont de pair : la
+    première s'affiche, la seconde porte les écritures. Renvoie la liste des
+    champs modifiés, à joindre à `update_fields`.
+    """
+    jour = jour or date.today()
+    champs = []
+    if not facture.mois_traitement:
+        facture.mois_traitement = _mois_traitement(jour)
+        champs.append('mois_traitement')
+    if not facture.date_trait:
+        facture.date_trait = _premier_du_mois(jour)
+        champs.append('date_trait')
+    return champs
 
 
 def _entier(valeur):
@@ -98,7 +134,7 @@ def _normaliser_actes(bruts):
     return actes, totaux
 
 
-class FactureViewSet(ReferentielViewSet):
+class FactureViewSet(FiltreExerciceMixin, ReferentielViewSet):
     """
     Même socle que les référentiels (liste, création, modification, écoute de
     fond) : le composant <Referentiel /> du frontend affiche la liste et sert
@@ -115,6 +151,9 @@ class FactureViewSet(ReferentielViewSet):
         'traitee_par',
         'comptabilisee_par',
     )
+    # L'exercice d'une facture se lit sur SA date, celle que le
+    # prestataire a portée dessus - pas sur la date de réception.
+    champ_exercice = 'date_facture'
     serializer_class = FactureSerializer
     importer = None
 
@@ -164,7 +203,12 @@ class FactureViewSet(ReferentielViewSet):
 
         infos = bons_service.infos_bon(bon, type_document)
         code_soc = infos['codeSoc']
-        montants = liquider(infos['montant'], code_soc, infos['typeBenef'])
+        # La nature de la prestation ouvre le barème : sans elle, un bon
+        # optique serait liquidé au taux de la pharmacie.
+        montants = liquider(
+            infos['montant'], code_soc, infos['typeBenef'],
+            code_prestation=infos.get('prestation'),
+        )
 
         with transaction.atomic():
             liquidation = LiquidationBon.objects.create(
@@ -188,10 +232,9 @@ class FactureViewSet(ReferentielViewSet):
             # La facture passe « en cours de traitement » dès le premier bon.
             if facture.etat == ETAT_RECUE:
                 facture.etat = ETAT_EN_COURS
-                if not facture.mois_traitement:
-                    facture.mois_traitement = _mois_traitement(date.today())
+                champs = _poser_mois_comptable(facture)
                 facture.traitee_par = request.user
-                facture.save(update_fields=['etat', 'mois_traitement', 'traitee_par', 'modifie_le'])
+                facture.save(update_fields=['etat', 'traitee_par', 'modifie_le'] + champs)
 
         return Response(LiquidationBonSerializer(liquidation).data, status=status.HTTP_201_CREATED)
 
@@ -243,11 +286,10 @@ class FactureViewSet(ReferentielViewSet):
             bon.save(update_fields=['traite', 'numero_facture', 'modifie_le'])
             if facture.etat == ETAT_RECUE:
                 facture.etat = ETAT_EN_COURS
-                if not facture.mois_traitement:
-                    facture.mois_traitement = _mois_traitement(date.today())
+                champs = _poser_mois_comptable(facture)
                 facture.traitee_par = request.user
                 facture.save(
-                    update_fields=['etat', 'mois_traitement', 'traitee_par', 'modifie_le']
+                    update_fields=['etat', 'traitee_par', 'modifie_le'] + champs
                 )
 
         return Response(LiquidationBonSerializer(liquidation).data)
@@ -297,9 +339,18 @@ class FactureViewSet(ReferentielViewSet):
 
         code_soc = facture.adherent.code if facture.adherent_id else ''
         integral = bool(d.get('remboursementIntegral'))
-        taux = taux_societe(code_soc)
-        # Remboursement intégral : l'IPM prend 100 %. Sinon, le taux de la société.
-        qpipm = montant if integral else round(taux * montant / 100)
+        # Le bon manuel porte le **type de document** qu'il remplace : il donne
+        # donc la nature de prestation d'un bon de pharmacie ou d'un bon
+        # optique, et le barème s'ouvre comme pour un vrai bon. Pour un avoir
+        # ou un ticket, il n'y a pas de nature : le moteur retombe sur son
+        # filet, ce qui est le comportement d'avant.
+        taux, plafond = taux_et_plafond(
+            code_soc, bons_service.PRESTATION_IMPLICITE.get(type_manuel), str(d.get('typeBenef', '')),
+        )
+        # Remboursement intégral : l'IPM prend 100 %. Sinon, le barème.
+        qpipm = montant if integral else arrondi(taux * montant / 100)
+        if plafond and not integral:
+            qpipm = min(qpipm, plafond)
         qpipm = min(qpipm, montant)
         qppart = max(0, montant - qpipm)
         date_bon = parse_date(str(d.get('date', '')) or '') or date.today()
@@ -334,11 +385,10 @@ class FactureViewSet(ReferentielViewSet):
             )
             if facture.etat == ETAT_RECUE:
                 facture.etat = ETAT_EN_COURS
-                if not facture.mois_traitement:
-                    facture.mois_traitement = _mois_traitement(date.today())
+                champs = _poser_mois_comptable(facture)
                 facture.traitee_par = request.user
                 facture.save(
-                    update_fields=['etat', 'mois_traitement', 'traitee_par', 'modifie_le']
+                    update_fields=['etat', 'traitee_par', 'modifie_le'] + champs
                 )
         return Response(
             LiquidationBonSerializer(liquidation).data, status=status.HTTP_201_CREATED
@@ -418,15 +468,32 @@ class FactureViewSet(ReferentielViewSet):
             )
 
         with transaction.atomic():
+            # Filet : une facture sans mois comptable n'aurait aucune écriture
+            # visible au Journal Central, qui se range sur cet axe.
+            champs_mois = _poser_mois_comptable(facture)
             facture.ecritures.all().delete()
-            lignes, _total = generer_ecritures(facture)
             EcritureCompta = facture.ecritures.model
+            if facture.remboursement_ticket:
+                # Circuit remboursement : l'assuré a avancé l'argent. Le
+                # prestataire n'a rien à recevoir et le ticket reste à la
+                # charge de l'agent - le schéma du tiers payant (Cr 400
+                # fournisseur, Dr 411 ticket) serait faux ici. On pose la
+                # reconnaissance de dette envers l'assuré, journal RIB/RIC.
+                lignes = []
+                for bon in facture.bons.all():
+                    ecritures, _m = generer_ecritures_comptabilisation_remboursement(
+                        bon, _date.today(), depart=len(lignes)
+                    )
+                    lignes.extend(ecritures)
+            else:
+                lignes, _total = generer_ecritures(facture)
             EcritureCompta.objects.bulk_create(lignes)
             facture.etat = ETAT_COMPTABILISEE
             facture.date_compta = _date.today()
             facture.comptabilisee_par = request.user
             facture.save(
                 update_fields=['etat', 'date_compta', 'comptabilisee_par', 'modifie_le']
+                + champs_mois
             )
         return Response(self.get_serializer(facture).data)
 
@@ -459,8 +526,13 @@ class FactureViewSet(ReferentielViewSet):
         reglees = []
         with transaction.atomic():
             for ligne in lignes:
+                # `remboursement_ticket=False` : une facture de remboursement
+                # ne se règle pas au fournisseur (il a été payé au comptoir par
+                # l'assuré), mais à l'assuré, page « Remboursement Frais
+                # Médicaux ». Dans LAMPS, aucune des 6 643 n'a de règlement.
                 facture = Facture.objects.filter(
-                    id=ligne.get('id'), etat=ETAT_COMPTABILISEE
+                    id=ligne.get('id'), etat=ETAT_COMPTABILISEE,
+                    remboursement_ticket=False,
                 ).first()
                 if facture is None:
                     continue
@@ -486,7 +558,9 @@ class FactureViewSet(ReferentielViewSet):
     def marquer_a_payer(self, request):
         """Marque des factures comptabilisées « à payer » (drapeau). Corps : { ids }."""
         ids = request.data.get('ids') or []
-        n = Facture.objects.filter(id__in=ids, etat=ETAT_COMPTABILISEE).update(a_payer=True)
+        n = Facture.objects.filter(
+            id__in=ids, etat=ETAT_COMPTABILISEE, remboursement_ticket=False
+        ).update(a_payer=True)
         return Response({'marquees': n})
 
     @action(detail=False, methods=['post'], url_path='annuler-a-payer')
@@ -496,13 +570,89 @@ class FactureViewSet(ReferentielViewSet):
         n = Facture.objects.filter(id__in=ids).update(a_payer=False)
         return Response({'annulees': n})
 
+    def _lot_a_comptabiliser(self, request):
+        """Les factures réglées non encore comptabilisées, et la banque choisie."""
+        ids = request.data.get('ids') or []
+        code_banque = str(request.data.get('banque', '')).strip()
+        banque = Banque.objects.filter(code=code_banque).first() if code_banque else None
+        # `montant_reglement__gt=0` plutôt que « Payée » : un acompte est un
+        # règlement, il sort de l'argent et doit se comptabiliser, même si la
+        # facture reste partiellement due.
+        factures = Facture.objects.filter(
+            id__in=ids, actif=True, montant_reglement__gt=0,
+            reglement_comptabilise=False, remboursement_ticket=False,
+        ).select_related('adherent', 'specialite', 'fournisseur_soins', 'fournisseur_divers')
+        return list(factures), banque
+
+    @action(detail=False, methods=['post'], url_path='apercu-reglement')
+    def apercu_reglement(self, request):
+        """
+        « Aperçu écritures au journal » (capture 60) : les écritures telles
+        qu'elles seront posées, sans rien enregistrer. L'utilisateur les lit,
+        vérifie le solde, puis valide - ou renonce.
+        """
+        factures, banque = self._lot_a_comptabiliser(request)
+        if banque is None:
+            return Response(
+                {'detail': 'Choisissez la banque qui a payé.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        lignes, total = generer_ecritures_reglement(factures, banque, _date.today())
+        return Response({
+            'ecritures': EcritureComptaSerializer(lignes, many=True).data,
+            'total': total,
+            'factures': [f.id for f in factures],
+        })
+
+    @action(detail=False, methods=['post'], url_path='comptabiliser-reglement')
+    def comptabiliser_reglement(self, request):
+        """
+        Second geste du règlement (capture 59, bouton « Comptabiliser ») :
+        écrit au journal de la banque et fait passer les factures à
+        « Comptabilisée ». Régler pose le chèque sur la facture ; c'est ici que
+        la comptabilité l'enregistre, parfois des semaines plus tard.
+        """
+        factures, banque = self._lot_a_comptabiliser(request)
+        if banque is None:
+            return Response(
+                {'detail': 'Choisissez la banque qui a payé.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not factures:
+            return Response(
+                {'detail': 'Aucune facture réglée à comptabiliser.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        with transaction.atomic():
+            lignes, _total = generer_ecritures_reglement(factures, banque, _date.today())
+            EcritureCompta.objects.bulk_create(lignes)
+            for facture in factures:
+                facture.banque_reglement = banque.code
+                facture.reglement_comptabilise = True
+                facture.save(
+                    update_fields=['banque_reglement', 'reglement_comptabilise', 'modifie_le']
+                )
+        return Response({'comptabilisees': [f.id for f in factures]})
+
     @action(detail=False, methods=['post'], url_path='annuler-reglement')
     def annuler_reglement(self, request):
-        """Annule le règlement : la facture redevient « Comptabilisée », non payée."""
+        """
+        Annule le règlement : la facture redevient « Comptabilisée », non payée.
+
+        Si le règlement avait été comptabilisé, ses écritures ne sont pas
+        effacées : elles sont contre-passées en négatif, comme le fait
+        l'application d'origine.
+        """
         ids = request.data.get('ids') or []
         annulees = []
         with transaction.atomic():
             for facture in Facture.objects.filter(id__in=ids):
+                if facture.reglement_comptabilise:
+                    EcritureCompta.objects.bulk_create(
+                        generer_ecritures_annulation_reglement(facture)
+                    )
+                    facture.reglement_comptabilise = False
+                    facture.banque_reglement = ''
                 facture.type_reglement = ''
                 facture.numero_reglement = ''
                 facture.date_reglement = None
@@ -529,8 +679,11 @@ class FactureViewSet(ReferentielViewSet):
         )
         exercice = str(request.query_params.get('exercice', '')).strip()
 
+        # Les remboursements sont hors de ces états : ils ne se paient pas au
+        # fournisseur. Les laisser ferait figurer sur « Factures non Payées »
+        # des factures qui ne le seront jamais - 6 628 dans LAMPS.
         factures = Facture.objects.filter(
-            actif=True, type_fournisseur=type_fournisseur
+            actif=True, type_fournisseur=type_fournisseur, remboursement_ticket=False
         ).select_related('adherent', 'specialite', 'fournisseur_soins', 'fournisseur_divers')
 
         if etat == 'a-payer':
@@ -782,9 +935,10 @@ class RemboursementViewSet(viewsets.ViewSet):
     def regler(self, request):
         """
         Règle (rembourse) une ou plusieurs lignes. Corps : { ids, methode (C/V/T),
-        numero, banque (Bx), date }. Pose les écritures (comptabilisation RIB/RIC
-        Dr 602 / Cr 411, puis, si banque, règlement Bx Dr 411 / Cr 521) et marque
-        les bons « Remboursé ».
+        numero, banque (Bx), date }. Pose le PAIEMENT seul (journal Bx : un débit
+        411 par prestation, puis UNE ligne 521 pour tout le chèque, comme LAMPS),
+        la dette ayant été inscrite à la comptabilisation, et marque les bons
+        « Remboursé ».
         """
         data = request.data
         ids = data.get('ids') or []
@@ -808,12 +962,32 @@ class RemboursementViewSet(viewsets.ViewSet):
         reglees = []
         with transaction.atomic():
             bons = self._bons().filter(id__in=ids, rembourse=False)
+            refuses = []
+            # Le chèque est unique pour tout le lot : on cumule ce qu'il paie,
+            # pour n'écrire qu'une seule sortie de banque à la fin.
+            total_cheque = 0
+            rang_cheque = 0
             for bon in bons:
                 # Un remboursement « par banque » exige une banque.
                 if (bon.facture.type_remb or '') == 'banque' and banque is None:
                     continue
-                lignes, _m = generer_ecritures_remboursement(bon, banque, numero, date_r)
+                # Et la facture doit être comptabilisée : sans cela, l'IPM
+                # paierait une dette qu'elle n'a jamais inscrite. C'est l'ordre
+                # de LAMPS, où 99,8 % des factures de remboursement finissent
+                # « Comptabilisée ».
+                if bon.facture.etat != ETAT_COMPTABILISEE:
+                    refuses.append(bon.facture.id)
+                    continue
+                # Seul le PAIEMENT est posé ici : la reconnaissance de la
+                # dette (Dr 602 / Cr 411) a été écrite à la comptabilisation
+                # de la facture. La poser une seconde fois doublerait la
+                # charge et la dette.
+                lignes, paye = generer_ecritures_reglement_remboursement(
+                    bon, banque, numero, date_r, depart=rang_cheque
+                )
                 EcritureCompta.objects.bulk_create(lignes)
+                rang_cheque += len(lignes)
+                total_cheque += paye
                 bon.rembourse = True
                 bon.rembourse_le = date_r
                 bon.reglement_methode = methode
@@ -826,4 +1000,77 @@ class RemboursementViewSet(viewsets.ViewSet):
                     ]
                 )
                 reglees.append(bon.id)
-        return Response({'reglees': reglees})
+            # La sortie d'argent, une fois pour le chèque entier : c'est la
+            # dernière ligne du lot dans LAMPS, sans tiers et sans facture.
+            sortie = ligne_banque_du_cheque(
+                banque, numero, date_r, total_cheque, rang=rang_cheque + 1
+            )
+            if sortie is not None:
+                sortie.save()
+        if refuses and not reglees:
+            return Response(
+                {
+                    'detail': 'Facture n° %s non comptabilisée : validez-la puis '
+                    'comptabilisez-la avant de rembourser.'
+                    % ', '.join(str(i) for i in sorted(set(refuses)))
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response({'reglees': reglees, 'refusees': sorted(set(refuses))})
+
+
+# ===========================================================================
+# Bons d'Achats (captures 79-80)
+# ===========================================================================
+
+
+class BonAchatViewSet(FiltreExerciceMixin, ReferentielViewSet):
+    """
+    Les bons de commande d'achats : lister, créer (numéro « BA000013 » posé par
+    le serveur), modifier, annuler, et le bon imprimé en PDF.
+
+    **Le filtre année/mois filtre vraiment.** L'écran d'origine affichait un
+    sélecteur d'année et de mois qui ne restreignait rien : il annonçait
+    « 2026 / Octobre » au-dessus d'une ligne de janvier 2025. Un filtre qui
+    ment est pire qu'un filtre absent, donc l'exercice (socle commun) et le
+    mois sont tous deux appliqués ici, par le serveur.
+
+    Sans import Excel : on ne reprend pas une liste de commandes d'un tableur.
+    """
+
+    queryset = BonAchat.objects.select_related('fournisseur', 'saisi_par').prefetch_related(
+        'lignes', 'lignes__article',
+    )
+    # L'exercice se lit sur la date d'enregistrement du bon.
+    champ_exercice = 'date_bon'
+    serializer_class = BonAchatSerializer
+    importer = None
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Le mois, comme l'exercice, ne borne que la liste et l'écoute : un lien
+        # vers un vieux bon doit rester ouvrable.
+        if getattr(self, 'action', None) in ('list', 'etat'):
+            mois = (self.request.query_params.get('mois') or '').strip()
+            if mois.isdigit() and 1 <= int(mois) <= 12:
+                queryset = queryset.filter(date_bon__month=int(mois))
+        return queryset
+
+    def perform_create(self, serializer):
+        # Numéro de la séquence des bons d'achats, et l'auteur de la saisie.
+        code = serializer.validated_data.get('code') or BonAchat.prochain_code()
+        user = self.request.user if self.request.user.is_authenticated else None
+        serializer.save(code=code, saisi_par=user)
+
+    @action(detail=False, methods=['get'], url_path='prochain-numero')
+    def prochain_numero(self, request):
+        """Le numéro que portera le prochain bon, pour l'afficher au modal."""
+        return Response({'code': BonAchat.prochain_code()})
+
+    @action(detail=True, methods=['get'])
+    def pdf(self, request, pk=None):
+        """Le bon de commande imprimé."""
+        bon = self.get_object()
+        reponse = HttpResponse(bon_achat_pdf(bon), content_type='application/pdf')
+        reponse['Content-Disposition'] = f'inline; filename="{bon.code}.pdf"'
+        return reponse

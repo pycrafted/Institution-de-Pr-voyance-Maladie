@@ -26,6 +26,35 @@ _DOCUMENTS = {
     TYPE_BON_OPTIQUE: (BonOptique, 'fournisseur'),
 }
 
+# La nature de prestation d'un document qui n'en nomme pas.
+#
+# Une lettre de garantie et une LG hospitalisation portent leur
+# `nature_prestation` : le prescripteur l'a choisie, et elle peut valoir
+# n'importe lequel des 63 types. Un bon de pharmacie et un bon optique, non -
+# leur nature **est** leur type de document, et il n'y a rien à demander à
+# l'agent. Ces deux codes sont ceux du référentiel repris de LAMPS, et ce sont
+# eux qui ouvrent le barème : `04` est l'optique, prise à 100 % plafonnée dans
+# deux sociétés sur quatre, et `06` la pharmacie, à 85 % partout.
+PRESTATION_IMPLICITE = {
+    TYPE_BON_PHARMACIE: '06',   # PHARMACIE
+    TYPE_BON_OPTIQUE: '04',     # OPTIQUE
+}
+
+
+def prestation_de(bon, type_document):
+    """
+    Le code de nature de prestation d'un bon, pour ouvrir le barème.
+
+    Vide si le document en porte une et qu'elle n'est pas renseignée : le
+    moteur retombe alors sur son filet plutôt que d'inventer une nature, qui
+    lui ferait appliquer un taux faux en silence.
+    """
+    implicite = PRESTATION_IMPLICITE.get(type_document)
+    if implicite:
+        return implicite
+    nature = getattr(bon, 'nature_prestation', None)
+    return nature.code if nature is not None else ''
+
 
 def modele_de(type_document):
     paire = _DOCUMENTS.get(type_document)
@@ -83,6 +112,9 @@ def infos_bon(bon, type_document):
         'typeBenef': bon.type_benef.code if bon.type_benef_id else '',
         'beneficiaire': nom_benef,
         'prestataire': prestataire.code if prestataire else '',
+        # La troisième clé du barème, avec la société et le type de
+        # bénéficiaire. Sans elle, la liquidation applique un taux unique.
+        'prestation': prestation_de(bon, type_document),
         'montant': montant_bon(bon, type_document),
     }
 
@@ -103,6 +135,10 @@ def bons_en_instance(facture):
         requete = requete.select_related(
             'adherent', 'participant', 'beneficiaire', 'type_benef', attr_presta
         )
+        # La nature n'existe que sur les deux lettres ; la demander aux deux
+        # autres lèverait une erreur de champ.
+        if type_document not in PRESTATION_IMPLICITE:
+            requete = requete.select_related('nature_prestation')
         resultat.extend(infos_bon(bon, type_document) for bon in requete)
     # Le plus récent en haut, comme la liste d'origine.
     resultat.sort(key=lambda b: b['numero'], reverse=True)

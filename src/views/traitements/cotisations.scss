@@ -1,0 +1,308 @@
+// Page « Cotisations » (captures 81 à 83).
+//
+// Elle reprend la feuille du Journal Central - même titre, mêmes sélecteurs,
+// même tableau à bandeau d'encre - et n'ajoute que ce qui lui est propre :
+// les deux onglets, la ligne des soldes, l'en-tête de l'appel nominatif, et
+// la barre de boutons colorés que l'original porte sur ses deux onglets.
+
+$cot-rouge: #e52621;
+$cot-encre: #11151d;
+$cot-doux: #6b7280;
+$cot-bordure: #d9dde2;
+$cot-vert: #1f9d55;
+$cot-bleu: #4a9fd8;
+
+.cot-page {
+  padding-top: 1.25rem;
+}
+
+// --- Les deux onglets -------------------------------------------------------
+.cot-onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  margin: 0.75rem 0 1.1rem;
+  border-bottom: 1px solid $cot-bordure;
+}
+
+// L'onglet ouvert porte un **pavé noir**, comme la page ouverte de la barre
+// du bas. Le filet rouge d'avant a été retiré le 2026-11-06 : le métier le
+// trouvait disgracieux, et le rouge de marque sert déjà aux boutons
+// d'action - un trait rouge sous un intitulé se lisait comme un bouton.
+.cot-onglet {
+  border: none;
+  border-radius: 0.5rem;
+  background: none;
+  margin-block: 0.35rem;
+  padding: 0.5rem 0.9rem;
+  color: $cot-doux;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease;
+
+  &:hover {
+    background-color: rgba(17, 21, 29, 0.05);
+    color: $cot-encre;
+  }
+}
+
+.cot-onglet-actif,
+.cot-onglet-actif:hover {
+  background-color: $cot-encre;
+  color: #fff;
+  font-weight: 600;
+}
+
+// --- La ligne des soldes ----------------------------------------------------
+//
+// Les deux portent toujours le même nombre : une cotisation est équilibrée.
+// Les montrer tous les deux est ce qui permet de voir qu'aucune pièce ne
+// boite, sans ouvrir le grand livre.
+.cot-soldes {
+  margin: 0 0 0.85rem;
+  color: $cot-encre;
+  font-size: 0.95rem;
+
+  strong {
+    color: $cot-rouge;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.cot-separateur {
+  color: $cot-doux;
+}
+
+// --- La barre de filtres et de boutons --------------------------------------
+.cot-barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.9rem;
+}
+
+.cot-barre-boutons {
+  justify-content: flex-end;
+}
+
+.cot-boutons {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cot-large {
+  min-width: 250px;
+}
+
+.cot-recherche {
+  min-width: 190px;
+}
+
+// Un bouton de la barre : gris clair par défaut, et chaque variante reprend
+// la couleur que l'original lui donne.
+.cot-bouton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid $cot-bordure;
+  border-radius: 0.35rem;
+  background: #fff;
+  padding: 0.38rem 0.75rem;
+  color: $cot-encre;
+  font-size: 0.9rem;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    border-color: darken($cot-bordure, 10%);
+  }
+
+  // Pâli plutôt que caché : l'action existe, elle n'est simplement pas
+  // disponible ici - c'est ce que fait l'original de tous ses boutons de lot.
+  &:disabled {
+    opacity: 0.45;
+  }
+}
+
+.cot-icone {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.cot-bouton-rouge {
+  background: $cot-rouge;
+  border-color: $cot-rouge;
+  color: #fff;
+}
+
+.cot-bouton-danger {
+  background: lighten($cot-rouge, 32%);
+  border-color: lighten($cot-rouge, 28%);
+  color: darken($cot-rouge, 12%);
+}
+
+.cot-bouton-encre {
+  background: $cot-encre;
+  border-color: $cot-encre;
+  color: #fff;
+}
+
+.cot-bouton-vert {
+  background: $cot-vert;
+  border-color: $cot-vert;
+  color: #fff;
+}
+
+// « Actualiser » : bleu pâle sur l'onglet Saisie, noir sur l'onglet Appels.
+// Les deux captures ne s'accordent pas, et on reprend chacune telle quelle.
+.cot-bouton-azur {
+  background: lighten($cot-bleu, 28%);
+  border-color: lighten($cot-bleu, 22%);
+  color: darken($cot-bleu, 22%);
+}
+
+.cot-bouton-bleu {
+  background: $cot-bleu;
+  border-color: $cot-bleu;
+  color: #fff;
+}
+
+// --- L'en-tête de l'appel nominatif -----------------------------------------
+//
+// Trois lignes en italique, comme l'original : la période, l'appel nommé en
+// entier, puis le décompte et le total.
+.cot-entete-appel {
+  margin-bottom: 0.9rem;
+  font-style: italic;
+  line-height: 1.35;
+
+  p {
+    margin: 0;
+  }
+}
+
+.cot-entete-periode {
+  font-weight: 700;
+  color: $cot-encre;
+}
+
+.cot-entete-titre {
+  font-weight: 600;
+  color: $cot-encre;
+  font-size: 0.92rem;
+}
+
+.cot-entete-total {
+  font-weight: 600;
+  color: $cot-rouge;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cot-entete-vide {
+  color: $cot-doux;
+}
+
+// --- Le tableau -------------------------------------------------------------
+//
+// Onze colonnes sur l'onglet Saisie : on resserre les cellules pour que la
+// dernière reste sous les yeux, et le libellé s'ellipse plutôt que de pousser
+// les montants hors de l'écran.
+//
+// La bordure et l'arrondi viennent de `.tableau-conteneur` : ce cadre ne
+// portait que le défilement, et le tableau tombait à vif dans la page quand
+// tous les autres étaient encadrés.
+.cot-tableau-cadre {
+  overflow-x: auto;
+}
+
+// Une ligne d'appel est une **personne**, pas une écriture : le tableau garde
+// l'aéré commun, comme la liste des participants. L'en-tête noir qu'on lisait
+// ici jusqu'au 2026-11-06 était le dernier des six habillages concurrents.
+.cot-tableau {
+  .cot-case {
+    width: 38px;
+    text-align: center;
+  }
+
+  tbody td {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// Un appel comptabilisé est figé : ses écritures sont parties au grand livre.
+// En retrait, sans disparaître - on le consulte encore.
+.cot-fige td {
+  color: $cot-doux;
+  background: rgba(107, 114, 128, 0.06);
+}
+
+.cot-vide {
+  color: $cot-doux;
+  padding: 1.4rem 0.6rem;
+  text-align: center;
+}
+
+.cot-badge {
+  display: inline-block;
+  border-radius: 0.3rem;
+  padding: 0.12rem 0.45rem;
+  background: rgba(107, 114, 128, 0.14);
+  color: $cot-doux;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.cot-badge-ok {
+  background: rgba(31, 157, 85, 0.16);
+  color: darken($cot-vert, 8%);
+}
+
+// --- Le modal ---------------------------------------------------------------
+.cot-modal {
+  .cot-ligne {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.9rem;
+  }
+}
+
+.cot-requis {
+  color: $cot-rouge;
+}
+
+// Le compte que le choix entraîne : on le montre plutôt que de laisser
+// deviner où la cotisation va se loger.
+.cot-aide {
+  margin: 0.25rem 0 0;
+  color: $cot-doux;
+  font-size: 0.8rem;
+}
+
+.cot-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.1rem;
+}
+
+@media (max-width: 991.98px) {
+  .cot-boutons {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .cot-large {
+    min-width: 100%;
+  }
+
+  .cot-modal .cot-ligne {
+    grid-template-columns: 1fr;
+  }
+}

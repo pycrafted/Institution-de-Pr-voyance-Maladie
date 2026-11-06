@@ -18,6 +18,25 @@ import { FAMILLES, REFERENTIELS } from './config'
 import Referentiel from './Referentiel'
 import './donnees-de-base.scss'
 
+/**
+ * Combien de lignes un référentiel montre, sur les `total` qu'il possède.
+ *
+ * **Dix lignes, quel que soit le référentiel.** Rien n'est retiré de la base
+ * ni du serveur : les 6 009 médicaments y sont tous, l'API les renvoie tous,
+ * les autres écrans les voient. Seule cette page restreint ce qu'elle
+ * affiche, et elle le fait ici, côté navigateur.
+ *
+ * Un nombre fixe plutôt qu'une part du total : 2 % donnait 120 médicaments
+ * et une seule spécialité - trop dans un cas, rien dans l'autre. Dix lignes
+ * suffisent à montrer ce qu'est chaque nomenclature, et un référentiel plus
+ * court que cela s'affiche en entier.
+ *
+ * **Pour changer la restriction, modifier cette seule fonction.** `() =>
+ * Infinity` rend tout visible.
+ */
+const LIGNES_VISIBLES = 10
+const lignesVisibles = (total) => Math.min(total, LIGNES_VISIBLES)
+
 const DonneesDeBase = () => {
   const [cleActive, setCleActive] = useState(REFERENTIELS[0].cle)
 
@@ -45,6 +64,8 @@ const DonneesDeBase = () => {
       // contre le bouton de création.
       segmentsADroite: true,
       stats: (entrees) => `Total : ${entrees.length}`,
+      // Ce que la page accepte de montrer (cf. lignesVisibles ci-dessus).
+      limiteAffichage: lignesVisibles,
       // On modifie en cliquant la ligne (le panneau s'ouvre) : pas de crayon,
       // et la ligne en cours d'édition se colore en rouge. Comme les fournisseurs.
       modificationParLigne: true,

@@ -4,13 +4,14 @@ from django.http import HttpResponse
 from rest_framework.decorators import action
 
 from donnees_de_base.views.base import ReferentielViewSet
+from donnees_de_base.views.exercice import FiltreExerciceMixin
 
 from ..impression import bon_pharmacie_pdf
 from ..models import BonPharmacie
 from ..serializers import BonPharmacieSerializer
 
 
-class BonPharmacieViewSet(ReferentielViewSet):
+class BonPharmacieViewSet(FiltreExerciceMixin, ReferentielViewSet):
     """
     Le socle des référentiels : lister, créer (numéro BPI attribué par le
     serveur), modifier, annuler (activation), modifier en lot. Sans import
@@ -27,6 +28,8 @@ class BonPharmacieViewSet(ReferentielViewSet):
         'prescripteur',
         'cree_par',
     )
+    # L'exercice se lit sur la date d'émission du document.
+    champ_exercice = 'date'
     serializer_class = BonPharmacieSerializer
     importer = None
 

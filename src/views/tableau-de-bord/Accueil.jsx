@@ -5,8 +5,10 @@
  * (cf. AGREGATS_DISPONIBLES dans TableauDeBord.jsx), l'accueil résume ce que
  * la base contient déjà : participants et familles, sociétés, prestataires, et
  * les documents émis - bons de pharmacie, lettres de garantie, LG
- * hospitalisation, bons optique. Aucun chiffre n'est inventé : tout se compte
- * dans les listes servies par l'API.
+ * hospitalisation, bons optique. Les chiffres se comptent dans les listes
+ * servies par l'API - sauf celui des prestataires, borné à ce que la page
+ * Fournisseurs de Soins accepte de montrer (cf. FICHES_VISIBLES) pour que les
+ * deux écrans ne se contredisent pas. La base, elle, en garde 412.
  *
  * Mise en page d'OpsDigital (TailAdmin) : une rangée de tuiles chiffrées, un
  * histogramme et un anneau, trois classements, puis les derniers documents.
@@ -18,6 +20,8 @@ import { Link } from 'react-router-dom'
 import { CCard, CCardBody, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilDescription, cilHospital, cilPeople, cilUser } from '@coreui/icons'
+
+import { FICHES_VISIBLES } from '../fournisseurs-de-soins/FournisseursDeSoins'
 
 import { messageErreur } from '../../services/erreurs'
 import { listerEntrees } from '../../services/referentiels'
@@ -89,6 +93,20 @@ const CLES = [
 
 const capitale = (texte) =>
   texte ? texte.charAt(0).toUpperCase() + texte.slice(1).toLowerCase() : ''
+
+/**
+ * Le seul exercice que cette page ouvre : l'exercice en cours - 2026.
+ *
+ * `EXERCICES` en propose huit, et la liste reste entière partout ailleurs :
+ * les écrans de documents, de factures et de règlements continuent d'offrir
+ * les huit, et le serveur sert toujours n'importe lequel. C'est l'accueil, et
+ * lui seul, qui s'en tient à l'année courante.
+ *
+ * Suit l'horloge : en 2027 l'accueil passera tout seul à 2027. Pour le figer
+ * sur 2026, remplacer par `const EXERCICE_AFFICHE = '2026'`.
+ */
+const EXERCICE_AFFICHE = String(new Date().getFullYear())
+const EXERCICES_AFFICHES = EXERCICES.filter((e) => e.valeur === EXERCICE_AFFICHE)
 
 const exerciceDe = (document) =>
   String(document.exercice || String(document.date || '').slice(0, 4))
@@ -253,7 +271,10 @@ const calculer = (d, exercice) => {
     inscrits: d.participants.length,
     enAttente,
     familles: familles.length,
-    prestataires: prestataires.length,
+    // Borné comme la liste : une tuile annonçant 412 au-dessus d'un écran
+    // qui en montre douze ferait mentir l'un des deux. Rien n'est retiré
+    // de la base - l'API en sert toujours 412.
+    prestataires: Math.min(prestataires.length, FICHES_VISIBLES),
     totalDocuments,
     aTraiter,
     parMois,
@@ -272,7 +293,7 @@ const calculer = (d, exercice) => {
 const Accueil = () => {
   const [donnees, setDonnees] = useState(null)
   const [erreur, setErreur] = useState(null)
-  const [exercice, setExercice] = useState(String(new Date().getFullYear()))
+  const [exercice, setExercice] = useState(EXERCICE_AFFICHE)
 
   useEffect(() => {
     let actif = true
@@ -412,7 +433,7 @@ const Accueil = () => {
         <div className="tdb-entete-filtre">
           <span className="tdb-entete-etiquette">Exercice</span>
           <div className="tdb-segments" role="group" aria-label="Exercice">
-            {EXERCICES.map((e) => (
+            {EXERCICES_AFFICHES.map((e) => (
               <button
                 type="button"
                 key={e.valeur}
@@ -594,8 +615,8 @@ const Accueil = () => {
         <CCardBody className="tdb-carte-corps">
           <EnteteCarte titre="Derniers documents émis" />
           {c.derniers.length ? (
-            <div className="tdb-tableau-conteneur">
-              <table className="tdb-tableau">
+            <div className="tableau-conteneur tdb-tableau-conteneur">
+              <table className="tableau tdb-tableau">
                 <thead>
                   <tr>
                     <th scope="col">Numéro</th>

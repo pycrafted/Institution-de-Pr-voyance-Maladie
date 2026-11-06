@@ -10,16 +10,25 @@ reviennent en lecture, lus sur leurs fiches.
 from rest_framework import serializers
 
 from adherents.models import Adherent
-from donnees_de_base.models import FournisseurDeSoins, FournisseurDivers, Specialite
+from donnees_de_base.models import (
+    ArticleAchat,
+    FournisseurDeSoins,
+    FournisseurDivers,
+    Specialite,
+)
 from donnees_de_base.serializers.fournisseur_de_soins import DateOuVide
 from documents.serializers.commun import lien
 
 from .models import (
     MODES_PAIEMENT,
+    STATUTS_BON_ACHAT,
+    TAUX_TVA_DEFAUT,
     TYPE_SOINS,
     Banque,
+    BonAchat,
     EcritureCompta,
     Facture,
+    LigneBonAchat,
     LiquidationBon,
     OrdrePaiement,
 )
@@ -69,6 +78,10 @@ class FactureSerializer(serializers.ModelSerializer):
     joursRetard = serializers.IntegerField(source='jours_retard', read_only=True)
     resteAPayer = serializers.IntegerField(source='reste_a_payer', read_only=True)
     etatReglement = serializers.CharField(source='etat_reglement', read_only=True)
+    banqueReglement = serializers.CharField(source='banque_reglement', read_only=True)
+    reglementComptabilise = serializers.BooleanField(
+        source='reglement_comptabilise', read_only=True
+    )
     aPayer = serializers.BooleanField(source='a_payer', read_only=True)
     typeReglement = serializers.CharField(source='type_reglement', read_only=True)
     numeroReglement = serializers.CharField(source='numero_reglement', read_only=True)
@@ -114,6 +127,8 @@ class FactureSerializer(serializers.ModelSerializer):
             'joursRetard',
             'resteAPayer',
             'etatReglement',
+            'banqueReglement',
+            'reglementComptabilise',
             'aPayer',
             'typeReglement',
             'numeroReglement',
@@ -231,6 +246,8 @@ class EcritureComptaSerializer(serializers.ModelSerializer):
 
     datePiece = serializers.DateField(source='date_piece', read_only=True)
     dateCompta = serializers.DateField(source='date_compta', read_only=True)
+    # Le mois comptable : la colonne « Mois trait. » de l'aperçu (capture 60).
+    dateTrait = serializers.DateField(source='date_trait', read_only=True)
 
     class Meta:
         model = EcritureCompta
@@ -240,7 +257,9 @@ class EcritureComptaSerializer(serializers.ModelSerializer):
             'codej',
             'datePiece',
             'dateCompta',
+            'dateTrait',
             'numpiece',
+            'numcheque',
             'comptegen',
             'comptetiers',
             'libelle',
@@ -313,3 +332,210 @@ class OrdrePaiementSerializer(serializers.ModelSerializer):
 
     def get_banqueLibelle(self, ordre):
         return ordre.banque.libelle if ordre.banque_id else ''
+
+
+# ===========================================================================
+# Bons d'Achats (captures 79-80)
+# ===========================================================================
+
+
+class LigneBonAchatSerializer(serializers.ModelSerializer):
+    """
+    Une ligne commandée. L'article circule par son code (« ART0003 ») ; sa
+    désignation et son **prix de catalogue** reviennent en lecture - le second
+    est affiché à côté du prix saisi, pour que l'écart se remarque.
+
+    Les montants sont calculés par le modèle : on ne les reçoit jamais de
+    l'écran, sans quoi deux additions pourraient se contredire.
+    """
+
+    article = serializers.SlugRelatedField(
+        slug_field='code', queryset=ArticleAchat.objects.all(),
+    )
+    designation = serializers.SerializerMethodField()
+    prixCatalogue = serializers.SerializerMethodField()
+    compte = serializers.SerializerMethodField()
+    prixUnitaire = serializers.IntegerField(source='prix_unitaire', min_value=0)
+    tauxTva = serializers.IntegerField(
+        source='taux_tva', required=False, min_value=0, max_value=100, default=TAUX_TVA_DEFAUT,
+    )
+    tauxRemise = serializers.IntegerField(
+        source='taux_remise', required=False, min_value=0, max_value=100, default=0,
+    )
+    montantHt = serializers.IntegerField(source='montant_ht', read_only=True)
+    montantRemise = serializers.IntegerField(source='montant_remise', read_only=True)
+    montantTva = serializers.IntegerField(source='montant_tva', read_only=True)
+    montantTtc = serializers.IntegerField(source='montant_ttc', read_only=True)
+
+    class Meta:
+        model = LigneBonAchat
+        fields = [
+            'id',
+            'article',
+            'designation',
+            'compte',
+            'prixCatalogue',
+            'quantite',
+            'prixUnitaire',
+            'tauxTva',
+            'tauxRemise',
+            'montantHt',
+            'montantRemise',
+            'montantTva',
+            'montantTtc',
+            'rang',
+        ]
+
+    def get_designation(self, ligne):
+        return ligne.article.libelle if ligne.article_id else ''
+
+    def get_prixCatalogue(self, ligne):
+        return ligne.article.prix_unitaire if ligne.article_id else 0
+
+    def get_compte(self, ligne):
+        """Compte d'achat de rattachement : la charge que la ligne alimentera."""
+        return ligne.article.compte if ligne.article_id else ''
+
+
+class BonAchatSerializer(serializers.ModelSerializer):
+    """
+    Un bon de commande d'achat, lignes comprises.
+
+    Le fournisseur circule par son compte (« 401019 »), comme à l'écran
+    d'origine, où le sous-compte 401 du plan comptable tient lieu de
+    référentiel. Les lignes s'écrivent avec le bon : le modal les envoie en
+    bloc, et l'enregistrement reprend la liste reçue.
+    """
+
+    # Posé par le serveur (« BA000013 ») : absent du formulaire.
+    code = serializers.CharField(read_only=True)
+    fournisseur = serializers.SlugRelatedField(
+        slug_field='code', queryset=FournisseurDivers.objects.all(),
+    )
+    fournisseurLibelle = serializers.SerializerMethodField()
+    dateBon = DateOuVide(source='date_bon', required=False)
+    dateLivraison = DateOuVide(source='date_livraison', required=False)
+    numOffre = serializers.CharField(source='num_offre', required=False, allow_blank=True)
+    statut = serializers.ChoiceField(
+        choices=STATUTS_BON_ACHAT, required=False,
+    )
+    contact = serializers.CharField(required=False, allow_blank=True)
+    contactEmail = serializers.CharField(
+        source='contact_email', required=False, allow_blank=True,
+    )
+    conditionPaiement = serializers.CharField(
+        source='condition_paiement', required=False, allow_blank=True,
+    )
+    adresseLivraison = serializers.CharField(
+        source='adresse_livraison', required=False, allow_blank=True,
+    )
+    remarque = serializers.CharField(required=False, allow_blank=True)
+    referenceFacture = serializers.CharField(
+        source='reference_facture', required=False, allow_blank=True,
+    )
+
+    lignes = LigneBonAchatSerializer(many=True, required=False)
+
+    totalHt = serializers.IntegerField(source='total_ht', read_only=True)
+    totalRemise = serializers.IntegerField(source='total_remise', read_only=True)
+    totalTva = serializers.IntegerField(source='total_tva', read_only=True)
+    # « Montant » de la liste : le TTC, comme la colonne de l'origine.
+    montant = serializers.IntegerField(source='total_ttc', read_only=True)
+
+    saisiPar = serializers.SerializerMethodField()
+    exercice = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = BonAchat
+        fields = [
+            'id',
+            'code',
+            'fournisseur',
+            'fournisseurLibelle',
+            'dateBon',
+            'dateLivraison',
+            'numOffre',
+            'statut',
+            'contact',
+            'contactEmail',
+            'conditionPaiement',
+            'adresseLivraison',
+            'remarque',
+            'referenceFacture',
+            'lignes',
+            'totalHt',
+            'totalRemise',
+            'totalTva',
+            'montant',
+            'saisiPar',
+            'exercice',
+            'actif',
+            'cree_le',
+            'modifie_le',
+        ]
+        read_only_fields = ['id', 'cree_le', 'modifie_le']
+
+    def get_fournisseurLibelle(self, bon):
+        return bon.fournisseur.libelle if bon.fournisseur_id else ''
+
+    def get_saisiPar(self, bon):
+        return bon.saisi_par.username if bon.saisi_par_id else ''
+
+    def validate(self, attrs):
+        """
+        Un bon porte au moins une ligne : sans elle, il ne commande rien.
+
+        L'écran applique déjà la règle - « Enregistrer » reste pâli tant
+        qu'aucune ligne n'est validée - mais un appel direct à l'API doit se
+        heurter à la même.
+        """
+        lignes = attrs.get('lignes')
+        if lignes is None and self.instance is not None:
+            return attrs
+        if not lignes:
+            raise serializers.ValidationError(
+                {'lignes': 'Saisissez au moins une ligne : un bon sans ligne ne commande rien.'}
+            )
+        return attrs
+
+    def create(self, validated_data):
+        lignes = validated_data.pop('lignes', [])
+        bon = BonAchat.objects.create(**validated_data)
+        self._ecrire_lignes(bon, lignes)
+        return bon
+
+    def update(self, instance, validated_data):
+        # `lignes` absent = le modal n'y a pas touché (modification en lot, par
+        # exemple) ; présent = il remplace la liste entière.
+        lignes = validated_data.pop('lignes', None)
+        for champ, valeur in validated_data.items():
+            setattr(instance, champ, valeur)
+        instance.save()
+        if lignes is not None:
+            instance.lignes.all().delete()
+            self._ecrire_lignes(instance, lignes)
+        return instance
+
+    @staticmethod
+    def _ecrire_lignes(bon, lignes):
+        """
+        Réécrit les lignes du bon dans l'ordre reçu.
+
+        Les lignes n'ont pas de vie propre - rien ne les désigne de
+        l'extérieur - donc les remplacer en bloc est plus simple, et plus sûr,
+        que de rapprocher l'ancienne liste de la nouvelle.
+        """
+        LigneBonAchat.objects.bulk_create(
+            [
+                LigneBonAchat(
+                    bon=bon,
+                    article=ligne['article'],
+                    quantite=ligne.get('quantite', 1),
+                    prix_unitaire=ligne.get('prix_unitaire', 0),
+                    taux_tva=ligne.get('taux_tva', TAUX_TVA_DEFAUT),
+                    taux_remise=ligne.get('taux_remise', 0),
+                    rang=rang,
+                )
+                for rang, ligne in enumerate(lignes)
+            ]
+        )

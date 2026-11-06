@@ -16,7 +16,7 @@
  * leurs styles. La barre d'onglets est celle de la page Participants.
  */
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { CCard, CCardBody } from '@coreui/react'
 
 import Referentiel, { PastillesStats } from '../donnees-de-base/Referentiel'
@@ -30,12 +30,36 @@ const ONGLETS = [
   { cle: 'demandes', libelle: 'Demandes d’agrément', referentiel: DEMANDES_AGREMENT },
 ]
 
+/**
+ * Combien de fiches la page montre, sur celles qu'elle possède.
+ *
+ * **Douze, dans les deux onglets.** Rien n'est retiré de la base ni du
+ * serveur : les 412 fournisseurs y sont tous, l'API les renvoie tous, les
+ * autres écrans les voient - une facture désigne toujours sa clinique. Seule
+ * cette page restreint ce qu'elle affiche, et elle le fait ici, côté
+ * navigateur, comme Données de base et le Plan Comptable.
+ *
+ * **Pour changer la restriction, modifier cette seule constante.**
+ * `Infinity` rend tout visible.
+ */
+export const FICHES_VISIBLES = 12
+const lignesVisibles = (total) => Math.min(total, FICHES_VISIBLES)
+
 const FournisseursDeSoins = () => {
   const [onglet, setOnglet] = useState(ONGLETS[0].cle)
   // Stats de l'onglet actif, posées en pastille à côté du titre (comme Données
   // de base) ; <Referentiel> les remonte.
   const [stats, setStats] = useState(null)
-  const courant = ONGLETS.find((o) => o.cle === onglet)
+  const base = ONGLETS.find((o) => o.cle === onglet)
+  // Dans le `useMemo` et non à l'appel : un objet neuf à chaque rendu ferait
+  // croire au composant que son référentiel a changé.
+  const courant = useMemo(
+    () => ({
+      ...base,
+      referentiel: { ...base.referentiel, limiteAffichage: lignesVisibles },
+    }),
+    [base],
+  )
   const changerOnglet = (cle) => {
     setStats(null)
     setOnglet(cle)

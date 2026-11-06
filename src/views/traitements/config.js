@@ -29,6 +29,22 @@ export const ETATS_FACTURE = [
 /** États du règlement (§17), dans l'ordre du filtre de la page Règlements. */
 export const ETATS_REGLEMENT = ['Non Echue', 'Echue', 'Reglée', 'Comptabilisée', 'Annulée']
 
+/**
+ * La date du jour, au format du champ (AAAA-MM-JJ).
+ *
+ * Construite sur l'heure locale et non par `toISOString()`, qui compte en
+ * UTC : une facture réceptionnée tard le soir ne doit pas être datée du
+ * lendemain.
+ */
+const aujourdhui = () => {
+  const d = new Date()
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
 const entier = (valeur) => {
   const n = Number.parseInt(valeur, 10)
   return Number.isFinite(n) && n > 0 ? n : 0
@@ -89,6 +105,14 @@ const colonnesCommunes = [
     libelleForm: 'Reçu le',
     largeur: '110px',
     type: 'date',
+    // Préremplie au jour même : on réceptionne une facture le jour où elle
+    // arrive sur le bureau. La date reste modifiable - une pièce rapportée
+    // d'un autre service peut être datée de la veille - mais la taper à
+    // chaque saisie, plusieurs centaines de fois par mois, n'aurait aucun
+    // sens. `defaut` est une fonction, donc évaluée à l'ouverture du
+    // formulaire : une date figée au chargement de la page serait fausse
+    // passé minuit.
+    defaut: aujourdhui,
     valeurTableau: (f) => dateFr(f.recuLe),
   },
   // Suite du cycle de vie : colonnes de la liste seulement (lecture).
@@ -242,6 +266,9 @@ const barreFactures = (champsSupplementaires = []) => ({
       etiquette: 'Exercice',
       libelle: 'Tous',
       options: EXERCICES,
+      // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
+      // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
+      serveur: true,
       defaut: () => String(new Date().getFullYear()),
       largeur: '7rem',
     },
@@ -420,8 +447,19 @@ export const FACTURES_DIVERS = {
 // les factures.
 // ============================================================================
 
-/** Une facture entre dans les règlements dès qu'elle est comptabilisée. */
-const estReglable = (f) => f.etat === 'Comptabilisée' || f.etat === 'Payée'
+/**
+ * Une facture entre dans les règlements dès qu'elle est comptabilisée - sauf
+ * si c'est un **remboursement**.
+ *
+ * Une facture « Remboursement Ticket » ne se règle pas ici : le prestataire a
+ * déjà été payé, au comptoir, par l'assuré lui-même. L'IPM ne lui doit rien.
+ * Ce qu'elle doit, elle le doit à l'agent, et ça se règle page
+ * « Remboursement Frais Médicaux ». LAMPS le confirme sans exception : sur ses
+ * 6 643 factures de remboursement, aucune ne porte de date ni de numéro de
+ * règlement, et 6 628 s'arrêtent définitivement à « Comptabilisée ».
+ */
+const estReglable = (f) =>
+  !f.remboursementTicket && (f.etat === 'Comptabilisée' || f.etat === 'Payée')
 
 /** Filtre « État » des règlements, en segments (cf. ETATS_REGLEMENT). */
 const segmentsReglement = {
@@ -434,9 +472,12 @@ const segmentsReglement = {
     { valeur: 'echue', libelle: 'Echue', filtre: (f) => f.etatReglement === 'Echue' },
     { valeur: 'reglee', libelle: 'Reglée', filtre: (f) => f.etatReglement === 'Reglée' },
     {
+      // « Comptabilisée » parle ici du RÈGLEMENT, pas de la facture : son
+      // chèque est passé au journal de la banque. C'est l'état qui suit
+      // « Reglée », comme dans l'application d'origine (capture 59).
       valeur: 'comptabilisee',
       libelle: 'Comptabilisée',
-      filtre: (f) => f.etat === 'Comptabilisée',
+      filtre: (f) => f.etatReglement === 'Comptabilisée',
     },
     { valeur: 'annulee', libelle: 'Annulée', filtre: (f) => f.etatReglement === 'Annulée' },
   ],
@@ -455,6 +496,9 @@ const barreReglements = (champsSupplementaires = []) => ({
       etiquette: 'Exercice',
       libelle: 'Tous',
       options: EXERCICES,
+      // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
+      // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
+      serveur: true,
       defaut: () => String(new Date().getFullYear()),
       largeur: '7rem',
     },
@@ -610,6 +654,9 @@ export const ORDRES_PAIEMENT = {
       etiquette: 'Exercice',
       libelle: 'Tous',
       options: EXERCICES,
+      // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
+      // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
+      serveur: true,
       defaut: () => String(new Date().getFullYear()),
       largeur: '7rem',
     },
@@ -744,6 +791,9 @@ export const REMBOURSEMENTS = {
       etiquette: 'Exercice',
       libelle: 'Tous',
       options: EXERCICES,
+      // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
+      // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
+      serveur: true,
       defaut: () => String(new Date().getFullYear()),
       largeur: '7rem',
     },
@@ -776,9 +826,19 @@ export const REMBOURSEMENTS = {
   ],
   colonnes: [
     { nom: 'codeJournal', libelle: 'C.JL', largeur: '70px', mono: true },
-    { nom: 'datePiece', libelle: 'Date Pièce', largeur: '110px', valeurTableau: (l) => dateFr(l.datePiece) },
+    {
+      nom: 'datePiece',
+      libelle: 'Date Pièce',
+      largeur: '110px',
+      valeurTableau: (l) => dateFr(l.datePiece),
+    },
     { nom: 'moisTraitement', libelle: 'Mois trait.', largeur: '100px' },
-    { nom: 'dateSaisie', libelle: 'Date Saisie', largeur: '110px', valeurTableau: (l) => dateFr(l.dateSaisie) },
+    {
+      nom: 'dateSaisie',
+      libelle: 'Date Saisie',
+      largeur: '110px',
+      valeurTableau: (l) => dateFr(l.dateSaisie),
+    },
     { nom: 'numTicket', libelle: 'N° ticket', largeur: '90px', mono: true },
     { nom: 'numFactIpm', libelle: 'N° Fact. IPM', largeur: '100px', mono: true },
     { nom: 'participant', libelle: 'Participant', largeur: '180px' },
@@ -789,8 +849,20 @@ export const REMBOURSEMENTS = {
     // « Désactiver » sur la ligne ni d'interrupteur « Afficher les inactifs » -
     // une ligne de remboursement ne se désactive pas, elle se règle.
     { nom: 'etatRemboursement', libelle: 'Remboursé', largeur: '110px', type: 'statut' },
-    { nom: 'fraisReel', libelle: 'Frais réel', largeur: '100px', aligne: 'droite', valeurTableau: (l) => montantFr(l.fraisReel) },
-    { nom: 'montantDu', libelle: 'Montant dû', largeur: '100px', aligne: 'droite', valeurTableau: (l) => montantFr(l.montantDu) },
+    {
+      nom: 'fraisReel',
+      libelle: 'Frais réel',
+      largeur: '100px',
+      aligne: 'droite',
+      valeurTableau: (l) => montantFr(l.fraisReel),
+    },
+    {
+      nom: 'montantDu',
+      libelle: 'Montant dû',
+      largeur: '100px',
+      aligne: 'droite',
+      valeurTableau: (l) => montantFr(l.montantDu),
+    },
   ],
 }
 
@@ -798,3 +870,191 @@ export const REMBOURSEMENTS = {
 export const METHODES_REMBOURSEMENT = { C: 'Chèque', V: 'Virement', T: 'Transfert' }
 
 export { optionsBanques }
+
+// ============================================================================
+// Bons d'Achats (« Bon de Commande Achats », captures 79-80)
+//
+// Les achats de l'IPM pour son propre fonctionnement - papier, cartouches,
+// imprimés -, passés à un fournisseur divers. Rien à voir avec les bons de
+// pharmacie ou optique, qui engagent l'IPM envers un prestataire de santé.
+//
+// Trois écarts délibérés avec l'écran d'origine, tous documentés dans
+// docs/lamps/bons-achats.md §9 :
+//   - le filtre année/mois filtre vraiment (il annonçait « Octobre 2026 »
+//     au-dessus d'une ligne de janvier 2025) ;
+//   - le Contact est saisi et conservé, au lieu d'être exigé, grisé, puis
+//     perdu - d'où le « Contact : » toujours vide du bon imprimé ;
+//   - une référence de facture relie le bon à la dépense qu'il a engagée,
+//     sans quoi « Traité » reste une affirmation que rien ne vérifie.
+//
+// La saisie elle-même ne passe pas par le formulaire générique : un bon porte
+// des lignes, et cela demande son propre écran (BonAchatModal, monté par la
+// page comme `editeur`).
+// ============================================================================
+
+/** Les deux seuls statuts de l'origine, posés à la main dès la création. */
+export const STATUTS_BON_ACHAT = ['En Cours', 'Traité']
+
+/** Taux de TVA proposé : 18 %, celui de toutes les lignes de l'origine. */
+export const TAUX_TVA_DEFAUT = 18
+
+/** Articles du catalogue (Données de Base → Articles Achat). */
+export const optionsArticles = () =>
+  actifs('articles-achat').map((a) => ({
+    valeur: a.code,
+    libelle: `${a.code} - ${a.libelle}`,
+  }))
+
+/** Un article du catalogue, par son code - pour son prix de référence. */
+export const articleDuCatalogue = (code) => actifs('articles-achat').find((a) => a.code === code)
+
+/** Une fiche fournisseur divers, par son compte - pour préremplir le bon. */
+export const fournisseurDivers = (code) =>
+  actifs('fournisseurs-divers').find((f) => f.code === code)
+
+/** Stats du titre : « N bons - total TTC » (ce que la vue affiche). */
+const statsBonsAchats = (bons) => {
+  const total = bons.reduce((s, b) => s + entier(b.montant), 0)
+  return `${bons.length} bon(s) - ${montantFr(total)}`
+}
+
+export const BONS_ACHATS = {
+  cle: 'bons-achats',
+  libelle: "Bons d'Achats",
+  vide: "Aucun bon d'achat",
+  nouveau: "Créer un bon d'Achat",
+  modifier: "Modifier le bon d'achat",
+  taillePage: 15,
+  // Pas de titre au-dessus de la liste : la page le porte déjà.
+  sansTitre: true,
+  nommer: (b) => `le bon ${b.code}`,
+  stats: statsBonsAchats,
+  champsSoulignes: true,
+  barreCompacte: true,
+  creationAvantOutils: true,
+  rechercheEnDernier: true,
+  rechercheFlottante: true,
+  segmentsEnListe: true,
+  // Le bouton de création est déjà dans la barre : le tableau vide n'en
+  // répète pas un second.
+  sansCreationTableauVide: true,
+  // On ouvre un bon en cliquant sa ligne : pas de crayon.
+  modificationParLigne: true,
+  outils: ['export'],
+
+  // Un bon ne se supprime pas, il s'annule. L'origine, elle, avait une
+  // corbeille : six bons effacés sur treize, d'où les trous de sa
+  // numérotation (BA000001, 3, 5, 7, 8, 10, 12). Ici le numéro reste, et la
+  // colonne « Validité » dit ce qu'il est devenu.
+  etat: {
+    actif: 'Valide',
+    inactif: 'Annulé',
+    desactiver: 'Annuler le bon',
+    reactiver: 'Rétablir le bon',
+    desactive: 'annulé',
+    reactive: 'rétabli',
+  },
+
+  // Statut en liste déroulante, comme les bons de pharmacie (Traités / Non
+  // Traités). Le filtre, lui, est une vraie restriction.
+  segments: {
+    valeurs: [
+      { valeur: 'tous', libelle: 'Tous', filtre: () => true },
+      { valeur: 'en-cours', libelle: 'En Cours', filtre: (b) => b.statut === 'En Cours' },
+      { valeur: 'traites', libelle: 'Traité', filtre: (b) => b.statut === 'Traité' },
+    ],
+  },
+
+  filtres: [
+    {
+      champ: 'exercice',
+      etiquette: 'Année',
+      libelle: 'Toutes',
+      options: EXERCICES,
+      // Appliqué par le SERVEUR, comme partout où une liste s'accumule.
+      serveur: true,
+      defaut: () => String(new Date().getFullYear()),
+      largeur: '7rem',
+    },
+    {
+      champ: 'mois',
+      etiquette: 'Mois',
+      libelle: '- Tous -',
+      options: () => MOIS_OPTIONS,
+      // Appliqué par le serveur lui aussi : l'écran d'origine affichait ce
+      // sélecteur sans qu'il restreigne quoi que ce soit.
+      serveur: true,
+      largeur: '8rem',
+    },
+  ],
+
+  colonnesTableau: [
+    'code',
+    'dateBon',
+    'fournisseur',
+    'numOffre',
+    'dateLivraison',
+    'referenceFacture',
+    'montant',
+    'statut',
+    'actif',
+  ],
+
+  colonnes: [
+    // Posé par le serveur (« BA000013 ») : absent du formulaire.
+    { nom: 'code', libelle: 'N° Bon', largeur: '100px', mono: true, calcule: true },
+    {
+      nom: 'dateBon',
+      libelle: 'Date',
+      libelleForm: "Date d'enregistrement",
+      largeur: '110px',
+      type: 'date',
+      valeurTableau: (b) => dateFr(b.dateBon),
+    },
+    {
+      nom: 'fournisseur',
+      libelle: 'Fournisseur',
+      largeur: '240px',
+      options: optionsFournisseursDivers,
+      afficherCode: true,
+      libelleSeul: true,
+      valeurTableau: (b) => b.fournisseurLibelle || b.fournisseur,
+    },
+    { nom: 'numOffre', libelle: 'N° Offre', largeur: '90px', mono: true },
+    {
+      nom: 'dateLivraison',
+      libelle: 'Livraison',
+      libelleForm: 'Date de livraison souhaitée',
+      largeur: '110px',
+      type: 'date',
+      valeurTableau: (b) => dateFr(b.dateLivraison),
+    },
+    {
+      // La référence de la facture reçue ensuite : le lien que l'origine
+      // n'avait pas.
+      nom: 'referenceFacture',
+      libelle: 'Facture',
+      largeur: '120px',
+      mono: true,
+      maxLength: 40,
+    },
+    {
+      nom: 'montant',
+      libelle: 'Montant',
+      largeur: '120px',
+      aligne: 'droite',
+      calcule: true,
+      valeurTableau: (b) => montantFr(b.montant),
+    },
+    { nom: 'statut', libelle: 'Statut', largeur: '110px', type: 'statut' },
+    // Validité : un bon annulé reste à sa place, son numéro avec.
+    { nom: 'actif', libelle: 'Validité', largeur: '100px', type: 'etat' },
+    // Champs de la fiche, hors tableau (export Excel et recherche).
+    { nom: 'contact', libelle: 'Contact', largeur: '160px' },
+    { nom: 'contactEmail', libelle: 'Email', largeur: '180px' },
+    { nom: 'conditionPaiement', libelle: 'Condition de paiement', largeur: '160px' },
+    { nom: 'adresseLivraison', libelle: 'Adresse de livraison', largeur: '220px' },
+    { nom: 'remarque', libelle: 'Remarque', largeur: '220px' },
+    { nom: 'saisiPar', libelle: 'Saisi par', largeur: '130px', calcule: true },
+  ],
+}
