@@ -8,7 +8,8 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-import { ecartMetres, lireTrajet, urlItineraire, type Point, type Trajet } from './trajet'
+import { calculerTrajet } from './directions'
+import { ecartMetres, type Point, type Trajet } from './trajet'
 
 export type EtatTrajet =
   { etat: 'attente' } | { etat: 'calcul' } | { etat: 'pret'; trajet: Trajet } | { etat: 'echec' }
@@ -29,15 +30,14 @@ export function useTrajet(depart: Point | null, arrivee: Point | null): EtatTraj
 
     const controleur = new AbortController()
     setEtat((precedent) => (precedent.etat === 'pret' ? precedent : { etat: 'calcul' }))
-    fetch(urlItineraire(depart, arrivee), { signal: controleur.signal })
-      .then((reponse) => (reponse.ok ? reponse.json() : null))
-      .then((json) => {
-        const trajet = lireTrajet(json)
+    calculerTrajet(depart, arrivee, controleur.signal)
+      .then((trajet) => {
+        if (controleur.signal.aborted) return
         setEtat(trajet ? { etat: 'pret', trajet } : { etat: 'echec' })
       })
-      .catch((erreur: unknown) => {
-        if (erreur instanceof DOMException && erreur.name === 'AbortError') return
-        // Le calcul reprendra au prochain déplacement.
+      .catch(() => {
+        if (controleur.signal.aborted) return
+        // Le calcul reprendra au prochain déplacement (clé, réseau, position).
         dernierDepart.current = null
         setEtat((precedent) => (precedent.etat === 'pret' ? precedent : { etat: 'echec' }))
       })

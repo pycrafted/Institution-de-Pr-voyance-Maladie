@@ -29,6 +29,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
@@ -780,15 +781,7 @@ const Cotisations = () => {
                   <CIcon icon={cilCalculator} className="cot-icone" />
                   Comptabiliser
                 </button>
-                <button
-                  type="button"
-                  className="cot-bouton cot-bouton-vert"
-                  onClick={exporter}
-                  disabled={!lignes.length}
-                >
-                  <CIcon icon={cilSpreadsheet} className="cot-icone" />
-                  Export Excel
-                </button>
+                <BoutonExport onClick={exporter} disabled={!lignes.length} />
                 {/* Pâli sur un appel comptabilisé : on peut encore l'exporter
                     pour contrôle, mais plus y réinjecter de montants. Hors ce
                     cas, il suffit d'une société et d'un type : si l'appel

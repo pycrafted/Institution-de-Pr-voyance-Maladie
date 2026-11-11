@@ -6,7 +6,14 @@ describe('normaliserConfig', () => {
   it('retire les « / » finaux et les espaces', () => {
     expect(normaliserConfig({ apiBase: ' https://sar-integration.sar.sn/api/ ' })).toEqual({
       apiBase: 'https://sar-integration.sar.sn/api',
+      cleGoogleMaps: '',
     })
+  })
+
+  it('lit la clé Google Maps quand elle est fournie', () => {
+    expect(
+      normaliserConfig({ apiBase: '/api', cleGoogleMaps: '  AIzaTest123  ' }).cleGoogleMaps,
+    ).toBe('AIzaTest123')
   })
 
   it.each([null, 42, {}, { apiBase: '' }, { apiBase: 3 }])('repli par défaut pour %j', (brut) => {
@@ -21,7 +28,10 @@ describe('chargerConfig', () => {
       .mockResolvedValue(
         new Response(JSON.stringify({ apiBase: 'https://x.sn/api' }), { status: 200 }),
       )
-    await expect(chargerConfig(fetchMock)).resolves.toEqual({ apiBase: 'https://x.sn/api' })
+    await expect(chargerConfig(fetchMock)).resolves.toEqual({
+      apiBase: 'https://x.sn/api',
+      cleGoogleMaps: '',
+    })
     expect(fetchMock).toHaveBeenCalledWith('/config.json', { cache: 'no-cache' })
   })
 

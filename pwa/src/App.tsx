@@ -20,6 +20,7 @@ import { Redirect, Route, useLocation } from 'react-router-dom'
 
 import BarreActions from './components/BarreActions'
 import BarreOngletsFlottante from './components/BarreOngletsFlottante'
+import BoutonScan from './components/BoutonScan'
 import InstallSheet from './components/InstallSheet'
 import MiseAJour from './components/MiseAJour'
 import { NouveauBonProvider } from './components/NouveauBonModal'
@@ -33,6 +34,7 @@ import Itineraire from './pages/Itineraire'
 import MesBons from './pages/MesBons'
 import Conventionnes from './pages/Conventionnes'
 import Profil from './pages/Profil'
+import Scan from './pages/Scan'
 import { SessionProvider, useSession } from './session'
 
 /** Durée minimale de l'écran de lancement : assez pour son animation, pas plus. */
@@ -95,7 +97,7 @@ function Coquille() {
 
 /** Chemins servis quand on est identifié ; le reste mène à l'accueil. */
 const CHEMINS_IDENTIFIE =
-  /^\/(accueil|bons|profil|conventionnes|assistance)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/lettres\/[^/]+\/?$/
+  /^\/(accueil|bons|profil|conventionnes|assistance|scan)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/lettres\/[^/]+\/?$/
 
 function Anonyme() {
   const { pathname } = useLocation()
@@ -132,11 +134,16 @@ function Onglets() {
           {/* La carte de l'itinéraire vers une structure, dans l'application. */}
           <Route exact path="/conventionnes/:code" component={Itineraire} />
           <Route exact path="/assistance" component={Assistance} />
+          {/* Pré-financement : scan de l'ordonnance et du reçu (à construire). */}
+          <Route exact path="/scan" component={Scan} />
         </IonRouterOutlet>
         {/* Barre flottante (SPEC_DESIGN §3.1) : le contenu passe dessous, les
             écrans réservent donc --bas-page en fin de contenu. */}
         <BarreOngletsFlottante />
       </IonTabs>
+      {/* Bouton « Scanner » central surélevé, posé sur la barre d'onglets.
+          Hors de l'IonTabs (qui ne veut que son outlet et sa barre). */}
+      <BoutonScan />
       {/* Pendant de la barre d'onglets, en haut : les actions qui ne dépendent
           d'aucun écran. Hors de l'IonTabs, qui ne veut que son outlet et sa
           barre pour enfants. */}

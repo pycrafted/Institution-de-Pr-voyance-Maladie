@@ -1,64 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  dureeAPied,
-  ecartMetres,
-  formaterDistance,
-  formaterDuree,
-  lireTrajet,
-  SERVEUR_ITINERAIRE,
-  urlItineraire,
-} from './trajet'
+import { dureeAPied, ecartMetres, formaterDistance, formaterDuree } from './trajet'
 
 const PLATEAU = { latitude: 14.6937, longitude: -17.4441 }
 const MADELEINE = { latitude: 14.6597309, longitude: -17.4383376 }
-
-describe('urlItineraire', () => {
-  it('demande longitude puis latitude, comme OSRM l’attend', () => {
-    expect(urlItineraire(PLATEAU, MADELEINE)).toBe(
-      `${SERVEUR_ITINERAIRE}/route/v1/driving/-17.444100,14.693700;-17.438338,14.659731` +
-        '?overview=full&geometries=geojson&alternatives=false&steps=false',
-    )
-  })
-})
-
-describe('lireTrajet', () => {
-  it('lit distance, durée, et remet le tracé dans l’ordre des cartes', () => {
-    const trajet = lireTrajet({
-      code: 'Ok',
-      routes: [
-        {
-          distance: 4210.5,
-          duration: 612.3,
-          geometry: {
-            coordinates: [
-              [-17.4441, 14.6937],
-              [-17.44, 14.68],
-              [-17.4383, 14.6597],
-            ],
-          },
-        },
-      ],
-    })
-    expect(trajet).toEqual({
-      distance: 4210.5,
-      duree: 612.3,
-      trace: [
-        [14.6937, -17.4441],
-        [14.68, -17.44],
-        [14.6597, -17.4383],
-      ],
-    })
-  })
-
-  it('refuse une réponse sans itinéraire', () => {
-    expect(lireTrajet({ code: 'NoRoute', routes: [] })).toBeNull()
-    expect(lireTrajet({ code: 'Ok', routes: [] })).toBeNull()
-    expect(lireTrajet({ code: 'Ok', routes: [{ distance: 1, duration: 1 }] })).toBeNull()
-    expect(lireTrajet(null)).toBeNull()
-    expect(lireTrajet('<html>erreur</html>')).toBeNull()
-  })
-})
 
 describe('formaterDistance', () => {
   it('parle en mètres de près, en kilomètres de loin', () => {

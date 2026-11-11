@@ -15,50 +15,87 @@ $ic-bordure: #d9dde2;
 }
 
 // --- Les six onglets --------------------------------------------------------
+// Onglets soulignes, comme la page Participants : l'onglet retenu prend un
+// **trait noir** qui se deploie depuis le centre, sur une fine ligne de base.
+// Design demande le 2026-11-09 ; le rouge d'origine remplace par du noir.
+// Titre et onglets sur une meme ligne : le titre a gauche, la barre d'onglets
+// poussee a droite par l'espacement.
+// Titre puis barre d'onglets dessous, pleine largeur a gauche (comme
+// Fournisseurs de Soins). Avant, titre et onglets partageaient la ligne.
+.ic-entete {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
 .ic-onglets {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem 1.5rem;
-  margin: 0.75rem 0 1.25rem;
+  max-width: 100%;
+  gap: 2.5rem;
+  margin: 0;
   border-bottom: 1px solid $ic-bordure;
 }
 
-// L'onglet ouvert porte un **pavé noir**, comme la page ouverte de la barre
-// du bas. Le filet rouge d'avant a été retiré le 2026-11-06 : le métier le
-// trouvait disgracieux, et le rouge de marque sert déjà aux boutons
-// d'action - un trait rouge sous un intitulé se lisait comme un bouton.
 .ic-onglet {
-  border: none;
-  border-radius: 0.5rem;
-  background: none;
-  margin-block: 0.35rem;
-  padding: 0.5rem 0.9rem;
+  position: relative;
+  border: 0;
+  background: transparent;
+  padding: 0.75rem 0.25rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
   color: $ic-doux;
-  font-weight: 500;
+  cursor: pointer;
   white-space: nowrap;
-  transition:
-    background-color 0.14s ease,
-    color 0.14s ease;
+  transition: color 0.2s ease;
 
   &:hover {
-    background-color: rgba(17, 21, 29, 0.05);
     color: $ic-encre;
   }
 }
 
-.ic-onglet-actif,
-.ic-onglet-actif:hover {
-  background-color: $ic-encre;
-  color: #fff;
-  font-weight: 600;
+.ic-onglet-actif {
+  color: $ic-encre;
+
+  // Le trait rouge de l'onglet retenu, deploye depuis le centre au changement.
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: $ic-rouge;
+    transform-origin: center;
+    animation: ic-soulignement 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 }
 
-// --- Ligne haute : les sélecteurs de l'onglet, et les flèches ---------------
-.ic-selecteurs {
+@keyframes ic-soulignement {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ic-onglet-actif::after {
+    animation: none;
+  }
+}
+
+// --- La barre de filtres : une seule rangée -------------------------------
+// Sélecteurs de l'onglet, flèches, filtres communs et recherche s'enchaînent
+// de gauche à droite ; les boutons d'action partent à droite (marge auto sur
+// .ic-boutons). Avant, deux demi-rangées tassées à gauche laissaient un grand
+// vide au centre - ce que le métier trouvait, à raison, peu pro.
+.ic-barre {
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 1rem;
+  gap: 1.25rem;
   margin-bottom: 0.9rem;
 }
 
@@ -66,61 +103,71 @@ $ic-bordure: #d9dde2;
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  flex: 1 1 320px;
+  width: 15rem;
+  max-width: 100%;
   min-width: 0;
-  max-width: 480px;
 
-  // Le select prend toute la largeur de sa colonne : sans cela, les deux
-  // flèches ‹ › se retrouvent loin du sélecteur qu'elles font défiler.
   select {
     width: 100%;
   }
 }
 
-// La recherche rejoint la ligne haute : la seconde ligne garde alors la
-// disposition de l'original - Exercice, Période, Type d'Ecriture, Société,
-// puis les trois boutons à droite.
-.ic-selecteurs .ic-recherche {
-  margin-left: auto;
-  min-width: 190px;
-}
-
-.ic-etiquette {
-  color: $ic-encre;
-  font-size: 0.95rem;
+// Une seule etiquette pour toute la page : petite, grise, en capitales. Les
+// deux rangees de filtres parlaient deux langues (noir 0,95 rem en haut, gris
+// 0,75 rem en bas) ; elles parlent desormais la meme.
+.ic-etiquette,
+.ic-page .jc-filtre-etiquette {
+  color: $ic-doux;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 // Les deux flèches ‹ › : passer au tiers suivant sans rouvrir la liste.
+// Deux petits boutons carres a filet, a la hauteur des champs - au lieu des
+// deux chevrons rouges geants d'avant, qui juraient avec le reste.
 .ic-fleches {
   display: flex;
-  gap: 0.35rem;
-  padding-bottom: 0.15rem;
+  gap: 0.4rem;
 
   button {
-    border: none;
-    background: none;
-    color: $ic-rouge;
-    font-size: 1.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1.5px solid $ic-bordure;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: $ic-encre;
+    font-size: 1.25rem;
     line-height: 1;
-    padding: 0 0.3rem;
+    transition:
+      border-color 0.14s ease,
+      background-color 0.14s ease;
+
+    &:hover:not(:disabled) {
+      border-color: $ic-encre;
+    }
 
     &:disabled {
-      opacity: 0.35;
+      opacity: 0.4;
     }
   }
 }
 
-// --- Seconde ligne : les filtres communs et les trois boutons ---------------
-.ic-filtres {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.75rem 1.25rem;
-  margin-bottom: 0.9rem;
-}
-
 .ic-recherche {
   min-width: 190px;
+}
+
+// Les actions utilitaires, au-dessus de la barre, calées à gauche.
+.ic-actions-haut {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
 }
 
 .ic-boutons {
@@ -136,46 +183,111 @@ $ic-bordure: #d9dde2;
   gap: 0.35rem;
 }
 
-.ic-delettrer {
-  border: 1px solid $ic-bordure;
-  background: #fff;
-  border-radius: 0.35rem;
-  padding: 0.3rem 0.6rem;
-  color: $ic-doux;
-  font-size: 0.85rem;
+// --- Les boutons : une seule famille, une seule hierarchie ------------------
+// Meme gabarit, meme hauteur que les champs (2,5 rem). Un seul bouton plein,
+// le rouge de marque, pour l'action maitresse - Imprimer Extrait ; des boutons
+// a filet pour Export et Lettrage ; un bouton fantome pour Delettrer. Fini le
+// vert, le rose et le rouge cote a cote.
+.ic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border: 1.5px solid transparent;
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease,
+    color 0.14s ease;
 
-  &:disabled {
-    opacity: 0.45;
+  svg {
+    width: 0.95rem;
+    height: 0.95rem;
   }
-}
-
-// « Imprimer Extrait » : le rouge de l'original, pâli quand il n'y a rien à
-// produire (ce que fait la capture 75, l'Export Excel avec lui).
-.ic-extrait {
-  background: $ic-rouge;
-  border-color: $ic-rouge;
-  color: #fff;
 
   &:disabled {
     opacity: 0.5;
+    cursor: not-allowed;
   }
 }
 
-// La période : un résumé « 1 janv. 2026 - 31 déc. 2026 » qu'on déplie.
+.ic-btn-primary {
+  background: $ic-rouge;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #c71f1b;
+  }
+}
+
+.ic-btn-sec {
+  background: #fff;
+  border-color: $ic-bordure;
+  color: $ic-encre;
+
+  &:hover:not(:disabled) {
+    border-color: $ic-encre;
+  }
+}
+
+.ic-btn-ghost {
+  background: none;
+  color: $ic-doux;
+
+  &:hover:not(:disabled) {
+    background: rgba(17, 21, 29, 0.05);
+    color: $ic-encre;
+  }
+}
+
+// Largeurs calées dans la nouvelle barre : les règles d'origine visaient
+// `.jc-filtres`, qui n'enveloppe plus ces champs depuis la fusion.
+.ic-barre .jc-etroit {
+  width: 7rem;
+}
+
+.ic-barre .jc-large {
+  width: 16rem;
+}
+
+// Largeur ajustee au contenu : la fourchette de dates tient quelles que
+// soient les dates, sans jamais deborder du champ.
+.ic-barre .ic-periode {
+  width: auto;
+}
+
+// La période : un résumé qu'on déplie au clic.
 .ic-periode {
   position: relative;
 }
 
+// La periode n'est plus un texte souligne : c'est un champ encadre, de meme
+// hauteur et meme filet que les listes a cote, pour que la rangee soit d'un
+// seul tenant. Le calendrier se deplie toujours au clic.
 .ic-periode-resume {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  border: none;
-  border-bottom: 1px solid $ic-bordure;
-  background: none;
-  padding: 0.3rem 0.1rem;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  height: 2.5rem;
+  border: 1.5px solid $ic-bordure;
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0 0.9rem;
   color: $ic-encre;
+  font-size: 0.875rem;
   white-space: nowrap;
+  transition: border-color 0.14s ease;
+
+  &:hover {
+    border-color: $ic-encre;
+  }
 }
 
 .ic-periode-chevron {
@@ -208,7 +320,8 @@ $ic-bordure: #d9dde2;
   padding: 0.55rem 0.85rem;
   background: $ic-encre;
   color: #fff;
-  border-radius: 0.35rem 0.35rem 0 0;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
   font-size: 0.92rem;
 
   strong {
@@ -264,7 +377,6 @@ $ic-bordure: #d9dde2;
   }
 
   .ic-selecteur {
-    flex-basis: 100%;
-    max-width: none;
+    width: 100%;
   }
 }

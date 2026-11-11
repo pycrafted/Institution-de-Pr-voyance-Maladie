@@ -72,3 +72,7 @@ backend/noms_reels/
 
 # Fichiers generes par collectstatic (Django) : regeneres au deploiement, hors depot.
 backend/staticfiles/
+
+# Artefacts locaux a ne pas versionner (donnees reelles / verrous Office)
+verification-structures.html
+~$*.pptx

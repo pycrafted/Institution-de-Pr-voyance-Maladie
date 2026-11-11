@@ -43,6 +43,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
@@ -453,16 +454,11 @@ const Retenues = () => {
               <CIcon icon={cilCalculator} className="rfm-icone" />
               Comptabiliser
             </button>
-            <button
-              type="button"
-              className="rfm-bouton rfm-bouton-vert"
+            <BoutonExport
               onClick={exporter}
               disabled={!toutes.length}
               title="Le fichier des soldes qui repart vers la paie."
-            >
-              <CIcon icon={cilSpreadsheet} className="rfm-icone" />
-              Export Excel
-            </button>
+            />
             <button
               type="button"
               className="rfm-bouton rfm-bouton-bleu"

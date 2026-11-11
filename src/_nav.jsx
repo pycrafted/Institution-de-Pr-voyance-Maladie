@@ -99,15 +99,19 @@ const _nav = [
     name: 'Traitements',
     icon: icone(cilCalculator),
     items: [
+      // Ordre = la **fréquence réelle** du travail, pas l'ordre historique de
+      // LAMPS (2026-11-06). En tête, le **circuit quotidien** des prestations :
+      // les factures des prestataires arrivent, on les règle, on rembourse les
+      // participants, on émet les ordres de paiement, puis on récupère sur la
+      // paie la part avancée au participant. Vient ensuite le **ponctuel** :
+      // suspensions (quand un plafond est atteint) et saisie manuelle du journal.
+      // Enfin le **rare** : les cotisations, appelées une fois l'an - un choix de
+      // calendrier de l'IPM, pas une suite des factures - et les bons d'achats,
+      // quasi jamais émis.
       {
         component: CNavItem,
         name: 'Factures',
         to: '/traitements/factures',
-      },
-      {
-        component: CNavItem,
-        name: 'Cotisations',
-        to: '/traitements/cotisations',
       },
       {
         component: CNavItem,
@@ -121,13 +125,13 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Retenues Frais Médicaux',
-        to: '/traitements/retenues',
+        name: 'Ordres de Paiements',
+        to: '/traitements/ordres-paiement',
       },
       {
         component: CNavItem,
-        name: 'Ordres de Paiements',
-        to: '/traitements/ordres-paiement',
+        name: 'Retenues Frais Médicaux',
+        to: '/traitements/retenues',
       },
       {
         component: CNavItem,
@@ -136,13 +140,18 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: "Bons d'Achats",
-        to: '/traitements/bons-achats',
+        name: 'Saisie Journal',
+        to: '/traitements/saisie-journal',
       },
       {
         component: CNavItem,
-        name: 'Saisie Journal',
-        to: '/traitements/saisie-journal',
+        name: 'Cotisations',
+        to: '/traitements/cotisations',
+      },
+      {
+        component: CNavItem,
+        name: "Bons d'Achats",
+        to: '/traitements/bons-achats',
       },
     ],
   },

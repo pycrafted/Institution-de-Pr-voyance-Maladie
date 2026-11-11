@@ -20,7 +20,7 @@ import { getMe, login } from '../../../services/api'
 import { erreursDeChamps } from '../../../services/erreurs'
 import { prechargerReferentiels } from '../../../services/referentiels'
 import { oeil, oeilBarre } from '../../../assets/icones'
-import sarLogo from '../../../assets/sitesar.png'
+import logoIpm from '../../../assets/logo-ipm.png'
 import './login.scss'
 
 // Après connexion : les bons de pharmacie. C'est le document le plus émis de
@@ -114,9 +114,8 @@ const Login = () => {
       <main className="cx-centre">
         <div className="cx-carte">
           <header className="cx-carte-entete">
-            <img src={sarLogo} alt="SAR" className="cx-logo" />
-            <h1 className="cx-titre">Connexion</h1>
-            <p className="cx-sous-titre">Institution de Prévoyance Maladie (IPM)</p>
+            <img src={logoIpm} alt="Institution de Prévoyance Maladie" className="cx-logo" />
+            <h1 className="cx-titre">Institution de Prévoyance Maladie</h1>
           </header>
 
           <form className="cx-formulaire" onSubmit={soumettre} noValidate>
@@ -190,7 +189,6 @@ const Login = () => {
           </form>
         </div>
 
-        <p className="cx-pied">© {new Date().getFullYear()} Société Africaine de Raffinage</p>
       </main>
     </div>
   )

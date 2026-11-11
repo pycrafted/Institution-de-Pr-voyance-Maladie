@@ -10,19 +10,29 @@
 export interface ConfigApp {
   /** Racine de l'API IPM, sans « / » final : « https://…/api » ou « /api ». */
   apiBase: string
+  /**
+   * Clé de l'API Google Maps (carte et itinéraire de l'écran « Itinéraire »).
+   * Absente : la carte le dit plutôt que de s'afficher vide. Mise dans
+   * config.json du serveur (hors Git), restreinte par référent HTTP.
+   */
+  cleGoogleMaps: string
 }
 
 /** Valeur de repli si config.json est absent ou illisible (développement, proxy Vite). */
-export const CONFIG_PAR_DEFAUT: ConfigApp = { apiBase: '/api' }
+export const CONFIG_PAR_DEFAUT: ConfigApp = { apiBase: '/api', cleGoogleMaps: '' }
 
 export function normaliserConfig(brut: unknown): ConfigApp {
+  const config: ConfigApp = { ...CONFIG_PAR_DEFAUT }
   if (brut && typeof brut === 'object') {
-    const apiBase = (brut as Record<string, unknown>).apiBase
-    if (typeof apiBase === 'string' && apiBase.trim()) {
-      return { apiBase: apiBase.trim().replace(/\/+$/, '') }
+    const champs = brut as Record<string, unknown>
+    if (typeof champs.apiBase === 'string' && champs.apiBase.trim()) {
+      config.apiBase = champs.apiBase.trim().replace(/\/+$/, '')
+    }
+    if (typeof champs.cleGoogleMaps === 'string') {
+      config.cleGoogleMaps = champs.cleGoogleMaps.trim()
     }
   }
-  return CONFIG_PAR_DEFAUT
+  return config
 }
 
 export async function chargerConfig(fetchFn: typeof fetch = fetch): Promise<ConfigApp> {

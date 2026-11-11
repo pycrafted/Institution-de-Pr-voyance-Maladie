@@ -10,23 +10,44 @@
   display: none;
 }
 
+/* La barre du haut (BarreActions, ipm-navbar) s'efface aussi : la carte plein
+   écran est immersive, elle n'affiche que ses propres commandes flottantes
+   (retour, recentrage) - sinon la barre recouvre le bouton retour. */
+.ipm-sans-onglets .ipm-navbar {
+  display: none;
+}
+
 .itineraire ion-content {
   --background: var(--ipm-fond);
 }
 
 /* --- La carte ------------------------------------------------------------ */
 .itineraire__carte,
-.itineraire__leaflet,
+.itineraire__gmap-hote,
+.itineraire__gmap,
 .itineraire__attente-carte {
   position: absolute;
   inset: 0;
 }
-.itineraire__leaflet.leaflet-container {
+.itineraire__gmap {
   background: var(--ipm-surface-2);
   font: inherit;
 }
 .itineraire__attente-carte {
   background: var(--ipm-surface-2);
+}
+/* Carte indisponible (clé absente, Google injoignable) : un mot au centre
+   plutôt qu'un rectangle vide. */
+.itineraire__gmap-erreur {
+  position: absolute;
+  inset: auto var(--gouttiere) 50%;
+  margin: 0;
+  padding: var(--e-12) var(--e-16);
+  border-radius: var(--r-lg);
+  background: var(--ipm-verre);
+  color: var(--ipm-texte-doux);
+  font-size: 0.875rem;
+  text-align: center;
 }
 /* Les fonds d'OpenStreetMap, adoucis pour rester dans le ton de
    l'application — sans toucher au tracé ni aux épingles, qui gardent leurs
@@ -201,10 +222,21 @@
   display: flex;
   align-items: center;
 }
+.itineraire__trajet-bloc {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 .itineraire__trajet {
   display: flex;
   align-items: center;
   gap: var(--e-16);
+}
+/* Note « trajet depuis la SAR » tant que la géoloc (HTTPS) n'est pas là. */
+.itineraire__depart-defaut {
+  margin: 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
 }
 .itineraire__duree {
   font-size: 1.875rem;

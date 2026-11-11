@@ -17,7 +17,7 @@ from donnees_de_base.models import TypeBeneficiaire
 from donnees_de_base.serializers.fournisseur_de_soins import DateOuVide
 
 from ..models import Beneficiaire, Participant
-from ..models.participant import SORTIES
+from ..models.participant import MOT_DE_PASSE_MOBILE_DEFAUT, SORTIES
 
 # Libellé du type « le participant lui-même » dans le référentiel.
 TYPE_PARTICIPANT = 'PARTICIPANT'
@@ -177,6 +177,15 @@ class ParticipantSerializer(ChampsRequisMixin, serializers.ModelSerializer):
         self._controler_embauche(attrs)
         self._accorder_la_sortie(attrs)
         return attrs
+
+    def create(self, validated_data):
+        # Toute fiche ouvre son compte mobile : mot de passe « 0000 » posé
+        # d'office, sinon la PWA refuserait le participant faute de mot de
+        # passe. L'employé le changera depuis l'application.
+        participant = super().create(validated_data)
+        participant.definir_mot_de_passe(MOT_DE_PASSE_MOBILE_DEFAUT)
+        participant.save(update_fields=['mot_de_passe'])
+        return participant
 
     def update(self, instance, validated_data):
         # La famille porte la société et le matricule du participant dans son

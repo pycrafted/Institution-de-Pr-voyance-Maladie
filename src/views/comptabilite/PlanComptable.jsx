@@ -18,6 +18,7 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react'
+import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilTrash } from '@coreui/icons'
@@ -240,9 +241,7 @@ const PlanComptable = () => {
                 })}
               </div>
 
-              <button type="button" className="pc-export" onClick={exporter}>
-                <CIcon icon={cilCloudDownload} /> Export Excel
-              </button>
+              <BoutonExport onClick={exporter} />
 
               <label className="ddb-recherche-flottante pc-recherche">
                 <span className="ddb-recherche-libelle">Rechercher…</span>

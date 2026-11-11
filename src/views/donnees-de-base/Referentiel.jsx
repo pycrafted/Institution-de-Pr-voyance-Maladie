@@ -7,6 +7,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import BoutonExport from '../../components/BoutonExport'
 import {
   CBadge,
   CButton,
@@ -1088,12 +1089,14 @@ const Referentiel = ({ referentiel, onStats }) => {
               {(referentiel.outils || []).map((nom) => {
                 const outil = OUTILS[nom]
                 if (!outil) return null
-                return (
+                return nom === 'export' ? (
+                  <BoutonExport key={nom} onClick={exporter} />
+                ) : (
                   <button
                     type="button"
                     key={nom}
                     className={`ddb-outil ddb-outil-${nom}`}
-                    onClick={nom === 'export' ? exporter : () => champFichier.current?.click()}
+                    onClick={() => champFichier.current?.click()}
                   >
                     <CIcon icon={outil.icone} className="ddb-outil-icone" />
                     {outil.libelle}

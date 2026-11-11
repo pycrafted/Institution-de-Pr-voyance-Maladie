@@ -191,7 +191,7 @@ export default function Conventionnes() {
               >
                 {categories.map((categorie) => (
                   <option key={categorie.cle} value={categorie.cle}>
-                    {categorie.libelle} ({categorie.nombre})
+                    {categorie.libelle}
                   </option>
                 ))}
               </select>
@@ -233,16 +233,18 @@ function CarteStructure({ structure, rang }: { structure: Conventionne; rang: nu
       details={
         <>
           {specialite && <span className="conventionnes__specialite">{specialite}</span>}
-          <span className="conventionnes__ligne">
-            <IonIcon icon={locationOutline} aria-hidden="true" />
-            <span>{adresse || 'Adresse non communiquée'}</span>
-          </span>
-          <span className="conventionnes__ligne">
-            <IonIcon icon={callOutline} aria-hidden="true" />
-            <span className={numero ? 'ipm-chiffres' : undefined}>
-              {numero || 'Téléphone non communiqué'}
+          {adresse && (
+            <span className="conventionnes__ligne">
+              <IonIcon icon={locationOutline} aria-hidden="true" />
+              <span>{adresse}</span>
             </span>
-          </span>
+          )}
+          {numero && (
+            <span className="conventionnes__ligne">
+              <IonIcon icon={callOutline} aria-hidden="true" />
+              <span className="ipm-chiffres">{numero}</span>
+            </span>
+          )}
         </>
       }
       puce={
@@ -258,22 +260,26 @@ function CarteStructure({ structure, rang }: { structure: Conventionne; rang: nu
             </a>
           )}
           {/* La carte de l'itinéraire, dans l'application : la position
-                de l'employé, le trajet, le temps — et de là, le guidage. */}
-          <button
-            type="button"
-            className="conventionnes__action conventionnes__action--itineraire ipm-appui"
-            aria-label={`S’y rendre : itinéraire vers ${nom}`}
-            onClick={() => {
-              haptique.leger()
-              routeur.push(
-                `/conventionnes/${encodeURIComponent(structure.code)}`,
-                'forward',
-                'push',
-              )
-            }}
-          >
-            <IonIcon icon={navigateOutline} aria-hidden="true" />
-          </button>
+                de l'employé, le trajet, le temps — et de là, le guidage.
+                Affiché seulement si la structure est localisée : sans position,
+                pas de carte à montrer. */}
+          {structure.position && (
+            <button
+              type="button"
+              className="conventionnes__action conventionnes__action--itineraire ipm-appui"
+              aria-label={`S’y rendre : itinéraire vers ${nom}`}
+              onClick={() => {
+                haptique.leger()
+                routeur.push(
+                  `/conventionnes/${encodeURIComponent(structure.code)}`,
+                  'forward',
+                  'push',
+                )
+              }}
+            >
+              <IonIcon icon={navigateOutline} aria-hidden="true" />
+            </button>
+          )}
         </span>
       }
     />

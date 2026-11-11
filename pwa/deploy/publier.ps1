@@ -153,9 +153,9 @@ $directives = foreach ($d in ($csp.GetAttribute('value') -split ';')) {
     $d = $d.Trim()
     if ($d -like 'connect-src*') {
         # Sources fixes du PWA, plus l'origine de l'API si elle est ailleurs.
-        # Le calcul d'itinéraire de la carte (OSRM) est une source fixe : il ne
-        # dépend pas de l'adresse de l'API.
-        $sources = @("connect-src 'self' blob: data: https://router.project-osrm.org")
+        # La carte d'itinéraire (Google Maps / Directions) est une source fixe :
+        # elle ne dépend pas de l'adresse de l'API.
+        $sources = @("connect-src 'self' blob: data: https://maps.googleapis.com https://*.googleapis.com")
         if ($origineApi) { $sources += $origineApi }
         $sources -join ' '
     }

@@ -10,8 +10,8 @@ import { preparerIonic, rendreEcran } from './conventionnes/outils-test'
 import { reinitialiserConventionnes } from './conventionnes/useConventionnes'
 import Itineraire, { type ItineraireProps } from './Itineraire'
 
-// Leaflet ne se dessine pas sous jsdom : la carte est remplacée par un témoin
-// qui dit ce qu'on lui a confié. Le vrai composant est éprouvé dans le
+// Google Maps ne se dessine pas sous jsdom : la carte est remplacée par un
+// témoin qui dit ce qu'on lui a confié. Le vrai composant est éprouvé dans le
 // navigateur (tests de bout en bout).
 vi.mock('./itineraire/Carte', () => ({
   default: forwardRef(function CarteSimulee(
@@ -28,6 +28,11 @@ vi.mock('./itineraire/Carte', () => ({
     )
   }),
 }))
+
+// Le calcul d'itinéraire (Google Directions) est simulé : on vérifie qu'il est
+// appelé des bons points et que son résultat remonte à l'écran.
+const mocks = vi.hoisted(() => ({ calculerTrajet: vi.fn() }))
+vi.mock('./itineraire/directions', () => ({ calculerTrajet: mocks.calculerTrajet }))
 
 const fetchMock = vi.fn<typeof fetch>()
 const globalFetch = globalThis.fetch
@@ -49,20 +54,14 @@ const CASAHOUS: Conventionne = {
   position: null,
 }
 
-const OSRM = {
-  code: 'Ok',
-  routes: [
-    {
-      distance: 4210,
-      duration: 612,
-      geometry: {
-        coordinates: [
-          [-17.4441, 14.6937],
-          [-17.4383, 14.6597],
-        ],
-      },
-    },
-  ],
+/** Le trajet que Google Directions renvoie dans les tests. */
+const TRAJET = {
+  distance: 4210,
+  duree: 612,
+  trace: [
+    [14.6937, -17.4441],
+    [14.6597, -17.4383],
+  ] as [number, number][],
 }
 
 /** Simule la géolocalisation du téléphone. */
@@ -102,13 +101,14 @@ beforeAll(() => preparerIonic())
 
 beforeEach(() => {
   fetchMock.mockReset()
-  // L'annuaire vient du client de l'API ; l'itinéraire, d'OSRM par fetch.
+  // L'annuaire vient du client de l'API ; l'itinéraire, de Google Directions.
   fetchMock.mockImplementation(async (url) => {
     const adresse = String(url)
     if (adresse.includes('/mobile/conventionnes/')) return reponseJson([MADELEINE, CASAHOUS])
-    if (adresse.includes('router.project-osrm.org')) return reponseJson(OSRM)
     throw new Error(`requête inattendue : ${adresse}`)
   })
+  mocks.calculerTrajet.mockReset()
+  mocks.calculerTrajet.mockResolvedValue(TRAJET)
   configurerClient({ apiBase: '/api', jeton: 'J', fetch: fetchMock, surSessionExpiree: null })
   globalThis.fetch = fetchMock
   reinitialiserConventionnes()
@@ -139,8 +139,10 @@ describe('Itinéraire', () => {
     })
     await waitFor(() => expect(carte.dataset.trace).toBe('oui'))
     // L'itinéraire est demandé de la position de l'employé à celle de la structure.
-    const appelOsrm = fetchMock.mock.calls.map(([u]) => String(u)).find((u) => u.includes('osrm'))
-    expect(appelOsrm).toContain('-17.444100,14.693700;-17.438338,14.659731')
+    await waitFor(() => expect(mocks.calculerTrajet).toHaveBeenCalled())
+    const [depart, arrivee] = mocks.calculerTrajet.mock.calls[0] ?? []
+    expect(depart).toEqual({ latitude: 14.6937, longitude: -17.4441 })
+    expect(arrivee).toEqual(MADELEINE.position)
   })
 
   it('propose le guidage externe et l’appel', async () => {
@@ -172,7 +174,7 @@ describe('Itinéraire', () => {
     expect(await screen.findByText(/Autorisez la localisation/)).toBeInTheDocument()
     const carte = await screen.findByTestId('carte')
     expect(JSON.parse(carte.dataset.destination ?? 'null')).toEqual(MADELEINE.position)
-    expect(fetchMock.mock.calls.some(([u]) => String(u).includes('osrm'))).toBe(false)
+    expect(mocks.calculerTrajet).not.toHaveBeenCalled()
   })
 
   it('page non sécurisée (HTTP) : on l’explique au lieu d’attendre en vain', async () => {
@@ -190,7 +192,7 @@ describe('Itinéraire', () => {
 
     expect(await screen.findByText(/pas encore placé cette structure/)).toBeInTheDocument()
     expect(screen.getByText(/^Guidage dans/)).toBeInTheDocument()
-    expect(fetchMock.mock.calls.some(([u]) => String(u).includes('osrm'))).toBe(false)
+    expect(mocks.calculerTrajet).not.toHaveBeenCalled()
   })
 
   it('code inconnu : structure introuvable, et retour à l’annuaire', async () => {

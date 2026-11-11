@@ -41,7 +41,7 @@ import { nomPropre } from '../utils/libelles'
 import { estIOS } from '../utils/plateforme'
 import type { CarteHandle } from './itineraire/Carte'
 import { dureeAPied, formaterDistance, formaterDuree } from './itineraire/trajet'
-import { useGeolocalisation, type EtatLocalisation } from './itineraire/useGeolocalisation'
+import { useGeolocalisation } from './itineraire/useGeolocalisation'
 import { useTrajet, type EtatTrajet } from './itineraire/useTrajet'
 import {
   libelleSpecialite,
@@ -52,7 +52,7 @@ import {
 import { useConventionnes } from './conventionnes/useConventionnes'
 import './itineraire/itineraire.css'
 
-// Leaflet n'est téléchargé qu'à l'ouverture d'une carte.
+// Google Maps n'est téléchargé qu'à l'ouverture d'une carte.
 const Carte = lazy(() => import('./itineraire/Carte'))
 
 /** Hauteur réservée à la feuille du bas, pour que le cadrage ne passe pas dessous. */
@@ -65,7 +65,14 @@ export default function Itineraire({ match }: ItineraireProps) {
   const { structures, erreur } = useConventionnes()
   const structure = structures?.find((s) => s.code === code) ?? null
   const localisation = useGeolocalisation()
-  const moi = localisation.etat === 'trouvee' ? localisation.position : null
+  // Position par défaut (la SAR) tant que la géolocalisation n'est pas
+  // disponible - sur le site de test en HTTP, le navigateur la refuse. On fait
+  // alors partir l'itinéraire de la raffinerie plutôt que de rien. À RETIRER
+  // une fois le site servi en HTTPS : `moi` redeviendra simplement la position.
+  const SAR_PAR_DEFAUT = { latitude: 14.740742, longitude: -17.347280 }
+  const geoloc = localisation.etat === 'trouvee' ? localisation.position : null
+  const positionParDefaut = geoloc === null
+  const moi = geoloc ?? SAR_PAR_DEFAUT
   const destination = structure?.position ?? null
   const trajet = useTrajet(moi, destination)
   const carte = useRef<CarteHandle>(null)
@@ -153,9 +160,9 @@ export default function Itineraire({ match }: ItineraireProps) {
               </p>
 
               <Resume
-                localisation={localisation}
                 trajet={trajet}
                 localisee={destination !== null}
+                parDefaut={positionParDefaut}
               />
 
               <div className="itineraire__actions">
@@ -196,13 +203,13 @@ export default function Itineraire({ match }: ItineraireProps) {
  * là, sinon la raison — dite en clair, avec ce que l'employé peut y faire.
  */
 function Resume({
-  localisation,
   trajet,
   localisee,
+  parDefaut,
 }: {
-  localisation: EtatLocalisation
   trajet: EtatTrajet
   localisee: boolean
+  parDefaut: boolean
 }) {
   let contenu: ReactNode
   if (!localisee) {
@@ -212,36 +219,30 @@ function Resume({
         adresse.
       </p>
     )
-  } else if (localisation.etat === 'non-securisee') {
+  } else if (trajet.etat === 'pret') {
+    const { distance, duree } = trajet.trajet
     contenu = (
-      <p className="itineraire__message">
-        Votre position ne peut pas être utilisée sur cette version de test de l’application. Le
-        guidage, lui, part bien de là où vous êtes.
-      </p>
-    )
-  } else if (localisation.etat === 'refusee') {
-    contenu = (
-      <p className="itineraire__message">
-        Autorisez la localisation dans les réglages du navigateur pour voir le trajet depuis votre
-        position.
-      </p>
-    )
-  } else if (localisation.etat === 'indisponible') {
-    contenu = (
-      <p className="itineraire__message">
-        Position introuvable pour l’instant. Le guidage reste possible.
-      </p>
-    )
-  } else if (
-    localisation.etat === 'recherche' ||
-    trajet.etat === 'attente' ||
-    trajet.etat === 'calcul'
-  ) {
-    contenu = (
-      <p className="itineraire__message itineraire__message--attente" aria-busy="true">
-        <IonSpinner name="dots" aria-hidden="true" />
-        {localisation.etat === 'recherche' ? 'Localisation en cours…' : 'Calcul de l’itinéraire…'}
-      </p>
+      <div className="itineraire__trajet-bloc">
+        <div className="itineraire__trajet">
+          <span className="itineraire__duree ipm-chiffres">{formaterDuree(duree)}</span>
+          <span className="itineraire__details">
+            <span className="itineraire__mode">
+              <IonIcon icon={carOutline} aria-hidden="true" />
+              <span className="ipm-chiffres">{formaterDistance(distance)}</span> en voiture
+            </span>
+            <span className="itineraire__mode">
+              <IonIcon icon={walkOutline} aria-hidden="true" />
+              environ <span className="ipm-chiffres">{formaterDuree(dureeAPied(distance))}</span> à
+              pied
+            </span>
+          </span>
+        </div>
+        {parDefaut && (
+          <p className="itineraire__depart-defaut">
+            Trajet depuis la SAR - votre position n’est pas disponible sur cette version de test.
+          </p>
+        )}
+      </div>
     )
   } else if (trajet.etat === 'echec') {
     contenu = (
@@ -250,22 +251,11 @@ function Resume({
       </p>
     )
   } else {
-    const { distance, duree } = trajet.trajet
     contenu = (
-      <div className="itineraire__trajet">
-        <span className="itineraire__duree ipm-chiffres">{formaterDuree(duree)}</span>
-        <span className="itineraire__details">
-          <span className="itineraire__mode">
-            <IonIcon icon={carOutline} aria-hidden="true" />
-            <span className="ipm-chiffres">{formaterDistance(distance)}</span> en voiture
-          </span>
-          <span className="itineraire__mode">
-            <IonIcon icon={walkOutline} aria-hidden="true" />
-            environ <span className="ipm-chiffres">{formaterDuree(dureeAPied(distance))}</span> à
-            pied
-          </span>
-        </span>
-      </div>
+      <p className="itineraire__message itineraire__message--attente" aria-busy="true">
+        <IonSpinner name="dots" aria-hidden="true" />
+        Calcul de l’itinéraire…
+      </p>
     )
   }
   return (

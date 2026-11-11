@@ -1,16 +1,11 @@
 /**
  * Itinéraire vers une structure conventionnée (pages/Itineraire.tsx).
  *
- * Logique pure, sans React : l'adresse du calcul d'itinéraire, la lecture de
- * sa réponse, et la façon de dire une distance et une durée à l'employé.
- *
- * Le calcul d'itinéraire est celui d'OSRM (Open Source Routing Machine), sur
- * les données d'OpenStreetMap. Son serveur public de démonstration suffit à
- * un pilote ; en production, un service à soi (ou sous contrat) prendra le
- * relais — il suffira de changer SERVEUR_ITINERAIRE.
+ * Logique pure, sans React : les types partagés et la façon de dire une
+ * distance et une durée à l'employé. Le calcul lui-même est confié à Google
+ * Directions (pages/itineraire/directions.ts), et le dessin à Google Maps
+ * (pages/itineraire/Carte.tsx).
  */
-
-export const SERVEUR_ITINERAIRE = 'https://router.project-osrm.org'
 
 export interface Point {
   latitude: number
@@ -28,39 +23,6 @@ export interface Trajet {
 
 /** Vitesse de marche retenue pour l'estimation à pied (km/h). */
 const MARCHE_KMH = 4.5
-
-/**
- * L'adresse du calcul. OSRM attend « longitude,latitude » — dans cet ordre,
- * l'inverse des cartes : c'est ici, et nulle part ailleurs, qu'on l'inverse.
- */
-export function urlItineraire(depart: Point, arrivee: Point): string {
-  const point = (p: Point) => `${p.longitude.toFixed(6)},${p.latitude.toFixed(6)}`
-  return (
-    `${SERVEUR_ITINERAIRE}/route/v1/driving/${point(depart)};${point(arrivee)}` +
-    '?overview=full&geometries=geojson&alternatives=false&steps=false'
-  )
-}
-
-/** La réponse d'OSRM, ou null quand elle ne décrit aucun itinéraire. */
-export function lireTrajet(reponse: unknown): Trajet | null {
-  const r = reponse as {
-    code?: string
-    routes?: { distance?: number; duration?: number; geometry?: { coordinates?: number[][] } }[]
-  }
-  if (r?.code !== 'Ok') return null
-  const route = r.routes?.[0]
-  const coordonnees = route?.geometry?.coordinates
-  if (!route || typeof route.distance !== 'number' || typeof route.duration !== 'number')
-    return null
-  if (!Array.isArray(coordonnees) || coordonnees.length < 2) return null
-  // GeoJSON donne [longitude, latitude] ; la carte veut [latitude, longitude].
-  const trace: [number, number][] = []
-  for (const [longitude, latitude] of coordonnees) {
-    if (typeof latitude !== 'number' || typeof longitude !== 'number') return null
-    trace.push([latitude, longitude])
-  }
-  return { distance: route.distance, duree: route.duration, trace }
-}
 
 /** « 850 m », « 4,2 km », « 12 km » : ce qu'on dirait à voix haute. */
 export function formaterDistance(metres: number): string {

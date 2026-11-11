@@ -627,12 +627,13 @@ $tableau-entete-fond: #f7f9fc;
 // métier. L'ardoise `#475569` d'avant le posait à mi-chemin entre le fond et
 // la donnée, et sur un tableau à treize colonnes on cherchait sa colonne.
 $tableau-entete-encre: #17181d;
-$tableau-filet: #eef2f6;
+$tableau-filet: #e2e8f0;
+$tableau-bordure: #cbd5e1; // Cadre + ligne sous l'en-tete, plus fonce que le filet.
 $tableau-survol: #f8fafc;
 
 .tableau-conteneur,
 .ddb-tableau-conteneur {
-  border: 1px solid $openkm-card-border;
+  border: 1px solid $tableau-bordure;
   border-radius: 0.5rem;
   overflow: hidden;
 }
@@ -652,7 +653,7 @@ $tableau-survol: #f8fafc;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     text-align: left;
-    border-bottom: 1px solid $openkm-card-border;
+    border-bottom: 1px solid $tableau-bordure;
     padding: 0.85rem 1rem;
     white-space: nowrap;
   }
@@ -724,7 +725,7 @@ $tableau-survol: #f8fafc;
   background-color: $tableau-entete-fond;
 
   th {
-    border-bottom: 1px solid $openkm-card-border;
+    border-bottom: 1px solid $tableau-bordure;
     color: $tableau-entete-encre;
     font-size: 0.7rem;
     font-weight: 700;
@@ -780,4 +781,39 @@ $tableau-survol: #f8fafc;
   outline: none;
   box-shadow: 0 0 0 3px rgba(229, 38, 33, 0.22);
   border-radius: 8px;
+}
+
+// --- Bouton Export unique (composant BoutonExport) --------------------------
+// Vert « Excel », convention retenue le 2026-11-09. Le style de TOUS les
+// exports de l'application tient ici, chargé une fois. Hauteur alignée sur les
+// champs (2,5 rem).
+.bouton-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border: 1.5px solid transparent;
+  border-radius: 0.5rem;
+  background: #1f8a4c;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.14s ease;
+
+  &:hover:not(:disabled) {
+    background: #1a7540;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.bouton-export-icone {
+  width: 0.95rem;
+  height: 0.95rem;
 }

@@ -17,27 +17,32 @@
  * ===================================================================== */
 
 /*
- * Barre de NAVIGATION Material 3 (« Navigation bar ») : pleine largeur, collée
- * au bas de l'écran, 80 de haut, posée sur une surface-container tonale avec
- * un filet haut. Fini la barre flottante arrondie (un trait iOS) : la barre
- * Material touche les bords, et l'onglet actif porte une PASTILLE d'indicateur
- * (un ovale de couleur secondaire) DERRIÈRE SON ICÔNE, le libellé dessous.
- * C'est la signature la plus reconnaissable d'une vraie application Android.
+ * Barre de navigation FLOTTANTE, accordée à la barre du haut (.ipm-navbar) :
+ * une carte détachée des bords (gouttière à gauche et à droite, petit retrait
+ * du bas au-dessus de la zone sûre), coins arrondis, ombre douce, teinte
+ * `#ece4e3` comme en haut. Chaque onglet garde son icône de 24 et son libellé
+ * de 12 dessous. Le contenu défile dessous : les écrans réservent `--bas-page`
+ * (88 px), qui couvre le retrait, la barre et la zone sûre.
  */
 ion-tab-bar.ipm-onglets {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(80px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
-  padding: 0 0 var(--ion-safe-area-bottom, env(safe-area-inset-bottom));
+  left: var(--gouttiere);
+  right: var(--gouttiere);
+  bottom: calc(var(--ion-safe-area-bottom, env(safe-area-inset-bottom)) + var(--e-8));
+  height: 64px;
+  padding: 0 var(--e-4);
   --background: transparent;
   --border: 0;
-  /* Surface-container M3 : la barre se détache du fond sans ombre portée. */
+  /* Même teinte et même forme que la barre du haut. */
+  background: #ece4e3;
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--r-lg);
+  box-shadow: var(--ipm-ombre-tuile);
+  overflow: hidden;
+}
+/* En mode sombre, surface tonale sombre (comme .ipm-navbar). */
+:root.ion-palette-dark ion-tab-bar.ipm-onglets {
   background: var(--ipm-surface-2);
-  border-top: 1px solid var(--ipm-bordure);
-  border-radius: 0;
-  box-shadow: none;
 }
 
 .ipm-onglets ion-tab-button {
@@ -49,8 +54,10 @@ ion-tab-bar.ipm-onglets {
   --color-selected: var(--ipm-texte-doux);
   /* Pas d'onde (ripple) au toucher sur les onglets du footer (demande). */
   --ripple-color: transparent;
-  --padding-top: 12px;
-  --padding-bottom: 16px;
+  /* Retraits resserrés pour que l'icône et son libellé tiennent dans la barre
+     flottante de 64 px. */
+  --padding-top: 8px;
+  --padding-bottom: 8px;
   max-width: none;
   background: transparent;
 }
@@ -69,6 +76,45 @@ ion-tab-bar.ipm-onglets {
   font-weight: 500;
   letter-spacing: 0.01em;
   margin: 0;
+}
+
+/* Bouton « Scanner » central (components/BoutonScan.tsx) : posé sur le creux
+   central de la barre (4 onglets), un peu surélevé. MÊME matière que le footer
+   - même teinte, même bordure, même gris d'icône - pour la continuité ; il
+   n'attire pas l'œil par la couleur, il prolonge la barre. */
+.ipm-scan {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--ion-safe-area-bottom, env(safe-area-inset-bottom)) + 40px);
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 66px;
+  height: 66px;
+  padding: 0;
+  /* L'anneau est de la COULEUR DE LA PAGE : là où il mord la barre, il la
+     creuse - c'est lui qui dessine l'encoche où le bouton se niche. */
+  border: 6px solid var(--ipm-fond);
+  border-radius: var(--r-pill);
+  /* Face : blanc en clair (tranche sur le beige de la barre, sinon « boule
+     pâle »), teinte de la barre en sombre (cf. override) - continuité. */
+  background: var(--ipm-surface);
+  /* Icône colorée (rouge SAR), comme l'icône mise en avant du modèle. */
+  color: var(--ipm-rouge-texte);
+  box-shadow: 0 6px 16px rgba(16, 18, 29, 0.22);
+  cursor: pointer;
+}
+:root.ion-palette-dark .ipm-scan {
+  background: var(--ipm-surface-2);
+}
+.ipm-scan ion-icon {
+  font-size: 28px;
+}
+/* Masqué quand la barre d'onglets l'est (carte d'itinéraire plein écran). */
+.ipm-sans-onglets .ipm-scan {
+  display: none;
 }
 
 /* ========================================================================
@@ -283,29 +329,47 @@ ion-tab-bar.ipm-onglets {
 }
 
 /* ========================================================================
- * Barre d'actions du HAUT (components/BarreActions.tsx)
+ * Barre du HAUT - « top app bar » FLOTTANTE (components/BarreActions.tsx)
  * ---------------------------------------------------------------------
- * Le pendant exact de la barre d'onglets du bas : pleine largeur, collée au
- * bord, surface-container tonale, un filet qui la sépare du contenu, et les
- * quatre actions réparties à parts égales. Elle est FIXE : le contenu des
- * écrans défile dessous, chaque en-tête lui réservant sa hauteur.
+ * Une barre d'application posée comme une carte qui FLOTTE au-dessus du
+ * contenu : détachée des bords (gouttière à gauche et à droite), coins
+ * arrondis, ombre portée douce, un filet fin tout autour - la forme des
+ * maquettes. Hamburger à gauche, nom de l'application au milieu, bascule
+ * jour/nuit à droite. Elle est FIXE : le contenu des écrans défile dessous,
+ * chaque en-tête lui réservant sa hauteur (`--barre-haut`), qui couvre
+ * l'encoche, le petit retrait du haut et la barre elle-même.
  * ===================================================================== */
-.ipm-barre-actions {
+.ipm-navbar {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + var(--e-8));
+  left: var(--gouttiere);
+  right: var(--gouttiere);
   z-index: 11;
   display: flex;
-  height: calc(var(--barre-haut) + var(--ion-safe-area-top, env(safe-area-inset-top)));
-  padding-top: var(--ion-safe-area-top, env(safe-area-inset-top));
-  background: var(--ipm-surface-2);
-  border-bottom: 1px solid var(--ipm-bordure);
+  align-items: stretch;
+  height: 64px;
+  padding: 0 var(--e-4);
+  /* Teinte demandée pour la barre : un gris rosé clair, dans le ton du fond. */
+  background: #ece4e3;
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--r-lg);
+  box-shadow: var(--ipm-ombre-tuile);
 }
-/* `flex: 1` et non un espacement : chaque action occupe le même quart de la
-   largeur, comme un onglet du bas, et sa zone tactile va d'un bord à l'autre
-   de ce quart. Mêmes retraits (12/16) que `.ipm-onglets ion-tab-button`. */
-.ipm-barre-actions__bouton {
+/* En mode sombre, la teinte claire n'aurait aucun sens : on garde une surface
+   tonale sombre. */
+:root.ion-palette-dark .ipm-navbar {
+  background: var(--ipm-surface-2);
+}
+/* Les actions, réparties à parts ÉGALES sur toute la largeur de la barre. */
+.ipm-navbar__actions {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
+/* Chaque action calquée sur un onglet du bas : icône de 24 et libellé de 12
+   dessous, en colonne, couleur douce, zone tactile pleine hauteur et répartie
+   en quart égal (`flex: 1`). */
+.ipm-navbar__icone {
   appearance: none;
   flex: 1;
   min-width: 0;
@@ -314,17 +378,21 @@ ion-tab-bar.ipm-onglets {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 12px 4px 16px;
+  padding: 0 2px;
   border: 0;
   background: transparent;
   color: var(--ipm-texte-doux);
   cursor: pointer;
+  transition: transform var(--mvt-appui) var(--mvt-courbe);
 }
-/* Mêmes cotes qu'en bas : icône au trait de 24, libellé de 12. */
-.ipm-barre-actions__bouton ion-icon {
+.ipm-navbar__icone:active {
+  transform: scale(var(--mvt-appui-echelle));
+}
+.ipm-navbar__icone ion-icon {
   font-size: 24px;
 }
-.ipm-barre-actions__libelle {
+/* Mêmes cotes de libellé qu'en bas : 12, demi-gras, coupé s'il déborde. */
+.ipm-navbar__libelle {
   max-width: 100%;
   font-size: 12px;
   font-weight: 500;

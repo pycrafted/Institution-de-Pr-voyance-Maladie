@@ -16,6 +16,7 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react'
+import BoutonExport from '../../components/BoutonExport'
 import {
   CCard,
   CCardBody,
@@ -297,9 +298,7 @@ const Suspensions = () => {
             <div className="sus-barre-actions">
               {/* Pas de bouton « Actualiser » : la liste se rafraîchit toute seule
                   (cf. l'écoute de fond des autres écrans). */}
-              <button type="button" className="ddb-outil ddb-outil-export" onClick={exporter}>
-                Export Excel
-              </button>
+              <BoutonExport onClick={exporter} />
             </div>
           </div>
 

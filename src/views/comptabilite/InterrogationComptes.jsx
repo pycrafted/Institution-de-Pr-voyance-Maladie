@@ -32,6 +32,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilPrint, cilChevronBottom } from '@coreui/icons'
@@ -542,6 +543,13 @@ const InterrogationComptes = () => {
 
   const riche = nombre > 0
 
+  // Les lignes cochées et leur état de lettrage : le bouton unique s'oriente
+  // d'après elles. On ne peut ni lettrer du déjà-lettré ni délettrer du
+  // non-lettré, donc la sélection suffit à trancher. Cochées toutes lettrées
+  // -> « Délettrer » ; sinon -> « Lettrage ».
+  const cochees = ecritures.filter((e) => coches.includes(e.id))
+  const cochesLettrees = cochees.length > 0 && cochees.every((e) => e.lettree)
+
   /**
    * L'export porte sur **tout le périmètre filtré**, pas sur la page affichée.
    * Un export qui ne rendrait que les cinquante lignes sous les yeux sans le
@@ -604,9 +612,11 @@ const InterrogationComptes = () => {
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
         <section className="ddb-contenu jc-page ic-page">
-          <h2 className="jc-titre">{onglet.titre}</h2>
+          {/* Titre a gauche, barre d'onglets a droite, sur la meme ligne. */}
+          <div className="ic-entete">
+            <h2 className="jc-titre">{onglet.titre}</h2>
 
-          <nav className="ic-onglets" aria-label="Familles de comptes">
+            <nav className="ic-onglets" aria-label="Familles de comptes">
             {ONGLETS.map((o) => (
               <button
                 key={o.cle}
@@ -618,76 +628,15 @@ const InterrogationComptes = () => {
               </button>
             ))}
           </nav>
-
-          {/* Première ligne : le ou les sélecteurs de l'onglet, et les flèches. */}
-          <div className="ic-selecteurs">
-            <label className="ic-selecteur">
-              <span className="ic-etiquette">{onglet.etiquetteSelecteur}</span>
-              <select
-                className="ddb-filtre"
-                value={valeurSelecteur}
-                onChange={(e) => changerFiltre(poserSelecteur)(e.target.value)}
-              >
-                <option value="">{onglet.videSelecteur}</option>
-                {optionsSelecteur().map((o) => (
-                  <option key={o.valeur} value={o.valeur}>
-                    {o.libelle}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {onglet.tiers && (
-              <label className="ic-selecteur">
-                <span className="ic-etiquette">{onglet.etiquetteTiers || 'Tiers'}</span>
-                <select
-                  className="ddb-filtre"
-                  value={tiers}
-                  onChange={(e) => changerFiltre(setTiers)(e.target.value)}
-                >
-                  <option value="">Tous</option>
-                  {listeTiers.map((t) => (
-                    <option key={t.tiers} value={t.tiers}>
-                      {nommerTiers(t.tiers)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-
-            <label className="ddb-recherche-flottante ic-recherche">
-              <span className="ddb-recherche-libelle">Rechercher…</span>
-              <input
-                className="ddb-recherche-champ"
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-              />
-            </label>
-
-            <div className="ic-fleches">
-              <button
-                type="button"
-                onClick={() => deplacer(-1)}
-                disabled={!listeFleches.length}
-                aria-label="Précédent"
-              >
-                ‹
-              </button>
-              <button
-                type="button"
-                onClick={() => deplacer(1)}
-                disabled={!listeFleches.length}
-                aria-label="Suivant"
-              >
-                ›
-              </button>
-            </div>
           </div>
 
-          {/* Seconde ligne : Exercice, Période, Type d'Ecriture, Société, et
-              les trois boutons. « Type d'Ecriture » garde l'orthographe de
-              l'original, sans accent sur le E. */}
-          <div className="ic-filtres">
+          {/* La barre de filtres : la recherche tout à gauche, puis les
+              sélecteurs et les filtres communs ; les boutons d'action regroupés
+              à droite. Les flèches de navigation ont été retirées le 2026-11-09. */}
+          <div className="ic-barre">
+            {/* Ordre logique, du plus large au plus fin : l'exercice
+                d'abord, puis la periode, le journal, la societe, le
+                selecteur de l'onglet, et la recherche libre en dernier. */}
             <label className="jc-filtre-groupe jc-etroit">
               <span className="jc-filtre-etiquette">Exercice</span>
               <select
@@ -735,6 +684,8 @@ const InterrogationComptes = () => {
               )}
             </div>
 
+            {/* « Type d'Ecriture » garde l'orthographe de l'original, sans
+                accent sur le E. */}
             <label className="jc-filtre-groupe jc-large">
               <span className="jc-filtre-etiquette">Type d&apos;Ecriture</span>
               <select
@@ -769,40 +720,76 @@ const InterrogationComptes = () => {
               </label>
             )}
 
-            <div className="ic-boutons">
-              <button
-                type="button"
-                className="jc-bouton jc-export"
-                onClick={exporter}
-                disabled={!riche}
+            <label className="ic-selecteur">
+              <span className="ic-etiquette">{onglet.etiquetteSelecteur}</span>
+              <select
+                className="ddb-filtre"
+                value={valeurSelecteur}
+                onChange={(e) => changerFiltre(poserSelecteur)(e.target.value)}
               >
-                <CIcon icon={cilCloudDownload} /> Export Excel
-              </button>
-              {/* Le Lettrage n'existe que là où il y a un tiers : sur une
-                  charge ou une banque, il n'y a rien à apparier. */}
+                <option value="">{onglet.videSelecteur}</option>
+                {optionsSelecteur().map((o) => (
+                  <option key={o.valeur} value={o.valeur}>
+                    {o.libelle}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {onglet.tiers && (
+              <label className="ic-selecteur">
+                <span className="ic-etiquette">{onglet.etiquetteTiers || 'Tiers'}</span>
+                <select
+                  className="ddb-filtre"
+                  value={tiers}
+                  onChange={(e) => changerFiltre(setTiers)(e.target.value)}
+                >
+                  <option value="">Tous</option>
+                  {listeTiers.map((t) => (
+                    <option key={t.tiers} value={t.tiers}>
+                      {nommerTiers(t.tiers)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+
+            <label className="ddb-recherche-flottante ic-recherche">
+              <span className="ddb-recherche-libelle">Rechercher…</span>
+              <input
+                className="ddb-recherche-champ"
+                value={recherche}
+                onChange={(e) => setRecherche(e.target.value)}
+              />
+            </label>
+
+            <div className="ic-boutons">
+              <BoutonExport onClick={exporter} disabled={!riche} />
+              {/* Un seul bouton pour le lettrage : il s'oriente d'après les
+                  lignes cochées - déjà lettrées, il délettre ; sinon, il lettre.
+                  Il n'existe que là où il y a un tiers : sur une charge ou une
+                  banque, il n'y a rien à apparier. */}
               {onglet.tiers && (
-                <span className="ic-lettrage">
-                  <button type="button" className="jc-bouton jc-gestion" onClick={() => lettrer()}>
-                    <CIcon icon={cilChevronBottom} /> Lettrage
-                  </button>
-                  <button
-                    type="button"
-                    className="ic-delettrer"
-                    onClick={() => lettrer(true)}
-                    disabled={!coches.length}
-                    title="Retirer le lettrage des écritures cochées"
-                  >
-                    Délettrer
-                  </button>
-                </span>
+                <button
+                  type="button"
+                  className="ic-btn ic-btn-sec"
+                  onClick={() => lettrer(cochesLettrees)}
+                  title={
+                    cochesLettrees
+                      ? 'Retirer le lettrage des écritures cochées'
+                      : 'Apparier les écritures cochées'
+                  }
+                >
+                  <CIcon icon={cilChevronBottom} /> {cochesLettrees ? 'Délettrer' : 'Lettrage'}
+                </button>
               )}
               <button
                 type="button"
-                className="jc-bouton ic-extrait"
+                className="ic-btn ic-btn-primary"
                 onClick={imprimerExtrait}
                 disabled={!riche}
               >
-                <CIcon icon={cilPrint} /> Imprimer Extrait
+                <CIcon icon={cilPrint} /> Imprimer
               </button>
             </div>
           </div>

@@ -24,6 +24,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilReload, cilChevronBottom } from '@coreui/icons'
@@ -354,9 +355,7 @@ const JournalCentral = () => {
               </div>
 
               <div className="jc-boutons">
-                <button type="button" className="jc-bouton jc-export" onClick={exporter}>
-                  <CIcon icon={cilCloudDownload} /> Export Excel
-                </button>
+                <BoutonExport onClick={exporter} />
                 {/* « Gestion » ouvre, dans LAMPS, « Cloture Mensuelle » et
                     « Nouvel exercice ». Les deux restent à construire : la
                     clôture demande un modèle de période, et le nouvel exercice

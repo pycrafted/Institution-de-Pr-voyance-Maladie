@@ -32,6 +32,11 @@ ETATS = [(etat, etat) for etat in ('En Attente', 'Actif', 'Suspendu', 'Résilié
 # enregistrée « MSS » dans l'application d'origine (cf. Adherent.TYPES_ADHERENT).
 REGIME_MUTUELLE = 'MSS'
 
+# Mot de passe mobile posé d'office à la création d'un participant : chaque
+# fiche ouvre ainsi son compte sur la PWA, à charge pour l'employé de le
+# changer. Valeur volontairement simple, connue du métier.
+MOT_DE_PASSE_MOBILE_DEFAUT = '0000'
+
 # Sortie d'un dossier : l'état du participant et celui de son contrat ne
 # peuvent pas se contredire, et chacun porte sa date. Le serializer applique
 # la correspondance (cf. ParticipantSerializer.validate).
@@ -102,7 +107,8 @@ class Participant(models.Model):
     # --- Application mobile --------------------------------------------------
     # Mot de passe de l'application mobile (pwa/), gardé chiffré comme celui
     # d'un utilisateur IPM : jamais en clair, jamais rendu par l'API. Vide :
-    # le participant ne peut pas se connecter au mobile.
+    # le participant ne peut pas se connecter au mobile. Posé à « 0000 » à la
+    # création (cf. ParticipantSerializer.create, MOT_DE_PASSE_MOBILE_DEFAUT).
     mot_de_passe = models.CharField('Mot de passe mobile', max_length=128, blank=True)
 
     # --- Dossier -------------------------------------------------------------

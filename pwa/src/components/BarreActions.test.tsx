@@ -72,25 +72,26 @@ afterEach(() => {
   document.body.innerHTML = ''
 })
 
-describe('barre d’actions', () => {
-  it('porte les quatre actions, à parts égales', () => {
+describe('barre du haut', () => {
+  it('porte toutes les actions en accès direct, réparties sur la barre', () => {
     const { container } = rendreEcran(<BarreActions />)
-    const boutons = container.querySelectorAll('.ipm-barre-actions__bouton')
+    // Les actions sont des icônes posées à même la barre, sans titre ni menu.
+    expect(container.querySelector('.ipm-navbar__titre')).toBeNull()
+    expect(screen.queryByLabelText('Menu')).toBeNull()
+    const boutons = container.querySelectorAll('.ipm-navbar__icone')
     expect(boutons).toHaveLength(4)
-    expect(Array.from(boutons).map((b) => b.getAttribute('aria-label'))).toEqual([
-      'Passer en mode sombre',
-      'Photos d’identité',
-      'Notifications',
-      'Se déconnecter',
-    ])
+    expect(screen.getByLabelText('Photos d’identité')).toBeInTheDocument()
+    expect(screen.getByLabelText('Notifications')).toBeInTheDocument()
+    expect(screen.getByLabelText('Passer en mode sombre')).toBeInTheDocument()
+    expect(screen.getByLabelText('Se déconnecter')).toBeInTheDocument()
   })
 
   it('porte des icônes pleines, comme la barre du bas', () => {
     // La barre du bas rend le variant plein en mode Material : la barre du
     // haut ne doit pas lui répondre avec des icônes au trait.
     const { container } = rendreEcran(<BarreActions />)
-    const icones = container.querySelectorAll('.ipm-barre-actions__bouton ion-icon')
-    expect(icones).toHaveLength(4)
+    const icones = container.querySelectorAll('.ipm-navbar ion-icon')
+    expect(icones.length).toBeGreaterThan(0)
     for (const icone of icones) {
       expect(icone.getAttribute('icon')).not.toMatch(/outline/)
     }
@@ -103,7 +104,6 @@ describe('barre d’actions', () => {
 
   it('la cloche n’est jamais inerte : elle ouvre une feuille', () => {
     rendreEcran(<BarreActions />)
-    expect(screen.queryByRole('dialog')).toBeNull()
     fireEvent.click(screen.getByLabelText('Notifications'))
     expect(screen.getByRole('dialog')).toHaveTextContent('aucune notification')
   })

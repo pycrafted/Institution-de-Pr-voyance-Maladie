@@ -29,6 +29,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCalculator, cilLoopCircular, cilPrint, cilSpreadsheet } from '@coreui/icons'
@@ -352,10 +353,7 @@ const SaisieJournal = () => {
               >
                 Saisir +
               </button>
-              <button type="button" className="cot-bouton cot-bouton-vert" onClick={exporter}>
-                <CIcon icon={cilSpreadsheet} className="cot-icone" />
-                Export Excel
-              </button>
+              <BoutonExport onClick={exporter} />
               <button
                 type="button"
                 className="cot-bouton cot-bouton-encre"

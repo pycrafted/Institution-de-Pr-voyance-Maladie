@@ -1,27 +1,21 @@
 /**
- * Barre d'actions du HAUT, pendant de la barre d'onglets du bas.
+ * Barre du HAUT - « top app bar » FLOTTANTE (components/BarreActions.tsx)
  *
- * Elle porte les quatre actions qui ne dépendent d'aucun écran - apparence,
- * photos d'identité, notifications, déconnexion - et les montre donc sur
- * TOUS les écrans. Même forme que les onglets d'en bas, jusqu'au détail :
- * largeur en quarts égaux, icône pleine de 24 et libellé de 12 dessous.
- * Avant, elles vivaient dans l'en-tête de l'accueil : il fallait y revenir
- * pour se déconnecter ou changer de mode.
+ * Posée comme une carte qui flotte au-dessus du contenu : le nom de
+ * l'application à gauche, et à droite, EN ACCÈS DIRECT, les actions qui ne
+ * dépendent d'aucun écran - photos d'identité, notifications, apparence,
+ * déconnexion. Plus de menu caché derrière un hamburger : chaque action est
+ * une icône sur la barre, comme les maquettes.
  *
- * Elle est posée par la coquille (App.tsx), à côté de la barre d'onglets, et
- * non par chaque page : une barre recopiée dans cinq écrans finit par diverger
- * de l'un à l'autre. Les écrans ne font que lui réserver sa hauteur, par le
- * retrait du haut de leur en-tête (`--barre-haut`, cf. composants.css).
- *
- * Elle porte aussi les fenêtres de ces actions (photos, notifications,
- * question de déconnexion) : elles s'ouvrent de partout, elles appartiennent
- * donc à la barre et non à un écran.
+ * Elle est posée par la coquille (App.tsx), à côté de la barre d'onglets du
+ * bas, et se montre donc sur TOUS les écrans. Elle garde la hauteur que les
+ * écrans lui réservent (`--barre-haut`). Elle porte aussi les fenêtres de ces
+ * actions (photos, notifications, question de déconnexion) : elles s'ouvrent
+ * de partout, elles appartiennent donc à la barre et non à un écran.
  */
 
 import { IonIcon } from '@ionic/react'
-// Icônes PLEINES, comme la barre du bas : en mode Material, elle rend le
-// variant plein (`md={iconePleine}`), jamais celui au trait. Les deux barres
-// doivent se répondre.
+// Icônes PLEINES (en mode Material, le variant plein est rendu).
 import { camera, logOut, moon, notifications, sunny } from 'ionicons/icons'
 import { useState } from 'react'
 
@@ -41,17 +35,9 @@ export default function BarreActions() {
   // Déconnexion : jamais sans confirmation, elle efface les bons du téléphone.
   const [deconnexionDemandee, setDeconnexionDemandee] = useState(false)
 
+  // Les actions, réparties en quarts égaux sur la barre, comme les onglets du
+  // bas : une icône et son libellé dessous.
   const actions = [
-    {
-      cle: 'apparence',
-      icone: sombre ? sunny : moon,
-      libelle: sombre ? 'Mode clair' : 'Mode sombre',
-      etiquette: sombre ? 'Passer en mode clair' : 'Passer en mode sombre',
-      agir: () => {
-        haptique.leger()
-        basculerApparence()
-      },
-    },
     {
       cle: 'photos',
       icone: camera,
@@ -73,9 +59,19 @@ export default function BarreActions() {
       },
     },
     {
+      cle: 'apparence',
+      icone: sombre ? sunny : moon,
+      libelle: sombre ? 'Clair' : 'Sombre',
+      etiquette: sombre ? 'Passer en mode clair' : 'Passer en mode sombre',
+      agir: () => {
+        haptique.leger()
+        basculerApparence()
+      },
+    },
+    {
       cle: 'deconnexion',
       icone: logOut,
-      libelle: 'Déconnexion',
+      libelle: 'Quitter',
       etiquette: 'Se déconnecter',
       agir: () => {
         haptique.avertissement()
@@ -86,20 +82,22 @@ export default function BarreActions() {
 
   return (
     <>
-      <nav className="ipm-barre-actions" aria-label="Actions">
-        {actions.map((action) => (
-          <button
-            key={action.cle}
-            type="button"
-            className="ipm-barre-actions__bouton ipm-appui"
-            aria-label={action.etiquette}
-            onClick={action.agir}
-          >
-            <IonIcon icon={action.icone} aria-hidden="true" />
-            <span className="ipm-barre-actions__libelle">{action.libelle}</span>
-          </button>
-        ))}
-      </nav>
+      <header className="ipm-navbar">
+        <nav className="ipm-navbar__actions" aria-label="Actions">
+          {actions.map((action) => (
+            <button
+              key={action.cle}
+              type="button"
+              className="ipm-navbar__icone ipm-appui"
+              aria-label={action.etiquette}
+              onClick={action.agir}
+            >
+              <IonIcon icon={action.icone} aria-hidden="true" />
+              <span className="ipm-navbar__libelle">{action.libelle}</span>
+            </button>
+          ))}
+        </nav>
+      </header>
 
       <PhotosModal ouverte={photosOuvertes} onFermer={() => setPhotosOuvertes(false)} />
 
