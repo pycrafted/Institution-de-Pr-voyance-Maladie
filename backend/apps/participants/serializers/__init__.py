@@ -1,3 +1,3 @@
-from .participant import BeneficiaireSerializer, ParticipantSerializer
+from .participant import DemandePhotoSerializer, BeneficiaireSerializer, ParticipantSerializer
 
-__all__ = ['ParticipantSerializer', 'BeneficiaireSerializer']
+__all__ = ['DemandePhotoSerializer', 'ParticipantSerializer', 'BeneficiaireSerializer']

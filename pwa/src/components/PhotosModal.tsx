@@ -8,17 +8,17 @@
  * pièce d'identité au moment de la présenter.
  *
  * **Une seule fois.** Une photo posée ne se remplace ni ne se retire depuis le
- * téléphone : la ligne devient un simple constat, « Enregistrée ». Seule l'IPM
- * peut la réinitialiser, depuis son application de gestion. La règle est tenue
- * par le serveur (apps/mobile/views.py) ; l'écran ne fait que la montrer et
- * éviter un envoi voué au refus.
+ * téléphone. Pour la changer, l'employé DEMANDE sa réinitialisation (« Changer ») ;
+ * l'IPM l'instruit depuis son application de gestion, et la photo réinitialisée
+ * se repose ici comme la première fois. La règle est tenue par le serveur
+ * (apps/mobile/views.py) ; l'écran ne fait que la montrer.
  */
 
 import { IonIcon, IonSpinner, useIonToast } from '@ionic/react'
-import { addOutline, cameraOutline, lockClosedOutline } from 'ionicons/icons'
-import { useEffect, useRef } from 'react'
+import { addOutline, cameraOutline, hourglassOutline, refreshOutline } from 'ionicons/icons'
+import { useEffect, useRef, useState } from 'react'
 
-import { poserPhoto, poserPhotoBeneficiaire } from '../api'
+import { demanderChangementPhoto, messageErreur, poserPhoto, poserPhotoBeneficiaire } from '../api'
 import { useOnline } from '../hooks/useOnline'
 import { usePhoto } from '../pages/accueil/usePhoto'
 import { libelleLien } from '../pages/profil/famille'
@@ -49,12 +49,40 @@ export default function PhotosModal({ ouverte, onFermer }: Props) {
       cible.current ? poserPhotoBeneficiaire(cible.current, donnees) : poserPhoto(donnees),
   })
 
+  // À chaque ouverture, la famille se relit : l'IPM a pu réinitialiser une
+  // photo ou instruire une demande depuis la dernière visite, et la feuille
+  // proposerait sinon « Changer » là où il faut « Ajouter ».
+  useEffect(() => {
+    if (ouverte && enLigne) void rafraichir()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ouverte])
+
   // Message de l'envoi (succès, ou refus du serveur) en toast, puis oublié.
   useEffect(() => {
     if (!photo.message) return
     void presenterToast({ message: photo.message, duration: 3500, position: 'top' })
     photo.oublierMessage()
   }, [photo, presenterToast])
+
+  // Matricule dont la demande de changement part en ce moment.
+  const [demandeEnCours, setDemandeEnCours] = useState<string | null>(null)
+
+  async function demanderChangement(matricule: string) {
+    setDemandeEnCours(matricule)
+    try {
+      await demanderChangementPhoto(matricule)
+      await rafraichir()
+      void presenterToast({
+        message: 'Demande envoyée : l’IPM va réinitialiser la photo.',
+        duration: 3500,
+        position: 'top',
+      })
+    } catch (e) {
+      void presenterToast({ message: messageErreur(e), duration: 3500, position: 'top' })
+    } finally {
+      setDemandeEnCours(null)
+    }
+  }
 
   function ajouter(matricule: string | null) {
     cible.current = matricule
@@ -68,6 +96,9 @@ export default function PhotosModal({ ouverte, onFermer }: Props) {
       nom: participant.nomComplet,
       qualite: 'Vous',
       photo: participant.photo,
+      demande: Boolean(participant.demandePhoto),
+      // La demande désigne la photo par le matricule de la personne.
+      matriculeDemande: participant.matricule,
     },
     ...famille.map((membre) => ({
       cle: membre.matricule,
@@ -75,6 +106,8 @@ export default function PhotosModal({ ouverte, onFermer }: Props) {
       nom: `${membre.prenoms} ${membre.nom}`.trim(),
       qualite: libelleLien(membre),
       photo: membre.photo,
+      demande: Boolean(membre.demandePhoto),
+      matriculeDemande: membre.matricule,
     })),
   ]
 
@@ -88,8 +121,8 @@ export default function PhotosModal({ ouverte, onFermer }: Props) {
     >
       <p className="photos__consigne">
         Ajoutez le portrait qui figurera sur la carte, la vôtre ou celle d’un de vos ayants droit.{' '}
-        <strong>Une photo ne s’envoie qu’une fois</strong> : pour la remplacer ensuite,
-        adressez-vous à l’IPM.
+        <strong>Une photo ne s’envoie qu’une fois</strong> : pour la remplacer ensuite, demandez son
+        changement, l’IPM la réinitialisera.
       </p>
 
       <ul className="photos__liste">
@@ -100,11 +133,27 @@ export default function PhotosModal({ ouverte, onFermer }: Props) {
               <span className="photos__nom">{ligne.nom}</span>
               <span className="photos__qualite">{ligne.qualite}</span>
             </span>
-            {ligne.photo ? (
+            {ligne.photo && ligne.demande ? (
+              // La demande attend l'IPM : rien d'autre à faire ici.
               <span className="photos__verrou">
-                <IonIcon icon={lockClosedOutline} aria-hidden="true" />
-                Enregistrée
+                <IonIcon icon={hourglassOutline} aria-hidden="true" />
+                Demande envoyée
               </span>
+            ) : ligne.photo ? (
+              <button
+                type="button"
+                className="photos__ajouter ipm-appui"
+                disabled={!enLigne || demandeEnCours !== null}
+                aria-label={`Demander le changement de la photo de ${ligne.nom}`}
+                onClick={() => void demanderChangement(ligne.matriculeDemande)}
+              >
+                {demandeEnCours === ligne.matriculeDemande ? (
+                  <IonSpinner name="crescent" />
+                ) : (
+                  <IonIcon icon={refreshOutline} aria-hidden="true" />
+                )}
+                Changer
+              </button>
             ) : (
               <button
                 type="button"

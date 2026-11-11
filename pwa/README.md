@@ -65,9 +65,9 @@ DEUX familles, jamais mélangées (SPEC_DESIGN §4) :
 }
 ```
 
-Quatre documents sont produits par l'IPM ; l'API mobile n'en expose qu'un
-aujourd'hui. Les trois autres (`bon-optique`, `lettre-garantie`,
-`hospitalisation`) sont donc déclarés `disponible: false` : leur carte passe
+Quatre documents sont produits par l'IPM ; l'API mobile en expose trois
+aujourd'hui (`bon-pharmacie`, `bon-optique`, `lettre-garantie`). Le dernier
+(`hospitalisation`) est donc déclaré `disponible: false` : sa carte passe
 au noir de marque, porte la puce « Bientôt » et ouvre au toucher une feuille
 qui explique que le document se demande pour l'instant auprès de l'IPM.
 

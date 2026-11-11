@@ -1,5 +1,6 @@
 /**
- * Bloc de droite de la barre supérieure : profil, paramètres, déconnexion.
+ * Bloc de droite de la barre supérieure : identité, notifications,
+ * paramètres, déconnexion.
  *
  * **Trois icônes, et rien d'écrit** (2026-11-05). L'adresse de l'agent
  * s'étalait en toutes lettres - « essai.rfm@sar.sn » - pour une information
@@ -19,6 +20,7 @@ import CIcon from '@coreui/icons-react'
 import { cilAccountLogout, cilSettings, cilUser } from '@coreui/icons'
 
 import { AUTH_EVENT, getMe, logout } from '../../services/api'
+import Notifications from './Notifications'
 
 const AppHeaderActions = () => {
   const navigate = useNavigate()
@@ -58,6 +60,9 @@ const AppHeaderActions = () => {
           <CIcon icon={cilUser} />
         </NavLink>
       </CTooltip>
+
+      {/* Ce qui attend l'IPM : demandes de photo, bons d'optique à valider. */}
+      <Notifications />
 
       <CTooltip content="Paramètres">
         <NavLink to="/parametres" className={etat} aria-label="Paramètres">

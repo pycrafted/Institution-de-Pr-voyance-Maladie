@@ -17,6 +17,7 @@ versionnés.
     python scripts/generer-icones.py
 """
 
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -31,6 +32,9 @@ LANCEMENT = PUBLIC / 'splash'
 DEG_ROUGE = (150, (0xE5, 0x26, 0x21), (0xB3, 0x16, 0x0F))
 DEG_MARQUE = (160, (0x1D, 0x1D, 0x1B), (0x33, 0x30, 0x2C))
 BLANC = (255, 255, 255)
+# Fond des écrans de lancement : le rose pâle de l'application, logo rouge
+# dessus (cf. FOND_LANCEMENT dans src/components/Splash.tsx).
+FOND_LANCEMENT = (0xEC, 0xE4, 0xE3)
 
 # Rayon de l'icône « any », en proportion du côté : celui d'iOS/Android.
 RAYON_ICONE = 112 / 512
@@ -100,6 +104,13 @@ def logo_blanc():
     return blanc
 
 
+def logo_rouge():
+    """Le logo SAR tel quel, rouge, détouré : la marque ne s'inverse pas."""
+    image = Image.open(LOGO).convert('RGBA')
+    boite = image.getbbox()
+    return image.crop(boite) if boite else image
+
+
 def poser_logo(fond, logo, part, decalage_y=0.0):
     """Colle le logo, centré, à `part` de la largeur du fond."""
     largeur = round(fond.width * part)
@@ -131,15 +142,21 @@ def icone(taille, arrondi=True, part=PART_ICONE):
 
 def lancement(largeur, hauteur):
     """
-    Écran de lancement : dégradé de marque, logo blanc centré puis remonté
-    d'un vingtième de la hauteur — mêmes cotes que src/components/Splash.css,
-    pour que le relais entre l'image d'iOS et l'application ne saute pas.
+    Écran de lancement : fond #ECE4E3, logo rouge centré puis remonté d'un
+    vingtième de la hauteur — mêmes cotes que src/components/Splash.css, pour
+    que le relais entre l'image d'iOS et l'application ne saute pas.
     """
-    fond = degrade(largeur, hauteur, DEG_MARQUE).convert('RGBA')
-    return poser_logo(fond, logo_blanc(), PART_LANCEMENT, -hauteur / 20).convert('RGB')
+    fond = Image.new('RGBA', (largeur, hauteur), FOND_LANCEMENT + (255,))
+    return poser_logo(fond, logo_rouge(), PART_LANCEMENT, -hauteur / 20).convert('RGB')
 
 
 def main():
+    # Les icônes sont désormais faites par scripts/engendrer-icones.mjs (logo
+    # rouge sur fond clair) : « --lancement-seul » ne refait que les écrans de
+    # lancement, sans écraser ces icônes.
+    if '--lancement-seul' in sys.argv:
+        ecrans_lancement()
+        return
     ICONES.mkdir(parents=True, exist_ok=True)
     LANCEMENT.mkdir(parents=True, exist_ok=True)
     icone(192).save(ICONES / 'icone-192.png', optimize=True)
@@ -152,16 +169,21 @@ def main():
     icone(180, arrondi=False).convert('RGB').save(ICONES / 'apple-touch-icon.png', optimize=True)
     icone(32).save(ICONES / 'favicon-32.png', optimize=True)
     icone(48).save(PUBLIC / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
-    for largeur, hauteur, *_ in ECRANS_IOS:
-        lancement(largeur, hauteur).save(
-            LANCEMENT / f'lancement-{largeur}x{hauteur}.png', optimize=True
-        )
+    ecrans_lancement()
     # Balises à recopier dans index.html si la liste des écrans change.
     for largeur, hauteur, css_l, css_h, densite in ECRANS_IOS:
         print(
             f'<link rel="apple-touch-startup-image" href="/splash/lancement-{largeur}x{hauteur}.png" '
             f'media="(device-width: {css_l}px) and (device-height: {css_h}px) and '
             f'(-webkit-device-pixel-ratio: {densite}) and (orientation: portrait)" />'
+        )
+
+
+def ecrans_lancement():
+    LANCEMENT.mkdir(parents=True, exist_ok=True)
+    for largeur, hauteur, *_ in ECRANS_IOS:
+        lancement(largeur, hauteur).save(
+            LANCEMENT / f'lancement-{largeur}x{hauteur}.png', optimize=True
         )
 
 

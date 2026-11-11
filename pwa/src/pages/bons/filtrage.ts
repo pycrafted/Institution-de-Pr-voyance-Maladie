@@ -76,11 +76,8 @@ export function filtrerBons(bons: readonly Bon[], filtre: FiltreType, recherche:
 
 /** Nombre de documents par type (le compte affiché dans le menu). */
 export function compterParType(bons: readonly Bon[]): Record<FiltreType, number> {
-  const comptes: Record<FiltreType, number> = {
-    tous: bons.length,
-    'bon-pharmacie': 0,
-    'lettre-garantie': 0,
-  }
+  const comptes = { tous: bons.length } as Record<FiltreType, number>
+  for (const genre of GENRES_DOCUMENT) comptes[genre] = 0
   for (const bon of bons) comptes[genreDe(bon)] += 1
   return comptes
 }

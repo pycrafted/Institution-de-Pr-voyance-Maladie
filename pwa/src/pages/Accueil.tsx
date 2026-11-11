@@ -130,7 +130,7 @@ export default function Accueil() {
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 
-        <section className="ipm-section">
+        <section className="ipm-section accueil__documents">
           <div className="ipm-entete-section">
             <h2 className="ipm-titre-section">Demander un document</h2>
           </div>
@@ -148,7 +148,9 @@ export default function Accueil() {
         {famille.length > 0 && (
           <section className="ipm-section">
             <div className="ipm-entete-section">
-              <h2 className="ipm-titre-section">Les cartes d’adhérent de ma famille</h2>
+              {/* « Ayants droit » : le mot du métier pour la famille du participant,
+                lui-même étant bénéficiaire (cf. REGISTRE.md §2). */}
+              <h2 className="ipm-titre-section">Ayants droit</h2>
             </div>
             <ul className="accueil-famille" aria-label="Cartes d’ayant droit">
               {famille.map((membre) => (

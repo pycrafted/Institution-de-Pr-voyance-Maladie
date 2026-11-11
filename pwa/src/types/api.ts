@@ -55,6 +55,8 @@ export interface Participant {
    * null. C'est celle que tient l'IPM : la changer ici la change sur la fiche.
    */
   photo: string | null
+  /** Une demande de réinitialisation de cette photo attend l'IPM. */
+  demandePhoto?: boolean
 }
 
 /** Le participant lui-même (en tête de liste) ou un de ses ayants droit. */
@@ -71,6 +73,8 @@ export interface Beneficiaire {
   estParticipant: boolean
   /** Photo d'identité (URL de données), ou null : posée par le titulaire. */
   photo: string | null
+  /** Une demande de réinitialisation de cette photo attend l'IPM. */
+  demandePhoto?: boolean
 }
 
 /** Pharmacie ou prescripteur (médecin, clinique…). */
@@ -106,13 +110,18 @@ export interface Specialite {
 /**
  * Où en est un bon. Priorité côté serveur : annule > traite > expire > valide.
  */
-export type StatutBon = 'valide' | 'expire' | 'annule' | 'traite'
+export type StatutBon = 'valide' | 'attente' | 'expire' | 'annule' | 'traite'
 
 /**
  * Genre d'un document de « Mes bons ». Le numéro interne (`id`) n'est
  * unique que dans son genre : un bon et une lettre peuvent porter le même.
  */
-export type GenreDocument = 'bon-pharmacie' | 'lettre-garantie'
+export type GenreDocument = 'bon-pharmacie' | 'bon-optique' | 'lettre-garantie'
+
+/** Un article d'un bon d'optique (GET /api/mobile/articles-optique/ : code et libellé). */
+export interface ArticleOptique extends CodeLibelle {
+  quantite: number
+}
 
 /** Bénéficiaire tel que résumé dans un bon. */
 export interface BeneficiaireBon {
@@ -147,6 +156,8 @@ export interface Bon {
   prescripteur: Fournisseur | null
   /** Bon de pharmacie seulement. */
   nbArticles: number | null
+  /** Bon d'optique seulement : les articles commandés (montures, verres…). */
+  articles?: ArticleOptique[] | null
   /** Date de l'ordonnance (bon) ou de la prescription (lettre). */
   dateOrdonnance: DateISO | null
   creeLe: DateHeureISO
@@ -221,6 +232,37 @@ export interface NouvelleLettreCorps {
 }
 
 export type ChampNouvelleLettre = keyof NouvelleLettreCorps | 'non_field_errors'
+
+/** POST /api/mobile/bons-optique/ */
+export interface NouveauBonOptiqueCorps {
+  /** Beneficiaire.matricule - LE SEUL champ exigé, comme à l'écran IPM. */
+  beneficiaire: string
+  /** Fournisseur.code de l'opticien (GET /api/mobile/opticiens/). */
+  opticien?: string
+  /** Specialite.code du prescripteur */
+  specialite?: string
+  /** Fournisseur.code du prescripteur */
+  prescripteur?: string
+  /** Articles choisis dans la nomenclature (GET /api/mobile/articles-optique/). */
+  articles?: { code: string; quantite?: number }[]
+  /** Ni dans le futur, ni plus de 30 jours. */
+  datePrescription?: DateISO
+}
+
+export type ChampNouveauBonOptique = keyof NouveauBonOptiqueCorps | 'non_field_errors'
+
+/** GET /api/mobile/notifications/ : une décision de l'IPM sur une demande de l'employé. */
+export interface NotificationMobile {
+  /** Stable : « photo-12 », « optique-40 ». */
+  id: string
+  genre: 'photo' | 'bon-optique'
+  titre: string
+  message: string
+  /** Date-heure ISO de la décision. */
+  date: string
+  /** Écran à ouvrir au toucher (le détail du bon), ou null. */
+  lien: string | null
+}
 
 /** Erreurs 400 au format DRF : { champ: [messages] }. */
 export type ErreursChamps = Record<string, string[]>

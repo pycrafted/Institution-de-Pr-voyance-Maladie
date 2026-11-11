@@ -99,3 +99,126 @@
   text-align: start;
   cursor: pointer;
 }
+
+/* ========================================================================
+ * Responsive : tout suit l'écran, en largeur et en hauteur.
+ * ===================================================================== */
+
+/* La carte d'adhérent grandit d'un bloc (toutes ses cotes sont en em) avec
+   la largeur, sans dépasser la taille d'une vraie carte lisible d'un coup
+   d'œil sur tablette. */
+.accueil__carte .ipm-carte-adherent {
+  font-size: clamp(15px, 4.2vw, 23px);
+}
+.accueil__carte-bouton {
+  max-width: 560px;
+  margin-inline: auto;
+}
+
+/* Les cartes de documents prennent la hauteur que l'écran leur offre : 76 px
+   sur un petit téléphone, jusqu'à 140 sur une tablette. */
+.accueil .ipm-tuile {
+  min-height: clamp(72px, 10vh, 140px);
+  min-height: clamp(72px, 10dvh, 140px);
+}
+.accueil .ipm-tuile__libelle {
+  font-size: clamp(0.9375rem, 3.6vw, 1.2rem);
+}
+/* Tablette : les quatre documents sur une rangée. */
+@media (min-width: 640px) {
+  .accueil .ipm-grille-services {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Vignettes des ayants droit à l'échelle aussi. La taille passée au
+   composant (56) est le plancher ; la forme de photo d'identité est gardée. */
+.accueil-famille__membre {
+  width: clamp(72px, 19vw, 112px);
+}
+.accueil-famille__membre .ipm-avatar {
+  width: clamp(56px, 15vw, 96px) !important;
+  height: auto !important;
+  aspect-ratio: 4.75 / 6;
+  font-size: clamp(21px, 5.6vw, 36px) !important;
+}
+.accueil-famille__nom {
+  font-size: clamp(0.8125rem, 3.2vw, 1rem);
+}
+
+/* Axe vertical : l'accueil occupe toute la hauteur de l'écran. La zone qui
+   défile devient une colonne, et la section des documents prend la hauteur
+   qui reste - ses cartes grandissent jusqu'à un plafond, plutôt que de
+   laisser un vide sous les ayants droit. Sur un petit écran, rien ne
+   rétrécit : le contenu défile comme avant. */
+.accueil ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
+/* Rien ne rétrécit : sur un petit écran, le contenu défile. (Un sélecteur
+   « ::part(scroll) > * » ne vaut rien : on nomme donc les blocs.) */
+.accueil .ipm-zone-sure,
+.accueil .accueil__carte,
+.accueil .ipm-section,
+.accueil .ipm-bas-page {
+  flex-shrink: 0;
+}
+.accueil__documents {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.accueil__documents .ipm-grille-services {
+  flex: 1 0 auto;
+  /* Deux rangées de cartes, de 180 px au plus chacune. */
+  max-height: 380px;
+}
+@media (min-width: 640px) {
+  /* Une seule rangée sur tablette : 180 px au plus, et la place qui reste
+     se répartit autour plutôt que de creuser un trou sous la rangée. */
+  .accueil__documents {
+    justify-content: center;
+  }
+  .accueil__documents .ipm-grille-services {
+    flex-grow: 0;
+    /* 200 px environ en portrait, 135 en paysage : la rangée suit la hauteur. */
+    height: clamp(130px, 17vh, 240px);
+    height: clamp(130px, 17dvh, 240px);
+    max-height: none;
+  }
+  /* La carte d'adhérent profite de la largeur, mais sa hauteur ne dépasse
+     pas le tiers de l'écran : en paysage, elle rapetisse pour laisser voir
+     les documents. Largeur et texte suivent la même règle (carte en em). */
+  .accueil__carte-bouton {
+    max-width: min(680px, 54vh);
+    max-width: min(680px, 54dvh);
+  }
+  .accueil__carte .ipm-carte-adherent {
+    font-size: clamp(15px, min(3vw, 1.95vh), 26px);
+    font-size: clamp(15px, min(3vw, 1.95dvh), 26px);
+  }
+}
+/* Chaque carte remplit la case que sa rangée lui donne. */
+.accueil__documents .ipm-grille-services > [role='listitem'] {
+  display: flex;
+}
+.accueil__documents .ipm-tuile {
+  flex: 1;
+}
+
+/* Tablette en portrait : l'écran est haut, la carte et les documents
+   prennent cette hauteur plutôt que de laisser deux grands vides. */
+@media (min-width: 640px) and (orientation: portrait) {
+  .accueil__carte-bouton {
+    max-width: min(740px, 62vh);
+    max-width: min(740px, 62dvh);
+  }
+  .accueil__carte .ipm-carte-adherent {
+    font-size: clamp(15px, min(3.3vw, 2.25vh), 27px);
+    font-size: clamp(15px, min(3.3vw, 2.25dvh), 27px);
+  }
+  .accueil__documents .ipm-grille-services {
+    height: clamp(130px, 20vh, 260px);
+    height: clamp(130px, 20dvh, 260px);
+  }
+}

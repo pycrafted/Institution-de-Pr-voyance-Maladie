@@ -1,3 +1,3 @@
-from .participant import BeneficiaireViewSet, ParticipantViewSet
+from .participant import DemandePhotoViewSet, NotificationsView, BeneficiaireViewSet, ParticipantViewSet
 
-__all__ = ['ParticipantViewSet', 'BeneficiaireViewSet']
+__all__ = ['DemandePhotoViewSet', 'NotificationsView', 'ParticipantViewSet', 'BeneficiaireViewSet']

@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from donnees_de_base.views.base import ReferentielViewSet
 from donnees_de_base.views.exercice import FiltreExerciceMixin
 
+from ..cache_pdf import pdf_en_cache
 from ..impression_lettre import lettre_garantie_pdf
 from ..models import LettreGarantie
 from ..serializers import LettreGarantieSerializer
@@ -44,6 +45,9 @@ class LettreGarantieViewSet(FiltreExerciceMixin, ReferentielViewSet):
     def pdf(self, request, pk=None):
         """La lettre imprimée, au modèle de l'application d'origine (original et copie)."""
         lettre = self.get_object()
-        reponse = HttpResponse(lettre_garantie_pdf(lettre, request.user.username), content_type='application/pdf')
+        reponse = HttpResponse(
+            pdf_en_cache(lettre, request.user.username, lettre_garantie_pdf),
+            content_type='application/pdf',
+        )
         reponse['Content-Disposition'] = f'inline; filename="{lettre.code}.pdf"'
         return reponse

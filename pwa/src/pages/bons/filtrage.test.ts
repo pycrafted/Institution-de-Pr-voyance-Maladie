@@ -72,6 +72,7 @@ describe('compterParType', () => {
     expect(compterParType(bons)).toEqual({
       tous: 4,
       'bon-pharmacie': 3,
+      'bon-optique': 0,
       'lettre-garantie': 1,
     })
   })

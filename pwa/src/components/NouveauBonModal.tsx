@@ -1,12 +1,13 @@
 /**
- * Hôte des assistants de demande (bon de pharmacie, lettre de garantie) et
+ * Hôte des assistants de demande (bon de pharmacie, bon d'optique, lettre de garantie) et
  * moyen de les ouvrir de n'importe où.
  *
  *   const { ouvrirNouveauBon, ouvrirAssistant } = useNouveauBon()
  *   <IonButton onClick={ouvrirNouveauBon}>Nouveau bon de pharmacie</IonButton>
  *   ouvrirAssistant('lettre-garantie')
  *
- * Les assistants sont src/pages/NouveauBon/ et src/pages/NouvelleLettre/ ;
+ * Les assistants sont src/pages/NouveauBon/, src/pages/NouveauBonOptique/ et
+ * src/pages/NouvelleLettre/ ;
  * une fois le document créé, on l'ajoute à la liste partagée, on ferme le
  * modal et on ouvre son détail.
  */
@@ -16,6 +17,7 @@ import { createContext, useCallback, useContext, useMemo, useState, type ReactNo
 
 import { memoriserBon } from '../data/bons'
 import NouveauBon from '../pages/NouveauBon'
+import NouveauBonOptique from '../pages/NouveauBonOptique'
 import NouvelleLettre from '../pages/NouvelleLettre'
 import type { Bon, GenreDocument } from '../types/api'
 import { cheminDocument } from '../utils/documents'
@@ -73,6 +75,8 @@ export function NouveauBonProvider({ children }: { children: ReactNode }) {
         {/* IonModal ne monte son contenu que présenté : rien n'est chargé avant l'ouverture. */}
         {genre === 'lettre-garantie' ? (
           <NouvelleLettre key={cle} onFermer={fermer} onCree={surCree} />
+        ) : genre === 'bon-optique' ? (
+          <NouveauBonOptique key={cle} onFermer={fermer} onCree={surCree} />
         ) : (
           <NouveauBon key={cle} onFermer={fermer} onCree={surCree} />
         )}

@@ -479,8 +479,6 @@ class Command(BaseCommand):
             ))
         if i % 6 == 0:
             membres.append(('ASCENDANT', PRENOMS_F[(i + 3) % 18], p.nom, 'F', p.date_naissance.year - 26))
-        if i % 11 == 0:
-            membres.append(('AUTRE', PRENOMS_M[(i + 2) % 18], p.nom, 'M', min(p.date_naissance.year + 30, 2012)))
 
         for rang, (type_, prenoms, nom, sexe, annee) in enumerate(membres, start=1):
             # Matricule composé par le serveur : « 01-1204-21 ».

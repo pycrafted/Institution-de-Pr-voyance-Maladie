@@ -14,9 +14,15 @@ from datetime import timedelta
 from django.utils import timezone
 from rest_framework import serializers
 
-from donnees_de_base.models import FournisseurDeSoins, Specialite, TypeBeneficiaire, TypePrestation
+from donnees_de_base.models import (
+    Acte,
+    FournisseurDeSoins,
+    Specialite,
+    TypeBeneficiaire,
+    TypePrestation,
+)
 from donnees_de_base.models.fournisseur_de_soins import CODE_FOURNISSEURS_DIVERS
-from participants.models import Beneficiaire
+from participants.models import Beneficiaire, DemandePhoto
 from participants.serializers.participant import TYPE_PARTICIPANT
 
 # Libellés des spécialités tenues à part dans le référentiel : les
@@ -37,6 +43,9 @@ ARTICLES_MAX = 8
 # comme un bon ; la prescription qu'elle couvre ne doit pas être plus ancienne.
 VALIDITE_LETTRE = VALIDITE_BON
 ANCIENNETE_MAX_PRESCRIPTION = ANCIENNETE_MAX_ORDONNANCE
+
+# Le bon d'optique se présente chez l'opticien dans les mêmes trente jours.
+VALIDITE_BON_OPTIQUE = VALIDITE_BON
 
 # Natures de prestation qui ont leur propre document : la pharmacie (le bon
 # de pharmacie) et l'optique (le bon d'optique). Une lettre de garantie ne
@@ -137,6 +146,36 @@ def specialites_de_prescription():
     return Specialite.objects.filter(actif=True).exclude(libelle__in=[PHARMACIES, OPTIQUE])
 
 
+def specialite_optique():
+    """La spécialité « OPTIQUE MEDICALE », celle des opticiens (None si absente)."""
+    return Specialite.objects.filter(libelle=OPTIQUE).first()
+
+
+def opticiens():
+    """
+    Opticiens proposés pour un bon d'optique : conventionnés (actifs) de la
+    spécialité optique, sans le fournisseur « divers soins » (cf. pharmacies()).
+    """
+    return (
+        FournisseurDeSoins.objects.filter(actif=True, specialite__libelle=OPTIQUE)
+        .exclude(code=CODE_FOURNISSEURS_DIVERS)
+        .order_by('libelle')
+    )
+
+
+def articles_optique():
+    """
+    Les articles d'un bon d'optique : les actes de la nomenclature rangés
+    sous la spécialité optique (Montures, Verres, Montures & Verres,
+    Traitement), actifs. Le tarif se fixe à l'IPM ; le mobile ne choisit que
+    l'article.
+    """
+    specialite = specialite_optique()
+    if specialite is None:
+        return Acte.objects.none()
+    return Acte.objects.filter(actif=True, specialite=specialite.code).order_by('libelle')
+
+
 def prescripteurs(specialite):
     """
     Prescripteurs proposés pour une spécialité : conventionnés (actifs), sans
@@ -183,6 +222,8 @@ def representer_participant(participant):
         # la même que montre la fiche du participant dans l'application IPM -
         # l'employé qui la change ici la change pour tout le monde.
         'photo': participant.photo or None,
+        # Une demande de réinitialisation attend-elle l'IPM pour cette photo ?
+        'demandePhoto': DemandePhoto.en_attente_pour(participant),
     }
 
 
@@ -207,6 +248,7 @@ def representer_beneficiaire(personne, type_benef):
         'estParticipant': est_participant,
         # Photo d'identité (participant comme ayant droit), pour la carte.
         'photo': personne.photo or None,
+        'demandePhoto': DemandePhoto.en_attente_pour(personne),
     }
 
 
@@ -249,6 +291,9 @@ def statut(bon, aujourdhui=None):
     aujourdhui = aujourdhui or timezone.localdate()
     if not bon.actif:
         return 'annule'
+    # Bon d'optique pris avant les deux ans : il attend la décision de l'IPM.
+    if getattr(bon, 'validation', '') == 'En attente':
+        return 'attente'
     if bon.traite:
         return 'traite'
     if aujourdhui > bon.date + VALIDITE_BON:
@@ -323,6 +368,41 @@ def representer_lettre(lettre):
         'nbArticles': None,
         'dateOrdonnance': lettre.date_prescription.isoformat() if lettre.date_prescription else None,
         'creeLe': serializers.DateTimeField().to_representation(lettre.cree_le),
+    }
+
+
+def representer_bon_optique(bon):
+    """
+    Un bon d'optique, sous la même forme qu'un bon de pharmacie : « Mes
+    documents » les montre ensemble. L'opticien tient la place du prestataire ;
+    les articles choisis s'ajoutent, avec leur nombre.
+    """
+    articles = [
+        {
+            'code': str(a.get('code', '')),
+            'libelle': str(a.get('libelle', '')),
+            'quantite': int(a.get('quantite') or 1),
+        }
+        for a in (bon.actes or [])
+        if isinstance(a, dict) and a.get('code')
+    ]
+    return {
+        'genre': 'bon-optique',
+        'id': bon.id,
+        'code': bon.code,
+        'date': bon.date.isoformat(),
+        'valableJusquAu': (bon.date + VALIDITE_BON_OPTIQUE).isoformat(),
+        'statut': statut(bon),
+        'beneficiaire': _beneficiaire_du_document(bon),
+        'pharmacie': None,
+        'prestataire': representer_fournisseur(bon.fournisseur),
+        'naturePrestation': None,
+        'specialite': _code_libelle(bon.specialite),
+        'prescripteur': representer_fournisseur(bon.prescripteur),
+        'nbArticles': sum(a['quantite'] for a in articles) or None,
+        'articles': articles,
+        'dateOrdonnance': bon.date_ordonnance.isoformat() if bon.date_ordonnance else None,
+        'creeLe': serializers.DateTimeField().to_representation(bon.cree_le),
     }
 
 
@@ -650,4 +730,145 @@ CHAMPS_IPM_LETTRE = {
     'specialite': 'specialite',
     'prescripteur': 'prescripteur',
     'datePrescription': 'datePrescription',
+}
+
+
+# ---------------------------------------------------------------------------
+# Saisie d'un bon d'optique
+# ---------------------------------------------------------------------------
+
+
+class ArticleOptiqueSerializer(serializers.Serializer):
+    """Un article choisi : son code dans la nomenclature, et combien."""
+
+    code = serializers.CharField(max_length=10)
+    quantite = serializers.IntegerField(
+        required=False,
+        default=1,
+        min_value=1,
+        max_value=ARTICLES_MAX,
+        error_messages={
+            'min_value': 'Au moins un article.',
+            'max_value': 'Au plus %d exemplaires d’un article.' % ARTICLES_MAX,
+            'invalid': 'Quantité invalide.',
+        },
+    )
+
+
+class NouveauBonOptiqueSerializer(serializers.Serializer):
+    """
+    Le bon d'optique choisi sur le téléphone : pour qui, chez quel opticien,
+    sur la prescription de qui et de quand, pour quels articles. Mêmes
+    limites que le bon de pharmacie : les siens seulement, des fournisseurs
+    conventionnés, une prescription récente. Les règles de tout bon d'optique
+    restent à ``BonOptiqueSerializer`` (écran IPM).
+    """
+
+    # SEUL le bénéficiaire est exigé, comme à l'écran IPM : opticien,
+    # prescripteur, prescription et articles s'y renseignent plus tard.
+    beneficiaire = serializers.CharField(max_length=25)
+    opticien = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    specialite = serializers.CharField(max_length=2, required=False, allow_blank=True)
+    prescripteur = serializers.CharField(max_length=10, required=False, allow_blank=True)
+    articles = ArticleOptiqueSerializer(many=True, required=False)
+    datePrescription = serializers.DateField(
+        required=False,
+        allow_null=True,
+        error_messages={'invalid': 'Date de prescription invalide (AAAA-MM-JJ).'},
+    )
+
+    def validate_beneficiaire(self, matricule):
+        return beneficiaire_de_la_famille(self.context['participant'], matricule)
+
+    def validate_opticien(self, code):
+        if not code:
+            return None
+        opticien = opticiens().filter(code=code).first()
+        if opticien is None:
+            raise serializers.ValidationError('Opticien inconnu ou non conventionné.')
+        return opticien
+
+    def validate_specialite(self, code):
+        return specialite_de_prescription(code) if code else None
+
+    def validate_articles(self, lignes):
+        # Chaque code doit être un article optique de la nomenclature ; un
+        # article cité deux fois n'est gardé qu'une fois, avec sa première
+        # quantité.
+        connus = {acte.code: acte for acte in articles_optique()}
+        articles, vus = [], set()
+        for ligne in lignes:
+            code = ligne['code'].strip()
+            if code in vus:
+                continue
+            acte = connus.get(code)
+            if acte is None:
+                raise serializers.ValidationError('Article inconnu.')
+            vus.add(code)
+            articles.append((acte, ligne.get('quantite') or 1))
+        return articles
+
+    def validate_datePrescription(self, jour):
+        aujourdhui = timezone.localdate()
+        if jour > aujourdhui:
+            raise serializers.ValidationError('La date de prescription ne peut pas être dans le futur.')
+        if jour < aujourdhui - ANCIENNETE_MAX_PRESCRIPTION:
+            raise serializers.ValidationError('La prescription a plus de 30 jours.')
+        return jour
+
+    def validate(self, attrs):
+        # Un prescripteur se cherche DANS une spécialité, comme à l'écran IPM.
+        if attrs.get('prescripteur') and not attrs.get('specialite'):
+            raise serializers.ValidationError(
+                {'specialite': ['Choisissez la spécialité du prescripteur.']}
+            )
+        attrs['prescripteur'] = (
+            fournisseur_de_la_specialite(
+                attrs['prescripteur'], attrs['specialite'], 'prescripteur', 'Prescripteur'
+            )
+            if attrs.get('prescripteur')
+            else None
+        )
+        return attrs
+
+    def donnees_ipm(self):
+        """Le bon, dans les termes de ``BonOptiqueSerializer`` (écran IPM)."""
+        donnees = self.validated_data
+        ipm = dict(tiers_ipm(self.context['participant'], donnees['beneficiaire']))
+        # Un champ laissé de côté n'est pas envoyé : l'écran IPM le laisse vide
+        # lui aussi, et le gestionnaire le complétera au traitement.
+        if donnees.get('opticien'):
+            ipm['codeFournisseur'] = donnees['opticien'].code
+        for champ in ('specialite', 'prescripteur'):
+            if donnees.get(champ):
+                ipm[champ] = donnees[champ].code
+        if donnees.get('datePrescription'):
+            ipm['dateOrdonnance'] = donnees['datePrescription'].isoformat()
+        if donnees.get('articles'):
+            # Mêmes entrées que la sélection de l'écran IPM ; le tarif est
+            # celui de la nomenclature (0 tant que l'IPM ne l'a pas fixé).
+            ipm['actes'] = [
+                {
+                    'code': acte.code,
+                    'libelle': acte.libelle,
+                    'specialite': acte.specialite,
+                    'quantite': quantite,
+                    'tarif': acte.tarif,
+                }
+                for acte, quantite in donnees['articles']
+            ]
+        return ipm
+
+
+# Champs de l'écran IPM → champs du mobile, pour le bon d'optique.
+CHAMPS_IPM_OPTIQUE = {
+    'codeSoc': 'beneficiaire',
+    'matriculePart': 'beneficiaire',
+    'typeBenef': 'beneficiaire',
+    'matriculeBenef': 'beneficiaire',
+    'codeFournisseur': 'opticien',
+    'specialite': 'specialite',
+    'prescripteur': 'prescripteur',
+    'dateOrdonnance': 'datePrescription',
+    'actes': 'articles',
 }

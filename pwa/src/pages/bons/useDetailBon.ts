@@ -46,6 +46,9 @@ export function empreinteImpression(bon: Bon): string {
     bon.nbArticles,
     bon.dateOrdonnance,
     bon.date,
+    // Seule l'expiration change l'imprimé (tampon « EXPIRÉ ») : un bon traité
+    // ou annulé garde le même PDF, inutile de le retélécharger.
+    bon.statut === 'expire',
   ])
 }
 

@@ -18,7 +18,8 @@ vi.mock('../../components/NouveauBonModal', () => ({
 
 const fetchMock = vi.fn<typeof fetch>()
 // Les bons répondent comme chaque test le décide ; les lettres de garantie,
-// lues en même temps, par la liste `lettres`.
+// lues en même temps, par la liste `lettres` ; les bons d'optique, par une
+// liste vide.
 const bonsMock = vi.fn<typeof fetch>()
 let lettres: Bon[] = []
 
@@ -56,7 +57,9 @@ beforeEach(async () => {
   fetchMock.mockImplementation((entree, init) =>
     String(entree).includes('/lettres-garantie/')
       ? Promise.resolve(reponseJson(lettres))
-      : bonsMock(entree, init),
+      : String(entree).includes('/bons-optique/')
+        ? Promise.resolve(reponseJson([]))
+        : bonsMock(entree, init),
   )
   ouvrirNouveauBon.mockReset()
   configurerClient({ apiBase: '/api', jeton: 'J', fetch: fetchMock, surSessionExpiree: null })
@@ -74,12 +77,12 @@ describe('Mes documents', () => {
     bonsMock.mockResolvedValue(reponseJson(BONS))
     const { container } = rendreEcran(<MesBons />)
 
-    expect(await screen.findByText('BPI000123')).toBeInTheDocument()
-    expect(screen.getByText('BPI000122')).toBeInTheDocument()
-    expect(screen.getByText('BPI000045')).toBeInTheDocument()
+    expect(await screen.findByLabelText(/BPI000123/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/BPI000122/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/BPI000045/)).toBeInTheDocument()
     // Le type de document, en titre de chaque carte (§5).
     expect(screen.getAllByText('Bon de pharmacie')).toHaveLength(BONS.length)
-    expect(screen.getByText(/Awa Diop · Conjoint/)).toBeInTheDocument()
+    expect(screen.getByText('Awa Diop')).toBeInTheDocument()
     expect(screen.getByText(/Pharmacie de l'Aeroport/)).toBeInTheDocument()
     // Plus d'en-tête du tout : ni bandeau sombre, ni grand titre - l'écran
     // commence par son menu de types.
@@ -97,10 +100,11 @@ describe('Mes documents', () => {
       ]),
     )
     const { container } = rendreEcran(<MesBons />)
-    await screen.findByText('BPI000123')
+    await screen.findByLabelText(/BPI000123/)
     expect(screen.queryByText(/Ce mois-ci|Juillet 2026/)).toBeNull()
     const numeros = Array.from(container.querySelectorAll('.ipm-carte-liste')).map(
-      (carte) => carte.textContent?.match(/BPI\d+/)?.[0],
+      // Le numéro ne s'écrit plus sur la carte : il reste dans son nom accessible.
+      (carte) => carte.getAttribute('aria-label')?.match(/BPI\d+/)?.[0],
     )
     expect(numeros).toEqual(['BPI000123', 'BPI000045'])
   })
@@ -108,55 +112,55 @@ describe('Mes documents', () => {
   it('aucun filet : les documents sont des cartes autonomes (§1)', async () => {
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
-    await screen.findByText('BPI000123')
+    await screen.findByLabelText(/BPI000123/)
 
     expect(document.querySelectorAll('.ipm-carte-liste')).toHaveLength(BONS.length)
     expect(document.querySelector('ion-item')).toBeNull()
     expect(document.querySelector('ion-segment')).toBeNull()
   })
 
-  it('ne propose au menu que les types présents, avec leur compte', async () => {
+  it('ne propose au menu que les types présents', async () => {
     lettres = [LETTRE]
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
-    await screen.findByText('LGI000075')
+    await screen.findByLabelText(/LGI000075/)
 
     await waitFor(() =>
       expect(Array.from(menu().options).map((o) => o.textContent)).toEqual([
-        'Tous les documents (4)',
-        'Bons de pharmacie (3)',
-        'Lettres de garantie (1)',
+        'Tous les documents',
+        'Bons de pharmacie',
+        'Lettres de garantie',
       ]),
     )
   })
 
   it('n’offre pas un type dont l’employé n’a aucun document', async () => {
-    // « Lettres de garantie (0) » n'aiderait personne.
+    // « Lettres de garantie » n'aiderait personne.
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
-    await screen.findByText('BPI000123')
+    await screen.findByLabelText(/BPI000123/)
 
     const libelles = Array.from(menu().options).map((o) => o.textContent)
-    expect(libelles).toEqual(['Tous les documents (3)', 'Bons de pharmacie (3)'])
+    expect(libelles).toEqual(['Tous les documents', 'Bons de pharmacie'])
   })
 
   it('filtre sur le type choisi, et revient à tous les documents', async () => {
     lettres = [LETTRE]
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
-    await screen.findByText('LGI000075')
+    await screen.findByLabelText(/LGI000075/)
 
     choisir('lettre-garantie')
-    await waitFor(() => expect(screen.queryByText('BPI000123')).toBeNull())
-    expect(screen.getByText('LGI000075')).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByLabelText(/BPI000123/)).toBeNull())
+    expect(screen.getByLabelText(/LGI000075/)).toBeInTheDocument()
     expect(screen.getByText('1 document sur 4')).toBeInTheDocument()
 
     choisir('bon-pharmacie')
-    expect(await screen.findByText('BPI000123')).toBeInTheDocument()
-    expect(screen.queryByText('LGI000075')).toBeNull()
+    expect(await screen.findByLabelText(/BPI000123/)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/LGI000075/)).toBeNull()
 
     choisir('tous')
-    expect(await screen.findByText('LGI000075')).toBeInTheDocument()
+    expect(await screen.findByLabelText(/LGI000075/)).toBeInTheDocument()
   })
 
   it('aucun document : état vide avec « Nouveau bon »', async () => {
@@ -175,14 +179,14 @@ describe('Mes documents', () => {
     bonsMock.mockReset()
     bonsMock.mockResolvedValue(reponseJson(BONS))
     fireEvent.click(screen.getByText('Réessayer'))
-    expect(await screen.findByText('BPI000123')).toBeInTheDocument()
+    expect(await screen.findByLabelText(/BPI000123/)).toBeInTheDocument()
   })
 
   it('hors réseau : la dernière liste en cache reste affichée', async () => {
     await enregistrerBonsEnCache(BONS, '2026-09-17T08:00:00Z')
     bonsMock.mockRejectedValue(new TypeError('Failed to fetch'))
     rendreEcran(<MesBons />)
-    expect(await screen.findByText('BPI000123')).toBeInTheDocument()
+    expect(await screen.findByLabelText(/BPI000123/)).toBeInTheDocument()
     await waitFor(() =>
       expect(screen.getByRole('status')).toHaveTextContent(/Serveur injoignable|Hors ligne/),
     )
@@ -193,12 +197,12 @@ describe('Mes documents', () => {
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
 
-    expect(await screen.findByText('LGI000075')).toBeInTheDocument()
+    expect(await screen.findByLabelText(/LGI000075/)).toBeInTheDocument()
     // Même id que le bon BPI000123 : les deux cartes sont là.
-    expect(screen.getByText('BPI000123')).toBeInTheDocument()
+    expect(screen.getByLabelText(/BPI000123/)).toBeInTheDocument()
     expect(screen.getByText('Lettre de garantie')).toBeInTheDocument()
     expect(screen.getByText(/Clinique de la Madeleine/)).toBeInTheDocument()
-    const carte = screen.getByText('LGI000075').closest('button')
+    const carte = screen.getByLabelText(/LGI000075/)
     if (!carte) throw new Error('carte absente')
     fireEvent.click(carte)
     await waitFor(() => expect(window.location.pathname).toBe('/bons/lettres/3'))

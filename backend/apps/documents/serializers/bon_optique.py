@@ -66,6 +66,10 @@ class BonOptiqueSerializer(DocumentBeneficiaireMixin, serializers.ModelSerialize
     montantTotal = serializers.IntegerField(source='montant_total', read_only=True)
     montantRemise = serializers.IntegerField(source='montant_remise', required=False, min_value=0)
     montantNet = serializers.IntegerField(source='montant_net', read_only=True)
+    # Posée par le mobile (renouvellement avant deux ans), tranchée par les
+    # actions « valider » / « refuser » : jamais saisie dans le formulaire.
+    validation = serializers.CharField(read_only=True)
+    validePar = serializers.SerializerMethodField()
 
     class Meta:
         model = BonOptique
@@ -91,6 +95,8 @@ class BonOptiqueSerializer(DocumentBeneficiaireMixin, serializers.ModelSerialize
             'montantTotal',
             'montantRemise',
             'montantNet',
+            'validation',
+            'validePar',
             'traite',
             'actif',
             'creePar',
@@ -148,6 +154,9 @@ class BonOptiqueSerializer(DocumentBeneficiaireMixin, serializers.ModelSerialize
 
     def get_fournisseur(self, bon):
         return bon.fournisseur.libelle if bon.fournisseur_id else ''
+
+    def get_validePar(self, bon):
+        return bon.valide_par.username if bon.valide_par_id else ''
 
     def get_creePar(self, bon):
         return bon.cree_par.username if bon.cree_par_id else ''

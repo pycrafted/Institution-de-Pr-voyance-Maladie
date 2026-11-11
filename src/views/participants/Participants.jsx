@@ -7,6 +7,8 @@
  *   - Participants IPM         liste des participants en activité
  *   - Participants Retraités   même liste, filtrée sur les retraités
  *   - Familles                 les bénéficiaires rattachés aux participants
+ *   - Demandes de photo        les réinitialisations de photo demandées
+ *                              depuis l'application mobile, à instruire
  * La création se fait par un bouton rouge « Nouveau participant » à droite de la
  * barre d'onglets, comme les autres pages (fournisseurs, factures…).
  *
@@ -31,17 +33,24 @@ import { creerEntree, listerEntreesSync } from '../../services/referentiels'
 import { toast } from '../../services/toast'
 import { erreursDeChamps, messageErreur } from '../../services/erreurs'
 import { PARTICIPANTS, PARTICIPANTS_IPM, PARTICIPANTS_RETRAITES, FAMILLES } from './config'
+import { DEMANDES_PHOTO } from './demandesPhoto'
 
 const ONGLETS = [
   { cle: 'ipm', libelle: 'Participants IPM' },
   { cle: 'retraites', libelle: 'Participants Retraités' },
   { cle: 'familles', libelle: 'Familles' },
+  { cle: 'photos', libelle: 'Demandes de photo' },
 ]
 
 const Participants = () => {
   // Liste affichée : IPM, Retraités ou Familles. La création, elle, est un
   // panneau qui se glisse au-dessus de la liste (`creationOuverte`).
-  const [onglet, setOnglet] = useState('ipm')
+  // L'onglet peut venir de l'adresse (« ?onglet=photos ») : la cloche des
+  // notifications mène ainsi droit aux demandes de photo.
+  const [onglet, setOnglet] = useState(() => {
+    const demande = new URLSearchParams(window.location.search).get('onglet')
+    return ONGLETS.some((o) => o.cle === demande) ? demande : 'ipm'
+  })
   const [creationOuverte, setCreationOuverte] = useState(false)
   // Stats de la liste active, remontées par <Referentiel> pour les poser en
   // pastille à côté du titre de la page, comme sur Données de base.
@@ -123,6 +132,7 @@ const Participants = () => {
             <Referentiel referentiel={PARTICIPANTS_RETRAITES} onStats={setStats} />
           )}
           {onglet === 'familles' && <Referentiel referentiel={FAMILLES} onStats={setStats} />}
+          {onglet === 'photos' && <Referentiel referentiel={DEMANDES_PHOTO} onStats={setStats} />}
         </section>
 
         {/* Saisie d'un nouveau participant : le même panneau glissant que les

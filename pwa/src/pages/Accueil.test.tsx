@@ -172,7 +172,7 @@ describe('Accueil', () => {
     // La fabrique donne le titulaire + une conjointe : seule la conjointe est
     // un ayant droit, le titulaire a déjà sa carte en haut de l'écran.
     const { container } = rendreEcran(<Accueil />)
-    expect(screen.getByText('Les cartes d’adhérent de ma famille')).toBeInTheDocument()
+    expect(screen.getByText('Ayants droit')).toBeInTheDocument()
     const membres = container.querySelectorAll('.accueil-famille__membre')
     expect(membres).toHaveLength(1)
     expect(screen.getByLabelText('Carte d’ayant droit de Awa DIOP')).toBeInTheDocument()
@@ -204,14 +204,14 @@ describe('Accueil', () => {
 
   it('n’affiche pas la section famille sans ayant droit', () => {
     const { container } = rendreEcran(<Accueil />, uneSession({ beneficiaires: [] }))
-    expect(screen.queryByText('Les cartes d’adhérent de ma famille')).toBeNull()
+    expect(screen.queryByText('Ayants droit')).toBeNull()
     expect(container.querySelector('.accueil-famille')).toBeNull()
   })
 
   it('explique dans une feuille les documents encore à venir', () => {
     rendreEcran(<Accueil />)
     expect(screen.queryByRole('dialog')).toBeNull()
-    fireEvent.click(screen.getByLabelText("Bon d'optique, bientôt disponible"))
+    fireEvent.click(screen.getByLabelText('LG hospitalisation, bientôt disponible'))
     expect(screen.getByRole('dialog')).toHaveTextContent(MESSAGE_BIENTOT)
     expect(simulations.ouvrirAssistant).not.toHaveBeenCalled()
   })

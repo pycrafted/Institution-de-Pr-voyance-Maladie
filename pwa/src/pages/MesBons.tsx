@@ -47,7 +47,8 @@ import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
 import type { Bon } from '../types/api'
 import { dateRelative, pluriel } from '../utils/format'
-import { libelleValidite, STATUTS } from '../utils/statut'
+import { nomPropre } from '../utils/libelles'
+import { joursRestants, libelleValidite, STATUTS } from '../utils/statut'
 import { cheminDocument, cleDocument } from '../utils/documents'
 import { documentParCle } from '../services/catalogue'
 import { libelleBeneficiaire, structureDuDocument, typeDocument } from './bons/affichage'
@@ -209,13 +210,14 @@ export default function MesBons() {
              et change tout seul : il ne fait pas une catégorie. Un `select`
              natif ouvre le sélecteur du téléphone. */
           <div className="ipm-menu-categorie">
-            <label className="ipm-menu-categorie__libelle" htmlFor="bons-categorie">
-              Type de document
-            </label>
+            {/* Pas de libellé visible au-dessus du menu : le choix affiché
+                (« Tous les documents », « Bons de pharmacie »…) se suffit. Le nom
+                reste porté pour les lecteurs d'écran. */}
             <div className="ipm-menu-categorie__cadre">
               <select
                 id="bons-categorie"
                 className="ipm-menu-categorie__choix"
+                aria-label="Type de document"
                 value={filtre}
                 onChange={(e) => {
                   haptique.leger()
@@ -224,7 +226,7 @@ export default function MesBons() {
               >
                 {categories.map((categorie) => (
                   <option key={categorie.cle} value={categorie.cle}>
-                    {categorie.libelle} ({categorie.nombre})
+                    {categorie.libelle}
                   </option>
                 ))}
               </select>
@@ -261,9 +263,15 @@ function messageSansResultat(filtre: FiltreType): string {
  * où se présenter (pharmacie ou prestataire), avec sa puce de statut et sa
  * date.
  */
+/** En deçà, la carte rappelle le délai restant (« Expire demain »). */
+const JOURS_ALERTE = 7
+
 function CarteDocument({ bon, rang }: { bon: Bon; rang: number }) {
   const type = typeDocument(bon)
   const validite = libelleValidite(bon.statut, bon.valableJusquAu)
+  // Le délai ne s'affiche que s'il reste une semaine ou moins.
+  const reste = joursRestants(bon.statut, bon.valableJusquAu)
+  const bientotExpire = reste !== null && reste <= JOURS_ALERTE
   const structure = structureDuDocument(bon)
   // Le lecteur d'écran annonce la carte d'un trait, sans le « N° » ni les
   // points médians, qui ne veulent rien dire à l'oreille.
@@ -283,17 +291,23 @@ function CarteDocument({ bon, rang }: { bon: Bon; rang: number }) {
       ]
         .filter(Boolean)
         .join(', ')}
+      // Trois informations, pas huit : pour qui, où, et le délai seulement
+      // quand il presse. Le numéro, le lien de parenté et la validité complète
+      // restent dans le détail - et la recherche trouve toujours un numéro.
       details={
         <>
-          <span>
-            {'N° '}
-            <span className="ipm-chiffres">{bon.code}</span>
-            {` · ${libelleBeneficiaire(bon)}`}
-          </span>
-          <span>
-            {structure || 'Structure non précisée'}
-            {validite && <span className="mes-documents__validite"> · {validite}</span>}
-          </span>
+          <span>{nomPropre(bon.beneficiaire?.nomComplet) || 'Bénéficiaire inconnu'}</span>
+          {(structure || bientotExpire) && (
+            <span>
+              {structure}
+              {bientotExpire && (
+                <span className="mes-documents__validite">
+                  {structure ? ' · ' : ''}
+                  {validite}
+                </span>
+              )}
+            </span>
+          )}
         </>
       }
       puce={<StatutBadge statut={bon.statut} />}

@@ -19,7 +19,7 @@ services:
     buildCommand: bash build.sh
     # gunicorn écoute sur le port que Render lui donne ; WEB_CONCURRENCY fixe
     # le nombre de processus (2 : le palier gratuit n'a qu'un demi-cœur).
-    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --timeout 120 --worker-class gthread --threads 4
     # Page qui répond 200 sans jeton : sert à Render pour savoir que le
     # service est debout.
     healthCheckPath: /admin/login/

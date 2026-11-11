@@ -27,19 +27,13 @@ import {
   helpBuoyOutline,
   informationCircleOutline,
   logOutOutline,
-  moonOutline,
-  sunnyOutline,
 } from 'ionicons/icons'
 import { useMemo, useState } from 'react'
 
-import { BoutonPrincipal } from '../components/Boutons'
 import CarteListe from '../components/CarteListe'
-import Feuille from '../components/Feuille'
 import FeuilleChoix from '../components/FeuilleChoix'
-import { ouvrirFeuilleInstallation } from '../components/InstallSheet'
 import { haptique } from '../hooks/haptique'
 import { useParticipant, useSession } from '../session'
-import { basculerApparence, useApparence } from '../theme/apparence'
 import { estInstallee } from '../utils/plateforme'
 import { VERSION } from '../version'
 import { informationsDuParticipant } from './profil/informations'
@@ -51,9 +45,7 @@ export default function Profil() {
   // La question posée dans une feuille de choix, s'il y en a une.
   const [question, setQuestion] = useState<'deconnexion' | null>(null)
   const routeur = useIonRouter()
-  const [aProposOuvert, setAProposOuvert] = useState(false)
   const installee = useMemo(estInstallee, [])
-  const sombre = useApparence() === 'sombre'
   const informations = useMemo(() => informationsDuParticipant(participant), [participant])
 
   function actualiser(evenement: CustomEvent<RefresherEventDetail>) {
@@ -72,6 +64,11 @@ export default function Profil() {
         <IonRefresher slot="fixed" onIonRefresh={actualiser}>
           <IonRefresherContent />
         </IonRefresher>
+
+        {/* La barre d'actions est fixe au-dessus : sans cette réserve, la
+            première carte commençait dessous (comme à l'accueil et dans les
+            listes, qui ouvrent par la même zone sûre). */}
+        <div className="ipm-zone-sure" />
 
         {/* Ce que l'IPM sait de l'employé, rubrique par rubrique. Rien ne s'y
             modifie : ces informations se corrigent à l'IPM, et la photo
@@ -109,28 +106,15 @@ export default function Profil() {
             {!installee && (
               <CarteListe
                 icone={downloadOutline}
-                teinte="rouge"
+                teinte="neutre"
                 titre="Installer sur l’écran d’accueil"
                 details="Ouverture en plein écran, sans passer par le navigateur."
-                onClick={ouvrirFeuilleInstallation}
+                onClick={() => {
+                  haptique.leger()
+                  routeur.push('/installation', 'forward', 'push')
+                }}
               />
             )}
-            {/* Le mode d'affichage, qui était un bouton sur l'accueil : il a
-                sa place parmi les réglages, avec les autres préférences. */}
-            <CarteListe
-              icone={sombre ? sunnyOutline : moonOutline}
-              teinte="neutre"
-              titre={sombre ? 'Passer en mode clair' : 'Passer en mode sombre'}
-              details={
-                sombre
-                  ? 'L’application est en sombre, reposant le soir.'
-                  : 'L’application est en clair, lisible en plein jour.'
-              }
-              onClick={() => {
-                haptique.leger()
-                basculerApparence()
-              }}
-            />
             <CarteListe
               icone={helpBuoyOutline}
               teinte="neutre"
@@ -147,7 +131,10 @@ export default function Profil() {
               titre="À propos"
               details="Version de l’application et données hors ligne."
               meta={<span className="ipm-chiffres">{VERSION}</span>}
-              onClick={() => setAProposOuvert(true)}
+              onClick={() => {
+                haptique.leger()
+                routeur.push('/a-propos', 'forward', 'push')
+              }}
             />
             <CarteListe
               className="profil__deconnexion"
@@ -165,21 +152,6 @@ export default function Profil() {
         <div className="ipm-bas-page" />
       </IonContent>
 
-      <Feuille
-        ouverte={aProposOuvert}
-        onFermer={() => setAProposOuvert(false)}
-        titre="À propos"
-        icone={informationCircleOutline}
-      >
-        <p className="profil__a-propos">
-          IPM Mobile, l’application de l’Institution de Prévoyance Maladie de la SAR. Version{' '}
-          <span className="ipm-chiffres">{VERSION}</span>.
-        </p>
-        <p className="profil__a-propos">
-          Vos derniers bons restent consultables sans connexion. Ils sont effacés à la déconnexion.
-        </p>
-        <BoutonPrincipal onClick={() => setAProposOuvert(false)}>Compris</BoutonPrincipal>
-      </Feuille>
       <FeuilleChoix
         ouverte={question === 'deconnexion'}
         onFermer={() => setQuestion(null)}

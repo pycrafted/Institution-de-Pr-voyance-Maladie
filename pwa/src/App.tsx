@@ -28,6 +28,8 @@ import Splash from './components/Splash'
 import { haptique } from './hooks/haptique'
 import Accueil from './pages/Accueil'
 import Assistance from './pages/Assistance'
+import Installation from './pages/Installation'
+import APropos from './pages/APropos'
 import DetailBon from './pages/DetailBon'
 import Identification from './pages/Identification'
 import Itineraire from './pages/Itineraire'
@@ -97,7 +99,7 @@ function Coquille() {
 
 /** Chemins servis quand on est identifié ; le reste mène à l'accueil. */
 const CHEMINS_IDENTIFIE =
-  /^\/(accueil|bons|profil|conventionnes|assistance|scan)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/lettres\/[^/]+\/?$/
+  /^\/(accueil|bons|profil|conventionnes|assistance|scan|installation|a-propos)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
 
 function Anonyme() {
   const { pathname } = useLocation()
@@ -128,6 +130,7 @@ function Onglets() {
           <Route exact path="/bons" component={MesBons} />
           <Route exact path="/bons/:id" component={DetailBon} />
           <Route exact path="/bons/lettres/:id" component={DetailBon} />
+          <Route exact path="/bons/optique/:id" component={DetailBon} />
           <Route exact path="/profil" component={Profil} />
           {/* Ouverts depuis la grille de services de l'accueil (catalogue). */}
           <Route exact path="/conventionnes" component={Conventionnes} />
@@ -136,6 +139,9 @@ function Onglets() {
           <Route exact path="/assistance" component={Assistance} />
           {/* Pré-financement : scan de l'ordonnance et du reçu (à construire). */}
           <Route exact path="/scan" component={Scan} />
+          {/* Ouverts depuis le profil, présentés comme l'assistance. */}
+          <Route exact path="/installation" component={Installation} />
+          <Route exact path="/a-propos" component={APropos} />
         </IonRouterOutlet>
         {/* Barre flottante (SPEC_DESIGN §3.1) : le contenu passe dessous, les
             écrans réservent donc --bas-page en fin de contenu. */}

@@ -17,7 +17,7 @@ from unittest import mock
 import pymupdf
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
-from django.core.cache import cache
+from django.core.cache import cache, caches
 from django.db import OperationalError
 from django.utils import timezone
 from rest_framework.authtoken.models import Token
@@ -26,8 +26,14 @@ from participants.models.participant import REGIME_MUTUELLE
 from rest_framework.test import APITestCase
 
 from adherents.models import Adherent
-from documents.models import BonPharmacie, LettreGarantie
-from donnees_de_base.models import FournisseurDeSoins, Specialite, TypeBeneficiaire, TypePrestation
+from documents.models import BonOptique, BonPharmacie, LettreGarantie
+from donnees_de_base.models import (
+    Acte,
+    FournisseurDeSoins,
+    Specialite,
+    TypeBeneficiaire,
+    TypePrestation,
+)
 from participants.models import Beneficiaire, Participant
 
 from .authentification import VALIDITE_JETON, emettre_jeton
@@ -128,6 +134,8 @@ class Fixture(APITestCase):
         # Le compteur de la limitation de débit vit dans le cache : chaque
         # test repart de zéro.
         cache.clear()
+        # Les PDF déjà fabriqués aussi : un test ne doit pas lire celui d'un autre.
+        caches['pdf'].clear()
 
     def identifier(self, participant=None):
         self.client.credentials(HTTP_AUTHORIZATION=f'Participant {emettre_jeton(participant or self.moi)}')
@@ -427,6 +435,7 @@ class ListesTests(Fixture):
                 'type': {'code': '1', 'libelle': 'PARTICIPANT'},
                 'estParticipant': True,
                 'photo': None,
+                'demandePhoto': False,
             },
         )
         self.assertEqual(beneficiaires[1]['type'], {'code': '2', 'libelle': 'EPOUSE'})
@@ -545,15 +554,25 @@ class ListesTests(Fixture):
                 type_benef=self.type_participant, **champs,
             )
 
+        expire = bon('BPI000072', date=aujourdhui - timedelta(days=31))
         attendus = {
+            expire.id: 'expire',
             bon('BPI000070').id: 'valide',
             bon('BPI000071', date=aujourdhui - timedelta(days=30)).id: 'valide',
-            bon('BPI000072', date=aujourdhui - timedelta(days=31)).id: 'expire',
             bon('BPI000073', actif=False, traite=True).id: 'annule',
             bon('BPI000074', traite=True, date=aujourdhui - timedelta(days=60)).id: 'traite',
         }
         reponse = self.client.get(f'{URL}bons-pharmacie/')
         self.assertEqual({b['id']: b['statut'] for b in reponse.data}, attendus)
+        # L'expiré se consulte encore, mais son PDF porte le tampon « EXPIRÉ ».
+        self.assertEqual(self.client.get(f'{URL}bons-pharmacie/{expire.id}/').status_code, 200)
+        pdf = self.client.get(f'{URL}bons-pharmacie/{expire.id}/pdf/')
+        self.assertEqual(pdf.status_code, 200)
+        doc = pymupdf.open(stream=pdf.content, filetype='pdf')
+        self.assertTrue(all('EXPIRÉ' in page.get_text() for page in doc))
+        valide = next(i for i, s in attendus.items() if s == 'valide')
+        doc = pymupdf.open(stream=self.client.get(f'{URL}bons-pharmacie/{valide}/pdf/').content, filetype='pdf')
+        self.assertNotIn('EXPIRÉ', doc[0].get_text())
         recent = next(b for b in reponse.data if b['code'] == 'BPI000070')
         self.assertEqual(recent['valableJusquAu'], (aujourdhui + timedelta(days=30)).isoformat())
 
@@ -1168,3 +1187,411 @@ class LettresGarantieTests(Fixture):
         self.client.credentials()
         self.assertEqual(self.client.get(f'{URL}lettres-garantie/').status_code, 401)
         self.assertEqual(self.client.get(f'{URL}natures-prestation/').status_code, 401)
+
+
+class BonsOptiqueTests(Fixture):
+    """Le bon d'optique émis au mobile : un bon IPM comme les autres."""
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.montures = Acte.objects.create(code='ACT0086', libelle='Montures', specialite='04')
+        cls.verres = Acte.objects.create(code='ACT0087', libelle='Verres', specialite='04')
+        Acte.objects.create(code='ACT0088', libelle='Lentilles', specialite='04', actif=False)
+        # Un acte d'une autre spécialité : pas un article d'optique.
+        cls.radio = Acte.objects.create(code='ACT0001', libelle='RADIO', specialite='02')
+        cls.optique_fermee = FournisseurDeSoins.objects.create(
+            code='402', libelle='OPTIQUE FERMEE', specialite=cls.sp_optique, actif=False
+        )
+        cls.bon_du_voisin = BonOptique.objects.create(
+            code='BCI000050', adherent=cls.sar, participant=cls.voisin,
+            type_benef=cls.type_participant,
+        )
+
+    def setUp(self):
+        super().setUp()
+        self.identifier()
+
+    def bon_optique_valide(self, **changes):
+        corps = {
+            'beneficiaire': self.enfant.matricule_benef,
+            'opticien': '401',
+            'specialite': '00',
+            'prescripteur': '201',
+            'articles': [{'code': 'ACT0086'}, {'code': 'ACT0087', 'quantite': 2}],
+            'datePrescription': (timezone.localdate() - timedelta(days=3)).isoformat(),
+        }
+        corps.update(changes)
+        return corps
+
+    def creer(self, **changes):
+        return self.client.post(f'{URL}bons-optique/', self.bon_optique_valide(**changes), format='json')
+
+    def test_opticiens(self):
+        reponse = self.client.get(f'{URL}opticiens/')
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual([o['code'] for o in reponse.data], ['401'])
+
+    def test_articles_optique(self):
+        reponse = self.client.get(f'{URL}articles-optique/')
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(
+            reponse.data,
+            [{'code': 'ACT0086', 'libelle': 'Montures'}, {'code': 'ACT0087', 'libelle': 'Verres'}],
+        )
+
+    def test_creation(self):
+        reponse = self.creer()
+        self.assertEqual(reponse.status_code, 201, reponse.data)
+        self.assertEqual(reponse.data['genre'], 'bon-optique')
+        self.assertTrue(reponse.data['code'].startswith('BCI'))
+        self.assertEqual(reponse.data['statut'], 'valide')
+        self.assertEqual(reponse.data['prestataire']['code'], '401')
+        self.assertEqual(reponse.data['prescripteur']['code'], '201')
+        self.assertIsNone(reponse.data['pharmacie'])
+        self.assertEqual(reponse.data['nbArticles'], 3)
+        self.assertEqual(
+            reponse.data['articles'],
+            [
+                {'code': 'ACT0086', 'libelle': 'Montures', 'quantite': 1},
+                {'code': 'ACT0087', 'libelle': 'Verres', 'quantite': 2},
+            ],
+        )
+        self.assertEqual(reponse.data['beneficiaire']['nomComplet'], 'Modou NDIAYE')
+
+        bon = BonOptique.objects.get(code=reponse.data['code'])
+        self.assertEqual(bon.participant, self.moi)
+        self.assertEqual(bon.adherent, self.sar)
+        self.assertEqual(bon.beneficiaire, self.enfant)
+        self.assertEqual(bon.type_benef, self.type_enfant)
+        self.assertEqual(bon.fournisseur.code, '401')
+        self.assertEqual(bon.specialite, self.sp_generalistes)
+        self.assertEqual(bon.prescripteur, self.generaliste)
+        self.assertEqual([a['code'] for a in bon.actes], ['ACT0086', 'ACT0087'])
+        self.assertEqual(bon.actes[1]['quantite'], 2)
+        self.assertIsNone(bon.cree_par)
+
+    def test_bon_pour_soi_meme(self):
+        reponse = self.creer(beneficiaire='1204')
+        self.assertEqual(reponse.status_code, 201, reponse.data)
+        bon = BonOptique.objects.get(code=reponse.data['code'])
+        self.assertIsNone(bon.beneficiaire)
+        self.assertEqual(bon.type_benef, self.type_participant)
+
+    def test_refus(self):
+        cas = {
+            'beneficiaire': (self.enfant_du_voisin.matricule_benef, 'famille'),
+            'opticien': ('201', 'Opticien inconnu'),
+            'specialite': ('04', 'inconnue'),
+            'prescripteur': ('999', 'inconnu'),
+            'datePrescription': ((timezone.localdate() - timedelta(days=31)).isoformat(), '30 jours'),
+        }
+        for champ, (valeur, extrait) in cas.items():
+            with self.subTest(champ=champ):
+                reponse = self.creer(**{champ: valeur})
+                self.assertEqual(reponse.status_code, 400)
+                self.assertIn(extrait, reponse.data[champ][0])
+        self.assertFalse(BonOptique.objects.filter(participant=self.moi).exists())
+
+    def test_opticien_ferme_refuse(self):
+        reponse = self.creer(opticien='402')
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('opticien', reponse.data)
+
+    def test_article_hors_optique_refuse(self):
+        for code in ('ACT0001', 'ACT0088', 'XXX'):
+            with self.subTest(code=code):
+                reponse = self.creer(articles=[{'code': code}])
+                self.assertEqual(reponse.status_code, 400)
+                self.assertIn('articles', reponse.data)
+
+    def test_article_en_double_garde_une_fois(self):
+        reponse = self.creer(articles=[{'code': 'ACT0086'}, {'code': 'ACT0086', 'quantite': 3}])
+        self.assertEqual(reponse.status_code, 201, reponse.data)
+        self.assertEqual(reponse.data['articles'], [{'code': 'ACT0086', 'libelle': 'Montures', 'quantite': 1}])
+
+    def test_seul_le_beneficiaire_est_exige(self):
+        reponse = self.client.post(f'{URL}bons-optique/', {}, format='json')
+        self.assertEqual(reponse.status_code, 400)
+        self.assertEqual(set(reponse.data), {'beneficiaire'})
+
+    def test_bon_avec_le_seul_beneficiaire(self):
+        reponse = self.client.post(
+            f'{URL}bons-optique/', {'beneficiaire': self.enfant.matricule_benef}, format='json'
+        )
+        self.assertEqual(reponse.status_code, 201, reponse.data)
+        bon = BonOptique.objects.get(pk=reponse.data['id'])
+        self.assertIsNone(bon.fournisseur)
+        self.assertIsNone(bon.prescripteur)
+        self.assertIsNone(bon.date_ordonnance)
+        self.assertEqual(bon.actes, [])
+        self.assertIsNone(reponse.data['nbArticles'])
+
+    def test_prescripteur_sans_specialite_refuse(self):
+        reponse = self.client.post(
+            f'{URL}bons-optique/',
+            {'beneficiaire': self.enfant.matricule_benef, 'prescripteur': '201'},
+            format='json',
+        )
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('specialite', reponse.data)
+
+    def test_prescription_dans_le_futur(self):
+        demain = (timezone.localdate() + timedelta(days=1)).isoformat()
+        reponse = self.creer(datePrescription=demain)
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('futur', reponse.data['datePrescription'][0])
+
+    def test_liste_isolee(self):
+        self.creer()
+        reponse = self.client.get(f'{URL}bons-optique/')
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(len(reponse.data), 1)
+        self.assertNotIn('BCI000050', [bon['code'] for bon in reponse.data])
+
+    def test_bon_d_un_autre_introuvable(self):
+        pk = self.bon_du_voisin.id
+        self.assertEqual(self.client.get(f'{URL}bons-optique/{pk}/').status_code, 404)
+        self.assertEqual(self.client.get(f'{URL}bons-optique/{pk}/pdf/').status_code, 404)
+
+    def test_detail_et_pdf(self):
+        pk = self.creer().data['id']
+        detail = self.client.get(f'{URL}bons-optique/{pk}/')
+        self.assertEqual(detail.status_code, 200)
+        reponse = self.client.get(f'{URL}bons-optique/{pk}/pdf/')
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(reponse['Content-Type'], 'application/pdf')
+        doc = pymupdf.open(stream=reponse.content, filetype='pdf')
+        self.assertEqual(len(doc), 2)
+        texte = doc[0].get_text()
+        self.assertIn(detail.data['code'], texte)
+        # « édité par » : le participant, sous son matricule affiché.
+        self.assertIn('par : 01-1204', texte)
+
+    def test_jeton_exige(self):
+        self.client.credentials()
+        for chemin in ('bons-optique/', 'opticiens/', 'articles-optique/'):
+            self.assertEqual(self.client.get(f'{URL}{chemin}').status_code, 401)
+
+
+class DemandesPhotoTests(Fixture):
+    """
+    Une photo posée ne se remplace pas depuis le téléphone : on demande sa
+    réinitialisation, que l'IPM instruit. L'IPM réinitialise ou refuse ; elle
+    ne pose jamais elle-même un portrait.
+    """
+
+    JPEG = PhotoTests.JPEG
+
+    def setUp(self):
+        super().setUp()
+        self.moi.photo = self.JPEG
+        self.moi.save(update_fields=['photo'])
+        self.enfant.photo = self.JPEG
+        self.enfant.save(update_fields=['photo'])
+        self.identifier()
+        from participants.models import DemandePhoto
+
+        self.DemandePhoto = DemandePhoto
+
+    def demander(self, matricule='1204', **autres):
+        return self.client.post(
+            f'{URL}moi/demandes-photo/', {'matricule': matricule, **autres}, format='json'
+        )
+
+    def agent(self):
+        agent = get_user_model().objects.create_user('agent.photo', password='x', is_staff=True)
+        client = self.client_class()
+        client.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.create(user=agent).key}')
+        return client, agent
+
+    def test_demande_pour_soi_puis_pour_un_ayant_droit(self):
+        self.assertEqual(self.demander().status_code, 201)
+        self.assertEqual(self.demander(self.enfant.matricule_benef, motif='Photo floue').status_code, 201)
+        demandes = self.DemandePhoto.objects.order_by('id')
+        self.assertEqual([d.beneficiaire for d in demandes], [None, self.enfant])
+        self.assertEqual(demandes[1].motif, 'Photo floue')
+        # Le profil le dit : la carte affiche « demande envoyée ».
+        moi = self.client.get(f'{URL}moi/').data
+        self.assertTrue(moi['participant']['demandePhoto'])
+        enfant = next(b for b in moi['beneficiaires'] if b['matricule'] == self.enfant.matricule_benef)
+        self.assertTrue(enfant['demandePhoto'])
+
+    def test_une_seule_demande_a_la_fois(self):
+        self.demander()
+        reponse = self.demander()
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('déjà en cours', reponse.data['photo'][0])
+
+    def test_pas_de_demande_sans_photo(self):
+        reponse = self.demander(self.epouse.matricule_benef)
+        self.assertEqual(reponse.status_code, 400)
+        self.assertIn('ajoutez-la', reponse.data['photo'][0])
+
+    def test_pas_de_demande_pour_un_autre_dossier(self):
+        reponse = self.demander(self.enfant_du_voisin.matricule_benef)
+        self.assertEqual(reponse.status_code, 404)
+        self.assertFalse(self.DemandePhoto.objects.exists())
+
+    def test_l_ipm_reinitialise_puis_le_titulaire_repose(self):
+        self.demander(self.enfant.matricule_benef)
+        demande = self.DemandePhoto.objects.get()
+        client, agent = self.agent()
+        liste = client.get('/api/demandes-photo/')
+        self.assertEqual(liste.status_code, 200)
+        self.assertEqual(liste.data[0]['beneficiaire'], 'Modou NDIAYE')
+        self.assertEqual(liste.data[0]['photo'], self.JPEG)
+
+        reponse = client.post(f'/api/demandes-photo/{demande.id}/reinitialiser/')
+        self.assertEqual(reponse.status_code, 200, reponse.data)
+        self.assertEqual(reponse.data['statut'], 'Traitée')
+        self.assertEqual(reponse.data['traitePar'], 'agent.photo')
+        self.enfant.refresh_from_db()
+        self.assertEqual(self.enfant.photo, '')
+        # La photo vide se repose depuis le mobile, comme la première fois.
+        repose = self.client.put(
+            f'{URL}moi/beneficiaires/{self.enfant.matricule_benef}/photo/', {'photo': self.JPEG}, format='json'
+        )
+        self.assertEqual(repose.status_code, 200)
+        # Une demande close ne s'instruit pas deux fois.
+        self.assertEqual(client.post(f'/api/demandes-photo/{demande.id}/reinitialiser/').status_code, 400)
+
+    def test_l_ipm_refuse(self):
+        self.demander()
+        demande = self.DemandePhoto.objects.get()
+        client, _ = self.agent()
+        reponse = client.post(f'/api/demandes-photo/{demande.id}/refuser/')
+        self.assertEqual(reponse.data['statut'], 'Refusée')
+        self.moi.refresh_from_db()
+        self.assertEqual(self.moi.photo, self.JPEG)
+        self.assertFalse(self.client.get(f'{URL}moi/').data['participant']['demandePhoto'])
+
+    def test_l_ipm_ne_pose_pas_de_photo_mais_peut_l_effacer(self):
+        client, _ = self.agent()
+        autre = 'data:image/jpeg;base64,' + b64encode(bytes.fromhex('ffd8ffdb0043') + b'y' * 40).decode()
+        refus = client.patch(f'/api/participants/{self.moi.id}/', {'photo': autre}, format='json')
+        self.assertEqual(refus.status_code, 400)
+        self.assertIn('réinitialiser', refus.data['photo'][0])
+        # Renvoyer la même photo (formulaire enregistré sans y toucher) passe.
+        fiche = f'/api/beneficiaires/{self.enfant.id}/'
+        self.assertEqual(client.patch(fiche, {'photo': autre}, format='json').status_code, 400)
+        meme = client.patch(fiche, {'photo': self.JPEG}, format='json')
+        self.assertEqual(meme.status_code, 200, meme.data)
+        # L'effacer depuis la fiche satisfait la demande en attente.
+        self.demander(self.enfant.matricule_benef)
+        efface = client.patch(fiche, {'photo': ''}, format='json')
+        self.assertEqual(efface.status_code, 200, efface.data)
+        self.enfant.refresh_from_db()
+        self.assertEqual(self.enfant.photo, '')
+        self.assertEqual(self.DemandePhoto.objects.get().statut, 'Traitée')
+
+    def test_jeton_exige(self):
+        self.client.credentials()
+        self.assertEqual(self.demander().status_code, 401)
+        self.assertEqual(self.client_class().get('/api/demandes-photo/').status_code, 401)
+
+
+class RenouvellementOptiqueTests(BonsOptiqueTests):
+    """
+    Deux ans, par bénéficiaire : le premier bon de la période est automatique,
+    un autre attend la décision de l'IPM.
+    """
+
+    def ancien_bon(self, jours, beneficiaire=None, **autres):
+        bon = BonOptique.objects.create(
+            code=f'BCI0009{jours:02d}'[-9:], adherent=self.sar, participant=self.moi,
+            type_benef=self.type_enfant if beneficiaire else self.type_participant,
+            beneficiaire=beneficiaire, **autres,
+        )
+        BonOptique.objects.filter(pk=bon.pk).update(date=timezone.localdate() - timedelta(days=jours))
+        return bon
+
+    def agent(self):
+        agent = get_user_model().objects.create_user('agent.optique', password='x', is_staff=True)
+        client = self.client_class()
+        client.credentials(HTTP_AUTHORIZATION=f'Token {Token.objects.create(user=agent).key}')
+        return client
+
+    def test_premier_bon_automatique(self):
+        reponse = self.creer()
+        self.assertEqual(reponse.data['statut'], 'valide')
+        self.assertEqual(BonOptique.objects.get(pk=reponse.data['id']).validation, '')
+
+    def test_deuxieme_bon_avant_deux_ans_en_attente(self):
+        self.ancien_bon(300, self.enfant)
+        reponse = self.creer()
+        self.assertEqual(reponse.status_code, 201, reponse.data)
+        self.assertEqual(reponse.data['statut'], 'attente')
+        # Pas imprimable tant que l'IPM n'a pas accordé.
+        self.assertEqual(self.client.get(f"{URL}bons-optique/{reponse.data['id']}/pdf/").status_code, 409)
+
+    def test_apres_deux_ans_automatique(self):
+        self.ancien_bon(731, self.enfant)
+        self.assertEqual(self.creer().data['statut'], 'valide')
+
+    def test_le_cycle_est_par_beneficiaire(self):
+        # Le participant a eu ses lunettes : son enfant garde son propre droit.
+        self.ancien_bon(100)
+        self.assertEqual(self.creer().data['statut'], 'valide')
+        self.assertEqual(self.creer(beneficiaire='1204').data['statut'], 'attente')
+
+    def test_un_bon_annule_ne_compte_pas(self):
+        self.ancien_bon(100, self.enfant, actif=False)
+        self.assertEqual(self.creer().data['statut'], 'valide')
+
+    def test_l_ipm_valide(self):
+        self.ancien_bon(100, self.enfant)
+        pk = self.creer().data['id']
+        client = self.agent()
+        reponse = client.post(f'/api/bons-optique/{pk}/valider/')
+        self.assertEqual(reponse.status_code, 200, reponse.data)
+        self.assertEqual(reponse.data['validation'], 'Validé')
+        self.assertEqual(reponse.data['validePar'], 'agent.optique')
+        self.assertEqual(self.client.get(f'{URL}bons-optique/{pk}/').data['statut'], 'valide')
+        self.assertEqual(self.client.get(f'{URL}bons-optique/{pk}/pdf/').status_code, 200)
+        # Déjà tranché : une seconde décision est refusée.
+        self.assertEqual(client.post(f'/api/bons-optique/{pk}/refuser/').status_code, 400)
+
+    def test_l_ipm_refuse(self):
+        self.ancien_bon(100, self.enfant)
+        pk = self.creer().data['id']
+        reponse = self.agent().post(f'/api/bons-optique/{pk}/refuser/')
+        self.assertEqual(reponse.data['validation'], 'Refusé')
+        self.assertFalse(reponse.data['actif'])
+        self.assertEqual(self.client.get(f'{URL}bons-optique/{pk}/').data['statut'], 'annule')
+
+
+class NotificationsTests(RenouvellementOptiqueTests):
+    """La cloche de l'IPM (ce qui l'attend) et celle du mobile (ses décisions)."""
+
+    def test_cloche_ipm_puis_cloche_mobile(self):
+        from participants.models import DemandePhoto
+
+        client = self.agent()
+        self.assertEqual(client.get('/api/notifications/').data, {'total': 0, 'elements': []})
+        # Un bon pris avant les deux ans, et une demande de photo.
+        self.ancien_bon(100, self.enfant)
+        pk = self.creer().data['id']
+        self.enfant.photo = PhotoTests.JPEG
+        self.enfant.save(update_fields=['photo'])
+        self.client.post(f'{URL}moi/demandes-photo/', {'matricule': self.enfant.matricule_benef}, format='json')
+
+        cloche = client.get('/api/notifications/').data
+        self.assertEqual(cloche['total'], 2)
+        self.assertEqual({e['cle'] for e in cloche['elements']}, {'demandes-photo', 'bons-optique'})
+        self.assertEqual(self.client.get(f'{URL}notifications/').data, [])
+
+        # L'IPM tranche : sa cloche se vide, celle du mobile se remplit.
+        client.post(f'/api/bons-optique/{pk}/valider/')
+        client.post(f'/api/demandes-photo/{DemandePhoto.objects.get().id}/reinitialiser/')
+        self.assertEqual(client.get('/api/notifications/').data['total'], 0)
+        mobile = self.client.get(f'{URL}notifications/').data
+        self.assertEqual({e['genre'] for e in mobile}, {'photo', 'bon-optique'})
+        optique = next(e for e in mobile if e['genre'] == 'bon-optique')
+        self.assertEqual(optique['lien'], f'/bons/optique/{pk}')
+        self.assertIn('accordé', optique['titre'])
+
+    def test_jeton_exige(self):
+        self.client.credentials()
+        self.assertEqual(self.client.get(f'{URL}notifications/').status_code, 401)
+        self.assertEqual(self.client_class().get('/api/notifications/').status_code, 401)
