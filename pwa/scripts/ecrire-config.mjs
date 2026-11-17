@@ -9,15 +9,23 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 
 const apiBase = (process.env.IPM_API_BASE ?? '').trim().replace(/\/+$/, '')
-if (!apiBase) process.exit(0)
+// Clé Google Maps (carte des structures conventionnées). Clé de FRONT : elle
+// finit dans config.json, donc à restreindre par référent HTTP côté Google.
+const mapsKey = (process.env.IPM_GOOGLE_MAPS_KEY ?? '').trim()
 
-if (!/^https?:\/\//.test(apiBase) && !apiBase.startsWith('/')) {
+// Rien à injecter (ni API ni Maps) : on laisse config.json tel quel.
+if (!apiBase && !mapsKey) process.exit(0)
+
+if (apiBase && !/^https?:\/\//.test(apiBase) && !apiBase.startsWith('/')) {
   console.error(`IPM_API_BASE doit être une URL absolue ou un chemin commençant par « / » : ${apiBase}`)
   process.exit(1)
 }
 
 const chemin = new URL('../dist/config.json', import.meta.url)
 const config = JSON.parse(readFileSync(chemin, 'utf-8'))
-config.apiBase = apiBase
+if (apiBase) config.apiBase = apiBase
+if (mapsKey) config.cleGoogleMaps = mapsKey
 writeFileSync(chemin, `${JSON.stringify(config, null, 2)}\n`)
-console.warn(`dist/config.json : apiBase = ${apiBase}`)
+console.warn(
+  `dist/config.json : apiBase = ${config.apiBase}, cleGoogleMaps = ${mapsKey ? 'posée' : '(vide)'}`,
+)
