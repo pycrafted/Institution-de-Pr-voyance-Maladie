@@ -79,6 +79,10 @@ const LANCEMENTS = [
   '1242x2688', '1284x2778', '1290x2796', '1320x2868', '750x1334', '828x1792',
 ]
 
+// Logo des ICÔNES : le bouclier IPM (c'est l'app de l'IPM, pas celle de la SAR).
+const logoIcone = await readFile(resolve(RACINE, 'public/logo-ipm.png'))
+const logoIconeEnLigne = `data:image/png;base64,${logoIcone.toString('base64')}`
+// Logo des écrans de lancement : le logo SAR (identique au composant Splash).
 const logo = await readFile(resolve(RACINE, 'public/logo-sar.png'))
 const logoEnLigne = `data:image/png;base64,${logo.toString('base64')}`
 
@@ -102,7 +106,7 @@ try {
         }
         img { width: ${Math.round(cote * part)}px; display: block; }
       </style>
-      <div class="fond"><img src="${logoEnLigne}" alt=""></div>
+      <div class="fond"><img src="${logoIconeEnLigne}" alt=""></div>
     `)
     // Les polices ne comptent pas ici, mais l'image doit être décodée.
     await page.evaluate(() => document.fonts.ready.then(() => document.querySelector('img').decode()))
