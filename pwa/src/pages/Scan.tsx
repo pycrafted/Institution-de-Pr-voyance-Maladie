@@ -347,7 +347,7 @@ export default function Scan() {
           </section>
         )}
 
-        {/* 4. INVALIDE -------------------------------------------------- */}
+        {/* 4. INVALIDE : une phrase, pas de détail inutile ------------- */}
         {etape === 'invalide' && (
           <section className="ipm-section scan__contenu">
             {apercu && <img className="scan__capture scan__capture--carte" src={apercu} alt="Document photographié" />}
@@ -355,11 +355,11 @@ export default function Scan() {
               <IonIcon icon={alertCircleOutline} aria-hidden="true" />
               <span>
                 {erreur ||
+                  resultat?.resume ||
                   resultat?.verdictMessage ||
-                  'Cette ordonnance ne peut pas être validée pour un pré-financement.'}
+                  'Document non exploitable pour un pré-financement.'}
               </span>
             </div>
-            {resultat && <Resultat document={resultat} />}
             <div className="scan__actions">
               <BoutonPrincipal icone={cameraOutline} onClick={allerAuScan}>Scanner à nouveau</BoutonPrincipal>
               <button type="button" className="scan__lien-galerie" onClick={recommencer}>Changer de motif</button>

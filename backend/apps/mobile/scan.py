@@ -58,7 +58,13 @@ PROMPT = (
     "lisible, s'il y a un médecin/service prescripteur identifiable, une "
     "signature ou un tampon, et si l'ensemble est cohérent. Les montants sont en "
     "francs CFA (entiers, sans séparateur). Une information absente vaut null "
-    "(ou [] pour elements/alertes)."
+    "(ou [] pour elements/alertes).\n"
+    "SOIS ÉCONOME. Si le document N'EST PAS une ordonnance, ou s'il est "
+    "illisible ou non exploitable : ne détaille RIEN (elements: [], aucune "
+    "énumération de médicaments ni de montants) et donne seulement un `resume` "
+    "d'UNE seule phrase, brève, disant ce que c'est ou pourquoi ce n'est pas "
+    "exploitable. N'extrais le détail complet (médicaments, montants, patient…) "
+    "QUE pour une ordonnance exploitable."
 )
 
 
