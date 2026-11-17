@@ -17,7 +17,16 @@
  * Cf. README.md, « Ouvrir un nouveau service ».
  */
 
-import { bedOutline, eyeOutline, mailOutline, medkitOutline } from 'ionicons/icons'
+import {
+  bed,
+  bedOutline,
+  eye,
+  eyeOutline,
+  mail,
+  mailOutline,
+  medkit,
+  medkitOutline,
+} from 'ionicons/icons'
 
 /** Clé stable d'un type de document : identifiant de test et clé React. */
 export type CleDocument = 'bon-pharmacie' | 'bon-optique' | 'lettre-garantie' | 'hospitalisation'
@@ -39,8 +48,10 @@ export interface TypeDocument {
   libellePluriel: string
   /** Phrase d'explication (feuille « Bientôt », accessibilité). */
   description: string
-  /** Icône ionicons (la chaîne importée, pas son nom). */
+  /** Icône ionicons au trait (iOS), la chaîne importée, pas son nom. */
   icone: string
+  /** Icône pleine (Android/md), comme la barre d'onglets du bas. */
+  iconePleine: string
   /**
    * Chemin à ouvrir, `ROUTE_ASSISTANT` pour le modal, ou `null` tant que le
    * document n'est pas disponible.
@@ -67,6 +78,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
     libellePluriel: 'Bons de pharmacie',
     description: 'Générer un bon à présenter en pharmacie avec votre ordonnance.',
     icone: medkitOutline,
+    iconePleine: medkit,
     route: ROUTE_ASSISTANT,
     disponible: true,
   },
@@ -76,6 +88,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
     libellePluriel: "Bons d'optique",
     description: "Bon à présenter chez l'opticien conventionné.",
     icone: eyeOutline,
+    iconePleine: eye,
     route: ROUTE_ASSISTANT,
     disponible: true,
   },
@@ -85,6 +98,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
     libellePluriel: 'Lettres de garantie',
     description: "Prise en charge auprès d'un fournisseur de soins conventionné.",
     icone: mailOutline,
+    iconePleine: mail,
     route: ROUTE_ASSISTANT,
     disponible: true,
   },
@@ -94,6 +108,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
     libellePluriel: 'LG hospitalisation',
     description: 'Lettre de garantie pour une hospitalisation.',
     icone: bedOutline,
+    iconePleine: bed,
     route: null,
     disponible: false,
   },

@@ -690,56 +690,57 @@ button.ipm-carte-identite__portrait {
 .ipm-tuile {
   position: relative;
   appearance: none;
-  /* Liseré invisible en clair, visible en sombre : sur le fond #111110,
-     l'ombre ne dessine plus aucun bord. */
   border: 1px solid var(--ipm-liseret);
   box-sizing: border-box;
   width: 100%;
-  /* La carte ne porte plus que deux choses depuis le retrait des mentions :
-     l'icone et le libelle. Un carre fige (l'ancien aspect-ratio taille pour
-     trois) la laissait a moitie vide. La hauteur suit donc le contenu, avec un
-     plancher qui garde une cible confortable au doigt et une grille reguliere. */
-  /* Sans icône, plus basse : le libellé seul n'a pas besoin de 116 px. */
-  min-height: 76px;
+  /* Icône + libellé : la carte retrouve de la hauteur pour respirer, au lieu
+     du libellé seul tassé sur 76 px. */
+  min-height: 124px;
   display: flex;
   flex-direction: column;
-  /* Contenu centré : icône puis libellé. */
+  /* Contenu centré : pastille d'icône puis libellé. */
   align-items: center;
   justify-content: center;
-  gap: var(--e-8);
-  padding: var(--e-20) var(--e-12);
-  border-radius: var(--r-xl);
+  gap: var(--e-12);
+  padding: var(--e-24) var(--e-16);
+  /* Coins plus généreux (M3 « large ») : la carte paraît plus douce et plus
+     moderne que l'ancien 16 px. */
+  border-radius: var(--r-2xl);
   text-align: center;
   cursor: pointer;
-  box-shadow: var(--ombre-2);
+  transition:
+    box-shadow 0.2s var(--mvt-courbe),
+    border-color 0.2s var(--mvt-courbe);
 }
 /*
- * Document ouvert : une carte de surface, comme le reste de l'application.
- * Le rouge n'y tient plus que le cercle de l'icône et la mention — il
- * signale ce qui se demande, au lieu de peindre la moitié de l'accueil.
+ * Document ouvert : carte sobre, fond beige de marque (#ece4e3) et contenu
+ * dans le gris doux (#5f5553). Icône pleine façon barre d'onglets. Une légère
+ * élévation la détache du fond.
  */
 .ipm-tuile--ouverte {
-  background: var(--ipm-surface);
-  color: var(--ipm-texte);
+  background: var(--ipm-surface-2);
+  color: var(--ipm-texte-doux);
+  box-shadow: var(--ombre-1);
 }
-/* Document à venir : la même carte, éteinte d'un cran. */
+.ipm-tuile--ouverte:active {
+  box-shadow: none;
+}
+/* Document à venir : la même carte, éteinte d'un cran (sans ombre, estompée),
+   signalée par la puce « Bientôt ». */
 .ipm-tuile--avenir {
   /* Place pour la puce « Bientôt » au-dessus du libellé. */
   padding-top: var(--e-32);
   background: var(--ipm-surface-2);
   color: var(--ipm-texte-doux);
   box-shadow: none;
+  opacity: 0.6;
 }
 
-/* Sans disque ni mention, l'icone est ce que l'oeil accroche en premier : elle
-   grossit pour tenir ce role (30 -> 34) et n'a plus besoin de la boite de 62 px
-   qui dimensionnait l'ancien disque. */
+/* L'icône pleine (comme le footer), dans le gris doux de marque : c'est elle
+   qui accroche l'œil, sans carré ni fond. */
 .ipm-tuile__icone {
   flex-shrink: 0;
-  font-size: 34px;
-  color: var(--ipm-rouge-texte);
-}
-.ipm-tuile--avenir .ipm-tuile__icone {
+  font-size: 40px;
   color: var(--ipm-texte-doux);
 }
 .ipm-tuile__libelle {

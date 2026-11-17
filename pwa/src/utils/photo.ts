@@ -69,6 +69,26 @@ export function reduireDocument(fichier: File): Promise<string> {
   return reduire(fichier, COTE_DOCUMENT, 0.8)
 }
 
+/**
+ * Capture l'image courante d'un flux vidéo (le viseur caméra du scan) et la
+ * rend en URL de données JPEG, au même format qu'un document importé
+ * (COTE_DOCUMENT). La vidéo est déjà droite : aucune rotation à gérer.
+ */
+export function capturerVideoDocument(video: HTMLVideoElement): string {
+  const largeur = video.videoWidth
+  const hauteur = video.videoHeight
+  if (!largeur || !hauteur) throw new ErreurPhoto('La caméra n’est pas encore prête.')
+  const echelle = Math.min(1, COTE_DOCUMENT / Math.max(largeur, hauteur))
+  const canevas = document.createElement('canvas')
+  canevas.width = Math.max(1, Math.round(largeur * echelle))
+  canevas.height = Math.max(1, Math.round(hauteur * echelle))
+  const contexte = canevas.getContext('2d')
+  if (!contexte) throw new ErreurPhoto('Ce navigateur ne sait pas préparer l’image.')
+  contexte.drawImage(video, 0, 0, canevas.width, canevas.height)
+  // JPEG : dix fois plus léger qu'un PNG à qualité égale.
+  return canevas.toDataURL('image/jpeg', 0.82)
+}
+
 function lire(fichier: File): Promise<string> {
   // createObjectURL évite de charger deux fois l'image en mémoire (une fois en
   // base64, une fois décodée), ce qui compte sur un téléphone d'entrée de gamme.

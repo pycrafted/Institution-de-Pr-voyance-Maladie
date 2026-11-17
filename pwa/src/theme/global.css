@@ -94,13 +94,14 @@ h4 {
     background: var(--ipm-fond-bureau);
   }
   ion-app {
-    /* Tablette en portrait : toute la largeur. Paysage et ordinateur : une
-       colonne de 900 px au centre, au-delà les lignes deviendraient trop
-       longues pour se lire d'un coup d'œil. */
-    max-width: 900px;
+    /* Tablette (portrait comme paysage) : toute la largeur jusqu'à 1024 px.
+       Au-delà (grand ordinateur), on centre la vue pour ne pas étirer une
+       interface mobile sur toute la largeur. Les marges prennent le fond clair
+       (--ipm-fond-bureau), et une ombre douce détache la colonne. */
+    max-width: 1024px;
     margin: 0 auto;
     transform: translateZ(0);
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 0 32px rgba(0, 0, 0, 0.08);
     overflow: hidden;
   }
 }

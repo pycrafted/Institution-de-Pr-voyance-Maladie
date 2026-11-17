@@ -20,6 +20,8 @@
  * l'effet d'appui `scale(.97)`.
  */
 
+import { IonIcon } from '@ionic/react'
+
 import { haptique } from '../hooks/haptique'
 import { MENTION_BIENTOT, type TypeDocument } from '../services/catalogue'
 
@@ -57,8 +59,15 @@ export default function TuileService({ document, onOuvrir, onIndisponible }: Pro
           {MENTION_BIENTOT}
         </span>
       )}
-      {/* Plus d'icône sur la carte (essai demandé) : le libellé seul. L'icône
-          reste au catalogue (services/catalogue.ts), pour y revenir d'un geste. */}
+      {/* L'icône seule, au trait sur iOS et pleine sur Android, exactement
+          comme la barre d'onglets du bas (le PWA est en mode md : icône
+          pleine). */}
+      <IonIcon
+        ios={document.icone}
+        md={document.iconePleine}
+        className="ipm-tuile__icone"
+        aria-hidden="true"
+      />
       <span className="ipm-tuile__libelle">{document.libelle}</span>
     </button>
   )

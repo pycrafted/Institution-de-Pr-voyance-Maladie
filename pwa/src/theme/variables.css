@@ -221,9 +221,10 @@
   --av-3-texte: var(--ipm-texte-doux);
 
   --ipm-squelette: rgba(22, 24, 29, 0.07);
-  /* Fond autour de la « vue téléphone » sur grand écran : noir dans les deux
-     modes, pour que l'œil reste sur l'écran du téléphone. */
-  --ipm-fond-bureau: #000000;
+  /* Fond autour de la « vue téléphone » sur grand écran : un neutre clair qui
+     prolonge la teinte de l'app (au lieu d'un noir qui donnait l'impression
+     d'un écran cassé sur tablette/ordinateur). */
+  --ipm-fond-bureau: #e3d9d7;
   /* Verre de la barre d'onglets flottante (§3.1). À 92 %, un titre contrasté
      qui défilait dessous restait lisible entre deux libellés d'onglet : le
      flou de 20 px ne suffit pas, il faut monter l'opacité. */
