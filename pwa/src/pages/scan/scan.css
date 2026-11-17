@@ -375,3 +375,254 @@
 .scan__lien-galerie ion-icon {
   font-size: 1.125rem;
 }
+
+/* ---------- Choix du motif ---------- */
+.scan__titre {
+  margin: 0 0 4px;
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--ipm-texte);
+}
+.scan__sous-titre {
+  margin: 0 0 var(--ipm-espace-m);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--ipm-texte-doux);
+}
+.scan__motifs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ipm-espace-s);
+}
+.scan__motif {
+  display: flex;
+  align-items: center;
+  gap: var(--ipm-espace-m);
+  width: 100%;
+  padding: var(--ipm-espace-m);
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--ipm-rayon-grand);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-1);
+  text-align: start;
+  cursor: pointer;
+  transition: box-shadow 0.15s ease;
+}
+.scan__motif:active {
+  box-shadow: none;
+}
+.scan__motif--bientot {
+  background: var(--ipm-surface-2);
+  box-shadow: none;
+  cursor: default;
+  opacity: 0.7;
+}
+.scan__motif-icone {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+  font-size: 1.375rem;
+}
+.scan__motif--bientot .scan__motif-icone {
+  background: var(--ipm-surface);
+  color: var(--ipm-texte-doux);
+}
+.scan__motif-texte {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.scan__motif-libelle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ipm-texte);
+}
+.scan__motif-detail {
+  font-size: 0.8125rem;
+  color: var(--ipm-texte-doux);
+}
+.scan__motif-fleche {
+  flex: none;
+  font-size: 1.25rem;
+  color: var(--ipm-texte-doux);
+}
+.scan__motif-puce {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte-doux);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* ---------- Image figée, en carte (étapes invalide / validée) ---------- */
+.scan__capture--carte {
+  height: auto;
+  max-height: 34vh;
+  object-fit: contain;
+  border-radius: var(--ipm-rayon-grand);
+  background: var(--ipm-surface-2);
+  box-shadow: var(--ombre-1);
+}
+
+/* ---------- Bandeau « ordonnance valide » ---------- */
+.scan__valide {
+  display: flex;
+  gap: var(--ipm-espace-s);
+  align-items: center;
+  padding: var(--ipm-espace-m);
+  border-radius: var(--ipm-rayon-petit);
+  background: var(--ipm-valide-fond);
+  color: var(--ipm-valide-texte);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.scan__valide ion-icon {
+  flex: none;
+  font-size: 1.375rem;
+}
+
+/* ---------- Saisie du montant ---------- */
+.scan__prix {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.scan__prix-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ipm-texte-secondaire);
+}
+.scan__prix-champ {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: var(--ipm-espace-m);
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--ipm-rayon-grand);
+  background: var(--ipm-surface);
+}
+.scan__prix-champ input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--ipm-texte);
+  font-variant-numeric: tabular-nums;
+}
+.scan__prix-unite {
+  flex: none;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ipm-texte-doux);
+}
+.scan__prix-aide {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--ipm-texte-doux);
+}
+
+/* ---------- Succès : animation + message ---------- */
+.scan__succes {
+  align-items: center;
+  text-align: center;
+}
+.scan__succes-anim {
+  display: grid;
+  place-items: center;
+  padding: var(--ipm-espace-m) 0;
+}
+.scan__succes-cercle {
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--ipm-valide-texte, #1a7f37);
+  color: #fff;
+  font-size: 48px;
+  box-shadow: 0 0 0 0 rgba(26, 127, 55, 0.45);
+  animation:
+    scan-pop 0.45s cubic-bezier(0.18, 0.89, 0.32, 1.28) both,
+    scan-onde 1.1s ease-out 0.25s;
+}
+@keyframes scan-pop {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes scan-onde {
+  0% {
+    box-shadow: 0 0 0 0 rgba(26, 127, 55, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 26px rgba(26, 127, 55, 0);
+  }
+}
+.scan__succes-titre {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--ipm-texte);
+}
+.scan__succes-message {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--ipm-texte-doux);
+}
+.scan__succes-message strong {
+  color: var(--ipm-texte);
+}
+
+/* ---------- Avertissement 5 jours ---------- */
+.scan__avertissement {
+  display: flex;
+  gap: var(--ipm-espace-s);
+  align-items: flex-start;
+  text-align: start;
+  padding: var(--ipm-espace-m);
+  border-radius: var(--ipm-rayon-petit);
+  background: var(--ipm-expire-fond);
+  color: var(--ipm-expire-texte);
+}
+.scan__avertissement ion-icon {
+  flex: none;
+  margin-top: 2px;
+  font-size: 1.375rem;
+}
+.scan__avertissement-titre {
+  margin: 0 0 2px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.scan__avertissement-texte {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan__succes-cercle {
+    animation: none;
+  }
+}
