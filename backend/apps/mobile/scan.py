@@ -34,8 +34,9 @@ PROMPT = (
     "Tu analyses la photo d'un document apporté par un assuré d'une mutuelle "
     "santé (IPM) au Sénégal, pour un pré-financement. Identifie le document, "
     "extrais ses informations, et - si c'est une ordonnance - juge sa fiabilité.\n"
-    "Réponds UNIQUEMENT par un objet JSON STRICT et VALIDE : aucun texte autour, "
-    "AUCUN commentaire (ni // ni /* */), aucune balise markdown. Les clés sont :\n"
+    "Réponds UNIQUEMENT par un objet JSON STRICT et VALIDE, COMPACT (sans "
+    "retour à la ligne ni indentation) : aucun texte autour, AUCUN commentaire "
+    "(ni // ni /* */), aucune balise markdown. Les clés sont :\n"
     '{\n'
     '  "type": "ordonnance",\n'
     '  "typeLibelle": "Ordonnance médicale",\n'
@@ -103,7 +104,9 @@ def reconnaitre_document(data_url):
 
     corps = json.dumps({
         'model': modele,
-        'max_tokens': 1024,
+        # 2048 : une ordonnance détaillée (plusieurs médicaments) dépassait
+        # 1024 jetons et sortait tronquée - donc un JSON invalide à analyser.
+        'max_tokens': 2048,
         'messages': [{
             'role': 'user',
             'content': [
