@@ -34,37 +34,39 @@ PROMPT = (
     "Tu analyses la photo d'un document apporté par un assuré d'une mutuelle "
     "santé (IPM) au Sénégal, pour un pré-financement. Identifie le document, "
     "extrais ses informations, et - si c'est une ordonnance - juge sa fiabilité.\n"
-    "Réponds UNIQUEMENT avec un objet JSON (aucun texte autour), de cette forme :\n"
+    "Réponds UNIQUEMENT par un objet JSON STRICT et VALIDE : aucun texte autour, "
+    "AUCUN commentaire (ni // ni /* */), aucune balise markdown. Les clés sont :\n"
     '{\n'
-    '  "type": "ordonnance" | "recu" | "facture" | "bon" | "carte" | "autre",\n'
-    '  "typeLibelle": "<nom lisible du type, en français>",\n'
-    '  "lisible": true | false,   // false si la photo est floue ou illisible\n'
-    '  "date": "AAAA-MM-JJ" | null,   // LIS la date du document avec soin\n'
-    '  "prestataire": "<médecin, pharmacie, clinique, laboratoire…>" | null,\n'
-    '  "patient": "<nom du patient>" | null,\n'
-    '  "montantTotal": <nombre en francs CFA> | null,\n'
-    '  "elements": [ { "libelle": "<médicament ou acte>", "quantite": "<texte>" | null, '
-    '"montant": <nombre> | null } ],\n'
-    '  "estOrdonnance": true | false,   // true seulement si c\'est une ordonnance médicale\n'
-    '  "fiabilite": "haute" | "moyenne" | "faible",   // confiance que c\'est une '
-    "ordonnance authentique et exploitable (lisible, avec un prescripteur et "
-    'une signature/tampon)\n'
-    '  "alertes": [ "<problème constaté>" ],   // ex: "écriture illisible", '
-    '"aucune signature ni tampon visible", "date absente", "document raturé", '
-    '"prescripteur non identifiable"\n'
-    '  "resume": "<une phrase décrivant le document>"\n'
+    '  "type": "ordonnance",\n'
+    '  "typeLibelle": "Ordonnance médicale",\n'
+    '  "lisible": true,\n'
+    '  "date": "2024-10-24",\n'
+    '  "prestataire": "Dr X, médecin généraliste",\n'
+    '  "patient": "Nom du patient",\n'
+    '  "montantTotal": null,\n'
+    '  "elements": [ { "libelle": "médicament ou acte", "quantite": "texte", "montant": null } ],\n'
+    '  "estOrdonnance": true,\n'
+    '  "fiabilite": "moyenne",\n'
+    '  "alertes": [],\n'
+    '  "resume": "une phrase décrivant le document"\n'
     '}\n'
-    "Pour juger la fiabilité d'une ordonnance : regarde si l'écriture est "
-    "lisible, s'il y a un médecin/service prescripteur identifiable, une "
-    "signature ou un tampon, et si l'ensemble est cohérent. Les montants sont en "
-    "francs CFA (entiers, sans séparateur). Une information absente vaut null "
-    "(ou [] pour elements/alertes).\n"
-    "SOIS ÉCONOME. Si le document N'EST PAS une ordonnance, ou s'il est "
-    "illisible ou non exploitable : ne détaille RIEN (elements: [], aucune "
-    "énumération de médicaments ni de montants) et donne seulement un `resume` "
-    "d'UNE seule phrase, brève, disant ce que c'est ou pourquoi ce n'est pas "
-    "exploitable. N'extrais le détail complet (médicaments, montants, patient…) "
-    "QUE pour une ordonnance exploitable."
+    "Règles des valeurs :\n"
+    "- type : l'une de ordonnance, recu, facture, bon, carte, autre.\n"
+    "- estOrdonnance : true UNIQUEMENT pour une ordonnance médicale (même "
+    "ancienne : une vieille ordonnance reste une ordonnance).\n"
+    "- lisible : false si la photo est floue ou illisible.\n"
+    "- date : la date du document, format AAAA-MM-JJ, lue avec soin, ou null.\n"
+    "- prestataire / patient : texte ou null.\n"
+    "- montantTotal et montant : entiers en francs CFA (sans séparateur) ou null.\n"
+    "- fiabilite : haute, moyenne ou faible - confiance que c'est une ordonnance "
+    "authentique et exploitable (écriture lisible, prescripteur identifiable, "
+    "signature ou tampon, cohérence).\n"
+    "- alertes : liste de problèmes, ex. « écriture illisible », « aucune "
+    "signature ni tampon », « prescripteur non identifiable ». [] si rien.\n"
+    "SOIS ÉCONOME : si le document n'est PAS une ordonnance, ou s'il est "
+    "illisible ou non exploitable, mets elements à [] et donne seulement un "
+    "resume d'UNE phrase brève. N'extrais le détail complet (médicaments, "
+    "montants, patient…) QUE pour une ordonnance exploitable."
 )
 
 
@@ -185,10 +187,18 @@ def _extraire_json(texte):
     texte = (texte or '').strip()
     debut, fin = texte.find('{'), texte.rfind('}')
     if debut != -1 and fin > debut:
-        try:
-            return json.loads(texte[debut:fin + 1])
-        except json.JSONDecodeError:
-            pass
+        extrait = texte[debut:fin + 1]
+        # Défense : Claude glisse parfois des commentaires ou une virgule
+        # traînante, qui cassent json.loads. On les retire avant d'analyser.
+        extrait = re.sub(r'/\*.*?\*/', '', extrait, flags=re.DOTALL)
+        # `//` de commentaire, mais pas le `//` d'une URL (http://…).
+        extrait = re.sub(r'(?<!:)//[^\n]*', '', extrait)
+        extrait = re.sub(r',(\s*[}\]])', r'\1', extrait)
+        for candidat in (texte[debut:fin + 1], extrait):
+            try:
+                return json.loads(candidat)
+            except json.JSONDecodeError:
+                continue
     return {
         'type': 'autre',
         'typeLibelle': 'Document',

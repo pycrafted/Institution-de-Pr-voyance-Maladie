@@ -21,6 +21,10 @@ import { chromium } from 'playwright'
 
 const ICI = dirname(fileURLToPath(import.meta.url))
 const RACINE = resolve(ICI, '..')
+// Icônes : fond BLANC (le logo rouge SAR ressort net sur l'écran d'accueil).
+const FOND_ICONE = '#ffffff'
+// Écrans de lancement : le fond clair de l'app, pour que le relais au démarrage
+// ne saute pas.
 const FOND = '#f8f1f0'
 
 /**
@@ -93,7 +97,7 @@ try {
         .fond {
           width: 100%; height: 100%;
           display: grid; place-items: center;
-          background: ${FOND};
+          background: ${FOND_ICONE};
           border-radius: ${Math.round(cote * rayon)}px;
         }
         img { width: ${Math.round(cote * part)}px; display: block; }
