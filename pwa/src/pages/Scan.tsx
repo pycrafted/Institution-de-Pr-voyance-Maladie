@@ -250,10 +250,6 @@ export default function Scan() {
         {etape === 'choix' && (
           <section className="ipm-section scan__choix">
             <h1 className="scan__titre">Pré-financement</h1>
-            <p className="scan__sous-titre">
-              Pas de structure conventionnée à proximité, ou hors horaires ? L’IA lit votre
-              document et débloque l’avance. De quoi s’agit-il ?
-            </p>
             <div className="scan__motifs">
               {MOTIFS.map((motif) => (
                 <button
