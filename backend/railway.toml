@@ -14,7 +14,9 @@
 builder = "NIXPACKS"
 
 [deploy]
-preDeployCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py seed_banques"
-startCommand = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+# Tout est posé dans la commande de démarrage (le preDeployCommand ne
+# s'exécutait pas de façon fiable) : schéma, statiques, banques, premier compte,
+# puis gunicorn. Chaque étape est idempotente - relançable à chaque démarrage.
+startCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && python manage.py seed_banques && (python manage.py createsuperuser --noinput || true) && gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
