@@ -45,15 +45,8 @@ export function verifierMatricule(matricule: string): string | undefined {
   return undefined
 }
 
-/** Message d'erreur du mot de passe, ou undefined s'il est saisi. */
-export function verifierMotDePasse(motDePasse: string): string | undefined {
-  if (!motDePasse) return 'Saisissez votre mot de passe.'
-  return undefined
-}
-
 export interface ErreursIdentification {
   matricule?: string
-  motDePasse?: string
 }
 
 /** Issue d'un envoi, pour le retour haptique et le placement du focus. */
@@ -68,7 +61,6 @@ export function useFormulaireIdentification(
   identifier: (matricule: string, motDePasse: string) => Promise<void>,
 ) {
   const [matricule, setMatricule] = useState('')
-  const [motDePasse, setMotDePasse] = useState('')
   const [tente, setTente] = useState(false)
   const [envoi, setEnvoi] = useState(false)
   const [erreurServeur, setErreurServeur] = useState<string | null>(null)
@@ -77,7 +69,6 @@ export function useFormulaireIdentification(
 
   const erreurs: ErreursIdentification = {
     matricule: verifierMatricule(matriculePourEnvoi(matricule)),
-    motDePasse: verifierMotDePasse(motDePasse),
   }
 
   function changerMatricule(saisie: string): string {
@@ -87,20 +78,19 @@ export function useFormulaireIdentification(
     return propre
   }
 
-  function changerMotDePasse(saisie: string) {
-    setMotDePasse(saisie)
-    setErreurServeur(null)
-  }
-
   async function envoyer(): Promise<IssueEnvoi> {
     if (enCours.current) return 'occupe'
     setTente(true)
-    if (erreurs.matricule || erreurs.motDePasse) return 'invalide'
+    if (erreurs.matricule) return 'invalide'
     enCours.current = true
     setEnvoi(true)
     setErreurServeur(null)
     try {
-      await identifier(matriculePourEnvoi(matricule), motDePasse)
+      const m = matriculePourEnvoi(matricule)
+      // Connexion simplifiée : le matricule sert aussi de mot de passe. Un
+      // participant se connecte juste en tapant son matricule (le serveur
+      // l'accepte comme mot de passe, cf. mobile.views.IdentificationView).
+      await identifier(m, m)
       return 'ok'
     } catch (e) {
       if (estErreurApi(e) && e.genre === 'annulee') return 'annule'
@@ -116,7 +106,6 @@ export function useFormulaireIdentification(
 
   return {
     matricule,
-    motDePasse,
     envoi,
     erreurServeur,
     /** Erreurs à afficher (vides tant que l'employé n'a pas tenté d'envoyer). */
@@ -124,7 +113,6 @@ export function useFormulaireIdentification(
     /** Contrôles de l'état courant, affichés ou non (où placer le focus). */
     controle: erreurs,
     changerMatricule,
-    changerMotDePasse,
     envoyer,
   }
 }

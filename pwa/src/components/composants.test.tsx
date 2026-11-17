@@ -39,27 +39,24 @@ function rendre(noeud: ReactNode) {
 }
 
 describe('§3.1 barre d’onglets flottante', () => {
-  it('porte la classe flottante, trois onglets et « Mes retenues »', () => {
+  it('porte la classe flottante et un bouton par onglet, dont « Scanner »', () => {
     const { container } = rendre(<BarreOngletsFlottante />)
     const barre = container.querySelector('ion-tab-bar')
     expect(barre).toHaveClass('ipm-onglets')
     const boutons = Array.from(container.querySelectorAll('ion-tab-button'))
-    expect(boutons.map((b) => b.getAttribute('tab'))).toEqual([
-      ...ONGLETS.map((o) => o.cle),
-      'retenues',
-    ])
-    expect(boutons.slice(0, 3).map((b) => b.getAttribute('href'))).toEqual(
-      ONGLETS.map((o) => o.href),
-    )
-    expect(boutons[3]).toHaveTextContent('Mes retenues')
+    expect(boutons.map((b) => b.getAttribute('tab'))).toEqual(ONGLETS.map((o) => o.cle))
+    expect(boutons.map((b) => b.getAttribute('href'))).toEqual(ONGLETS.map((o) => o.href))
+    expect(boutons[boutons.length - 1]).toHaveTextContent('Scanner')
   })
 
-  it('mène aux trois écrans principaux, dont l’annuaire des structures', () => {
+  it('mène aux quatre écrans principaux, dont l’annuaire et le scan', () => {
     // L'annuaire est un onglet et non un raccourci de l'accueil : c'est ce
     // qu'on consulte en cherchant où se soigner, il doit être à un toucher.
-    // Le profil a rejoint la barre du haut.
-    expect(ONGLETS.map((o) => o.href)).toEqual(['/accueil', '/bons', '/conventionnes'])
+    // Le scan (pré-financement) est devenu un onglet ; le relevé et le profil
+    // sont en haut (compte/perso).
+    expect(ONGLETS.map((o) => o.href)).toEqual(['/accueil', '/bons', '/conventionnes', '/scan'])
     expect(ONGLETS.map((o) => o.libelle)).toContain('Structures')
+    expect(ONGLETS.map((o) => o.libelle)).toContain('Scanner')
   })
 })
 

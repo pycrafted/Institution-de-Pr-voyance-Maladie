@@ -359,6 +359,11 @@ export const REFERENTIELS = [
     nouveau: 'Nouveau médicament',
     modifier: 'Modifier le médicament',
 
+    // 6 009 médicaments : pagination serveur (réseau ET nombre de lignes dans
+    // le DOM). Le segment actif devient un filtre serveur « exclus ».
+    paginationServeur: true,
+    segmentServeur: (seg) => (seg === 'tous' ? {} : { exclus: seg === 'exclus' }),
+
     // Cases à cocher : on agit ici sur plusieurs lignes à la fois - exclure du
     // remboursement, réintégrer ou désactiver une sélection de médicaments.
     actionsLot: [

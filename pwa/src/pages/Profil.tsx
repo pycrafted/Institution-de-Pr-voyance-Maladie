@@ -27,6 +27,8 @@ import {
   helpBuoyOutline,
   informationCircleOutline,
   logOutOutline,
+  moon,
+  sunny,
 } from 'ionicons/icons'
 import { useMemo, useState } from 'react'
 
@@ -34,6 +36,7 @@ import CarteListe from '../components/CarteListe'
 import FeuilleChoix from '../components/FeuilleChoix'
 import { haptique } from '../hooks/haptique'
 import { useParticipant, useSession } from '../session'
+import { basculerApparence, useApparence } from '../theme/apparence'
 import { estInstallee } from '../utils/plateforme'
 import { VERSION } from '../version'
 import { informationsDuParticipant } from './profil/informations'
@@ -42,6 +45,7 @@ import './profil/profil.css'
 export default function Profil() {
   const { participant } = useParticipant()
   const { rafraichir, deconnecter } = useSession()
+  const sombre = useApparence() === 'sombre'
   // La question posée dans une feuille de choix, s'il y en a une.
   const [question, setQuestion] = useState<'deconnexion' | null>(null)
   const routeur = useIonRouter()
@@ -103,6 +107,19 @@ export default function Profil() {
             <h2 className="ipm-titre-section">Réglages</h2>
           </div>
           <div className="ipm-pile">
+            <CarteListe
+              icone={sombre ? sunny : moon}
+              teinte="neutre"
+              titre={sombre ? 'Passer en mode clair' : 'Passer en mode sombre'}
+              details={
+                sombre ? 'L’application est en thème sombre.' : 'L’application est en thème clair.'
+              }
+              chevron={false}
+              onClick={() => {
+                haptique.leger()
+                basculerApparence()
+              }}
+            />
             {!installee && (
               <CarteListe
                 icone={downloadOutline}

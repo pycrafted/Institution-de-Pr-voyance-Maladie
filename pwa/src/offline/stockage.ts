@@ -13,7 +13,7 @@
 
 import { clear, createStore, del, get, set, type UseStore } from 'idb-keyval'
 
-import type { Beneficiaire, Bon, GenreDocument, Participant } from '../types/api'
+import type { Beneficiaire, Bon, GenreDocument, Participant, ReleveCompte } from '../types/api'
 import { memeDocument } from '../utils/documents'
 
 let magasinSession: UseStore | null = null
@@ -87,6 +87,29 @@ export function enregistrerBonsEnCache(bons: Bon[], le = new Date().toISOString(
 export async function lireBonEnCache(genre: GenreDocument, id: number): Promise<Bon | undefined> {
   const enCache = await lireBonsEnCache()
   return enCache?.bons.find((bon) => memeDocument(bon, { genre, id }))
+}
+
+// ---------------------------------------------------------------------------
+// Cache hors-ligne : relevé de compte IPM
+// ---------------------------------------------------------------------------
+
+export interface CompteEnCache {
+  releve: ReleveCompte
+  /** Date-heure ISO de la dernière synchronisation réussie. */
+  le: string
+}
+
+const CLE_COMPTE = 'compte'
+
+export function lireCompteEnCache(): Promise<CompteEnCache | undefined> {
+  return sansEchec(() => get<CompteEnCache>(CLE_COMPTE, cache()), undefined)
+}
+
+export function enregistrerCompteEnCache(
+  releve: ReleveCompte,
+  le = new Date().toISOString(),
+): Promise<void> {
+  return sansEchec(() => set(CLE_COMPTE, { releve, le } satisfies CompteEnCache, cache()), undefined)
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,244 @@
+/* Écran « Scan » : aperçu du document, puis ce que l'IA en a compris. */
+
+.scan__fichier {
+  display: none;
+}
+
+.scan__contenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ipm-espace-l);
+}
+
+/* L'aperçu de la photo prise, avec un voile pendant l'analyse. */
+.scan__apercu {
+  position: relative;
+  border-radius: var(--ipm-rayon-grand);
+  overflow: hidden;
+  background: var(--ipm-surface-2);
+  box-shadow: var(--ombre-1);
+}
+
+.scan__apercu img {
+  display: block;
+  width: 100%;
+  max-height: 46vh;
+  object-fit: contain;
+}
+
+.scan__voile {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ipm-espace-s);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(1px);
+}
+
+.scan__voile ion-spinner {
+  width: 34px;
+  height: 34px;
+}
+
+/* Carte du résultat. */
+.scan__resultat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ipm-espace-m);
+  padding: var(--ipm-espace-l);
+  border-radius: var(--ipm-rayon-grand);
+  background: var(--ipm-surface);
+  border: 1px solid var(--ipm-bordure);
+  box-shadow: var(--ombre-1);
+}
+
+.scan__type {
+  display: flex;
+  gap: var(--ipm-espace-m);
+  align-items: flex-start;
+}
+
+.scan__type-pastille {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+  font-size: 1.25rem;
+}
+
+.scan__type-libelle {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--ipm-texte);
+}
+
+.scan__resume {
+  margin: 2px 0 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--ipm-texte-doux);
+}
+
+/* Verdict en vedette : récente + fiable (vert), ou à vérifier (ambre). */
+.scan__verdict {
+  display: flex;
+  gap: var(--ipm-espace-s);
+  align-items: center;
+  padding: var(--ipm-espace-m);
+  border-radius: var(--ipm-rayon-petit);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.scan__verdict ion-icon {
+  flex: none;
+  font-size: 1.375rem;
+}
+
+.scan__verdict--ok {
+  background: var(--ipm-valide-fond);
+  color: var(--ipm-valide-texte);
+}
+
+.scan__verdict--attention {
+  background: var(--ipm-expire-fond);
+  color: var(--ipm-expire-texte);
+}
+
+/* Les problèmes constatés par l'IA. */
+.scan__alertes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scan__alertes li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--ipm-texte-doux);
+}
+
+.scan__alertes ion-icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--ipm-expire-texte);
+}
+
+.scan__champs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ipm-espace-s) var(--ipm-espace-m);
+  margin: 0;
+  padding-top: var(--ipm-espace-s);
+  border-top: 1px solid var(--ipm-bordure);
+}
+
+.scan__champ dt {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--ipm-texte-secondaire);
+}
+
+.scan__champ dd {
+  margin: 2px 0 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ipm-texte);
+}
+
+.scan__elements-titre {
+  margin: 0 0 var(--ipm-espace-xs);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--ipm-texte-secondaire);
+}
+
+.scan__elements ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scan__element {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ipm-espace-m);
+  padding: 8px 0;
+  border-top: 1px solid var(--ipm-liseret);
+  font-size: 0.875rem;
+}
+
+.scan__element:first-child {
+  border-top: 0;
+}
+
+.scan__element-libelle {
+  color: var(--ipm-texte);
+}
+
+.scan__element-montant {
+  flex: none;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ipm-texte);
+}
+
+.scan__erreur {
+  display: flex;
+  gap: var(--ipm-espace-s);
+  align-items: center;
+  padding: var(--ipm-espace-m);
+  border-radius: var(--ipm-rayon-petit);
+  background: var(--ipm-annule-fond);
+  color: var(--ipm-annule-texte);
+  font-size: 0.875rem;
+}
+
+.scan__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--ipm-espace-s);
+}
+
+/* Option secondaire : importer une image depuis la galerie. */
+.scan__lien-galerie {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: var(--ipm-espace-s) auto 0;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--ipm-texte-doux);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.scan__lien-galerie ion-icon {
+  font-size: 1.125rem;
+}

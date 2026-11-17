@@ -7,9 +7,13 @@ Chaque référentiel concret n'a plus qu'à déclarer son ``queryset`` et son
 ``serializer_class``.
 """
 
+import functools
+import math
+import operator
+
 from django.core.exceptions import FieldDoesNotExist
 from django.db import transaction
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -22,6 +26,104 @@ class ReferentielViewSet(viewsets.ModelViewSet):
     # quelques centaines de fiches - et tiendrait la base occupée le temps de
     # tout valider ligne à ligne.
     TAILLE_MAX_IMPORT = 2000
+
+    # ----- Pagination serveur (opt-in) --------------------------------------
+    #
+    # Les petits référentiels (quelques dizaines de fiches) partent en entier :
+    # le navigateur fait recherche, tri et pagination, instantanément. Les
+    # grosses tables (66 429 bons, 396 873 écritures) ne le peuvent pas : la
+    # page demande alors une **tranche** au serveur (``?page=1&taille=25``), qui
+    # fait recherche, tri et découpe côté base - le tableau ne tient jamais
+    # qu'une page en mémoire.
+    #
+    # Tout est piloté par la présence du paramètre ``page`` : sans lui, la liste
+    # répond comme avant (un tableau simple) et rien ne change pour les écrans
+    # en mode client. Chaque ViewSet qui veut la pagination serveur déclare les
+    # champs où chercher et les tris qu'il accepte.
+    TAILLE_PAGE_DEFAUT = 25
+    TAILLE_PAGE_MAX = 200
+    # Champs (chemins ORM) parcourus par la recherche serveur, en « contient ».
+    champs_recherche = ()
+    # Tris acceptés : clé envoyée par la page -> liste de champs ``order_by``.
+    tris = {}
+    # Tri par défaut quand la page n'en demande pas (sinon l'ordre du modèle).
+    tri_defaut = None
+    # Filtres de liste de la page, déclarés `{param: champ_ORM}` : en mode
+    # serveur, les sélecteurs (Société, État, Spécialité…) deviennent des
+    # paramètres de requête, et c'est la base qui filtre. Une valeur vide ou
+    # « tous » ne filtre rien.
+    filtres_liste = {}
+
+    def list(self, request, *args, **kwargs):
+        """Tout d'un coup (mode client) ou une tranche (pagination serveur).
+
+        La pagination serveur ne s'active que si la requête porte ``page`` :
+        les écrans en mode client n'envoient pas ce paramètre et retrouvent le
+        tableau simple d'avant.
+        """
+        queryset = self.filter_queryset(self.get_queryset())
+        if request.query_params.get('page') is None:
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+        return self._liste_paginee(request, queryset)
+
+    def _liste_paginee(self, request, queryset):
+        queryset = self._filtrer_liste(request, queryset)
+        queryset = self._rechercher(queryset, request.query_params.get('recherche'))
+        queryset = self._trier(queryset, request.query_params.get('tri'))
+        total = queryset.count()
+        taille = self._entier(
+            request.query_params.get('taille'), self.TAILLE_PAGE_DEFAUT, 1, self.TAILLE_PAGE_MAX
+        )
+        pages = max(1, math.ceil(total / taille))
+        page = self._entier(request.query_params.get('page'), 1, 1, pages)
+        debut = (page - 1) * taille
+        lignes = list(queryset[debut:debut + taille])
+        serializer = self.get_serializer(lignes, many=True)
+        return Response({
+            'resultats': serializer.data,
+            'count': total,
+            'pages': pages,
+            'page': page,
+            'taille': taille,
+        })
+
+    @staticmethod
+    def _entier(valeur, defaut, mini, maxi):
+        """Un entier de la requête, borné ; le défaut si absent ou invalide."""
+        try:
+            nombre = int(valeur)
+        except (TypeError, ValueError):
+            return defaut
+        return max(mini, min(nombre, maxi))
+
+    def _filtrer_liste(self, request, queryset):
+        """Applique les filtres de liste déclarés (Société, État…) présents dans la requête."""
+        for param, champ in (self.filtres_liste or {}).items():
+            valeur = (request.query_params.get(param) or '').strip()
+            if valeur and valeur.lower() != 'tous':
+                queryset = queryset.filter(**{champ: valeur})
+        return queryset
+
+    def _rechercher(self, queryset, terme):
+        """Filtre « contient » sur ``champs_recherche`` (OU entre les champs)."""
+        terme = (terme or '').strip()
+        if not terme or not self.champs_recherche:
+            return queryset
+        clause = functools.reduce(
+            operator.or_,
+            (Q(**{'%s__icontains' % champ: terme}) for champ in self.champs_recherche),
+        )
+        return queryset.filter(clause).distinct()
+
+    def _trier(self, queryset, tri):
+        """Applique un tri de ``tris``, sinon ``tri_defaut``, sinon l'ordre du modèle."""
+        ordre = self.tris.get((tri or '').strip())
+        if ordre:
+            return queryset.order_by(*ordre)
+        if self.tri_defaut:
+            return queryset.order_by(*self.tri_defaut)
+        return queryset
 
     def perform_create(self, serializer):
         # Aucun champ n'est exigé à la saisie, pas même le code : laissé vide,

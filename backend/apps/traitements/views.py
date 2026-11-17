@@ -1,9 +1,10 @@
 """Vue des factures (module Traitements)."""
 
+import math
 from datetime import date
 
 from django.db import transaction
-from django.db.models import Count, Max
+from django.db.models import Count, Max, Q
 from django.http import HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import status
@@ -156,6 +157,52 @@ class FactureViewSet(FiltreExerciceMixin, ReferentielViewSet):
     champ_exercice = 'date_facture'
     serializer_class = FactureSerializer
     importer = None
+
+    # Pagination serveur (cf. ReferentielViewSet) : 24 668 factures. La facture
+    # n'a pas de code : son identifiant est son id (exposé « numero »), et
+    # l'ordre par id décroissant est déjà chronologique (et indexé par la clé).
+    champs_recherche = (
+        'numero_fournisseur',
+        'numero_reglement',
+        'fournisseur_soins__libelle',
+        'fournisseur_divers__libelle',
+        'adherent__libelle',
+    )
+    tris = {
+        'numero': ['-id'],
+        'date': ['-date_facture', '-id'],
+        'fournisseur': ['fournisseur_soins__libelle', 'fournisseur_divers__libelle', '-id'],
+    }
+    tri_defaut = ['-id']
+    # Filtres de liste des pages Factures ET Règlements (même endpoint) : Société,
+    # État de la facture, Spécialité, et - pour les règlements - l'état du
+    # règlement (segments « Non Echue / Echue / Reglée / … »).
+    filtres_liste = {
+        'codeSoc': 'adherent__code',
+        'etat': 'etat',
+        'specialite': 'specialite__code',
+        'etatReglement': 'etat_reglement',
+    }
+
+    def get_queryset(self):
+        """Le socle (exercice) + le type de fournisseur, + le filtre « réglable ».
+
+        La page « Factures » a deux onglets, Soins et Divers, sur le même
+        endpoint : en pagination serveur, la distinction se fait ici
+        (``?type=soins|divers``) et non sur la page. La page « Règlements »
+        réutilise le même endpoint mais ne montre que les factures
+        **réglables** (``?reglable=true``) : non remboursement-ticket et déjà
+        comptabilisées ou payées (cf. estReglable côté écran).
+        """
+        queryset = super().get_queryset()
+        type_frs = (self.request.query_params.get('type') or '').strip().lower()
+        if type_frs in (TYPE_SOINS, TYPE_DIVERS):
+            queryset = queryset.filter(type_fournisseur=type_frs)
+        if (self.request.query_params.get('reglable') or '').strip().lower() == 'true':
+            queryset = queryset.filter(
+                remboursement_ticket=False, etat__in=[ETAT_COMPTABILISEE, ETAT_PAYEE],
+            )
+        return queryset
 
     def perform_create(self, serializer):
         # Réception : la facture entre « Reçue », avec l'auteur et le jour de
@@ -728,6 +775,17 @@ class OrdrePaiementViewSet(ReferentielViewSet):
     serializer_class = OrdrePaiementSerializer
     importer = None
 
+    # Pagination serveur (cf. ReferentielViewSet) : ils s'accumulent au fil des
+    # paiements. Tri par N° d'enregistrement (le plus récent), recherche sur le
+    # bénéficiaire, le chèque, le motif et la banque.
+    champs_recherche = ('numero_piece', 'a_ordre_de', 'motif', 'banque__libelle')
+    tris = {
+        'numero': ['-numero_enreg'],
+        'beneficiaire': ['a_ordre_de', '-numero_enreg'],
+        'banque': ['banque__libelle', '-numero_enreg'],
+    }
+    tri_defaut = ['-numero_enreg']
+
     def perform_create(self, serializer):
         # Les ordres n'ont pas de « code » : on pose le N° d'enregistrement et le
         # N° de chèque (séquence du chéquier de la banque) nous-mêmes.
@@ -914,19 +972,81 @@ class RemboursementViewSet(viewsets.ViewSet):
             .order_by('-date_bon', 'id')
         )
 
+    def _liste_filtree(self, request):
+        """Les bons de remboursement, filtrés comme la page les demande.
+
+        Mêmes filtres que l'écran (exercice, société, mois, type, segment
+        Réglé / Non réglé, recherche) mais appliqués à la base : en pagination
+        serveur, la page n'a plus la liste entière pour filtrer elle-même.
+        """
+        queryset = self._bons()
+        params = request.query_params
+
+        exercice = (params.get('exercice') or '').strip()
+        if exercice.isdigit():
+            queryset = queryset.filter(date_bon__year=int(exercice))
+
+        code_soc = (params.get('codeSoc') or '').strip()
+        if code_soc and code_soc.lower() != 'tous':
+            queryset = queryset.filter(code_soc=code_soc)
+
+        mois = (params.get('moisNum') or '').strip()
+        if mois.isdigit() and 1 <= int(mois) <= 12:
+            queryset = queryset.filter(date_bon__month=int(mois))
+
+        type_remb = (params.get('typeRemb') or '').strip()
+        if type_remb and type_remb.lower() != 'tous':
+            queryset = queryset.filter(facture__type_remb=type_remb)
+
+        rembourse = (params.get('rembourse') or '').strip().lower()
+        if rembourse in ('true', 'false'):
+            queryset = queryset.filter(rembourse=(rembourse == 'true'))
+
+        recherche = (params.get('recherche') or '').strip()
+        if recherche:
+            queryset = queryset.filter(
+                Q(participant__icontains=recherche)
+                | Q(matricule_part__icontains=recherche)
+                | Q(beneficiaire__icontains=recherche)
+            )
+        return queryset
+
     def list(self, request):
-        return Response([_representer_remboursement(b) for b in self._bons()])
+        """Tout (mode client) ou une tranche (pagination serveur, si ``page``)."""
+        queryset = self._liste_filtree(request)
+        if request.query_params.get('page') is None:
+            return Response([_representer_remboursement(b) for b in queryset])
+
+        def entier(valeur, defaut, mini, maxi):
+            try:
+                return max(mini, min(int(valeur), maxi))
+            except (TypeError, ValueError):
+                return defaut
+
+        total = queryset.count()
+        taille = entier(request.query_params.get('taille'), 25, 1, 200)
+        pages = max(1, math.ceil(total / taille))
+        page = entier(request.query_params.get('page'), 1, 1, pages)
+        debut = (page - 1) * taille
+        lignes = list(queryset[debut:debut + taille])
+        return Response({
+            'resultats': [_representer_remboursement(b) for b in lignes],
+            'count': total,
+            'pages': pages,
+            'page': page,
+            'taille': taille,
+        })
 
     @action(detail=False, methods=['get'], url_path='etat')
     def etat(self, request):
         """
-        État compact de la liste, comme le socle des référentiels : l'écoute de
-        fond du frontend l'interroge pour savoir s'il faut recharger. Sans cette
-        action, chaque sondage répondait 404 et la page ne se rafraîchissait
-        jamais toute seule.
+        État compact de la liste (filtres compris), comme le socle des
+        référentiels : l'écoute de fond du frontend l'interroge pour savoir s'il
+        faut recharger. Sans cette action, chaque sondage répondait 404 et la
+        page ne se rafraîchissait jamais toute seule.
         """
         return Response(
-            self._bons().order_by().aggregate(
+            self._liste_filtree(request).order_by().aggregate(
                 nombre=Count('pk'), dernier_changement=Max('modifie_le')
             )
         )
@@ -1046,14 +1166,27 @@ class BonAchatViewSet(FiltreExerciceMixin, ReferentielViewSet):
     serializer_class = BonAchatSerializer
     importer = None
 
+    # Pagination serveur (cf. ReferentielViewSet) : les commandes s'accumulent.
+    # Recherche sur le numéro, le fournisseur et l'offre ; tri au plus récent.
+    champs_recherche = ('code', 'fournisseur__libelle', 'num_offre')
+    tris = {
+        'code': ['-code'],
+        'date': ['-date_bon', '-code'],
+        'fournisseur': ['fournisseur__libelle', '-code'],
+    }
+    tri_defaut = ['-date_bon', '-code']
+
     def get_queryset(self):
         queryset = super().get_queryset()
-        # Le mois, comme l'exercice, ne borne que la liste et l'écoute : un lien
-        # vers un vieux bon doit rester ouvrable.
+        # Le mois et le statut, comme l'exercice, ne bornent que la liste et
+        # l'écoute : un lien vers un vieux bon doit rester ouvrable.
         if getattr(self, 'action', None) in ('list', 'etat'):
             mois = (self.request.query_params.get('mois') or '').strip()
             if mois.isdigit() and 1 <= int(mois) <= 12:
                 queryset = queryset.filter(date_bon__month=int(mois))
+            statut = (self.request.query_params.get('statut') or '').strip()
+            if statut:
+                queryset = queryset.filter(statut=statut)
         return queryset
 
     def perform_create(self, serializer):

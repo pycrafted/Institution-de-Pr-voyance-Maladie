@@ -241,6 +241,18 @@ export async function listerEntrees(cleReferentiel, parametres) {
 }
 
 /**
+ * Une **tranche** d'un référentiel, paginée par le serveur (grosses tables :
+ * bons, factures, écritures). Contrairement à `listerEntrees`, qui rapatrie
+ * tout, celle-ci ne demande qu'une page et laisse recherche et tri à la base.
+ *
+ * `parametres` porte l'exercice, `page`, `taille`, `recherche`, `tri`. La
+ * réponse est renvoyée telle quelle : `{ resultats, count, pages, page, taille }`.
+ */
+export async function listerPage(cleReferentiel, parametres) {
+  return request(`${ENDPOINTS_API[cleReferentiel]}/${enRequete(parametres)}`)
+}
+
+/**
  * État compact d'un référentiel servi par l'API : `{ nombre,
  * dernier_changement }`. Deux valeurs qui bougent dès qu'une fiche est créée,
  * modifiée ou supprimée - de quoi savoir s'il faut recharger la liste sans la

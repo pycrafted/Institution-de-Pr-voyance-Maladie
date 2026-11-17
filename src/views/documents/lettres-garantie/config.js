@@ -43,6 +43,9 @@ export const LETTRES_GARANTIE = {
 
   taillePage: 12,
 
+  // 45 906 lettres : pagination côté serveur (cf. Referentiel + socle backend).
+  paginationServeur: true,
+
   // Une lettre n'a pas d'intitulé : c'est son numéro qui la nomme.
   nommer: (l) => `La lettre ${l.code}`,
 

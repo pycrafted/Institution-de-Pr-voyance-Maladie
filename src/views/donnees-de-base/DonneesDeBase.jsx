@@ -26,15 +26,15 @@ import './donnees-de-base.scss'
  * les autres écrans les voient. Seule cette page restreint ce qu'elle
  * affiche, et elle le fait ici, côté navigateur.
  *
- * Un nombre fixe plutôt qu'une part du total : 2 % donnait 120 médicaments
- * et une seule spécialité - trop dans un cas, rien dans l'autre. Dix lignes
- * suffisent à montrer ce qu'est chaque nomenclature, et un référentiel plus
- * court que cela s'affiche en entier.
+ * **Tout visible (2026-11-12).** La restriction à dix lignes datait de la
+ * base de démonstration ; sur les vraies nomenclatures LAMPS (6 009
+ * médicaments, les spécialités, les actes…), l'app les montre toutes, la
+ * pagination prenant le relais.
  *
- * **Pour changer la restriction, modifier cette seule fonction.** `() =>
- * Infinity` rend tout visible.
+ * **Pour re-restreindre, remettre un nombre ici** (c'est la seule fonction à
+ * toucher) ; `Infinity` montre tout.
  */
-const LIGNES_VISIBLES = 10
+const LIGNES_VISIBLES = Infinity
 const lignesVisibles = (total) => Math.min(total, LIGNES_VISIBLES)
 
 const DonneesDeBase = () => {

@@ -2,13 +2,13 @@
  * Page « Participants ».
  *
  * Les salariés couverts par l'IPM - à distinguer des adhérents, qui sont les
- * collectivités cotisantes. La page se compose de quatre onglets, comme
- * l'application d'origine :
+ * collectivités cotisantes. La page présente deux onglets :
  *   - Participants IPM         liste des participants en activité
  *   - Participants Retraités   même liste, filtrée sur les retraités
- *   - Familles                 les bénéficiaires rattachés aux participants
- *   - Demandes de photo        les réinitialisations de photo demandées
- *                              depuis l'application mobile, à instruire
+ * Les ayants droit (ex-onglet « Familles ») se lisent désormais en dépliant la
+ * ligne de chaque participant (cf. AyantsDroitParticipant). Les demandes de
+ * photo, elles, restent atteignables sans onglet visible : la cloche des
+ * notifications ouvre cette vue via « ?onglet=photos ».
  * La création se fait par un bouton rouge « Nouveau participant » à droite de la
  * barre d'onglets, comme les autres pages (fournisseurs, factures…).
  *
@@ -32,15 +32,19 @@ import './participants.scss'
 import { creerEntree, listerEntreesSync } from '../../services/referentiels'
 import { toast } from '../../services/toast'
 import { erreursDeChamps, messageErreur } from '../../services/erreurs'
-import { PARTICIPANTS, PARTICIPANTS_IPM, PARTICIPANTS_RETRAITES, FAMILLES } from './config'
+import { PARTICIPANTS, PARTICIPANTS_IPM, PARTICIPANTS_RETRAITES } from './config'
 import { DEMANDES_PHOTO } from './demandesPhoto'
 
 const ONGLETS = [
   { cle: 'ipm', libelle: 'Participants IPM' },
   { cle: 'retraites', libelle: 'Participants Retraités' },
-  { cle: 'familles', libelle: 'Familles' },
-  { cle: 'photos', libelle: 'Demandes de photo' },
 ]
+
+// « Demandes de photo » n'est plus un onglet permanent : les demandes arrivent
+// par la cloche de notifications, qui ouvre cette vue via « ?onglet=photos ».
+// On la garde donc atteignable (et instruisible) sans l'afficher dans la barre.
+const ONGLET_PHOTOS = 'photos'
+const CLES_VALIDES = [...ONGLETS.map((o) => o.cle), ONGLET_PHOTOS]
 
 const Participants = () => {
   // Liste affichée : IPM, Retraités ou Familles. La création, elle, est un
@@ -49,7 +53,7 @@ const Participants = () => {
   // notifications mène ainsi droit aux demandes de photo.
   const [onglet, setOnglet] = useState(() => {
     const demande = new URLSearchParams(window.location.search).get('onglet')
-    return ONGLETS.some((o) => o.cle === demande) ? demande : 'ipm'
+    return CLES_VALIDES.includes(demande) ? demande : 'ipm'
   })
   const [creationOuverte, setCreationOuverte] = useState(false)
   // Stats de la liste active, remontées par <Referentiel> pour les poser en
@@ -131,7 +135,6 @@ const Participants = () => {
           {onglet === 'retraites' && (
             <Referentiel referentiel={PARTICIPANTS_RETRAITES} onStats={setStats} />
           )}
-          {onglet === 'familles' && <Referentiel referentiel={FAMILLES} onStats={setStats} />}
           {onglet === 'photos' && <Referentiel referentiel={DEMANDES_PHOTO} onStats={setStats} />}
         </section>
 

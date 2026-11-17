@@ -290,6 +290,10 @@ const baseFactures = {
   nouveau: 'Réceptionner une facture',
   modifier: 'Modifier la facture',
   taillePage: 15,
+  // 24 668 factures : pagination côté serveur. Chaque sous-onglet (Soins /
+  // Divers) fixe son type en paramètre serveur (cf. parametresServeurFixes),
+  // pour que la base ne renvoie que les factures de l'onglet.
+  paginationServeur: true,
   nommer: (f) => `la facture n° ${f.numero}`,
   // Pas de titre au-dessus de la liste : le sous-onglet le dit déjà.
   sansTitre: true,
@@ -337,6 +341,8 @@ export const FACTURES_SOINS = {
   ...baseFactures,
   libelle: 'Factures Fournisseurs de Soins',
   filtreBase: (f) => f.typeFournisseur === 'soins',
+  // En pagination serveur, la séparation Soins/Divers se fait à la base.
+  parametresServeurFixes: { type: 'soins' },
   ...barreFactures([
     {
       champ: 'specialite',
@@ -398,6 +404,8 @@ export const FACTURES_DIVERS = {
   ...baseFactures,
   libelle: 'Factures Fournisseurs Divers',
   filtreBase: (f) => f.typeFournisseur === 'divers',
+  // En pagination serveur, la séparation Soins/Divers se fait à la base.
+  parametresServeurFixes: { type: 'divers' },
   ...barreFactures(),
   // Pas de colonne « Spécialité » pour les divers : on la retire du tableau.
   colonnesTableau: baseFactures.colonnesTableau.filter((c) => c !== 'specialite'),
@@ -528,6 +536,20 @@ const baseReglements = {
   // Reprend le vocabulaire « Valide / Annulée » des factures (badge d'état).
   etat: baseFactures.etat,
   segments: segmentsReglement,
+  // Pagination serveur : les factures réglables s'accumulent. Le « réglable »
+  // et le type (soins/divers) sont fixés par sous-onglet ; le segment d'état du
+  // règlement part en filtre serveur « etatReglement ».
+  paginationServeur: true,
+  segmentServeur: (seg) => {
+    const etats = {
+      'non-echue': 'Non Echue',
+      echue: 'Echue',
+      reglee: 'Reglée',
+      comptabilisee: 'Comptabilisée',
+      annulee: 'Annulée',
+    }
+    return etats[seg] ? { etatReglement: etats[seg] } : {}
+  },
   colonnesTableau: [
     'numero',
     'numeroFournisseur',
@@ -551,6 +573,8 @@ export const REGLEMENTS_SOINS = {
   ...baseReglements,
   libelle: 'Règlements Fournisseurs de Soins',
   filtreBase: (f) => f.typeFournisseur === 'soins' && estReglable(f),
+  // Côté serveur : type soins + seulement les factures réglables.
+  parametresServeurFixes: { type: 'soins', reglable: 'true' },
   ...barreReglements([
     {
       champ: 'specialite',
@@ -583,6 +607,8 @@ export const REGLEMENTS_DIVERS = {
   ...baseReglements,
   libelle: 'Règlements Fournisseurs Divers',
   filtreBase: (f) => f.typeFournisseur === 'divers' && estReglable(f),
+  // Côté serveur : type divers + seulement les factures réglables.
+  parametresServeurFixes: { type: 'divers', reglable: 'true' },
   ...barreReglements(),
   colonnesTableau: baseReglements.colonnesTableau.filter((c) => c !== 'specialite'),
   colonnes: [
@@ -630,6 +656,8 @@ export const ORDRES_PAIEMENT = {
   nouveau: 'Etablir',
   modifier: "Modifier l'ordre",
   taillePage: 15,
+  // Pagination serveur : les ordres s'accumulent au fil des paiements.
+  paginationServeur: true,
   // Pas de titre au-dessus de la liste : la page le porte déjà.
   sansTitre: true,
   // Cases à cocher (action de lot), comme l'application d'origine.
@@ -775,6 +803,11 @@ export const REMBOURSEMENTS = {
   taillePage: 15,
   sansTitre: true,
   sansCreation: true,
+  // Pagination serveur : les remboursements s'accumulent. Le segment Réglé /
+  // Non réglé part en filtre serveur « rembourse ».
+  paginationServeur: true,
+  segmentServeur: (seg) =>
+    seg === 'regle' ? { rembourse: 'true' } : seg === 'non-regle' ? { rembourse: 'false' } : {},
   // Cases à cocher : on règle en lot (comme l'application d'origine).
   selection: true,
   stats: statsRemboursement,
@@ -925,6 +958,11 @@ export const BONS_ACHATS = {
   nouveau: "Créer un bon d'Achat",
   modifier: "Modifier le bon d'achat",
   taillePage: 15,
+  // Pagination serveur : les commandes s'accumulent. Le segment En Cours /
+  // Traité part en filtre serveur « statut ».
+  paginationServeur: true,
+  segmentServeur: (seg) =>
+    seg === 'en-cours' ? { statut: 'En Cours' } : seg === 'traites' ? { statut: 'Traité' } : {},
   // Pas de titre au-dessus de la liste : la page le porte déjà.
   sansTitre: true,
   nommer: (b) => `le bon ${b.code}`,

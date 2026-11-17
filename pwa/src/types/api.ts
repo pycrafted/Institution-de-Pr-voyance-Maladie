@@ -185,6 +185,109 @@ export interface MoiReponse {
   beneficiaires: Beneficiaire[]
 }
 
+/**
+ * Un soin pris en charge : ce que l'IPM a payé et ce qui reste à la charge de
+ * l'agent (le ticket modérateur), pour un bon donné.
+ */
+export interface Soin {
+  id: number
+  /** Mois du soin (date ISO). */
+  date: DateISO
+  /** N° du bon, s'il y en a un. */
+  numeroBon: string
+  /** Part de l'agent : ce qu'il doit pour ce soin. */
+  partAgent: number
+  /** Part IPM : ce que l'IPM a pris en charge pour ce soin. */
+  partIpm: number
+  /** Reste dû à l'IPM après ce soin. */
+  reste: number
+  /**
+   * Le document de l'agent (pour ouvrir son détail), ou null si le n° de bon
+   * ne désigne aucun document visible dans « Mes bons ».
+   */
+  document: { genre: GenreDocument; id: number } | null
+}
+
+/**
+ * Un mouvement d'argent d'un mois donné : une retenue sur salaire (journal RP)
+ * ou un remboursement versé à l'agent (journaux RIB/RIC). Groupé par mois.
+ */
+export interface MouvementMensuel {
+  /** Clé du mois (ex. « 2026-01-01 »). */
+  id: string
+  /** Mois du mouvement (date ISO, le 1er du mois). */
+  date: DateISO
+  /** Montant du mois. */
+  montant: number
+}
+
+/** GET /api/mobile/moi/compte/ — le relevé du compte IPM du participant. */
+export interface ReleveCompte {
+  /** Compte participant (ex. « 411002 »). */
+  compte: string
+  /** Tiers de l'agent (ex. « 02-0001 »). */
+  tiers: string
+  /** Reste à payer à l'IPM (positif = dette, 0 = à jour, négatif = avance). */
+  solde: number
+  /** Total pris en charge par l'IPM, cumulé. */
+  totalPartIpm: number
+  /** Total coupé sur le salaire (retenues RP), cumulé. */
+  totalRetenu: number
+  /** Total remboursé à l'agent (RIB/RIC), cumulé. */
+  totalRembourse: number
+  /** Les soins, du plus récent au plus ancien. */
+  soins: Soin[]
+  /** Les retenues sur salaire, par mois, du plus récent au plus ancien. */
+  retenues: MouvementMensuel[]
+  /** Les remboursements versés à l'agent, par mois, du plus récent au plus ancien. */
+  remboursements: MouvementMensuel[]
+}
+
+/** Un élément relevé sur un document scanné (médicament, acte, ligne de reçu). */
+export interface ElementDocument {
+  libelle: string
+  quantite: string | null
+  montant: number | null
+}
+
+/** POST /api/mobile/scan/ — ce que l'IA a reconnu sur la photo d'un document. */
+export interface DocumentReconnu {
+  /** Catégorie machine : ordonnance, recu, facture, bon, carte, autre. */
+  type: string
+  /** Nom lisible du type (« Ordonnance médicale »). */
+  typeLibelle: string
+  /** false si la photo est floue/illisible. */
+  lisible: boolean
+  /** Date du document (ISO) ou null. */
+  date: DateISO | null
+  /** Prestataire (médecin, pharmacie, clinique…) ou null. */
+  prestataire: string | null
+  /** Patient ou null. */
+  patient: string | null
+  /** Montant total en francs CFA ou null. */
+  montantTotal: number | null
+  /** Médicaments / actes / lignes relevés. */
+  elements: ElementDocument[]
+  /** Une phrase décrivant le document. */
+  resume: string
+  /** Vrai si c'est une ordonnance médicale. */
+  estOrdonnance: boolean
+  /** Confiance que l'ordonnance est authentique et exploitable. */
+  fiabilite: 'haute' | 'moyenne' | 'faible'
+  /** Problèmes constatés (illisible, pas de signature, date absente…). */
+  alertes: string[]
+  /** Âge de l'ordonnance en jours (depuis sa date), ou null si date inconnue. */
+  ageJours: number | null
+  /** Vrai si l'ordonnance est récente (dans le délai). */
+  recente: boolean
+  /** Seuil de fraîcheur appliqué, en jours. */
+  seuilJours: number
+  /** Verdict de pré-financement : ok, attention, ou « autre » (hors ordonnance). */
+  verdict: 'ok' | 'attention' | 'autre'
+  /** Message du verdict, à montrer tel quel. */
+  verdictMessage: string
+}
+
 /** POST /api/mobile/bons-pharmacie/ */
 export interface NouveauBonCorps {
   /**

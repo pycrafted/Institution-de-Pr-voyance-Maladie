@@ -1,0 +1,52 @@
+/* Écran Report À Nouveau : rappel, barre de sélection et totaux. */
+
+.ran-rappel {
+  margin: 0 0 0.25rem;
+  padding: 0.75rem 1rem;
+  background: #f4f6f9;
+  border-left: 3px solid #0d6efd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #3b4453;
+}
+
+.ran-barre {
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ran-fleche {
+  font-size: 1.25rem;
+  color: #6b7280;
+}
+
+.ran-cible {
+  font-size: 0.95rem;
+  color: #3b4453;
+}
+
+.ran-badge-fait {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.ran-totaux {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 0.75rem 1rem;
+  background: #fbfbfc;
+  border-bottom: 1px solid #e3e6ea;
+  font-size: 0.9rem;
+  color: #3b4453;
+
+  .ran-ecart {
+    color: #b8860b;
+  }
+}
+
+.ran-tableau {
+  width: 100%;
+}

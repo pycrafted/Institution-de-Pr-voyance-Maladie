@@ -79,11 +79,13 @@ describe('barre du haut', () => {
     expect(container.querySelector('.ipm-navbar__titre')).toBeNull()
     expect(screen.queryByLabelText('Menu')).toBeNull()
     const boutons = container.querySelectorAll('.ipm-navbar__icone')
-    expect(boutons).toHaveLength(4)
+    expect(boutons).toHaveLength(3)
     expect(screen.getByLabelText('Photos d’identité')).toBeInTheDocument()
     expect(screen.getByLabelText('Notifications')).toBeInTheDocument()
-    expect(screen.getByLabelText('Passer en mode sombre')).toBeInTheDocument()
-    expect(screen.getByLabelText('Se déconnecter')).toBeInTheDocument()
+    // « Profil » remplace « Quitter » ; déconnexion ET apparence sont dans Profil.
+    expect(screen.getByLabelText('Mon profil')).toBeInTheDocument()
+    expect(screen.queryByLabelText('Se déconnecter')).toBeNull()
+    expect(screen.queryByLabelText('Passer en mode sombre')).toBeNull()
   })
 
   it('porte des icônes pleines, comme la barre du bas', () => {
@@ -95,11 +97,6 @@ describe('barre du haut', () => {
     for (const icone of icones) {
       expect(icone.getAttribute('icon')).not.toMatch(/outline/)
     }
-  })
-
-  it('propose de passer en sombre tant qu’on est en clair', () => {
-    rendreEcran(<BarreActions />)
-    expect(screen.getByLabelText('Passer en mode sombre')).toBeInTheDocument()
   })
 
   it('la cloche n’est jamais inerte : elle ouvre une feuille', () => {
@@ -162,15 +159,13 @@ describe('barre du haut', () => {
     expect(simulations.poserPhoto).not.toHaveBeenCalled()
   })
 
-  it('ne déconnecte jamais sans confirmation', async () => {
+  it('mène au profil, sans jamais déconnecter depuis la barre', () => {
     const session = uneSession()
     rendreEcran(<BarreActions />, session)
-    fireEvent.click(screen.getByLabelText('Se déconnecter'))
-    // Elle efface les bons du téléphone : on demande avant de le faire.
-    const feuille = screen.getByRole('dialog')
-    expect(feuille).toHaveTextContent('Se déconnecter d’IPM Mobile ?')
+    // Le bouton « Profil » ne doit pas ouvrir de fenêtre de déconnexion : la
+    // déconnexion vit désormais dans l'écran Profil, avec sa confirmation.
+    fireEvent.click(screen.getByLabelText('Mon profil'))
+    expect(screen.queryByRole('dialog')).toBeNull()
     expect(session.deconnecter).not.toHaveBeenCalled()
-    fireEvent.click(within(feuille).getByText('Se déconnecter'))
-    await vi.waitFor(() => expect(session.deconnecter).toHaveBeenCalledWith('volontaire'))
   })
 })

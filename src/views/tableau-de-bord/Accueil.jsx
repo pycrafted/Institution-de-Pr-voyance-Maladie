@@ -1,14 +1,11 @@
 /**
  * Page d'accueil - le tableau de bord, sur les données réelles.
  *
- * Tant que les agrégats de prestations et de remboursements ne sont pas servis
- * (cf. AGREGATS_DISPONIBLES dans TableauDeBord.jsx), l'accueil résume ce que
- * la base contient déjà : participants et familles, sociétés, prestataires, et
- * les documents émis - bons de pharmacie, lettres de garantie, LG
- * hospitalisation, bons optique. Les chiffres se comptent dans les listes
- * servies par l'API - sauf celui des prestataires, borné à ce que la page
- * Fournisseurs de Soins accepte de montrer (cf. FICHES_VISIBLES) pour que les
- * deux écrans ne se contredisent pas. La base, elle, en garde 412.
+ * Les chiffres sont **agrégés par le serveur** (cf. backend/apps/tableau_de_bord)
+ * et non recomptés dans le navigateur : participants et familles, sociétés,
+ * prestataires actifs, et les documents émis (bons de pharmacie, lettres de
+ * garantie, LG hospitalisation, bons optique). Trois requêtes indépendantes -
+ * tuiles, graphiques, listes - chacune affichée dès qu'elle répond.
  *
  * Mise en page d'OpsDigital (TailAdmin) : une rangée de tuiles chiffrées, un
  * histogramme et un anneau, trois classements, puis les derniers documents.
@@ -17,14 +14,13 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
-import { CCard, CCardBody, CSpinner } from '@coreui/react'
+import { CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilDescription, cilHospital, cilPeople, cilUser } from '@coreui/icons'
 
-import { FICHES_VISIBLES } from '../fournisseurs-de-soins/FournisseursDeSoins'
 
 import { messageErreur } from '../../services/erreurs'
-import { listerEntrees } from '../../services/referentiels'
+import { request } from '../../services/api'
 import { EXERCICES, dateFr } from '../documents/commun'
 import Graphique from './Graphique'
 import { formaterEntier } from './donnees'
@@ -83,33 +79,16 @@ const MOIS = [
   'Déc.',
 ]
 
-const CLES = [
-  'participants',
-  'beneficiaires',
-  'adherents',
-  'fournisseurs-de-soins',
-  ...DOCUMENTS.map((d) => d.cle),
-]
-
-const capitale = (texte) =>
-  texte ? texte.charAt(0).toUpperCase() + texte.slice(1).toLowerCase() : ''
-
 /**
- * Le seul exercice que cette page ouvre : l'exercice en cours - 2026.
+ * L'exercice ouvert par défaut : l'année en cours (2026). Le sélecteur propose
+ * les exercices d'`EXERCICES` (l'année courante seule depuis la remise à neuf),
+ * comme les écrans de documents et de factures - le serveur agrège n'importe
+ * quelle année sans la charger.
  *
- * `EXERCICES` en propose huit, et la liste reste entière partout ailleurs :
- * les écrans de documents, de factures et de règlements continuent d'offrir
- * les huit, et le serveur sert toujours n'importe lequel. C'est l'accueil, et
- * lui seul, qui s'en tient à l'année courante.
- *
- * Suit l'horloge : en 2027 l'accueil passera tout seul à 2027. Pour le figer
- * sur 2026, remplacer par `const EXERCICE_AFFICHE = '2026'`.
+ * Suit l'horloge : en 2027 l'accueil s'ouvrira tout seul sur 2027.
  */
 const EXERCICE_AFFICHE = String(new Date().getFullYear())
-const EXERCICES_AFFICHES = EXERCICES.filter((e) => e.valeur === EXERCICE_AFFICHE)
-
-const exerciceDe = (document) =>
-  String(document.exercice || String(document.date || '').slice(0, 4))
+const EXERCICES_AFFICHES = EXERCICES
 
 // -----------------------------------------------------------------------------
 // Fragments
@@ -123,6 +102,12 @@ const EnteteCarte = ({ titre, action }) => (
 )
 
 EnteteCarte.propTypes = { titre: PropTypes.string.isRequired, action: PropTypes.node }
+
+/** Placeholder qui respire, le temps qu'un bloc reçoive ses données. */
+const Squelette = ({ hauteur = 120 }) => (
+  <div className="tdb-squelette" style={{ height: hauteur }} aria-hidden="true" />
+)
+Squelette.propTypes = { hauteur: PropTypes.number }
 
 /** Tuile chiffrée, comme les cartes de statistiques d'OpsDigital. */
 const Tuile = ({ icone, valeur, libelle, note, chemin, accent = false }) => (
@@ -189,127 +174,40 @@ Classement.propTypes = {
   vide: PropTypes.string.isRequired,
 }
 
-// -----------------------------------------------------------------------------
-// Calculs
-// -----------------------------------------------------------------------------
-
-const calculer = (d, exercice) => {
-  const actifs = d.participants.filter((x) => x.etat === 'Actif')
-  const enAttente = d.participants.filter((x) => x.etat === 'En Attente').length
-  const familles = d.beneficiaires.filter((b) => b.actif !== false)
-  const prestataires = d['fournisseurs-de-soins'].filter((f) => f.actif !== false)
-
-  // Un document annulé ne compte pas.
-  const documents = DOCUMENTS.map((t) => ({
-    ...t,
-    lignes: d[t.cle].filter((x) => x.actif !== false),
-  }))
-  const duExercice = documents.map((t) => ({
-    ...t,
-    lignes: t.lignes.filter((x) => exerciceDe(x) === exercice),
-  }))
-  const totalDocuments = duExercice.reduce((s, t) => s + t.lignes.length, 0)
-  const aTraiter = duExercice.reduce((s, t) => s + t.lignes.filter((x) => !x.traite).length, 0)
-
-  const parMois = duExercice.map((t) => {
-    const mois = Array(12).fill(0)
-    t.lignes.forEach((x) => {
-      const m = Number(String(x.date || '').slice(5, 7))
-      if (m) mois[m - 1] += 1
-    })
-    return mois
-  })
-
-  // Population couverte : les participants actifs, puis leurs ayants droit
-  // par qualité.
-  const population = new Map([['Participants', actifs.length]])
-  familles.forEach((b) => {
-    const qualite = capitale(b.typeBenef) || 'Autres'
-    population.set(qualite, (population.get(qualite) || 0) + 1)
-  })
-
-  const parSociete = d.adherents
-    .map((a) => ({
-      libelle: a.libelle,
-      valeur: actifs.filter((x) => x.adherent === a.code).length,
-    }))
-    .filter((s) => s.valeur > 0)
-    .sort((a, b) => b.valeur - a.valeur)
-    .slice(0, 6)
-
-  const traitement = duExercice.map((t) => ({
-    cle: t.cle,
-    libelle: t.libelle,
-    teinte: t.teinte,
-    total: t.lignes.length,
-    traites: t.lignes.filter((x) => x.traite).length,
-  }))
-
-  const parPrestataire = new Map()
-  duExercice.forEach((t) =>
-    t.lignes.forEach((x) => {
-      const nom = t.prestataire(x)
-      if (nom) parPrestataire.set(nom, (parPrestataire.get(nom) || 0) + 1)
-    }),
-  )
-  const topPrestataires = [...parPrestataire]
-    .map(([libelle, valeur]) => ({ libelle, valeur }))
-    .sort((a, b) => b.valeur - a.valeur)
-    .slice(0, 6)
-
-  const derniers = documents
-    .flatMap((t) => t.lignes.map((x) => ({ ...x, genre: t })))
-    .sort(
-      (a, b) =>
-        String(b.date || '').localeCompare(String(a.date || '')) ||
-        String(b.code || '').localeCompare(String(a.code || '')),
-    )
-    .slice(0, 8)
-
-  return {
-    actifs: actifs.length,
-    inscrits: d.participants.length,
-    enAttente,
-    familles: familles.length,
-    // Borné comme la liste : une tuile annonçant 412 au-dessus d'un écran
-    // qui en montre douze ferait mentir l'un des deux. Rien n'est retiré
-    // de la base - l'API en sert toujours 412.
-    prestataires: Math.min(prestataires.length, FICHES_VISIBLES),
-    totalDocuments,
-    aTraiter,
-    parMois,
-    population: [...population].map(([libelle, valeur]) => ({ libelle, valeur })),
-    parSociete,
-    traitement,
-    topPrestataires,
-    derniers,
-  }
-}
 
 // -----------------------------------------------------------------------------
 // Vue
 // -----------------------------------------------------------------------------
 
 const Accueil = () => {
-  const [donnees, setDonnees] = useState(null)
+  // Trois blocs indépendants : les tuiles (compteurs), les graphiques et les
+  // listes. Chacun a sa requête et s'affiche dès que SA réponse arrive, sans
+  // attendre les autres. Les agrégats sont calculés par le serveur - des
+  // chiffres, pas des listes brutes à recompter dans le navigateur.
+  const [tuiles, setTuiles] = useState(null)
+  const [graphiques, setGraphiques] = useState(null)
+  const [listes, setListes] = useState(null)
   const [erreur, setErreur] = useState(null)
   const [exercice, setExercice] = useState(EXERCICE_AFFICHE)
 
   useEffect(() => {
     let actif = true
-    Promise.all(CLES.map((cle) => listerEntrees(cle)))
-      .then((listes) => {
-        if (actif) setDonnees(Object.fromEntries(CLES.map((cle, i) => [cle, listes[i]])))
-      })
-      .catch((e) => {
-        if (actif) setErreur(messageErreur(e))
-      })
+    setTuiles(null)
+    setGraphiques(null)
+    setListes(null)
+    setErreur(null)
+    const q = `?exercice=${encodeURIComponent(exercice)}`
+    const charger = (chemin, poser) =>
+      request(`/tableau-de-bord/${chemin}/${q}`)
+        .then((d) => actif && poser(d))
+        .catch((e) => actif && setErreur(messageErreur(e)))
+    charger('tuiles', setTuiles)
+    charger('graphiques', setGraphiques)
+    charger('listes', setListes)
     return () => {
       actif = false
     }
-  }, [])
-
-  const c = useMemo(() => (donnees ? calculer(donnees, exercice) : null), [donnees, exercice])
+  }, [exercice])
 
   // --- Base commune des options de graphique ---------------------------------
   const socle = useMemo(
@@ -338,11 +236,11 @@ const Accueil = () => {
 
   const donneesMois = useMemo(
     () =>
-      c && {
+      graphiques && {
         labels: MOIS,
         datasets: DOCUMENTS.map((t, i) => ({
           label: t.libelle,
-          data: c.parMois[i],
+          data: graphiques.parMois[i]?.mois || [],
           backgroundColor: t.teinte,
           hoverBackgroundColor: t.teinte,
           borderRadius: 3,
@@ -351,7 +249,7 @@ const Accueil = () => {
           stack: 'documents',
         })),
       },
-    [c],
+    [graphiques],
   )
 
   const optionsMois = useMemo(
@@ -390,17 +288,18 @@ const Accueil = () => {
   )
 
   const teintesPopulation = useMemo(
-    () => (c ? c.population.map((_, i) => (i === 0 ? p.accent : p.rampe[(i - 1) % 5])) : []),
-    [c],
+    () =>
+      graphiques ? graphiques.population.map((_, i) => (i === 0 ? p.accent : p.rampe[(i - 1) % 5])) : [],
+    [graphiques],
   )
 
   const donneesPopulation = useMemo(
     () =>
-      c && {
-        labels: c.population.map((x) => x.libelle),
+      graphiques && {
+        labels: graphiques.population.map((x) => x.libelle),
         datasets: [
           {
-            data: c.population.map((x) => x.valeur),
+            data: graphiques.population.map((x) => x.valeur),
             backgroundColor: teintesPopulation,
             borderColor: p.surface,
             borderWidth: 2,
@@ -408,7 +307,7 @@ const Accueil = () => {
           },
         ],
       },
-    [c, teintesPopulation],
+    [graphiques, teintesPopulation],
   )
 
   const optionsPopulation = useMemo(
@@ -429,7 +328,7 @@ const Accueil = () => {
   const entete = (
     <header className="tdb-entete">
       <h1 className="tdb-titre">Tableau de bord</h1>
-      {c && (
+      {EXERCICES_AFFICHES.length > 0 && (
         <div className="tdb-entete-filtre">
           <span className="tdb-entete-etiquette">Exercice</span>
           <div className="tdb-segments" role="group" aria-label="Exercice">
@@ -450,26 +349,22 @@ const Accueil = () => {
     </header>
   )
 
-  if (!c) {
+  // La page (coquille + filtre) s'affiche tout de suite ; chaque bloc montre un
+  // squelette tant que sa réponse n'est pas là. On ne bascule en plein écran
+  // que si une requête échoue vraiment (rien à montrer).
+  if (erreur && !tuiles && !graphiques && !listes) {
     return (
       <div className="tdb">
         {entete}
-        {erreur ? (
-          <section className="tdb-vide">
-            <p className="tdb-vide-titre">Le tableau de bord n’a pas pu être chargé</p>
-            <p className="tdb-vide-texte">{erreur}</p>
-          </section>
-        ) : (
-          <section className="tdb-chargement">
-            <CSpinner size="sm" />
-            <span>Chargement du tableau de bord…</span>
-          </section>
-        )}
+        <section className="tdb-vide">
+          <p className="tdb-vide-titre">Le tableau de bord n’a pas pu être chargé</p>
+          <p className="tdb-vide-texte">{erreur}</p>
+        </section>
       </div>
     )
   }
 
-  const totalPopulation = c.population.reduce((s, x) => s + x.valeur, 0)
+  const totalPopulation = graphiques ? graphiques.population.reduce((s, x) => s + x.valeur, 0) : 0
 
   return (
     <div className="tdb">
@@ -477,34 +372,40 @@ const Accueil = () => {
 
       {/* ---- Tuiles chiffrées ---------------------------------------------- */}
       <section className="tdb-tuiles" aria-label="Chiffres clés">
-        <Tuile
-          icone={cilUser}
-          valeur={c.actifs}
-          libelle="Participants actifs"
-          note={c.enAttente ? `${formaterEntier(c.enAttente)} en attente` : null}
-          chemin="/participants"
-        />
-        <Tuile
-          icone={cilPeople}
-          valeur={c.familles}
-          libelle="Bénéficiaires rattachés"
-          note={`${formaterEntier(c.inscrits)} participants inscrits`}
-          chemin="/participants"
-        />
-        <Tuile
-          icone={cilDescription}
-          valeur={c.totalDocuments}
-          libelle={`Documents émis en ${exercice}`}
-          note={c.aTraiter ? `${formaterEntier(c.aTraiter)} à traiter` : null}
-          chemin="/documents/bons-pharmacie"
-          accent
-        />
-        <Tuile
-          icone={cilHospital}
-          valeur={c.prestataires}
-          libelle="Prestataires de soins actifs"
-          chemin="/fournisseurs-de-soins"
-        />
+        {tuiles ? (
+          <>
+            <Tuile
+              icone={cilUser}
+              valeur={tuiles.actifs}
+              libelle="Participants actifs"
+              note={tuiles.enAttente ? `${formaterEntier(tuiles.enAttente)} en attente` : null}
+              chemin="/participants"
+            />
+            <Tuile
+              icone={cilPeople}
+              valeur={tuiles.familles}
+              libelle="Bénéficiaires rattachés"
+              note={`${formaterEntier(tuiles.inscrits)} participants inscrits`}
+              chemin="/participants"
+            />
+            <Tuile
+              icone={cilDescription}
+              valeur={tuiles.totalDocuments}
+              libelle={`Documents émis en ${exercice}`}
+              note={tuiles.aTraiter ? `${formaterEntier(tuiles.aTraiter)} à traiter` : null}
+              chemin="/documents/bons-pharmacie"
+              accent
+            />
+            <Tuile
+              icone={cilHospital}
+              valeur={tuiles.prestataires}
+              libelle="Prestataires de soins actifs"
+              chemin="/fournisseurs-de-soins"
+            />
+          </>
+        ) : (
+          [0, 1, 2, 3].map((i) => <Squelette key={i} hauteur={96} />)
+        )}
       </section>
 
       {/* ---- Activité · Population ----------------------------------------- */}
@@ -524,20 +425,27 @@ const Accueil = () => {
                 </li>
               ))}
             </ul>
-            <Graphique
-              key={`mois-${exercice}`}
-              type="bar"
-              data={donneesMois}
-              options={optionsMois}
-              hauteur={290}
-              aria={`Documents émis par mois et par type, exercice ${exercice}`}
-            />
+            {graphiques ? (
+              <Graphique
+                key={`mois-${exercice}`}
+                type="bar"
+                data={donneesMois}
+                options={optionsMois}
+                hauteur={290}
+                aria={`Documents émis par mois et par type, exercice ${exercice}`}
+              />
+            ) : (
+              <Squelette hauteur={290} />
+            )}
           </CCardBody>
         </CCard>
 
         <CCard className="tdb-carte">
           <CCardBody className="tdb-carte-corps">
             <EnteteCarte titre="Population couverte" />
+            {!graphiques ? (
+              <Squelette hauteur={200} />
+            ) : (
             <div className="tdb-anneau">
               <div className="tdb-anneau-centre">
                 <Graphique
@@ -553,7 +461,7 @@ const Accueil = () => {
                 </span>
               </div>
               <ul className="tdb-releve">
-                {c.population.map((x, i) => (
+                {graphiques.population.map((x, i) => (
                   <li key={x.libelle} className="tdb-releve-item">
                     <span
                       className="tdb-legende-puce tdb-legende-puce-pleine"
@@ -566,6 +474,7 @@ const Accueil = () => {
                 ))}
               </ul>
             </div>
+            )}
           </CCardBody>
         </CCard>
       </div>
@@ -575,37 +484,55 @@ const Accueil = () => {
         <CCard className="tdb-carte">
           <CCardBody className="tdb-carte-corps">
             <EnteteCarte titre="Participants actifs par société" />
-            <Classement lignes={c.parSociete} vide="Aucun participant actif." />
+            {graphiques ? (
+              <Classement lignes={graphiques.parSociete} vide="Aucun participant actif." />
+            ) : (
+              <Squelette hauteur={160} />
+            )}
           </CCardBody>
         </CCard>
 
         <CCard className="tdb-carte">
           <CCardBody className="tdb-carte-corps">
             <EnteteCarte titre={`Documents traités - ${exercice}`} />
-            <ul className="tdb-etats">
-              {c.traitement.map((t) => (
-                <li key={t.cle} className="tdb-etats-item">
-                  <span
-                    className="tdb-legende-puce tdb-legende-puce-pleine"
-                    style={{ backgroundColor: t.teinte }}
-                    aria-hidden="true"
-                  />
-                  <span className="tdb-etats-libelle">{t.libelle}</span>
-                  <span className="tdb-etats-valeur">
-                    {formaterEntier(t.traites)}
-                    <span className="tdb-etats-sur"> / {formaterEntier(t.total)}</span>
-                  </span>
-                  <Jauge part={t.total ? (t.traites / t.total) * 100 : 0} teinte={p.etats.valide} />
-                </li>
-              ))}
-            </ul>
+            {listes ? (
+              <ul className="tdb-etats">
+                {listes.traitement.map((t) => {
+                  const genre = DOCUMENTS.find((d) => d.cle === t.cle)
+                  return (
+                    <li key={t.cle} className="tdb-etats-item">
+                      <span
+                        className="tdb-legende-puce tdb-legende-puce-pleine"
+                        style={{ backgroundColor: genre?.teinte }}
+                        aria-hidden="true"
+                      />
+                      <span className="tdb-etats-libelle">{t.libelle}</span>
+                      <span className="tdb-etats-valeur">
+                        {formaterEntier(t.traites)}
+                        <span className="tdb-etats-sur"> / {formaterEntier(t.total)}</span>
+                      </span>
+                      <Jauge
+                        part={t.total ? (t.traites / t.total) * 100 : 0}
+                        teinte={p.etats.valide}
+                      />
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <Squelette hauteur={160} />
+            )}
           </CCardBody>
         </CCard>
 
         <CCard className="tdb-carte">
           <CCardBody className="tdb-carte-corps">
             <EnteteCarte titre={`Principaux prestataires - ${exercice}`} />
-            <Classement lignes={c.topPrestataires} vide="Aucun document sur cet exercice." />
+            {listes ? (
+              <Classement lignes={listes.topPrestataires} vide="Aucun document sur cet exercice." />
+            ) : (
+              <Squelette hauteur={160} />
+            )}
           </CCardBody>
         </CCard>
       </div>
@@ -614,7 +541,9 @@ const Accueil = () => {
       <CCard className="tdb-carte">
         <CCardBody className="tdb-carte-corps">
           <EnteteCarte titre="Derniers documents émis" />
-          {c.derniers.length ? (
+          {!listes ? (
+            <Squelette hauteur={220} />
+          ) : listes.derniers.length ? (
             <div className="tableau-conteneur tdb-tableau-conteneur">
               <table className="tableau tdb-tableau">
                 <thead>
@@ -629,32 +558,37 @@ const Accueil = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {c.derniers.map((x) => (
-                    <tr key={`${x.genre.cle}-${x.id}`}>
-                      <th scope="row" className="tdb-cellule-titre tdb-mono">
-                        {x.code}
-                      </th>
-                      <td>
-                        <Link to={x.genre.chemin} className="tdb-lien-discret">
-                          {x.genre.court}
-                        </Link>
-                      </td>
-                      <td className="tdb-cellule-douce">{dateFr(x.date)}</td>
-                      <td>{x.participant}</td>
-                      <td className="tdb-cellule-douce">{x.beneficiaire}</td>
-                      <td className="tdb-cellule-douce">{x.genre.prestataire(x)}</td>
-                      <td>
-                        <span className="tdb-badge">
-                          <span
-                            className="tdb-badge-point"
-                            style={{ backgroundColor: x.traite ? p.etats.valide : p.etats.encours }}
-                            aria-hidden="true"
-                          />
-                          {x.traite ? 'Traité' : 'À traiter'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {listes.derniers.map((x) => {
+                    const genre = DOCUMENTS.find((d) => d.cle === x.cle)
+                    return (
+                      <tr key={`${x.cle}-${x.code}`}>
+                        <th scope="row" className="tdb-cellule-titre tdb-mono">
+                          {x.code}
+                        </th>
+                        <td>
+                          <Link to={genre?.chemin || '#'} className="tdb-lien-discret">
+                            {x.court}
+                          </Link>
+                        </td>
+                        <td className="tdb-cellule-douce">{dateFr(x.date)}</td>
+                        <td>{x.participant}</td>
+                        <td className="tdb-cellule-douce">{x.beneficiaire}</td>
+                        <td className="tdb-cellule-douce">{x.prestataire}</td>
+                        <td>
+                          <span className="tdb-badge">
+                            <span
+                              className="tdb-badge-point"
+                              style={{
+                                backgroundColor: x.traite ? p.etats.valide : p.etats.encours,
+                              }}
+                              aria-hidden="true"
+                            />
+                            {x.traite ? 'Traité' : 'À traiter'}
+                          </span>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

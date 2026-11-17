@@ -19,6 +19,7 @@ import {
 
 import { chargerConfig, configurerClient, identifier as identifierApi, lireMoi } from '../api'
 import { reinitialiserBons } from '../data/bons'
+import { reinitialiserCompte } from '../data/compte'
 import { effacerSession, enregistrerSession, lireSession, viderCache } from '../offline/stockage'
 import type { Beneficiaire, Participant } from '../types/api'
 
@@ -81,6 +82,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     generation.current += 1
     configurerClient({ jeton: null })
     reinitialiserBons()
+    reinitialiserCompte()
     setEtat({ ...ANONYME, motifDeconnexion: motif })
     await Promise.all([effacerSession(), viderCache()])
   }, [])

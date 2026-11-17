@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 from .cotisations import CotisationsViewSet
 from .interrogation_comptes import InterrogationComptesViewSet
 from .journal_central import JournalCentralViewSet
+from .report_a_nouveau import ReportANouveauViewSet
 from .retenues import RetenuesViewSet
 from .saisie_journal import SaisieJournalViewSet
 from .views import (
@@ -37,5 +38,8 @@ router.register('journal-central', JournalCentralViewSet, basename='journal-cent
 router.register(
     'interrogation-comptes', InterrogationComptesViewSet, basename='interrogation-comptes',
 )
+# Clôture d'exercice façon LAMPS : le report à nouveau des soldes de bilan
+# (journal RAN) de l'exercice clos sur le suivant.
+router.register('report-a-nouveau', ReportANouveauViewSet, basename='report-a-nouveau')
 
 urlpatterns = router.urls

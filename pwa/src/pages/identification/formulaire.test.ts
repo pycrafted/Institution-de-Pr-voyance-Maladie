@@ -7,7 +7,6 @@ import {
   nettoyerMatricule,
   useFormulaireIdentification,
   verifierMatricule,
-  verifierMotDePasse,
 } from './formulaire'
 
 describe('nettoyerMatricule', () => {
@@ -45,13 +44,6 @@ describe('verifierMatricule', () => {
   })
 })
 
-describe('verifierMotDePasse', () => {
-  it('exige un mot de passe, sans en juger la forme (le serveur décide)', () => {
-    expect(verifierMotDePasse('')).toBe('Saisissez votre mot de passe.')
-    expect(verifierMotDePasse('0000')).toBeUndefined()
-  })
-})
-
 describe('useFormulaireIdentification', () => {
   it('ne montre les erreurs qu’après une tentative, et n’appelle pas le serveur si incomplet', async () => {
     const identifier = vi.fn(() => Promise.resolve())
@@ -66,15 +58,13 @@ describe('useFormulaireIdentification', () => {
     expect(issue).toBe('invalide')
     expect(identifier).not.toHaveBeenCalled()
     expect(result.current.erreurs.matricule).toBe('Saisissez votre matricule.')
-    expect(result.current.erreurs.motDePasse).toBe('Saisissez votre mot de passe.')
   })
 
-  it('envoie le matricule nettoyé et le mot de passe', async () => {
+  it('envoie le matricule nettoyé, aussi comme mot de passe', async () => {
     const identifier = vi.fn((_matricule: string, _motDePasse: string) => Promise.resolve())
     const { result } = renderHook(() => useFormulaireIdentification(identifier))
     act(() => {
       result.current.changerMatricule('01 1204-')
-      result.current.changerMotDePasse('0000')
     })
     expect(result.current.matricule).toBe('01-1204-')
 
@@ -83,7 +73,8 @@ describe('useFormulaireIdentification', () => {
       issue = await result.current.envoyer()
     })
     expect(issue).toBe('ok')
-    expect(identifier).toHaveBeenCalledWith('01-1204', '0000')
+    // Le matricule sert aussi de mot de passe : même valeur envoyée deux fois.
+    expect(identifier).toHaveBeenCalledWith('01-1204', '01-1204')
     expect(result.current.envoi).toBe(false)
   })
 
@@ -99,7 +90,6 @@ describe('useFormulaireIdentification', () => {
     const { result } = renderHook(() => useFormulaireIdentification(identifier))
     act(() => {
       result.current.changerMatricule('1204')
-      result.current.changerMotDePasse('0001')
     })
 
     let issue = ''
@@ -109,7 +99,7 @@ describe('useFormulaireIdentification', () => {
     expect(issue).toBe('refuse')
     expect(result.current.erreurServeur).toBe('Matricule ou mot de passe incorrect.')
 
-    act(() => result.current.changerMotDePasse('0000'))
+    act(() => result.current.changerMatricule('1205'))
     expect(result.current.erreurServeur).toBeNull()
   })
 
@@ -118,7 +108,6 @@ describe('useFormulaireIdentification', () => {
     const { result } = renderHook(() => useFormulaireIdentification(identifier))
     act(() => {
       result.current.changerMatricule('1204')
-      result.current.changerMotDePasse('0000')
     })
     let issue = ''
     await act(async () => {
@@ -139,7 +128,6 @@ describe('useFormulaireIdentification', () => {
     const { result } = renderHook(() => useFormulaireIdentification(identifier))
     act(() => {
       result.current.changerMatricule('1204')
-      result.current.changerMotDePasse('0000')
     })
 
     let premier: Promise<string> = Promise.resolve('')

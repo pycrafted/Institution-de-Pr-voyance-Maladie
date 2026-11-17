@@ -13,6 +13,7 @@
  */
 
 import { listerEntreesSync } from '../../services/referentiels'
+import AyantsDroitParticipant from './AyantsDroitParticipant'
 
 /** Options d'un référentiel tiers, filtrées et rendues au format attendu. */
 const depuisReferentiel = (cle, predicat = () => true) =>
@@ -585,9 +586,11 @@ const listeParticipants = (extra) => ({
   ...extra,
   // La création se fait par l'onglet dédié, pas par un bouton de la liste.
   sansCreation: true,
-  // On modifie en cliquant la ligne (le panneau s'ouvre) : pas de crayon, et la
-  // ligne en cours d'édition se colore en rouge. Comme données de base.
-  modificationParLigne: true,
+  // Le clic sur la ligne DÉPLIE la famille (ses ayants droit en place) plutôt
+  // que d'ouvrir le panneau : c'est la vision « un participant, sa famille
+  // sous sa ligne ». La modification de la fiche repasse par le crayon (donc
+  // pas de `modificationParLigne`, qui le masquerait).
+  composantDeplie: AyantsDroitParticipant,
   // Pas de titre en gras au-dessus de la liste : le nom de la liste - ou de
   // la société filtrée - se lit déjà dans la légende du total (`legendeStats`).
   sansTitre: true,

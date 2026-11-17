@@ -35,16 +35,16 @@ export const optionsReferentiel = (cle, ...dejaPortees) =>
     .map((e) => ({ valeur: e.code, libelle: e.libelle }))
 
 /**
- * Exercices proposés : l'année en cours et les sept précédentes.
+ * Exercices proposés : l'année en cours, seule.
  *
- * Deux années suffisaient tant que la base n'avait que des documents de
- * démonstration. L'historique repris de LAMPS commence en 2019 - il faut
- * pouvoir y remonter, d'autant que l'exercice est désormais ce qui borne la
- * requête (`serveur: true`), et non plus un tri d'affichage.
+ * On avait ouvert huit années pour remonter l'historique repris de LAMPS
+ * (depuis 2019). L'opérationnel ayant été purgé pour repartir à neuf, il n'y a
+ * plus rien avant l'exercice courant : on ne propose donc que celui-ci. Pour
+ * rouvrir des années passées, remettre `length` à 8 (ou au nombre voulu).
  */
 export const EXERCICES = (() => {
   const courant = new Date().getFullYear()
-  return Array.from({ length: 8 }, (_, i) => courant - i).map((an) => ({
+  return Array.from({ length: 1 }, (_, i) => courant - i).map((an) => ({
     valeur: String(an),
     libelle: String(an),
   }))
@@ -159,6 +159,11 @@ export const BARRE_DOCUMENTS = {
       { valeur: 'tous', libelle: 'Tous' },
     ],
   },
+  // En pagination serveur, le segment Non Traités / Traités filtre à la base
+  // (`?traite=`) et non sur la page affichée. En mode client, le `filtre`
+  // ci-dessus suffit et ceci est ignoré.
+  segmentServeur: (seg) =>
+    seg === 'non-traites' ? { traite: false } : seg === 'traites' ? { traite: true } : {},
   filtres: [
     {
       champ: 'exercice',

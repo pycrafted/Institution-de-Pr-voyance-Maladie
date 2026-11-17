@@ -1,0 +1,166 @@
+/**
+ * Écran « Mon relevé » : le bandeau de solde en vedette, puis les mouvements
+ * du compte IPM en cartes (components/CarteListe).
+ */
+
+/* Le bandeau de solde : une carte pleine largeur, le chiffre en grand. Sa
+   teinte dit l'état du compte - rouge si l'agent doit, vert s'il est à jour. */
+.releve-solde {
+  margin: var(--ipm-espace-s) var(--ipm-gouttiere) var(--ipm-espace-l);
+  padding: var(--ipm-espace-xl);
+  border-radius: var(--ipm-rayon-grand);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-2);
+  border: 1px solid var(--ipm-bordure);
+  text-align: center;
+}
+
+.releve-solde__intitule {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ipm-texte-secondaire);
+}
+
+.releve-solde__montant {
+  margin: var(--ipm-espace-xs) 0 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--ipm-texte);
+}
+
+.releve-solde--du .releve-solde__montant {
+  color: var(--ipm-rouge-texte);
+}
+
+.releve-solde--ajour .releve-solde__montant {
+  color: var(--ipm-valide-texte);
+}
+
+.releve-solde__note {
+  margin: var(--ipm-espace-s) auto 0;
+  max-width: 34ch;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--ipm-texte-doux);
+}
+
+/* Sous le solde : ce que l'IPM a pris en charge et ce qui a été remboursé. */
+.releve-solde__bilan {
+  display: flex;
+  gap: var(--ipm-espace-s);
+  margin: var(--ipm-espace-l) 0 0;
+  padding: var(--ipm-espace-m) 0 0;
+  border-top: 1px solid var(--ipm-bordure);
+}
+
+.releve-solde__bilan > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.releve-solde__bilan dt {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--ipm-texte-secondaire);
+}
+
+.releve-solde__bilan dd {
+  margin: 2px 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ipm-texte);
+}
+
+/* Titre d'une section (« Vos soins », « Vos remboursements »). */
+.releve-bloc {
+  margin-top: var(--ipm-espace-l);
+}
+
+/* Sélecteur à deux onglets : « Retenues sur salaire » / « Vos soins ». */
+.releve-onglets {
+  display: flex;
+  gap: 4px;
+  margin: 0 var(--ipm-gouttiere) var(--ipm-espace-l);
+  padding: 4px;
+  background: var(--ipm-surface-2);
+  border-radius: var(--ipm-rayon-pilule);
+}
+
+.releve-onglet {
+  flex: 1;
+  padding: 10px 6px;
+  border: 0;
+  border-radius: var(--ipm-rayon-pilule);
+  background: transparent;
+  color: var(--ipm-texte-doux);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.releve-onglet--actif {
+  background: var(--ipm-surface);
+  color: var(--ipm-texte);
+  box-shadow: var(--ombre-1);
+}
+
+.releve-titre {
+  margin: 0 var(--ipm-gouttiere) 2px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ipm-texte-secondaire);
+}
+
+/* Une ligne d'explication sous le titre d'une section. */
+.releve-sous-titre {
+  margin: 0 var(--ipm-gouttiere) var(--ipm-espace-s);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--ipm-texte-doux);
+}
+
+/* La part IPM, en détail d'une carte de soin. */
+.releve-ipm {
+  color: var(--ipm-valide-texte);
+}
+
+/* Le montant d'un mouvement, à droite de sa carte : signé et teinté. */
+.releve-montant {
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.releve-montant--charge {
+  color: var(--ipm-rouge-texte);
+}
+
+/* Une retenue retire de la paie (ambre) ; un remboursement rend (vert). */
+.releve-montant--retenue {
+  color: var(--ipm-expire-texte);
+}
+
+.releve-montant--remboursement {
+  color: var(--ipm-valide-texte);
+}
+
+.releve-total {
+  margin: var(--ipm-espace-m) var(--ipm-gouttiere) 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--ipm-texte-secondaire);
+}

@@ -206,3 +206,164 @@ $prt-noir: #11151d;
   object-fit: cover;
   border-radius: 6px;
 }
+
+// ===========================================================================
+// Ligne dépliable : les ayants droit sous la ligne du participant
+// (Referentiel `composantDeplie` + AyantsDroitParticipant). C'est la vision
+// « un participant, sa famille en place » - on déroule, la famille s'affiche.
+// ===========================================================================
+
+// Cellule de tête portant le chevron d'ouverture/fermeture.
+.ddb-cellule-depli {
+  width: 40px;
+  text-align: center;
+  cursor: pointer;
+  color: $prt-texte-doux;
+}
+
+.ddb-depli-chevron {
+  width: 14px;
+  height: 14px;
+}
+
+// Ligne parente dépliée : légèrement teintée pour la relier à son panneau.
+.ddb-ligne-depliee > * {
+  background: #f3f5f8;
+  font-weight: 600;
+}
+
+// La ligne qui porte le panneau de famille : pas de survol, pas de bordure
+// haute (elle fait corps avec la ligne parente).
+.ddb-ligne-depli,
+.ddb-ligne-depli:hover {
+  --cui-table-hover-bg: transparent;
+}
+
+.ddb-depli-cellule {
+  padding: 0 !important;
+  background: #f7f8fa;
+  border-top: 0;
+}
+
+// --- Panneau « Ayants droit » ----------------------------------------------
+.prt-famille {
+  padding: 0.85rem 1.1rem 1.1rem 2.6rem; // décalé à droite, sous le chevron
+  border-left: 3px solid $prt-rouge;
+}
+
+.prt-famille-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+
+.prt-famille-titre {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: $prt-texte-doux;
+}
+
+.prt-famille-compte {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.4rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: #e7ebf0;
+  color: $prt-noir;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.prt-famille-ajouter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid $prt-rouge;
+  border-radius: 999px;
+  background: #fff;
+  color: $prt-rouge;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: $prt-rouge;
+    color: #fff;
+  }
+}
+
+.prt-famille-ajouter-icone {
+  width: 13px;
+  height: 13px;
+}
+
+.prt-famille-vide {
+  margin: 0;
+  color: $prt-texte-doux;
+  font-size: 0.9rem;
+}
+
+.prt-famille-table-conteneur {
+  overflow-x: auto;
+}
+
+.prt-famille-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    padding: 0.35rem 0.6rem;
+    text-align: left;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: $prt-texte-doux;
+    border-bottom: 1px solid $prt-bordure;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid #eceef1;
+    color: $prt-noir;
+    vertical-align: middle;
+  }
+
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}
+
+.prt-famille-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+// Colonne du crayon : étroite, calée à droite, comme les listes.
+.prt-famille-actions {
+  width: 1%;
+  white-space: nowrap;
+  text-align: right;
+}
+
+// Lignes d'ayants droit cliquables (modification), comme l'onglet Familles.
+.prt-famille-ligne {
+  cursor: pointer;
+
+  &:hover td {
+    background: #eef1f5;
+  }
+}

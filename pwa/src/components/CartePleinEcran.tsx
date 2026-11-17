@@ -9,8 +9,8 @@
  *
  * La carte ne se MODIFIE pas d'ici : son portrait ne se touche pas. Une pièce
  * d'identité ne se change pas au moment où on la présente au prestataire, et
- * une photo ne s'envoie qu'une fois - cela se fait depuis la feuille « Photos
- * d'identité » de l'accueil (components/PhotosModal).
+ * une photo ne s'envoie qu'une fois - cela se fait depuis la page « Identité »
+ * ouverte du haut (pages/Identite.tsx).
  *
  * On lui passe une CIBLE et non une fiche : `'moi'` pour le titulaire, sinon
  * le matricule d'un ayant droit. La fiche est redérivée à chaque rendu, si

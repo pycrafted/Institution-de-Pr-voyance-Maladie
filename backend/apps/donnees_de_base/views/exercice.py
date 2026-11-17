@@ -19,6 +19,7 @@ un lien vers un vieux bon se solderait par un 404.
 
 from datetime import date
 
+from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Count
 from django.db.models.functions import ExtractYear
 from rest_framework.decorators import action
@@ -90,3 +91,34 @@ class FiltreExerciceMixin:
         if not any(ligne['exercice'] == date.today().year for ligne in resultat):
             resultat.insert(0, {'exercice': date.today().year, 'nombre': 0})
         return Response(resultat)
+
+
+class FiltreStatutDocumentMixin:
+    """Filtres de segment des listes de documents : « traité » et « validation ».
+
+    En pagination serveur, les segments d'un document (Non Traités / Traités,
+    et pour l'optique « À valider ») ne peuvent plus se faire sur la page :
+    ils arrivent en paramètres (``?traite=true|false``, ``?validation=En attente``)
+    et bornent la base. Comme l'exercice, ça ne s'applique qu'à la liste et à
+    l'écoute - une fiche s'ouvre quel que soit son statut. ``validation`` est
+    ignoré par les documents qui n'ont pas ce champ (bons de pharmacie, lettres).
+    """
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if getattr(self, 'action', None) not in ('list', 'etat'):
+            return queryset
+        params = self.request.query_params
+
+        traite = params.get('traite')
+        if traite in ('true', 'false'):
+            queryset = queryset.filter(traite=(traite == 'true'))
+
+        validation = (params.get('validation') or '').strip()
+        if validation:
+            try:
+                queryset.model._meta.get_field('validation')
+            except FieldDoesNotExist:
+                return queryset
+            queryset = queryset.filter(validation=validation)
+        return queryset

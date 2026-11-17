@@ -46,6 +46,12 @@ RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+# Hébergement sur Railway : même principe que Render, la plateforme fournit le
+# domaine public du service (« xxx.up.railway.app ») dans RAILWAY_PUBLIC_DOMAIN.
+RAILWAY_PUBLIC_DOMAIN = os.getenv('RAILWAY_PUBLIC_DOMAIN')
+if RAILWAY_PUBLIC_DOMAIN:
+    ALLOWED_HOSTS.append(RAILWAY_PUBLIC_DOMAIN)
+
 # Derrière le proxy de Render (ou d'IIS en HTTPS), Django ne voit que du HTTP :
 # c'est cet en-tête qui lui dit que le navigateur, lui, est en HTTPS. Sans
 # cela, la console d'administration refuserait ses propres formulaires (CSRF).
@@ -57,12 +63,18 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+if RAILWAY_PUBLIC_DOMAIN:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_PUBLIC_DOMAIN}')
 
 # Site servi en HTTPS seulement (Render l'impose ; IIS, lui, reste en HTTP sur
 # le réseau local) : les cookies de /admin/ ne voyagent qu'en clair chiffré.
 # Pas de SECURE_SSL_REDIRECT : c'est le proxy de Render qui redirige, et sa
 # sonde de santé parle HTTP au service.
-if RENDER_EXTERNAL_HOSTNAME or os.getenv('DJANGO_HTTPS', '').lower() in ('1', 'true', 'yes'):
+if (
+    RENDER_EXTERNAL_HOSTNAME
+    or RAILWAY_PUBLIC_DOMAIN
+    or os.getenv('DJANGO_HTTPS', '').lower() in ('1', 'true', 'yes')
+):
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 

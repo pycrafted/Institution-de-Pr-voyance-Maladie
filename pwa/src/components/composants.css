@@ -78,45 +78,6 @@ ion-tab-bar.ipm-onglets {
   margin: 0;
 }
 
-/* Bouton « Scanner » central (components/BoutonScan.tsx) : posé sur le creux
-   central de la barre (4 onglets), un peu surélevé. MÊME matière que le footer
-   - même teinte, même bordure, même gris d'icône - pour la continuité ; il
-   n'attire pas l'œil par la couleur, il prolonge la barre. */
-.ipm-scan {
-  position: fixed;
-  left: 50%;
-  bottom: calc(var(--ion-safe-area-bottom, env(safe-area-inset-bottom)) + 40px);
-  transform: translateX(-50%);
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  width: 66px;
-  height: 66px;
-  padding: 0;
-  /* L'anneau est de la COULEUR DE LA PAGE : là où il mord la barre, il la
-     creuse - c'est lui qui dessine l'encoche où le bouton se niche. */
-  border: 6px solid var(--ipm-fond);
-  border-radius: var(--r-pill);
-  /* Face : blanc en clair (tranche sur le beige de la barre, sinon « boule
-     pâle »), teinte de la barre en sombre (cf. override) - continuité. */
-  background: var(--ipm-surface);
-  /* Icône colorée (rouge SAR), comme l'icône mise en avant du modèle. */
-  color: var(--ipm-rouge-texte);
-  box-shadow: 0 6px 16px rgba(16, 18, 29, 0.22);
-  cursor: pointer;
-}
-:root.ion-palette-dark .ipm-scan {
-  background: var(--ipm-surface-2);
-}
-.ipm-scan ion-icon {
-  font-size: 28px;
-}
-/* Masqué quand la barre d'onglets l'est (carte d'itinéraire plein écran). */
-.ipm-sans-onglets .ipm-scan {
-  display: none;
-}
-
 /* ========================================================================
  * §3.2 — Bandeau de marque
  * ===================================================================== */
@@ -1591,7 +1552,7 @@ ion-modal.carte-plein {
 }
 
 /* ========================================================================
- * Feuille « Photos d'identité » (components/PhotosModal)
+ * Page « Identité » - photos d'identité (pages/Identite.tsx)
  * ---------------------------------------------------------------------
  * Le seul endroit d'où une photo s'envoie. Une ligne par personne : le
  * portrait (ou ses initiales), qui elle est, et soit « Ajouter », soit le

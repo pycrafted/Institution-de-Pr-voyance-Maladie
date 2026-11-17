@@ -1,19 +1,14 @@
 /**
- * Identification (/identification) : matricule + mot de passe mobile.
+ * Identification (/identification) : le matricule seul.
  *
- * En cas de succès, App.tsx bascule seul sur l'accueil : on ne navigue pas
- * d'ici.
+ * Connexion simplifiée (2026-11-12) : un participant se connecte juste en
+ * tapant son matricule, qui sert aussi de mot de passe (cf. le formulaire et
+ * mobile.views.IdentificationView). En cas de succès, App.tsx bascule seul
+ * sur l'accueil : on ne navigue pas d'ici.
  */
 
 import { IonContent, IonIcon, IonPage } from '@ionic/react'
-import {
-  alertCircle,
-  eyeOffOutline,
-  eyeOutline,
-  idCardOutline,
-  lockClosedOutline,
-  timeOutline,
-} from 'ionicons/icons'
+import { alertCircle, idCardOutline, timeOutline } from 'ionicons/icons'
 import { useRef, useState } from 'react'
 
 import { BoutonPrincipal } from '../components/Boutons'
@@ -31,9 +26,7 @@ export default function Identification() {
   const { erreurs } = formulaire
   // Change à chaque refus : rejoue la secousse du message d'erreur.
   const [refus, setRefus] = useState(0)
-  const [motDePasseVisible, setMotDePasseVisible] = useState(false)
   const champMatricule = useRef<HTMLInputElement>(null)
-  const champMotDePasse = useRef<HTMLInputElement>(null)
 
   async function continuer() {
     const issue = await formulaire.envoyer()
@@ -41,9 +34,7 @@ export default function Identification() {
       haptique.succes()
     } else if (issue === 'invalide') {
       haptique.erreur()
-      // On amène l'employé là où il manque quelque chose.
-      if (formulaire.controle.matricule) champMatricule.current?.focus()
-      else champMotDePasse.current?.focus()
+      champMatricule.current?.focus()
     } else if (issue === 'refuse') {
       haptique.erreur()
       setRefus((n) => n + 1)
@@ -71,7 +62,9 @@ export default function Identification() {
 
           <main className="identification__corps">
             <h1 className="identification__titre">Connexion</h1>
-            <p className="identification__accroche">Vos documents IPM, dans votre poche.</p>
+            <p className="identification__accroche">
+              Saisissez votre matricule pour accéder à vos documents IPM.
+            </p>
 
             <OfflineBanner />
 
@@ -92,42 +85,12 @@ export default function Identification() {
                 placeholder="Ex. 949"
                 icone={idCardOutline}
                 inputMode="numeric"
-                enterKeyHint="next"
+                enterKeyHint="go"
                 reference={champMatricule}
                 valeur={formulaire.matricule}
                 erreur={erreurs.matricule}
                 onChanger={formulaire.changerMatricule}
-                onEntree={() => champMotDePasse.current?.focus()}
-              />
-
-              <Saisie
-                libelle="Mot de passe"
-                placeholder="Votre mot de passe"
-                icone={lockClosedOutline}
-                type={motDePasseVisible ? 'text' : 'password'}
-                inputMode="numeric"
-                enterKeyHint="go"
-                autoComplete="current-password"
-                reference={champMotDePasse}
-                valeur={formulaire.motDePasse}
-                erreur={erreurs.motDePasse}
-                onChanger={formulaire.changerMotDePasse}
                 onEntree={() => void continuer()}
-                action={
-                  <button
-                    type="button"
-                    className="ipm-formulaire__action ipm-appui"
-                    aria-label={
-                      motDePasseVisible ? 'Masquer le mot de passe' : 'Voir le mot de passe'
-                    }
-                    onClick={() => {
-                      haptique.leger()
-                      setMotDePasseVisible((v) => !v)
-                    }}
-                  >
-                    <IonIcon icon={motDePasseVisible ? eyeOffOutline : eyeOutline} />
-                  </button>
-                }
               />
 
               {formulaire.erreurServeur && (

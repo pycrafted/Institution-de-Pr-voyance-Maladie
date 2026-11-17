@@ -6,7 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from donnees_de_base.views.base import ReferentielViewSet
-from donnees_de_base.views.exercice import FiltreExerciceMixin
+from donnees_de_base.views.exercice import FiltreExerciceMixin, FiltreStatutDocumentMixin
 
 from ..cache_pdf import pdf_en_cache
 from ..impression_optique import bon_optique_pdf
@@ -14,7 +14,7 @@ from ..models import BonOptique
 from ..serializers import BonOptiqueSerializer
 
 
-class BonOptiqueViewSet(FiltreExerciceMixin, ReferentielViewSet):
+class BonOptiqueViewSet(FiltreStatutDocumentMixin, FiltreExerciceMixin, ReferentielViewSet):
     """
     Même socle que les bons de pharmacie : lister, créer (numéro BCI attribué
     par le serveur), modifier, annuler, modifier en lot, et le bon imprimé en
@@ -36,6 +36,25 @@ class BonOptiqueViewSet(FiltreExerciceMixin, ReferentielViewSet):
     champ_exercice = 'date'
     serializer_class = BonOptiqueSerializer
     importer = None
+
+    # Pagination serveur (cf. ReferentielViewSet) : recherche sur le numéro et
+    # les noms (opticien compris), tri par défaut au plus récent (par la date).
+    champs_recherche = (
+        'code',
+        'participant__nom',
+        'participant__prenoms',
+        'participant__matricule',
+        'beneficiaire__nom',
+        'beneficiaire__prenoms',
+        'fournisseur__libelle',
+    )
+    tris = {
+        'code': ['-code'],
+        'date': ['-date', '-code'],
+        'participant': ['participant__nom', 'participant__prenoms', '-code'],
+        'opticien': ['fournisseur__libelle', '-code'],
+    }
+    tri_defaut = ['-date', '-code']
 
     def perform_create(self, serializer):
         # Numéro du socle, et l'auteur du bon : il figure sur le bon imprimé.

@@ -930,3 +930,18 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 0.9rem;
   color: #64748b;
 }
+
+// Squelette de chargement : un bloc qui respire, le temps que la carte
+// reçoive ses données (rendu progressif du tableau de bord).
+.tdb-squelette {
+  width: 100%;
+  border-radius: 12px;
+  background: linear-gradient(100deg, rgba(0, 0, 0, 0.04) 30%, rgba(0, 0, 0, 0.07) 50%, rgba(0, 0, 0, 0.04) 70%);
+  background-size: 200% 100%;
+  animation: tdb-respire 1.4s ease-in-out infinite;
+}
+
+@keyframes tdb-respire {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

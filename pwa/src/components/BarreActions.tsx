@@ -14,38 +14,33 @@
  * de partout, elles appartiennent donc à la barre et non à un écran.
  */
 
-import { IonIcon } from '@ionic/react'
+import { IonIcon, useIonRouter } from '@ionic/react'
 // Icônes PLEINES (en mode Material, le variant plein est rendu).
-import { camera, logOut, moon, notifications, sunny } from 'ionicons/icons'
+import { idCard, notifications, person, wallet } from 'ionicons/icons'
 import { useState } from 'react'
 
 import { haptique } from '../hooks/haptique'
-import { useSession } from '../session'
-import { basculerApparence, useApparence } from '../theme/apparence'
 import { BoutonPrincipal } from './Boutons'
 import Feuille from './Feuille'
-import FeuilleChoix from './FeuilleChoix'
-import PhotosModal from './PhotosModal'
 
 export default function BarreActions() {
-  const { deconnecter } = useSession()
-  const sombre = useApparence() === 'sombre'
-  const [photosOuvertes, setPhotosOuvertes] = useState(false)
+  const routeur = useIonRouter()
   const [notifsOuvertes, setNotifsOuvertes] = useState(false)
-  // Déconnexion : jamais sans confirmation, elle efface les bons du téléphone.
-  const [deconnexionDemandee, setDeconnexionDemandee] = useState(false)
 
   // Les actions, réparties en quarts égaux sur la barre, comme les onglets du
   // bas : une icône et son libellé dessous.
   const actions = [
     {
-      cle: 'photos',
-      icone: camera,
-      libelle: 'Photos',
+      // Dote de portraits les cartes d'adhérent (titulaire + ayants droit) :
+      // « Identité » est plus juste et plus pro que l'ancien « Photos ». C'est
+      // désormais une PAGE à part entière (/identite), comme Profil.
+      cle: 'identite',
+      icone: idCard,
+      libelle: 'Identité',
       etiquette: 'Photos d’identité',
       agir: () => {
         haptique.leger()
-        setPhotosOuvertes(true)
+        routeur.push('/identite', 'forward', 'push')
       },
     },
     {
@@ -59,23 +54,28 @@ export default function BarreActions() {
       },
     },
     {
-      cle: 'apparence',
-      icone: sombre ? sunny : moon,
-      libelle: sombre ? 'Clair' : 'Sombre',
-      etiquette: sombre ? 'Passer en mode clair' : 'Passer en mode sombre',
+      // Le relevé du compte IPM de l'agent (ticket modérateur + retenues) a
+      // quitté le footer pour rejoindre le profil ici : tout le « compte/perso »
+      // est désormais regroupé dans la barre du haut.
+      cle: 'releve',
+      icone: wallet,
+      libelle: 'Mon relevé',
+      etiquette: 'Mon relevé de compte IPM',
       agir: () => {
         haptique.leger()
-        basculerApparence()
+        routeur.push('/releve', 'forward', 'push')
       },
     },
     {
-      cle: 'deconnexion',
-      icone: logOut,
-      libelle: 'Quitter',
-      etiquette: 'Se déconnecter',
+      // Le profil remplace « Quitter » : la déconnexion ET l'apparence
+      // (clair/sombre) s'y trouvent désormais, à l'intérieur de l'écran.
+      cle: 'profil',
+      icone: person,
+      libelle: 'Profil',
+      etiquette: 'Mon profil',
       agir: () => {
-        haptique.avertissement()
-        setDeconnexionDemandee(true)
+        haptique.leger()
+        routeur.push('/profil', 'forward', 'push')
       },
     },
   ]
@@ -99,8 +99,6 @@ export default function BarreActions() {
         </nav>
       </header>
 
-      <PhotosModal ouverte={photosOuvertes} onFermer={() => setPhotosOuvertes(false)} />
-
       <Feuille
         ouverte={notifsOuvertes}
         onFermer={() => setNotifsOuvertes(false)}
@@ -110,22 +108,6 @@ export default function BarreActions() {
         <p className="ipm-feuille-texte">Vous n’avez aucune notification pour le moment.</p>
         <BoutonPrincipal onClick={() => setNotifsOuvertes(false)}>Compris</BoutonPrincipal>
       </Feuille>
-
-      <FeuilleChoix
-        ouverte={deconnexionDemandee}
-        onFermer={() => setDeconnexionDemandee(false)}
-        titre="Se déconnecter d’IPM Mobile ?"
-        message="Les bons enregistrés sur ce téléphone seront effacés. Vous les retrouverez en vous identifiant à nouveau."
-        icone={logOut}
-        choix={[
-          {
-            libelle: 'Se déconnecter',
-            genre: 'principal',
-            onClick: () => void deconnecter('volontaire'),
-          },
-          { libelle: 'Annuler' },
-        ]}
-      />
     </>
   )
 }

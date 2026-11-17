@@ -30,6 +30,7 @@ const SaisieJournal = React.lazy(() => import('./views/traitements/SaisieJournal
 const JournalCentral = React.lazy(() => import('./views/comptabilite/JournalCentral'))
 const PlanComptable = React.lazy(() => import('./views/comptabilite/PlanComptable'))
 const InterrogationComptes = React.lazy(() => import('./views/comptabilite/InterrogationComptes'))
+const ReportANouveau = React.lazy(() => import('./views/comptabilite/ReportANouveau'))
 const PageAVenir = React.lazy(() => import('./views/a-venir/PageAVenir'))
 
 export const routes = [
@@ -57,6 +58,11 @@ export const routes = [
     path: '/comptabilite/interrogation-compte',
     name: 'Interrogation Compte',
     element: InterrogationComptes,
+  },
+  {
+    path: '/comptabilite/report-a-nouveau',
+    name: 'Report À Nouveau',
+    element: ReportANouveau,
   },
   {
     path: '/documents/lg-hospitalisation',

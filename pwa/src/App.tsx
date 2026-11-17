@@ -20,7 +20,6 @@ import { Redirect, Route, useLocation } from 'react-router-dom'
 
 import BarreActions from './components/BarreActions'
 import BarreOngletsFlottante from './components/BarreOngletsFlottante'
-import BoutonScan from './components/BoutonScan'
 import InstallSheet from './components/InstallSheet'
 import MiseAJour from './components/MiseAJour'
 import { NouveauBonProvider } from './components/NouveauBonModal'
@@ -32,10 +31,12 @@ import Installation from './pages/Installation'
 import APropos from './pages/APropos'
 import DetailBon from './pages/DetailBon'
 import Identification from './pages/Identification'
+import Identite from './pages/Identite'
 import Itineraire from './pages/Itineraire'
 import MesBons from './pages/MesBons'
 import Conventionnes from './pages/Conventionnes'
 import Profil from './pages/Profil'
+import Releve from './pages/Releve'
 import Scan from './pages/Scan'
 import { SessionProvider, useSession } from './session'
 
@@ -99,7 +100,7 @@ function Coquille() {
 
 /** Chemins servis quand on est identifié ; le reste mène à l'accueil. */
 const CHEMINS_IDENTIFIE =
-  /^\/(accueil|bons|profil|conventionnes|assistance|scan|installation|a-propos)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
+  /^\/(accueil|bons|profil|conventionnes|releve|assistance|scan|identite|installation|a-propos)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
 
 function Anonyme() {
   const { pathname } = useLocation()
@@ -132,6 +133,8 @@ function Onglets() {
           <Route exact path="/bons/lettres/:id" component={DetailBon} />
           <Route exact path="/bons/optique/:id" component={DetailBon} />
           <Route exact path="/profil" component={Profil} />
+          {/* Le relevé du compte IPM de l'agent (ticket modérateur et retenues). */}
+          <Route exact path="/releve" component={Releve} />
           {/* Ouverts depuis la grille de services de l'accueil (catalogue). */}
           <Route exact path="/conventionnes" component={Conventionnes} />
           {/* La carte de l'itinéraire vers une structure, dans l'application. */}
@@ -139,17 +142,17 @@ function Onglets() {
           <Route exact path="/assistance" component={Assistance} />
           {/* Pré-financement : scan de l'ordonnance et du reçu (à construire). */}
           <Route exact path="/scan" component={Scan} />
+          {/* Photos d'identité des cartes d'adhérent, en page (ouverte du haut). */}
+          <Route exact path="/identite" component={Identite} />
           {/* Ouverts depuis le profil, présentés comme l'assistance. */}
           <Route exact path="/installation" component={Installation} />
           <Route exact path="/a-propos" component={APropos} />
         </IonRouterOutlet>
         {/* Barre flottante (SPEC_DESIGN §3.1) : le contenu passe dessous, les
-            écrans réservent donc --bas-page en fin de contenu. */}
+            écrans réservent donc --bas-page en fin de contenu. Le scan y est
+            désormais un onglet comme les autres (plus de bouton flottant). */}
         <BarreOngletsFlottante />
       </IonTabs>
-      {/* Bouton « Scanner » central surélevé, posé sur la barre d'onglets.
-          Hors de l'IonTabs (qui ne veut que son outlet et sa barre). */}
-      <BoutonScan />
       {/* Pendant de la barre d'onglets, en haut : les actions qui ne dépendent
           d'aucun écran. Hors de l'IonTabs, qui ne veut que son outlet et sa
           barre pour enfants. */}

@@ -93,7 +93,8 @@ class Facture(models.Model):
         null=True, blank=True, verbose_name='Fournisseur divers',
     )
 
-    date_facture = models.DateField('Date facture', null=True, blank=True)
+    # Indexée : la liste filtre par exercice (sur l'année de la date facture).
+    date_facture = models.DateField('Date facture', null=True, blank=True, db_index=True)
     recu_le = models.DateField('Reçu le', null=True, blank=True)
     # Jour de saisie : posé à la réception (cf. FactureViewSet.perform_create).
     saisie_le = models.DateField('Saisie le', null=True, blank=True)
@@ -609,7 +610,8 @@ class BonAchat(models.Model):
     )
     # Date d'enregistrement : le jour de la saisie, qui peut suivre la
     # livraison (l'origine l'accepte, et c'est l'usage constaté).
-    date_bon = models.DateField("Date d'enregistrement", default=date.today)
+    # Indexée : la liste filtre par exercice (sur l'année) avant de paginer.
+    date_bon = models.DateField("Date d'enregistrement", default=date.today, db_index=True)
     date_livraison = models.DateField('Date de livraison souhaitée', null=True, blank=True)
     num_offre = models.CharField('N° Offre', max_length=20, blank=True)
     statut = models.CharField(

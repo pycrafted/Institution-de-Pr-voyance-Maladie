@@ -36,7 +36,8 @@ class LettreGarantie(models.Model):
     # portent une référence saisie à la main (« 0056/10/11/2020 »).
     code = models.CharField('Numéro', max_length=15, unique=True)
     # Date d'établissement ; l'exercice s'en déduit.
-    date = models.DateField('Date', default=date.today)
+    # Indexée : la liste filtre par exercice (sur l'année) avant de paginer.
+    date = models.DateField('Date', default=date.today, db_index=True)
 
     # --- Pour qui ------------------------------------------------------------
     adherent = models.ForeignKey(

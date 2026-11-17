@@ -13,19 +13,27 @@
  * kilo-octets.
  */
 
-/** Côté maximal d'une photo enregistrée, en pixels. */
+/** Côté maximal d'une photo d'identité enregistrée, en pixels. */
 export const COTE_PHOTO = 320
 
-/** Au-delà, inutile d'ouvrir le fichier : ce n'est pas une photo d'identité. */
+/**
+ * Côté maximal d'un document scanné : assez grand pour que l'IA lise le texte
+ * (ordonnance, reçu), sans gonfler l'appel. 1568 px est la limite au-delà de
+ * laquelle l'IA redimensionne de toute façon ; autant le faire ici.
+ */
+export const COTE_DOCUMENT = 1568
+
+/** Au-delà, inutile d'ouvrir le fichier. */
 const TAILLE_FICHIER_MAX = 20 * 1024 * 1024
 
 export class ErreurPhoto extends Error {}
 
 /**
- * Lit le fichier choisi, le réduit à {@link COTE_PHOTO} et le rend en URL de
- * données JPEG, prête à envoyer.
+ * Lit le fichier choisi, le réduit au côté voulu et le rend en URL de données
+ * JPEG, prête à envoyer. Partagé par la photo d'identité (petit) et le scan de
+ * document (plus grand, pour rester lisible).
  */
-export async function reduirePhoto(fichier: File): Promise<string> {
+async function reduire(fichier: File, cote: number, qualite: number): Promise<string> {
   if (!fichier.type.startsWith('image/')) {
     throw new ErreurPhoto('Choisissez une image.')
   }
@@ -36,7 +44,7 @@ export async function reduirePhoto(fichier: File): Promise<string> {
   const source = await lire(fichier)
   try {
     const image = await charger(source)
-    const echelle = Math.min(1, COTE_PHOTO / Math.max(image.width, image.height))
+    const echelle = Math.min(1, cote / Math.max(image.width, image.height))
     const canevas = document.createElement('canvas')
     canevas.width = Math.max(1, Math.round(image.width * echelle))
     canevas.height = Math.max(1, Math.round(image.height * echelle))
@@ -44,11 +52,21 @@ export async function reduirePhoto(fichier: File): Promise<string> {
     if (!contexte) throw new ErreurPhoto('Ce navigateur ne sait pas préparer l’image.')
     contexte.drawImage(image, 0, 0, canevas.width, canevas.height)
     // JPEG et non PNG : à qualité égale, une photo y pèse dix fois moins.
-    return canevas.toDataURL('image/jpeg', 0.8)
+    return canevas.toDataURL('image/jpeg', qualite)
   } finally {
     // L'URL d'objet ne se libère pas seule ; la data: n'a rien à libérer.
     if (source.startsWith('blob:')) URL.revokeObjectURL(source)
   }
+}
+
+/** Photo d'identité : petit format (cf. COTE_PHOTO). */
+export function reduirePhoto(fichier: File): Promise<string> {
+  return reduire(fichier, COTE_PHOTO, 0.8)
+}
+
+/** Document scanné : format plus grand, pour que le texte reste lisible. */
+export function reduireDocument(fichier: File): Promise<string> {
+  return reduire(fichier, COTE_DOCUMENT, 0.8)
 }
 
 function lire(fichier: File): Promise<string> {

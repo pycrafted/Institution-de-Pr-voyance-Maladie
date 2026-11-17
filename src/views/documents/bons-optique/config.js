@@ -91,6 +91,18 @@ export const BONS_OPTIQUE = {
     ],
   },
 
+  // 1 337 bons : pagination serveur. Le segment « À valider » s'ajoute au
+  // Non Traités / Traités de BARRE_DOCUMENTS ; tous partent en filtre serveur.
+  paginationServeur: true,
+  segmentServeur: (seg) =>
+    seg === 'a-valider'
+      ? { validation: 'En attente' }
+      : seg === 'non-traites'
+        ? { traite: false }
+        : seg === 'traites'
+          ? { traite: true }
+          : {},
+
   // Impression individuelle, comme les bons de pharmacie : le bon au modèle
   // de l'application d'origine, original et copie fournisseur, en PDF.
   actionsLigne: [

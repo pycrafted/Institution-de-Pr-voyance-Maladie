@@ -12,8 +12,6 @@ beforeAll(() => preparerIonic())
 const champ = (libelle: string | RegExp) => screen.getByLabelText(libelle) as HTMLInputElement
 const saisirMatricule = (valeur: string) =>
   fireEvent.change(champ('Matricule'), { target: { value: valeur } })
-const saisirMotDePasse = (valeur: string) =>
-  fireEvent.change(champ('Mot de passe'), { target: { value: valeur } })
 
 function anonyme(surcharge: Parameters<typeof uneSession>[0] = {}) {
   return uneSession({ statut: 'anonyme', participant: null, beneficiaires: [], ...surcharge })
@@ -39,12 +37,12 @@ describe('Identification', () => {
     expect(container.querySelector('.ipm-carte--flottante')).toBeNull()
   })
 
-  it('présente les deux champs sans liste ni filet', () => {
+  it('présente le seul champ matricule, sans liste ni filet', () => {
     const { container } = rendreEcran(<Identification />, anonyme())
     expect(container.querySelector('ion-item')).toBeNull()
     expect(container.querySelector('ion-list')).toBeNull()
-    // Deux cadres du meme vocabulaire que les formulaires de demande.
-    expect(container.querySelectorAll('.ipm-formulaire__cadre')).toHaveLength(2)
+    // Un seul cadre : le matricule (il sert aussi de mot de passe).
+    expect(container.querySelectorAll('.ipm-formulaire__cadre')).toHaveLength(1)
   })
 
   it('dit que la session a expiré', () => {
@@ -58,29 +56,11 @@ describe('Identification', () => {
     expect(screen.queryByRole('status')).toBeNull()
   })
 
-  it('sans mot de passe, le réclame au lieu d’appeler le serveur', async () => {
-    const session = anonyme()
-    rendreEcran(<Identification />, session)
-    saisirMatricule('0949')
-    fireEvent.click(screen.getByText('Continuer'))
-    expect(await screen.findByText('Saisissez votre mot de passe.')).toBeInTheDocument()
-    expect(session.identifier).not.toHaveBeenCalled()
-  })
-
-  it('masque le mot de passe à la saisie, et sait le montrer', () => {
-    rendreEcran(<Identification />, anonyme())
-    expect(champ('Mot de passe')).toHaveAttribute('type', 'password')
-
-    fireEvent.click(screen.getByLabelText('Voir le mot de passe'))
-    expect(champ('Mot de passe')).toHaveAttribute('type', 'text')
-
-    fireEvent.click(screen.getByLabelText('Masquer le mot de passe'))
-    expect(champ('Mot de passe')).toHaveAttribute('type', 'password')
-  })
-
   it('accueille d’une ligne, et signe du nom de l’institution', () => {
     rendreEcran(<Identification />, anonyme())
-    expect(screen.getByText('Vos documents IPM, dans votre poche.')).toBeInTheDocument()
+    expect(
+      screen.getByText('Saisissez votre matricule pour accéder à vos documents IPM.'),
+    ).toBeInTheDocument()
     expect(screen.getByText('Institution de Prévoyance Maladie')).toBeInTheDocument()
   })
 
@@ -93,13 +73,12 @@ describe('Identification', () => {
     expect(session.identifier).not.toHaveBeenCalled()
   })
 
-  it('identifie avec le matricule nettoyé et le mot de passe', async () => {
+  it('identifie avec le matricule nettoyé, envoyé aussi comme mot de passe', async () => {
     const identifier = vi.fn((_matricule: string, _motDePasse: string) => Promise.resolve())
     rendreEcran(<Identification />, anonyme({ identifier }))
     saisirMatricule('01 0949')
-    saisirMotDePasse('0000')
     fireEvent.click(screen.getByText('Continuer'))
-    await waitFor(() => expect(identifier).toHaveBeenCalledWith('01-0949', '0000'))
+    await waitFor(() => expect(identifier).toHaveBeenCalledWith('01-0949', '01-0949'))
   })
 
   it('montre le refus du serveur', async () => {
@@ -113,13 +92,12 @@ describe('Identification', () => {
     )
     rendreEcran(<Identification />, anonyme({ identifier }))
     saisirMatricule('0949')
-    saisirMotDePasse('0001')
     fireEvent.click(screen.getByText('Continuer'))
     const alerte = await screen.findByText('Matricule ou mot de passe incorrect.')
     expect(alerte.closest('[role="alert"]')).not.toBeNull()
   })
 
-  it('va à l’essentiel : le logo, le titre, les deux champs, le bouton', () => {
+  it('va à l’essentiel : le logo, le titre, le champ matricule, le bouton', () => {
     rendreEcran(<Identification />, anonyme())
     // Ni phrase d'introduction, ni lien d'aide, ni pied de page : l'écran
     // ne porte plus que ce qu'on y fait.

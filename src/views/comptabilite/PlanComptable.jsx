@@ -33,41 +33,6 @@ const TYPES = ['Actifs', 'Autres', 'Charges', 'Passifs', 'Produits']
 const TAILLES = [15, 30, 50, 100]
 const VIDE = { code: '', libelle: '', typeCompte: 'Autres' }
 
-/**
- * Les comptes rendus VISIBLES sur cet écran - 9 sur les 462 du plan, soit 2 %.
- *
- * Rien n'est retiré de la base : les 462 comptes y restent entiers, les
- * écritures les désignent toujours, les autres écrans les voient. Seule cette
- * page restreint ce qu'elle montre, et elle le fait ici, côté navigateur.
- *
- * Le choix n'est pas arbitraire : ce sont les comptes que l'application écrit
- * réellement, ceux des trois circuits construits - le fournisseur qu'on paie
- * (400xxx), le participant qu'on rembourse (411xxx), la banque qui décaisse
- * (521xxx) et la charge du soin (602xxx).
- *
- * **Pour changer ce qui s'affiche, modifier cette seule liste.** Le type doit
- * correspondre à celui du compte en base, sans quoi il manquera à son segment.
- */
-const COMPTES_VISIBLES = [
-  { code: '400004', type: 'Autres' }, // OPTIQUE MEDICALE
-  { code: '400006', type: 'Autres' }, // PHARMACIES
-  { code: '400008', type: 'Autres' }, // CLINIQUES
-  { code: '411001', type: 'Autres' }, // PARTICIPANT SAR PERSONNEL MOO
-  { code: '411002', type: 'Autres' }, // PARTICIPANT SAR PERSONNEL CADRES
-  { code: '521500', type: 'Autres' }, // ECOBANK CMMC
-  { code: '521700', type: 'Autres' }, // ECOBANK IPM FONCTIONNEMENT
-  { code: '602000', type: 'Charges' }, // VISITE
-  { code: '602006', type: 'Charges' }, // PHARMACIE
-]
-const CODES_VISIBLES = new Set(COMPTES_VISIBLES.map((c) => c.code))
-/** Les segments qui ont au moins un compte visible : les autres n'ont plus de sens. */
-const TYPES_VISIBLES = TYPES.filter((t) => COMPTES_VISIBLES.some((c) => c.type === t))
-/** Le compte d'un segment, pris sur la liste et non sur la base. */
-const nombreVisible = (valeur) =>
-  valeur === 'tous'
-    ? COMPTES_VISIBLES.length
-    : COMPTES_VISIBLES.filter((c) => c.type === valeur).length
-
 const montant = (valeur) => Number(valeur || 0).toLocaleString('fr-FR')
 
 /**
@@ -82,7 +47,9 @@ const montant = (valeur) => Number(valeur || 0).toLocaleString('fr-FR')
 const usagesDistincts = (usages) => [...new Set(usages || [])]
 
 const PlanComptable = () => {
-  const [segment, setSegment] = useState(TYPES_VISIBLES[0] || 'tous')
+  const [segment, setSegment] = useState('tous')
+  // Les segments (types de compte) et leur nombre réel, lus au serveur.
+  const [segments, setSegments] = useState([{ valeur: 'tous', libelle: 'Tous', nombre: null }])
   const [recherche, setRecherche] = useState('')
   const [termeDiffere, setTermeDiffere] = useState('')
   const [taille, setTaille] = useState(15)
@@ -107,26 +74,27 @@ const PlanComptable = () => {
     return () => clearTimeout(minuteur)
   }, [recherche])
 
-  /**
-   * On demande le segment entier au serveur (`taille=500`, une seule page) et
-   * on garde ce qui est visible, puis on pagine ici.
-   *
-   * La pagination du serveur ne peut pas servir telle quelle : elle découpe
-   * les 462 comptes, pas les 9 retenus - la première page en rendrait un ou
-   * deux, les suivantes aucun. C'est le prix d'un filtre posé côté écran, et
-   * il est faible : 462 lignes tiennent largement dans une réponse.
-   */
+  // Les segments et leurs compteurs (par type + « Tous »), une fois.
+  useEffect(() => {
+    request('/donnees-de-base/plan-comptable/repartition/')
+      .then((liste) => setSegments(liste))
+      .catch(() => {})
+  }, [])
+
+  /** Une page du plan comptable, paginée par le serveur (les 462 comptes). */
   const charger = useCallback(async () => {
-    const requete = new URLSearchParams({ type: segment, page: '1', taille: '500' })
+    const requete = new URLSearchParams({
+      type: segment,
+      page: String(page),
+      taille: String(taille),
+    })
     if (termeDiffere) requete.set('recherche', termeDiffere)
     try {
       setChargement(true)
       const liste = await request(`/donnees-de-base/plan-comptable/?${requete}`)
-      const visibles = (liste.resultats || []).filter((c) => CODES_VISIBLES.has(c.code))
-      const debut = (page - 1) * taille
-      setComptes(visibles.slice(debut, debut + taille))
-      setNombre(visibles.length)
-      setPages(Math.max(1, Math.ceil(visibles.length / taille)))
+      setComptes(liste.resultats || [])
+      setNombre(liste.nombre || 0)
+      setPages(liste.pages || 1)
     } catch (e) {
       toast.error(`Chargement impossible : ${messageErreur(e)}`)
     } finally {
@@ -138,10 +106,6 @@ const PlanComptable = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     charger()
   }, [charger])
-
-  // Les pastilles comptent les comptes VISIBLES, pas ceux de la base : un
-  // segment annoncé « 196 » et qui en montre sept mentirait sur l'écran.
-  const nombreDe = (valeur) => nombreVisible(valeur)
 
   const choisirLigne = (compte) => {
     setChoisi(compte)
@@ -196,9 +160,21 @@ const PlanComptable = () => {
     }
   }
 
-  const exporter = () => {
+  const exporter = async () => {
+    // L'export prend tout le segment (recherche comprise), pas seulement la
+    // page affichée : une seule requête, le plan tient largement dedans.
+    const requete = new URLSearchParams({ type: segment, page: '1', taille: '2000' })
+    if (termeDiffere) requete.set('recherche', termeDiffere)
+    let aExporter = comptes
+    try {
+      const liste = await request(`/donnees-de-base/plan-comptable/?${requete}`)
+      aExporter = liste.resultats || comptes
+    } catch (e) {
+      toast.error(`Export impossible : ${messageErreur(e)}`)
+      return
+    }
     const entetes = 'Niveau;Sous Compte;Compte Gen.;Intitulé;Type;Solde'
-    const lignes = comptes.map((c) =>
+    const lignes = aExporter.map((c) =>
       [c.niveau, c.sousCompte, c.code, c.libelle, c.typeCompte, c.solde].join(';'),
     )
     const blob = new Blob([`﻿${[entetes, ...lignes].join('\n')}`], {
@@ -220,25 +196,22 @@ const PlanComptable = () => {
 
             <div className="pc-barre">
               <div className="pc-segments" role="tablist">
-                {[...TYPES_VISIBLES, 'tous'].map((valeur) => {
-                  const compte = nombreDe(valeur)
-                  return (
-                    <button
-                      key={valeur}
-                      type="button"
-                      role="tab"
-                      aria-selected={segment === valeur}
-                      className={`pc-segment${segment === valeur ? ' pc-segment--actif' : ''}`}
-                      onClick={() => {
-                        setSegment(valeur)
-                        setPage(1)
-                      }}
-                    >
-                      {valeur === 'tous' ? 'Tous' : valeur}
-                      {compte !== null && <span className="pc-segment-nombre">{compte}</span>}
-                    </button>
-                  )
-                })}
+                {segments.map((s) => (
+                  <button
+                    key={s.valeur}
+                    type="button"
+                    role="tab"
+                    aria-selected={segment === s.valeur}
+                    className={`pc-segment${segment === s.valeur ? ' pc-segment--actif' : ''}`}
+                    onClick={() => {
+                      setSegment(s.valeur)
+                      setPage(1)
+                    }}
+                  >
+                    {s.libelle}
+                    {s.nombre != null && <span className="pc-segment-nombre">{s.nombre}</span>}
+                  </button>
+                ))}
               </div>
 
               <BoutonExport onClick={exporter} />

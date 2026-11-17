@@ -19,6 +19,8 @@ urlpatterns = [
     path('api/', include('documents.urls')),
     path('api/', include('parametres.urls')),
     path('api/', include('traitements.urls')),
+    # Agrégats de l'accueil : des chiffres, pas des listes brutes.
+    path('api/tableau-de-bord/', include('tableau_de_bord.urls')),
     # Application IPM Mobile (pwa/) : ses propres jetons, ceux des participants.
     path('api/mobile/', include('mobile.urls')),
 ]

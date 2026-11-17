@@ -14,15 +14,16 @@ utilisateur IPM - et un utilisateur IPM n'est pas un participant.
 """
 
 import base64
-from datetime import timedelta
+from datetime import date, timedelta
 import binascii
 import ipaddress
 import re
+from urllib.error import HTTPError, URLError
 
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from django.db import IntegrityError, OperationalError, transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Sum
 from django.http import Http404, HttpResponse
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError
@@ -49,6 +50,7 @@ from donnees_de_base.natures_courantes import ordonner
 from participants.models import DemandePhoto, Participant
 from participants.models.participant import REGIME_MUTUELLE
 from participants.serializers.participant import TYPE_PARTICIPANT
+from traitements.models import JOURNAL_RETENUE, PREFIXE_COMPTE_PARTICIPANT, EcritureCompta
 
 from .authentification import (
     EstParticipant,
@@ -56,6 +58,7 @@ from .authentification import (
     emettre_jeton,
     peut_se_servir,
 )
+from .scan import reconnaitre_document
 from .serializers import (
     statut,
     VALIDITE_BON,
@@ -213,7 +216,7 @@ class IdentificationView(APIView):
             make_password(mot_de_passe)
             return self._refus()
         if (
-            not participant.verifier_mot_de_passe(mot_de_passe)
+            not self._mot_de_passe_ok(participant, mot_de_passe)
             or (societe and (not participant.adherent_id or participant.adherent.code != societe))
         ):
             return self._refus()
@@ -226,6 +229,25 @@ class IdentificationView(APIView):
         return Response(
             {'jeton': emettre_jeton(participant), 'participant': representer_participant(participant)}
         )
+
+    @staticmethod
+    def _comme_matricule(valeur):
+        """Normalise une saisie comme un matricule : sans préfixe société, sur
+        quatre chiffres. « 01-949 » comme « 949 » donnent « 0949 »."""
+        reste = (valeur or '').rpartition('-')[2]
+        return reste.zfill(4) if reste.isdigit() else reste
+
+    @classmethod
+    def _mot_de_passe_ok(cls, participant, mot_de_passe):
+        """Le mot de passe mobile habituel, OU le matricule lui-même.
+
+        Consigne (2026-11-12) : tout participant se connecte juste en tapant son
+        matricule, qui sert alors de mot de passe. Celui qui a choisi un mot de
+        passe mobile peut toujours s'en servir ; son matricule reste accepté.
+        """
+        if participant.verifier_mot_de_passe(mot_de_passe):
+            return True
+        return cls._comme_matricule(mot_de_passe) == participant.matricule
 
     @staticmethod
     def _refus():
@@ -250,6 +272,179 @@ class MoiView(VueParticipant):
         return Response(
             {'participant': representer_participant(participant), 'beneficiaires': beneficiaires}
         )
+
+
+class CompteView(VueParticipant):
+    """Le relevé du compte IPM du participant, en clair - pas en comptable.
+
+    Quand un agent se soigne, l'IPM règle le prestataire en entier, puis répartit
+    la facture : la **part IPM** (ce qu'elle prend en charge, compte 602) et la
+    **part de l'agent** (le ticket modérateur, compte participant 411). Cette
+    part se rembourse par des **retenues sur salaire** (crédits du 411).
+
+    L'écran répond à deux questions de l'agent, sans jargon :
+
+      - pour chaque soin : combien l'IPM a payé, et combien lui reste à sa charge ;
+      - combien il a déjà remboursé (mois par mois), et ce qui reste à payer.
+
+    Toutes les écritures d'un agent portent son `matri` et sa société (`codesoc`),
+    et le n° du bon (`numdoc`) : on relie ainsi sa part (411) et la part IPM (602)
+    d'un même soin, même si une facture regroupe plusieurs agents.
+    """
+
+    # Chaque genre de document et le nom qu'en attend l'application mobile
+    # (utils/documents.ts). L'ordre fixe un gagnant si deux tables portaient le
+    # même code - leurs préfixes diffèrent en pratique (« BP… », « BO… »).
+    GENRES_DOCUMENT = (
+        (BonPharmacie, 'bon-pharmacie'),
+        (BonOptique, 'bon-optique'),
+        (LettreGarantie, 'lettre-garantie'),
+    )
+
+    @classmethod
+    def index_documents(cls, numeros):
+        """Relie un n° de bon (numdoc d'une écriture) au document de l'agent.
+
+        Le `numdoc` vaut parfois le code d'un bon que l'agent voit dans « Mes
+        bons » (on peut alors l'y envoyer), parfois une simple référence de
+        facture sans document côté agent (on la laisse sans lien). On résout
+        les trois tables en une requête chacune, par lot de codes.
+        """
+        codes = {n for n in numeros if n}
+        index = {}
+        if not codes:
+            return index
+        for modele, genre in cls.GENRES_DOCUMENT:
+            for doc_id, code in modele.objects.filter(code__in=codes).values_list('id', 'code'):
+                index.setdefault(code, {'genre': genre, 'id': doc_id})
+        return index
+
+    def get(self, request):
+        participant = request.auth
+        adherent = participant.adherent
+        if adherent is None:
+            # Un dossier sans société n'a pas de compte participant rattaché.
+            return Response({
+                'compte': '', 'tiers': '', 'solde': 0,
+                'totalPartIpm': 0, 'totalRetenu': 0, 'totalRembourse': 0,
+                'soins': [], 'retenues': [], 'remboursements': [],
+            })
+
+        matricule = participant.matricule
+        societe = adherent.code
+        compte = f'{PREFIXE_COMPTE_PARTICIPANT}{societe}'
+        tiers = f'{societe}-{matricule}'
+
+        # Le compte 411 de l'agent : sa part des soins (débits) et ses
+        # remboursements par retenue (crédits), du plus ancien au plus récent
+        # pour suivre le reste dû au fil du temps.
+        lignes_411 = list(
+            EcritureCompta.objects.filter(comptegen=compte, comptetiers=tiers)
+            .order_by('date_trait', 'date_piece', 'rang', 'id')
+        )
+
+        # La part IPM par bon : les écritures 602 de l'agent, sommées par n° de
+        # bon. Portées par `matri` et non par le tiers, elles ne sont pas dans
+        # `lignes_411` - c'est la part que l'IPM a prise, pas la dette.
+        part_ipm = {}
+        for ligne in (
+            EcritureCompta.objects.filter(comptegen__startswith='602', matri=matricule, codesoc=societe)
+            .values('numdoc').annotate(ipm=Sum('debit'))
+        ):
+            part_ipm[ligne['numdoc'] or ''] = int(ligne['ipm'] or 0)
+
+        documents = self.index_documents(e.numdoc for e in lignes_411)
+
+        # Les crédits du 411 ne sont pas tous des retenues sur salaire : le
+        # journal les distingue. **RP** = retenue de paie (ce qui est coupé sur
+        # le salaire) ; **RIB/RIC** = remboursement à l'agent (il avait avancé,
+        # l'IPM lui rend). Deux choses opposées pour lui - l'une prend, l'autre
+        # rend - qu'on ne doit surtout pas confondre. On les groupe par mois.
+        soins_par_bon = {}
+        retenues_mois = {}
+        remboursements_mois = {}
+        reste = 0
+        for ecriture in lignes_411:
+            debit = int(ecriture.debit or 0)
+            credit = int(ecriture.credit or 0)
+            reste += debit - credit
+            jour = ecriture.date_trait or ecriture.date_piece or ecriture.date_compta
+            if debit >= credit:
+                # Un soin : la part restée à la charge de l'agent. Groupé par
+                # bon (plusieurs prestations d'un bon se cumulent).
+                cle = ecriture.numdoc or f'solo-{ecriture.id}'
+                soin = soins_par_bon.get(cle)
+                if soin is None:
+                    soin = {
+                        'id': ecriture.id,
+                        'date': jour,
+                        'numeroBon': ecriture.numdoc or '',
+                        'document': documents.get(ecriture.numdoc or ''),
+                        'partAgent': 0,
+                        'partIpm': part_ipm.get(ecriture.numdoc or '', 0),
+                        'reste': reste,
+                    }
+                    soins_par_bon[cle] = soin
+                soin['partAgent'] += debit - credit
+                soin['reste'] = reste
+            else:
+                # Un crédit : retenue sur salaire (RP) ou remboursement (RIB/RIC).
+                mois = jour.replace(day=1) if jour else None
+                cle_mois = mois.isoformat() if mois else f'sans-{ecriture.id}'
+                cible = retenues_mois if ecriture.codej == JOURNAL_RETENUE else remboursements_mois
+                entree = cible.get(cle_mois)
+                if entree is None:
+                    entree = {'id': cle_mois, 'date': mois, 'montant': 0}
+                    cible[cle_mois] = entree
+                entree['montant'] += credit - debit
+
+        plancher = date.min
+        soins = sorted(soins_par_bon.values(), key=lambda s: s['date'] or plancher, reverse=True)
+        retenues = sorted(retenues_mois.values(), key=lambda r: r['date'] or plancher, reverse=True)
+        remboursements = sorted(
+            remboursements_mois.values(), key=lambda r: r['date'] or plancher, reverse=True
+        )
+
+        return Response({
+            'compte': compte,
+            'tiers': tiers,
+            # Ce qui reste à payer à l'IPM.
+            'solde': reste,
+            'totalPartIpm': sum(part_ipm.values()),
+            # Total coupé sur le salaire (RP), et total remboursé à l'agent (RIB/RIC).
+            'totalRetenu': sum(r['montant'] for r in retenues),
+            'totalRembourse': sum(r['montant'] for r in remboursements),
+            'soins': soins,
+            'retenues': retenues,
+            'remboursements': remboursements,
+        })
+
+
+class ScanView(VueParticipant):
+    """Reconnaissance d'un document photographié, par l'IA (cf. mobile/scan.py).
+
+    L'assuré envoie la photo d'un document (ordonnance, reçu…) ; le serveur
+    appelle l'IA avec sa clé (jamais le navigateur) et renvoie les champs
+    reconnus. Pour l'instant : seulement scan + reconnaissance, rien n'est
+    enregistré ni ne déclenche de versement.
+    """
+
+    def post(self, request):
+        try:
+            resultat = reconnaitre_document(request.data.get('image'))
+        except ValueError as erreur:
+            return Response({'detail': str(erreur)}, status=status.HTTP_400_BAD_REQUEST)
+        except (HTTPError, URLError, TimeoutError):
+            return Response(
+                {'detail': "L'IA n'a pas pu lire le document. Réessayez dans un instant."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        except RuntimeError:
+            return Response(
+                {'detail': 'La reconnaissance n’est pas configurée sur le serveur.'},
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        return Response(resultat)
 
 
 # Une photo d'identité réduite à 320 px pèse une vingtaine de kilo-octets ;

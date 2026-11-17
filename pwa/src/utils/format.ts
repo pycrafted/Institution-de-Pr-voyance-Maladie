@@ -70,6 +70,7 @@ const fmtLong = new Intl.DateTimeFormat(LOCALE, {
   year: 'numeric',
 })
 const fmtHeure = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' })
+const fmtMoisAnnee = new Intl.DateTimeFormat(LOCALE, { month: 'long', year: 'numeric' })
 
 /** « 18/09/2026 » */
 export function dateCourte(valeur: string | null | undefined): string {
@@ -87,6 +88,12 @@ export function dateMoyenne(valeur: string | null | undefined): string {
 export function dateLongue(valeur: string | null | undefined): string {
   const date = lireDate(valeur)
   return date ? fmtLong.format(date) : ''
+}
+
+/** « janvier 2026 » - un mois entier, pour les retenues mensuelles. */
+export function moisAnnee(valeur: string | null | undefined): string {
+  const date = lireDate(valeur)
+  return date ? fmtMoisAnnee.format(date) : ''
 }
 
 /** « Aujourd'hui », « Hier », « Demain », sinon « 18 sept. 2026 ». */
@@ -158,6 +165,17 @@ export function matriculeSansSociete(matricule: string): string {
 
 export function pluriel(n: number, mot: string, motPluriel = `${mot}s`): string {
   return `${n} ${n > 1 ? motPluriel : mot}`
+}
+
+// Groupage des milliers par espace, à la française (« 3 150 »). On force
+// l'espace ordinaire : l'espace fine insécable d'Intl se copie mal et
+// s'aligne mal dans une colonne de montants.
+const GROUPES = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 })
+
+/** Montant en francs CFA : 3150 → « 3 150 F ». Le signe négatif est conservé. */
+export function montant(valeur: number | null | undefined): string {
+  const n = Math.trunc(valeur ?? 0)
+  return `${GROUPES.format(n).replace(/ | /g, ' ')} F`
 }
 
 /** Téléphone sénégalais lisible : « 338490000 » → « 33 849 00 00 » ; sinon inchangé. */

@@ -33,16 +33,15 @@ const ONGLETS = [
 /**
  * Combien de fiches la page montre, sur celles qu'elle possède.
  *
- * **Douze, dans les deux onglets.** Rien n'est retiré de la base ni du
- * serveur : les 412 fournisseurs y sont tous, l'API les renvoie tous, les
- * autres écrans les voient - une facture désigne toujours sa clinique. Seule
- * cette page restreint ce qu'elle affiche, et elle le fait ici, côté
- * navigateur, comme Données de base et le Plan Comptable.
+ * **Toutes (2026-11-12).** La restriction à douze datait de la base de
+ * démonstration ; sur les vraies données LAMPS, l'app doit montrer les
+ * 412 fournisseurs réels - la tuile « Prestataires de soins actifs » du
+ * tableau de bord se cale sur cette constante, et douze y était faux.
  *
- * **Pour changer la restriction, modifier cette seule constante.**
- * `Infinity` rend tout visible.
+ * **Pour re-restreindre l'affichage, remettre un nombre ici** (c'est la seule
+ * constante à toucher) ; `Infinity` montre tout.
  */
-export const FICHES_VISIBLES = 12
+export const FICHES_VISIBLES = Infinity
 const lignesVisibles = (total) => Math.min(total, FICHES_VISIBLES)
 
 const FournisseursDeSoins = () => {

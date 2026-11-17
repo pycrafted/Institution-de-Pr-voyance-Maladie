@@ -25,6 +25,8 @@ import {
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import {
+  cilChevronBottom,
+  cilChevronRight,
   cilCloudDownload,
   cilCloudUpload,
   cilActionUndo,
@@ -39,6 +41,7 @@ import {
   creerEntree,
   importerEntrees,
   listerEntrees,
+  listerPage,
   modifierEnLot,
   modifierEntree,
 } from '../../services/referentiels'
@@ -175,6 +178,10 @@ const Referentiel = ({ referentiel, onStats }) => {
     [referentiel.segments, valeursSegments],
   )
   const TAILLE_PAGE = referentiel.taillePage || TAILLE_PAGE_PAR_DEFAUT
+  // Pagination serveur : les grosses tables (bons, factures, écritures) ne
+  // rapatrient qu'une page à la fois ; recherche et tri partent au serveur.
+  // Les petits référentiels restent en mode client (tout en mémoire, instantané).
+  const paginationServeur = Boolean(referentiel.paginationServeur)
   // Fiche en lecture propre au référentiel (`fiche`) - un composant, ouvert
   // par l'œil de chaque ligne. Majuscule : React le monte comme un composant.
   const Fiche = referentiel.fiche
@@ -182,6 +189,12 @@ const Referentiel = ({ referentiel, onStats }) => {
   // bon lui-même, dans une fenêtre modale. Mêmes propriétés que le panneau
   // latéral, qu'il remplace ; sans lui, c'est ce panneau qui sert.
   const Editeur = referentiel.editeur || FormulaireEntree
+
+  // Ligne dépliable (opt-in `composantDeplie`) : un composant rendu sous la
+  // ligne pour y montrer un détail en place - les ayants droit d'un
+  // participant. Majuscule : monté comme composant React.
+  const ComposantDeplie = referentiel.composantDeplie
+  const depliable = Boolean(ComposantDeplie)
 
   /**
    * Certains référentiels expriment déjà l'activité dans leurs segments
@@ -265,6 +278,11 @@ const Referentiel = ({ referentiel, onStats }) => {
   )
   const [afficherInactifs, setAfficherInactifs] = useState(false)
   const [page, setPage] = useState(1)
+  // Mode serveur seulement : total et nombre de pages renvoyés par la base,
+  // et la recherche différée (on n'interroge qu'après la frappe, pas à chaque touche).
+  const [totalServeur, setTotalServeur] = useState(0)
+  const [pagesServeur, setPagesServeur] = useState(1)
+  const [rechercheServeur, setRechercheServeur] = useState('')
   const [panneauOuvert, setPanneauOuvert] = useState(false)
   // Remonte le formulaire de création docké après chaque ajout (le vide).
   const [resetDockee, setResetDockee] = useState(0)
@@ -283,6 +301,17 @@ const Referentiel = ({ referentiel, onStats }) => {
   // écrit se confirme dans une fenêtre modale (cf. Confirmation.jsx).
   const [demanderConfirmation, modaleConfirmation, confirmationOuverte] = useConfirmation()
   const [selection, setSelection] = useState(() => new Set())
+  // Lignes dépliées (opt-in `composantDeplie`) : on y montre un détail en
+  // place - les ayants droit d'un participant. Le chevron de tête et le clic
+  // sur la ligne ouvrent et ferment.
+  const [lignesDepliees, setLignesDepliees] = useState(() => new Set())
+  const basculerDepli = (id) =>
+    setLignesDepliees((s) => {
+      const suivant = new Set(s)
+      if (suivant.has(id)) suivant.delete(id)
+      else suivant.add(id)
+      return suivant
+    })
 
   /**
    * `silencieux` : rechargement de fond (cf. ecouteChangements.js). Ni
@@ -304,24 +333,78 @@ const Referentiel = ({ referentiel, onStats }) => {
     () => (referentiel.filtres || []).filter((f) => f.serveur).map((f) => f.champ),
     [referentiel.filtres],
   )
-  const parametresServeur = useMemo(
-    () =>
-      Object.fromEntries(champsServeur.map((champ) => [champ, filtres[champ] || TOUS_EXERCICES])),
-    [champsServeur, filtres],
-  )
+  const parametresServeur = useMemo(() => {
+    const params = Object.fromEntries(
+      champsServeur.map((champ) => [champ, filtres[champ] || TOUS_EXERCICES]),
+    )
+    // En pagination serveur, les filtres « client » (Société, État, Spécialité…)
+    // doivent aussi partir au serveur : la page ne filtre plus côté navigateur,
+    // les laisser au client les rendrait sans effet. On n'envoie que ceux qui
+    // portent une valeur. En mode client, ils restent appliqués en mémoire.
+    if (paginationServeur) {
+      for (const f of referentiel.filtres || []) {
+        if (!f.serveur && filtres[f.champ]) params[f.champ] = filtres[f.champ]
+      }
+    }
+    return {
+      ...params,
+      // Paramètres serveur fixes, propres à la vue (ex. le type de fournisseur
+      // d'un sous-onglet « Factures Soins / Divers »).
+      ...(referentiel.parametresServeurFixes || {}),
+      // Segment actif traduit en filtre serveur (ex. Médicaments « Exclus »).
+      ...(paginationServeur && referentiel.segmentServeur
+        ? referentiel.segmentServeur(segmentActif)
+        : {}),
+    }
+  }, [
+    champsServeur,
+    filtres,
+    paginationServeur,
+    referentiel.filtres,
+    referentiel.parametresServeurFixes,
+    referentiel.segmentServeur,
+    segmentActif,
+  ])
+
+  // En mode serveur, on n'interroge qu'après une pause de frappe (400 ms), et
+  // toute nouvelle recherche ramène à la première page. En mode client, la
+  // recherche filtre en mémoire, instantanément : ce différé ne sert à rien.
+  useEffect(() => {
+    if (!paginationServeur) return undefined
+    const minuteur = setTimeout(() => {
+      setRechercheServeur(recherche.trim())
+      setPage(1)
+    }, 400)
+    return () => clearTimeout(minuteur)
+  }, [recherche, paginationServeur])
 
   const recharger = useCallback(
     async ({ silencieux = false } = {}) => {
       try {
         if (!silencieux) setChargement(true)
-        setEntrees(await listerEntrees(cle, parametresServeur))
+        if (paginationServeur) {
+          // Une seule page : exercice + page + taille + recherche. Le serveur
+          // trie (plus récent d'abord) et découpe ; le tableau ne tient jamais
+          // que cette page en mémoire.
+          const reponse = await listerPage(cle, {
+            ...parametresServeur,
+            page,
+            taille: TAILLE_PAGE,
+            recherche: rechercheServeur || undefined,
+          })
+          setEntrees(reponse.resultats || [])
+          setTotalServeur(reponse.count || 0)
+          setPagesServeur(reponse.pages || 1)
+        } else {
+          setEntrees(await listerEntrees(cle, parametresServeur))
+        }
       } catch (e) {
         if (!silencieux) toast.error(`Chargement impossible : ${messageErreur(e)}`)
       } finally {
         if (!silencieux) setChargement(false)
       }
     },
-    [cle, parametresServeur],
+    [cle, parametresServeur, paginationServeur, page, TAILLE_PAGE, rechercheServeur],
   )
 
   // La page monte ce composant avec une `key` sur la clé du référentiel :
@@ -370,6 +453,9 @@ const Referentiel = ({ referentiel, onStats }) => {
       : (referentiel.limiteAffichage ?? Infinity)
 
   const visibles = useMemo(() => {
+    // Mode serveur : `entrees` est déjà la page voulue (recherche, tri et
+    // découpe faits par la base). Rien à filtrer ni trancher côté navigateur.
+    if (paginationServeur) return entrees
     const terme = recherche.trim().toLowerCase()
     const dansLeSegment = predicatSegment(segments, definitionSegment)
     return (
@@ -423,6 +509,7 @@ const Referentiel = ({ referentiel, onStats }) => {
     definitionSegment,
     referentiel.filtreBase,
     limiteAffichage,
+    paginationServeur,
   ])
 
   // Compté dans le segment ouvert : un service désactivé ne concerne pas
@@ -446,10 +533,16 @@ const Referentiel = ({ referentiel, onStats }) => {
   // La page est bornée au calcul plutôt que remise à zéro dans un effet :
   // si un filtre réduit la liste alors qu'on est en page 4, on retombe
   // simplement sur la dernière page existante.
-  const nbPages = Math.max(1, Math.ceil(visibles.length / TAILLE_PAGE))
+  // En mode serveur, le nombre de pages vient de la base et `visibles` est
+  // déjà la page ; en mode client, on découpe la liste filtrée.
+  const nbPages = paginationServeur
+    ? Math.max(1, pagesServeur)
+    : Math.max(1, Math.ceil(visibles.length / TAILLE_PAGE))
   const pageCourante = Math.min(page, nbPages)
   const premierIndex = (pageCourante - 1) * TAILLE_PAGE
-  const lignes = visibles.slice(premierIndex, premierIndex + TAILLE_PAGE)
+  const lignes = paginationServeur
+    ? visibles
+    : visibles.slice(premierIndex, premierIndex + TAILLE_PAGE)
 
   /**
    * La sélection porte sur le résultat filtré, jamais sur la page affichée :
@@ -649,12 +742,16 @@ const Referentiel = ({ referentiel, onStats }) => {
   const champFichier = useRef(null)
 
   const exporter = async () => {
-    if (!visibles.length) {
-      toast.info('Rien à exporter : la vue est vide')
-      return
-    }
     try {
-      const nb = await exporterExcel(referentiel, visibles, entrees)
+      // En mode serveur, la page n'a qu'une tranche : pour l'export on prend
+      // tout l'exercice en une fois (c'est le seul moment où on rapatrie tout,
+      // et l'utilisateur l'a demandé).
+      const donnees = paginationServeur ? await listerEntrees(cle, parametresServeur) : visibles
+      if (!donnees.length) {
+        toast.info('Rien à exporter : la vue est vide')
+        return
+      }
+      const nb = await exporterExcel(referentiel, donnees, donnees)
       toast.success(`${nb} ligne${nb > 1 ? 's' : ''} exportée${nb > 1 ? 's' : ''}`)
     } catch (e) {
       toast.error(`Export impossible : ${messageErreur(e)}`)
@@ -717,7 +814,8 @@ const Referentiel = ({ referentiel, onStats }) => {
     }
   }
 
-  const nbColonnes = colonnesTableau.length + 1 + (referentiel.selection ? 1 : 0)
+  const nbColonnes =
+    colonnesTableau.length + 1 + (referentiel.selection ? 1 : 0) + (depliable ? 1 : 0)
 
   /**
    * Barre compacte (`barreCompacte`) : le total et le bouton de création
@@ -747,7 +845,14 @@ const Referentiel = ({ referentiel, onStats }) => {
   // sans titre, elle ouvre la barre d'outils, à gauche.
   const statsAuTitre = barreCompacte && !referentiel.sansTitre && Boolean(fnStats)
   // Texte des stats de la vue (total/ventilation) et sa légende éventuelle.
-  const statsTexte = fnStats ? fnStats(visibles) : null
+  // En mode serveur, `visibles` n'est qu'une page : le total vient de la base.
+  const statsTexte = paginationServeur
+    ? referentiel.sansStats
+      ? null
+      : `Total : ${Number(totalServeur).toLocaleString('fr-FR')}`
+    : fnStats
+      ? fnStats(visibles)
+      : null
   const statsSegments = segmentsStats(statsTexte)
   const legendeTexte = referentiel.legendeStats ? referentiel.legendeStats(filtres) : null
   // Pages à onglets : le titre est celui de la page (hors de ce composant). On
@@ -1142,6 +1247,7 @@ const Referentiel = ({ referentiel, onStats }) => {
           <CTable hover responsive className="ddb-tableau align-middle mb-0">
             <CTableHead>
               <CTableRow>
+                {depliable && <CTableHeaderCell style={{ width: '40px' }} aria-hidden="true" />}
                 {referentiel.selection && (
                   <CTableHeaderCell style={{ width: '44px' }} className="ddb-cellule-case">
                     <input
@@ -1188,11 +1294,11 @@ const Referentiel = ({ referentiel, onStats }) => {
 
               {!chargement &&
                 lignes.map((entree) => (
+                  <React.Fragment key={entree.id}>
                   <CTableRow
-                    key={entree.id}
                     className={`ddb-ligne${entree.actif ? '' : ' ddb-ligne-inactive'}${
                       selection.has(entree.id) ? ' ddb-ligne-selectionnee' : ''
-                    }${
+                    }${depliable && lignesDepliees.has(entree.id) ? ' ddb-ligne-depliee' : ''}${
                       (creationDockee && entreeDockee?.id === entree.id) ||
                       (referentiel.modificationParLigne &&
                         panneauOuvert &&
@@ -1201,13 +1307,30 @@ const Referentiel = ({ referentiel, onStats }) => {
                         : ''
                     }`}
                     onClick={() =>
-                      creationDockee
-                        ? setEntreeDockee(entree)
-                        : referentiel.onLigne
-                          ? referentiel.onLigne(entree)
-                          : ouvrirModification(entree)
+                      depliable
+                        ? basculerDepli(entree.id)
+                        : creationDockee
+                          ? setEntreeDockee(entree)
+                          : referentiel.onLigne
+                            ? referentiel.onLigne(entree)
+                            : ouvrirModification(entree)
                     }
                   >
+                    {depliable && (
+                      <CTableDataCell
+                        className="ddb-cellule-depli"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          basculerDepli(entree.id)
+                        }}
+                      >
+                        <CIcon
+                          icon={lignesDepliees.has(entree.id) ? cilChevronBottom : cilChevronRight}
+                          className="ddb-depli-chevron"
+                          aria-hidden="true"
+                        />
+                      </CTableDataCell>
+                    )}
                     {referentiel.selection && (
                       <CTableDataCell
                         className="ddb-cellule-case"
@@ -1349,6 +1472,14 @@ const Referentiel = ({ referentiel, onStats }) => {
                       )}
                     </CTableDataCell>
                   </CTableRow>
+                  {depliable && lignesDepliees.has(entree.id) && (
+                    <CTableRow className="ddb-ligne-depli">
+                      <CTableDataCell colSpan={nbColonnes} className="ddb-depli-cellule">
+                        <ComposantDeplie entree={entree} entrees={entrees} />
+                      </CTableDataCell>
+                    </CTableRow>
+                  )}
+                  </React.Fragment>
                 ))}
             </CTableBody>
           </CTable>

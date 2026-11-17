@@ -11,7 +11,7 @@
  * ses enfants, on peut donc l'envelopper dans un composant à nous.
  */
 
-import { IonIcon, IonLabel, IonTabBar, IonTabButton, useIonToast } from '@ionic/react'
+import { IonIcon, IonLabel, IonTabBar, IonTabButton } from '@ionic/react'
 import {
   documentText,
   documentTextOutline,
@@ -19,11 +19,9 @@ import {
   homeOutline,
   location,
   locationOutline,
-  wallet,
-  walletOutline,
+  scan,
+  scanOutline,
 } from 'ionicons/icons'
-
-import { haptique } from '../hooks/haptique'
 
 export interface Onglet {
   /** Nom de l'onglet pour Ionic, et clé React. */
@@ -59,44 +57,17 @@ export const ONGLETS: readonly Onglet[] = [
     icone: locationOutline,
     iconePleine: location,
   },
+  {
+    // Le scan (pré-financement) est devenu un onglet comme les autres, à la
+    // place du relevé, qui a rejoint la barre du haut (compte/perso). Cadre à
+    // quatre coins : le symbole universel « scanner un document ».
+    cle: 'scan',
+    href: '/scan',
+    libelle: 'Scanner',
+    icone: scanOutline,
+    iconePleine: scan,
+  },
 ]
-
-/** Le suivi comptable de l'employé (retenues sur salaire et leur motif) : le
-    bouton est en place, l'écran viendra plus tard. */
-const ONGLET_A_VENIR = {
-  cle: 'retenues',
-  libelle: 'Mes retenues',
-  icone: walletOutline,
-  iconePleine: wallet,
-  message: 'Le suivi de vos retenues IPM n’est pas encore disponible.',
-}
-
-/**
- * Un onglet qui ne mène nulle part : il annonce seulement que son écran
- * n'existe pas encore. IonTabBar ne garde que les boutons d'onglet
- * (`isTabButton`) et leur passe un `onClick` qui change d'onglet : celui-ci
- * l'ignore, et rien ne bouge.
- */
-function OngletAVenir() {
-  const [presenterToast] = useIonToast()
-  return (
-    <IonTabButton
-      tab={ONGLET_A_VENIR.cle}
-      // Sans adresse, ion-tabs chercherait un onglet « retenues » qui n'existe
-      // pas (erreur en console). Le bouton d'Ionic bloque de lui-même le
-      // lien : « # » n'est jamais suivi.
-      href="#"
-      onClick={() => {
-        haptique.leger()
-        void presenterToast({ message: ONGLET_A_VENIR.message, duration: 2800, position: 'top' })
-      }}
-    >
-      <IonIcon ios={ONGLET_A_VENIR.icone} md={ONGLET_A_VENIR.iconePleine} aria-hidden="true" />
-      <IonLabel>{ONGLET_A_VENIR.libelle}</IonLabel>
-    </IonTabButton>
-  )
-}
-OngletAVenir.isTabButton = true
 
 interface Props {
   onglets?: readonly Onglet[]
@@ -111,7 +82,6 @@ export default function BarreOngletsFlottante({ onglets = ONGLETS }: Props) {
           <IonLabel>{onglet.libelle}</IonLabel>
         </IonTabButton>
       ))}
-      <OngletAVenir />
     </IonTabBar>
   )
 }

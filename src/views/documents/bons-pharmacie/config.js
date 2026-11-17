@@ -47,6 +47,10 @@ export const BONS_PHARMACIE = {
 
   taillePage: 12,
 
+  // 66 429 bons : pagination côté serveur. La page ne charge que sa tranche,
+  // recherche et tri partent à la base (cf. Referentiel + ReferentielViewSet).
+  paginationServeur: true,
+
   // Un bon n'a pas d'intitulé : c'est son numéro qui le nomme dans les
   // messages de confirmation.
   nommer: (b) => `Le bon ${b.code}`,

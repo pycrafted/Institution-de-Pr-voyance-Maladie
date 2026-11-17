@@ -180,6 +180,13 @@ const _nav = [
         name: 'Interrogation Compte',
         to: '/comptabilite/interrogation-compte',
       },
+      // La clôture d'exercice façon LAMPS : le report à nouveau des soldes de
+      // bilan (journal RAN) sur l'exercice suivant.
+      {
+        component: CNavItem,
+        name: 'Report À Nouveau',
+        to: '/comptabilite/report-a-nouveau',
+      },
     ],
   },
 ]
