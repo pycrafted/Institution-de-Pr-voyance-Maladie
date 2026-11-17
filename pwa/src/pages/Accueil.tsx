@@ -8,7 +8,10 @@
  *      la profondeur. Photo d'identité et champs nommés (nom, prénoms,
  *      matricule…), comme la carte que l'organisation remet à ses employés ;
  *      le bandeau n'en remet pas un portrait à 100 px de là ;
- *   3. « Demander un document » : deux colonnes de grandes cartes (§3.4),
+ *   3. « Ayants droit » : les cartes des proches, juste sous celle du
+ *      titulaire — on présente souvent la carte d'un enfant, elle est là en un
+ *      toucher (masquée si le participant n'a pas d'ayant droit) ;
+ *   4. « Demander un document » : deux colonnes de grandes cartes (§3.4),
  *      une par type de bon, issues de DOCUMENTS.
  *
  * Et rien d'autre : demander un document est la raison d'être de l'écran.
@@ -130,21 +133,11 @@ export default function Accueil() {
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 
-        <section className="ipm-section accueil__documents">
-          <div className="ipm-entete-section">
-            <h2 className="ipm-titre-section">Demander un document</h2>
-          </div>
-          <GrilleServices
-            onOuvrir={ouvrirDocument}
-            onIndisponible={setAVenir}
-            etiquette="Documents à demander"
-          />
-        </section>
-
-        {/* Raccourcis vers les cartes d'ayant droit. L'employé présente souvent
-            la carte d'un proche (l'enfant qu'il emmène en pharmacie) : la
-            chercher dans le profil faisait trois touchers, elle est ici en un.
-            La section disparaît s'il n'a pas d'ayant droit. */}
+        {/* Raccourcis vers les cartes d'ayant droit, juste sous la carte du
+            titulaire. L'employé présente souvent la carte d'un proche (l'enfant
+            qu'il emmène en pharmacie) : la chercher dans le profil faisait trois
+            touchers, elle est ici en un. La section disparaît s'il n'a pas
+            d'ayant droit. */}
         {famille.length > 0 && (
           <section className="ipm-section">
             <div className="ipm-entete-section">
@@ -179,6 +172,17 @@ export default function Accueil() {
             </ul>
           </section>
         )}
+
+        <section className="ipm-section accueil__documents">
+          <div className="ipm-entete-section">
+            <h2 className="ipm-titre-section">Demander un document</h2>
+          </div>
+          <GrilleServices
+            onOuvrir={ouvrirDocument}
+            onIndisponible={setAVenir}
+            etiquette="Documents à demander"
+          />
+        </section>
 
         <div className="ipm-bas-page" />
       </IonContent>
