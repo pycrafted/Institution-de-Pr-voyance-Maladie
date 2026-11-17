@@ -12,6 +12,16 @@ pip install --upgrade pip
 pip install -r requirements.txt
 
 python manage.py collectstatic --noinput
+
+# Réconciliation ponctuelle de l'historique des migrations.
+# La base Render est une restauration d'ipm_dev : son SCHÉMA porte déjà des
+# colonnes (ex. documents.validation) que la table django_migrations n'a pas
+# enregistrées. `migrate` tente alors de les RE-créer et Postgres refuse
+# (« column ... already exists »), ce qui bloque tout le déploiement. On marque
+# donc ces migrations comme appliquées (--fake) avant de migrer le reste. Sans
+# effet dès qu'elles sont enregistrées : relançable à chaque déploiement.
+python manage.py migrate documents 0012_validation_bon_optique --fake --noinput || true
+
 python manage.py migrate --noinput
 
 # Banques (B1..B10) : référentiel sans donnée personnelle, idempotent, confirmé
