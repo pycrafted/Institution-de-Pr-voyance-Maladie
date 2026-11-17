@@ -13,16 +13,34 @@ pip install -r requirements.txt
 
 python manage.py collectstatic --noinput
 
-# Réconciliation ponctuelle de l'historique des migrations.
+# Migration AUTO-RÉPARANTE.
 # La base Render est une restauration d'ipm_dev : son SCHÉMA porte déjà des
-# colonnes (ex. documents.validation) que la table django_migrations n'a pas
-# enregistrées. `migrate` tente alors de les RE-créer et Postgres refuse
-# (« column ... already exists »), ce qui bloque tout le déploiement. On marque
-# donc ces migrations comme appliquées (--fake) avant de migrer le reste. Sans
-# effet dès qu'elles sont enregistrées : relançable à chaque déploiement.
-python manage.py migrate documents 0012_validation_bon_optique --fake --noinput || true
-
-python manage.py migrate --noinput
+# objets (colonnes, tables) que des migrations non enregistrées dans
+# django_migrations tentent de recréer. `migrate` échoue alors sur
+# « already exists » et bloque tout le déploiement.
+#
+# On applique donc les migrations une par une : celle qui bute uniquement parce
+# que son objet existe déjà est marquée appliquée (--fake) ; toute vraie
+# nouveauté (nouvelle table, ex. tableau_de_bord) s'applique normalement ; toute
+# autre erreur fait échouer le build. Idempotent : une fois l'historique
+# réconcilié, la première passe suffit et la boucle ne fait plus rien.
+python manage.py migrate --noinput || true
+while true; do
+    next=$(python manage.py showmigrations --plan | sed -n 's/^\[ \]  *//p' | head -1)
+    [ -z "$next" ] && break
+    app=${next%%.*}
+    nom=${next#*.}
+    if python manage.py migrate "$app" "$nom" --noinput 2>/tmp/migerr; then
+        continue
+    fi
+    if grep -qi "already exists" /tmp/migerr; then
+        echo "Objet déjà présent en base : $next marqué appliqué (--fake)."
+        python manage.py migrate "$app" "$nom" --fake --noinput
+    else
+        cat /tmp/migerr
+        exit 1
+    fi
+done
 
 # Banques (B1..B10) : référentiel sans donnée personnelle, idempotent, confirmé
 # sur la vraie base.
