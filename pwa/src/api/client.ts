@@ -9,6 +9,9 @@
  *   (callback fourni par le store de session), retour à l'identification.
  *
  * Aucune donnée n'est jamais écrite dans la console : ni jeton, ni corps.
+ *
+ * Adresse de base en production nuage : config.json généré au build depuis
+ * IPM_API_BASE (backend Railway) ; sur IIS (même origine) elle vaut « /api ».
  */
 
 import {

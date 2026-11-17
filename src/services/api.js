@@ -8,6 +8,9 @@
  *
  * L'API est fermée : hors `/auth/login/`, tout appel sans jeton valable
  * répond 401.
+ *
+ * Adresse de l'API : `VITE_API_BASE`. En production nuage, elle pointe sur le
+ * backend Railway ; sur IIS (même origine) elle vaut « /api ».
  */
 
 // 127.0.0.1 plutôt que « localhost » : sous Windows, « localhost » se résout
