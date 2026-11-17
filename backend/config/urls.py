@@ -8,8 +8,13 @@ pour coller à ce qu'attend le frontend (cf. services/api.js → API_BASE).
 from django.contrib import admin
 from django.urls import include, path
 
+from .importer_base import importer_base
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    # Import ponctuel d'une base (transfert vrai_base -> Railway). TEMPORAIRE :
+    # désactivé tant que IMPORT_BASE_TOKEN n'est pas posé. À retirer après usage.
+    path('api/maintenance/importer-base/', importer_base),
     # Avant les modules métier : c'est la porte d'entrée, et elle est la seule
     # à ne pas exiger de jeton.
     path('api/auth/', include('authentification.urls')),
