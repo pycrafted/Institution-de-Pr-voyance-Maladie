@@ -76,3 +76,8 @@ backend/staticfiles/
 # Artefacts locaux a ne pas versionner (donnees reelles / verrous Office)
 verification-structures.html
 ~$*.pptx
+
+# Contournement local du pare-feu SAR (miroir npm) : hors depot, sinon les
+# builds cloud (Vercel) telechargeraient eux aussi depuis le miroir alors
+# qu'ils ont un acces direct a registry.npmjs.org. Voir pwa/.npmrc.
+pwa/.npmrc
