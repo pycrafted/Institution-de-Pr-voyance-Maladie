@@ -127,7 +127,6 @@ export default function Releve() {
           teinte="valide"
           compact
           titre="Aucun mouvement pour l’instant"
-          message="Vos soins pris en charge par l’IPM et les retenues faites sur votre salaire apparaîtront ici."
         />
       </>
     )
