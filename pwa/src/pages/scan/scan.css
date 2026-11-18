@@ -146,11 +146,6 @@
      tablette. */
   padding-inline: var(--gouttiere);
 }
-/* Choix du motif (première étape) : aligné sur la même gouttière. */
-.scan__choix {
-  padding-inline: var(--gouttiere);
-}
-
 /* L'aperçu de la photo prise, avec un voile pendant l'analyse. */
 .scan__apercu {
   position: relative;
@@ -384,90 +379,22 @@
   font-size: 1.125rem;
 }
 
-/* ---------- Choix du motif ---------- */
-.scan__titre {
-  margin: 0 0 4px;
-  font-size: 1.375rem;
-  font-weight: 800;
-  color: var(--ipm-texte);
-}
-.scan__sous-titre {
-  margin: 0 0 var(--ipm-espace-m);
-  font-size: 0.9375rem;
-  line-height: 1.45;
-  color: var(--ipm-texte-doux);
-}
-.scan__motifs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ipm-espace-s);
-}
-.scan__motif {
-  display: flex;
-  align-items: center;
-  gap: var(--ipm-espace-m);
-  width: 100%;
-  padding: var(--ipm-espace-m);
-  border: 1px solid var(--ipm-bordure);
-  border-radius: var(--ipm-rayon-grand);
-  background: var(--ipm-surface);
-  box-shadow: var(--ombre-1);
-  text-align: start;
-  cursor: pointer;
-  transition: box-shadow 0.15s ease;
-}
-.scan__motif:active {
-  box-shadow: none;
-}
-.scan__motif--bientot {
+/* ---------- Choix du motif (cartes partagées CarteListe) ----------
+   Un motif encore à venir : la même carte, mais discrète (fond doux, sans
+   ombre, légèrement estompée) et marquée « Bientôt ». */
+.ipm-carte-liste.scan__motif--bientot {
   background: var(--ipm-surface-2);
   box-shadow: none;
-  cursor: default;
-  opacity: 0.7;
+  opacity: 0.75;
 }
-.scan__motif-icone {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: var(--ipm-rouge-doux);
-  color: var(--ipm-rouge-texte);
-  font-size: 1.375rem;
-}
-.scan__motif--bientot .scan__motif-icone {
-  background: var(--ipm-surface);
-  color: var(--ipm-texte-doux);
-}
-.scan__motif-texte {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.scan__motif-libelle {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--ipm-texte);
-}
-.scan__motif-detail {
-  font-size: 0.8125rem;
-  color: var(--ipm-texte-doux);
-}
-.scan__motif-fleche {
-  flex: none;
-  font-size: 1.25rem;
-  color: var(--ipm-texte-doux);
-}
-.scan__motif-puce {
-  flex: none;
+.scan__puce-bientot {
   padding: 3px 9px;
   border-radius: var(--r-pill);
   background: var(--ipm-surface);
   color: var(--ipm-texte-doux);
   font-size: 0.6875rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 /* ---------- Image figée, en carte (étapes invalide / validée) ---------- */

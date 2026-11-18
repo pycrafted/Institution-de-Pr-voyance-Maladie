@@ -37,7 +37,6 @@ import {
   cashOutline,
   checkmarkCircleOutline,
   checkmarkOutline,
-  chevronForwardOutline,
   imageOutline,
   medkitOutline,
   personOutline,
@@ -50,6 +49,7 @@ import { useCallback, useRef, useState, type ChangeEvent } from 'react'
 import { messageErreur } from '../api'
 import { reconnaitreDocument } from '../api/mobile'
 import { BoutonPrincipal } from '../components/Boutons'
+import CarteListe from '../components/CarteListe'
 import { haptique } from '../hooks/haptique'
 import { useParticipant } from '../session'
 import type { DocumentReconnu } from '../types/api'
@@ -247,31 +247,29 @@ export default function Scan() {
         <input ref={champGalerie} type="file" accept="image/*" className="scan__fichier" onChange={surFichier} />
 
         {/* 1. CHOIX du motif -------------------------------------------- */}
+        {/* Même présentation que les réglages du profil et les lignes d'identité :
+            en-tête de section, puis une pile de cartes partagées (CarteListe).
+            Le motif ouvert (pharmacie) se touche ; les autres sont en attente,
+            grisés et marqués « Bientôt ». */}
         {etape === 'choix' && (
-          <section className="ipm-section scan__choix">
-            <h1 className="scan__titre">Pré-financement</h1>
-            <div className="scan__motifs">
-              {MOTIFS.map((motif) => (
-                <button
+          <section className="ipm-section">
+            <div className="ipm-entete-section">
+              <h2 className="ipm-titre-section">Pré-financement</h2>
+            </div>
+            <div className="ipm-pile">
+              {MOTIFS.map((motif, rang) => (
+                <CarteListe
                   key={motif.cle}
-                  type="button"
-                  className={`scan__motif${motif.ouvert ? '' : ' scan__motif--bientot'}`}
+                  icone={motif.icone}
+                  teinte={motif.ouvert ? 'rouge' : 'neutre'}
+                  titre={motif.libelle}
+                  details={motif.detail}
+                  rang={rang}
+                  className={motif.ouvert ? undefined : 'scan__motif--bientot'}
+                  puce={motif.ouvert ? undefined : <span className="scan__puce-bientot">Bientôt</span>}
+                  etiquette={motif.ouvert ? undefined : `${motif.libelle} - bientôt disponible`}
                   onClick={motif.ouvert ? allerAuScan : undefined}
-                  aria-disabled={motif.ouvert ? undefined : true}
-                >
-                  <span className="scan__motif-icone" aria-hidden="true">
-                    <IonIcon icon={motif.icone} />
-                  </span>
-                  <span className="scan__motif-texte">
-                    <span className="scan__motif-libelle">{motif.libelle}</span>
-                    <span className="scan__motif-detail">{motif.detail}</span>
-                  </span>
-                  {motif.ouvert ? (
-                    <IonIcon className="scan__motif-fleche" icon={chevronForwardOutline} aria-hidden="true" />
-                  ) : (
-                    <span className="scan__motif-puce">Bientôt</span>
-                  )}
-                </button>
+                />
               ))}
             </div>
           </section>
