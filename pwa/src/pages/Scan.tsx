@@ -65,8 +65,8 @@ type Camera = 'demarrage' | 'active' | 'indisponible'
 const MOTIFS = [
   { cle: 'pharmacie', libelle: 'Achat en pharmacie', detail: 'Ordonnance', icone: medkitOutline, ouvert: true },
   { cle: 'consultation', libelle: 'Consultation', detail: 'Chez un médecin', icone: pulseOutline, ouvert: false },
-  { cle: 'hopital', libelle: 'Hôpital', detail: 'Avec consultation', icone: storefrontOutline, ouvert: false },
-  { cle: 'hopital-hors', libelle: 'Hôpital', detail: 'Hors consultation', icone: bedOutline, ouvert: false },
+  { cle: 'urgence', libelle: 'Urgence', detail: 'Avec consultation', icone: storefrontOutline, ouvert: false },
+  { cle: 'urgence-hors', libelle: 'Urgence', detail: 'Hors consultation', icone: bedOutline, ouvert: false },
 ] as const
 
 export default function Scan() {
@@ -267,7 +267,13 @@ export default function Scan() {
                   rang={rang}
                   className={motif.ouvert ? undefined : 'scan__motif--bientot'}
                   puce={motif.ouvert ? undefined : <span className="scan__puce-bientot">Bientôt</span>}
-                  etiquette={motif.ouvert ? undefined : `${motif.libelle} - bientôt disponible`}
+                  etiquette={
+                    motif.ouvert
+                      ? undefined
+                      : // Le détail distingue les deux « Urgence » : sans lui, le
+                        // lecteur d'écran annoncerait deux lignes identiques.
+                        `${motif.libelle}, ${motif.detail} - bientôt disponible`
+                  }
                   onClick={motif.ouvert ? allerAuScan : undefined}
                 />
               ))}
