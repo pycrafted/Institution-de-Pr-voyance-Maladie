@@ -111,9 +111,6 @@ export default function Profil() {
               icone={sombre ? sunny : moon}
               teinte="neutre"
               titre={sombre ? 'Passer en mode clair' : 'Passer en mode sombre'}
-              details={
-                sombre ? 'L’application est en thème sombre.' : 'L’application est en thème clair.'
-              }
               chevron={false}
               onClick={() => {
                 haptique.leger()
@@ -125,7 +122,6 @@ export default function Profil() {
                 icone={downloadOutline}
                 teinte="neutre"
                 titre="Installer sur l’écran d’accueil"
-                details="Ouverture en plein écran, sans passer par le navigateur."
                 onClick={() => {
                   haptique.leger()
                   routeur.push('/installation', 'forward', 'push')
@@ -136,7 +132,6 @@ export default function Profil() {
               icone={helpBuoyOutline}
               teinte="neutre"
               titre="Assistance"
-              details="Comment demander un bon, sa validité, les questions fréquentes."
               onClick={() => {
                 haptique.leger()
                 routeur.push('/assistance', 'forward', 'push')
@@ -146,7 +141,6 @@ export default function Profil() {
               icone={informationCircleOutline}
               teinte="neutre"
               titre="À propos"
-              details="Version de l’application et données hors ligne."
               meta={<span className="ipm-chiffres">{VERSION}</span>}
               onClick={() => {
                 haptique.leger()
@@ -158,7 +152,6 @@ export default function Profil() {
               icone={logOutOutline}
               teinte="annule"
               titre="Se déconnecter"
-              details="Efface les bons enregistrés sur ce téléphone."
               chevron={false}
               onClick={confirmerDeconnexion}
             />
