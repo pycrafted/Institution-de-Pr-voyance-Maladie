@@ -59,15 +59,9 @@ export default function TuileService({ document, onOuvrir, onIndisponible }: Pro
           {MENTION_BIENTOT}
         </span>
       )}
-      {/* L'icône seule, au trait sur iOS et pleine sur Android, exactement
-          comme la barre d'onglets du bas (le PWA est en mode md : icône
-          pleine). */}
-      <IonIcon
-        ios={document.icone}
-        md={document.iconePleine}
-        className="ipm-tuile__icone"
-        aria-hidden="true"
-      />
+      {/* L'icône au TRAIT (demande de l'utilisateur), rouge sur la carte
+          blanche : on force la version outline quel que soit le mode. */}
+      <IonIcon icon={document.icone} className="ipm-tuile__icone" aria-hidden="true" />
       <span className="ipm-tuile__libelle">{document.libelle}</span>
     </button>
   )

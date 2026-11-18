@@ -197,13 +197,16 @@ describe('§3.4 cartes de service et raccourcis', () => {
     expect(ouvrir).toHaveBeenCalledWith(documentParCle('bon-pharmacie'))
   })
 
-  it('ne peint pas toute la carte du document ouvert en rouge', () => {
+  it('porte une icône au trait, sans peindre toute la carte en rouge', () => {
     const { container } = rendre(<GrilleServices onOuvrir={vi.fn()} onIndisponible={vi.fn()} />)
     const carte = screen.getByLabelText('Bon de pharmacie')
     expect(carte).toHaveClass('ipm-tuile--ouverte')
     expect(carte).not.toHaveClass('ipm-tuile--rouge')
-    // Plus d'icône sur la carte : le libellé seul.
-    expect(container.querySelector('.ipm-tuile__icone')).toBeNull()
+    // L'icône est présente et au trait : on force la version outline (icon=…),
+    // plus de variante pleine réservée au mode Android (md=…).
+    const icone = carte.querySelector('.ipm-tuile__icone')
+    expect(icone).not.toBeNull()
+    expect(icone?.getAttribute('md')).toBeNull()
   })
 
   it('éteint un document à venir, le dit, mais le laisse touchable', () => {

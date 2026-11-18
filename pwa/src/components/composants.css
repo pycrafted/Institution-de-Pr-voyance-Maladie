@@ -742,18 +742,17 @@ button.ipm-carte-identite__portrait {
     border-color 0.2s var(--mvt-courbe);
 }
 /*
- * Document ouvert : couleurs INVERSÉES (demande de l'utilisateur) - la carte
- * prend le gris doux de marque (#5f5553) et son contenu le beige (#ece4e3).
- * L'icône pleine ressort ainsi en clair sur la carte foncée. Une légère
- * élévation la détache du fond.
+ * Document ouvert : carte BLANCHE (demande de l'utilisateur) à l'icône pleine
+ * ROUGE de marque ; le libellé reste dans le gris doux. L'ombre douce et le
+ * liseré la détachent du fond.
  */
 .ipm-tuile--ouverte {
-  background: var(--ipm-texte-doux);
-  color: var(--ipm-surface-2);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte-doux);
   box-shadow: var(--ombre-1);
 }
 .ipm-tuile--ouverte .ipm-tuile__icone {
-  color: var(--ipm-surface-2);
+  color: var(--ipm-rouge-texte);
 }
 .ipm-tuile--ouverte:active {
   box-shadow: none;
