@@ -352,6 +352,35 @@ ion-tab-bar.ipm-onglets {
 .ipm-navbar__icone ion-icon {
   font-size: 24px;
 }
+/* Enveloppe de l'icône : elle sert d'ancre à la pastille, posée en haut à
+   droite de l'icône sans décaler l'icône ni le libellé. */
+.ipm-navbar__porte-icone {
+  position: relative;
+  display: inline-flex;
+}
+/* Pastille des notifications non lues : petit disque rouge, chiffre blanc,
+   calé sur le coin supérieur droit de la cloche. */
+.ipm-navbar__pastille {
+  position: absolute;
+  top: -5px;
+  left: 100%;
+  transform: translateX(-60%);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  background: var(--ipm-rouge);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  /* Détache la pastille de l'icône sur le fond de la barre. */
+  box-shadow: 0 0 0 2px var(--ipm-surface);
+}
 /* Mêmes cotes de libellé qu'en bas : 12, demi-gras, coupé s'il déborde. */
 .ipm-navbar__libelle {
   max-width: 100%;
@@ -1637,6 +1666,82 @@ ion-modal.carte-plein {
   height: 1px;
   opacity: 0;
   pointer-events: none;
+}
+
+/* ========================================================================
+ * Notifications (pages/Notifications.tsx)
+ * ---------------------------------------------------------------------
+ * Les décisions de l'IPM, une par ligne : une pastille d'icône selon le
+ * genre (photo / optique), le titre, le message, la date. Celles qui portent
+ * un lien (le détail d'un bon) se touchent ; les autres sont de simples
+ * constats, sans chevron ni appui.
+ * ===================================================================== */
+.notifs__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-8);
+}
+.notifs__ligne {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-12);
+  padding: var(--e-12);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  border: 1px solid var(--ipm-liseret);
+  cursor: pointer;
+}
+/* Une notification sans lien n'est pas une action : pas de curseur main, et
+   l'appui (ipm-appui) ne la fait pas réagir. */
+.notifs__ligne:disabled {
+  cursor: default;
+}
+.notifs__pastille {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-pill);
+  background: var(--ipm-pastille);
+  color: var(--ipm-texte-doux);
+}
+.notifs__pastille ion-icon {
+  font-size: 20px;
+}
+.notifs__corps {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.notifs__titre {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ipm-texte);
+}
+.notifs__message {
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.notifs__date {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--ipm-texte-doux);
+}
+.notifs__fleche {
+  flex-shrink: 0;
+  align-self: center;
+  font-size: 18px;
+  color: var(--ipm-texte-doux);
 }
 
 /* ========================================================================

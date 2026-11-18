@@ -9,23 +9,22 @@
  *
  * Elle est posée par la coquille (App.tsx), à côté de la barre d'onglets du
  * bas, et se montre donc sur TOUS les écrans. Elle garde la hauteur que les
- * écrans lui réservent (`--barre-haut`). Elle porte aussi les fenêtres de ces
- * actions (photos, notifications, question de déconnexion) : elles s'ouvrent
- * de partout, elles appartiennent donc à la barre et non à un écran.
+ * écrans lui réservent (`--barre-haut`). Chaque action mène désormais à une
+ * PAGE à part entière (Identité, Notifications, Mon relevé, Profil) : la barre
+ * ne fait que naviguer, elle ne porte plus de feuille. La cloche affiche une
+ * pastille tant qu'il reste des décisions de l'IPM non lues.
  */
 
 import { IonIcon, useIonRouter } from '@ionic/react'
 // Icônes PLEINES (en mode Material, le variant plein est rendu).
 import { idCard, notifications, person, wallet } from 'ionicons/icons'
-import { useState } from 'react'
 
 import { haptique } from '../hooks/haptique'
-import { BoutonPrincipal } from './Boutons'
-import Feuille from './Feuille'
+import { useNotifications } from '../hooks/useNotifications'
 
 export default function BarreActions() {
   const routeur = useIonRouter()
-  const [notifsOuvertes, setNotifsOuvertes] = useState(false)
+  const { nonLues } = useNotifications()
 
   // Les actions, réparties en quarts égaux sur la barre, comme les onglets du
   // bas : une icône et son libellé dessous.
@@ -44,13 +43,15 @@ export default function BarreActions() {
       },
     },
     {
+      // Désormais une PAGE à part entière (/notifications), comme Identité.
+      // La pastille porte le nombre de décisions encore non lues.
       cle: 'notifications',
       icone: notifications,
       libelle: 'Notifications',
       etiquette: 'Notifications',
       agir: () => {
         haptique.leger()
-        setNotifsOuvertes(true)
+        routeur.push('/notifications', 'forward', 'push')
       },
     },
     {
@@ -81,33 +82,34 @@ export default function BarreActions() {
   ]
 
   return (
-    <>
-      <header className="ipm-navbar">
-        <nav className="ipm-navbar__actions" aria-label="Actions">
-          {actions.map((action) => (
+    <header className="ipm-navbar">
+      <nav className="ipm-navbar__actions" aria-label="Actions">
+        {actions.map((action) => {
+          // Seule la cloche porte une pastille : le nombre de décisions non lues.
+          const pastille = action.cle === 'notifications' ? nonLues : 0
+          return (
             <button
               key={action.cle}
               type="button"
               className="ipm-navbar__icone ipm-appui"
-              aria-label={action.etiquette}
+              aria-label={
+                pastille > 0 ? `${action.etiquette} (${pastille} non lues)` : action.etiquette
+              }
               onClick={action.agir}
             >
-              <IonIcon icon={action.icone} aria-hidden="true" />
+              <span className="ipm-navbar__porte-icone">
+                <IonIcon icon={action.icone} aria-hidden="true" />
+                {pastille > 0 && (
+                  <span className="ipm-navbar__pastille" aria-hidden="true">
+                    {pastille > 9 ? '9+' : pastille}
+                  </span>
+                )}
+              </span>
               <span className="ipm-navbar__libelle">{action.libelle}</span>
             </button>
-          ))}
-        </nav>
-      </header>
-
-      <Feuille
-        ouverte={notifsOuvertes}
-        onFermer={() => setNotifsOuvertes(false)}
-        titre="Notifications"
-        icone={notifications}
-      >
-        <p className="ipm-feuille-texte">Vous n’avez aucune notification pour le moment.</p>
-        <BoutonPrincipal onClick={() => setNotifsOuvertes(false)}>Compris</BoutonPrincipal>
-      </Feuille>
-    </>
+          )
+        })}
+      </nav>
+    </header>
   )
 }

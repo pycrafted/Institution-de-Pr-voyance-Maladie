@@ -99,10 +99,12 @@ describe('barre du haut', () => {
     }
   })
 
-  it('la cloche n’est jamais inerte : elle ouvre une feuille', () => {
+  it('la cloche mène à la page Notifications, sans ouvrir de feuille', () => {
+    // La cloche n'ouvre plus une feuille « aucune notification » inerte : elle
+    // mène à une page à part entière (/notifications), comme « Identité ».
     rendreEcran(<BarreActions />)
     fireEvent.click(screen.getByLabelText('Notifications'))
-    expect(screen.getByRole('dialog')).toHaveTextContent('aucune notification')
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('choisit, réduit et envoie une photo depuis la feuille « Photos »', async () => {

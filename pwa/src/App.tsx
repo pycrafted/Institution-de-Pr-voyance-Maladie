@@ -34,6 +34,7 @@ import Identification from './pages/Identification'
 import Identite from './pages/Identite'
 import Itineraire from './pages/Itineraire'
 import MesBons from './pages/MesBons'
+import Notifications from './pages/Notifications'
 import Conventionnes from './pages/Conventionnes'
 import Profil from './pages/Profil'
 import Releve from './pages/Releve'
@@ -100,7 +101,7 @@ function Coquille() {
 
 /** Chemins servis quand on est identifié ; le reste mène à l'accueil. */
 const CHEMINS_IDENTIFIE =
-  /^\/(accueil|bons|profil|conventionnes|releve|assistance|scan|identite|installation|a-propos)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
+  /^\/(accueil|bons|profil|conventionnes|releve|assistance|scan|identite|notifications|installation|a-propos)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
 
 function Anonyme() {
   const { pathname } = useLocation()
@@ -144,6 +145,8 @@ function Onglets() {
           <Route exact path="/scan" component={Scan} />
           {/* Photos d'identité des cartes d'adhérent, en page (ouverte du haut). */}
           <Route exact path="/identite" component={Identite} />
+          {/* Décisions de l'IPM sur les demandes, en page (ouverte de la cloche). */}
+          <Route exact path="/notifications" component={Notifications} />
           {/* Ouverts depuis le profil, présentés comme l'assistance. */}
           <Route exact path="/installation" component={Installation} />
           <Route exact path="/a-propos" component={APropos} />
