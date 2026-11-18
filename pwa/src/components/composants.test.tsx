@@ -198,7 +198,7 @@ describe('§3.4 cartes de service et raccourcis', () => {
   })
 
   it('porte une icône au trait, sans peindre toute la carte en rouge', () => {
-    const { container } = rendre(<GrilleServices onOuvrir={vi.fn()} onIndisponible={vi.fn()} />)
+    rendre(<GrilleServices onOuvrir={vi.fn()} onIndisponible={vi.fn()} />)
     const carte = screen.getByLabelText('Bon de pharmacie')
     expect(carte).toHaveClass('ipm-tuile--ouverte')
     expect(carte).not.toHaveClass('ipm-tuile--rouge')

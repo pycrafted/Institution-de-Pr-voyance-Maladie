@@ -699,52 +699,40 @@ button.ipm-carte-identite__portrait {
  * mot « hospitalisation », insécable, imposait alors sa largeur minimale à
  * toute sa colonne — les cartes n'étaient plus égales sous 400 px.
  */
+/* Une LISTE d'une colonne (demande de l'utilisateur) : les grandes tuiles
+   carrées devenaient trop hautes. Chaque document est une ligne compacte,
+   comme les réglages du profil et le choix du scan - même gouttière, même
+   espacement entre cartes. */
 .ipm-grille-services {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* Toutes les tuiles a la meme hauteur, celle de la plus haute : sans cela,
-     la rangee dont le libelle tient sur une ligne serait plus courte que
-     l'autre. */
-  grid-auto-rows: 1fr;
-  gap: var(--e-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--inter-cartes);
   padding-inline: var(--gouttiere);
 }
-/* §3.4 : une seule colonne sous 340 px de large, et pas avant. */
-@media (max-width: 339px) {
-  .ipm-grille-services {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
 
+/* Une LIGNE compacte (demande de l'utilisateur), calquée sur CarteListe :
+   icône à gauche, libellé, puis le chevron (ou la puce « Bientôt »). Finies
+   les grandes tuiles carrées qui s'étiraient sur la hauteur de l'écran. */
 .ipm-tuile {
   position: relative;
   appearance: none;
-  border: 1px solid var(--ipm-liseret);
   box-sizing: border-box;
   width: 100%;
-  /* Icône + libellé : la carte retrouve de la hauteur pour respirer, au lieu
-     du libellé seul tassé sur 76 px. */
-  min-height: 124px;
   display: flex;
-  flex-direction: column;
-  /* Contenu centré : pastille d'icône puis libellé. */
   align-items: center;
-  justify-content: center;
   gap: var(--e-12);
-  padding: var(--e-24) var(--e-16);
-  /* Coins plus généreux (M3 « large ») : la carte paraît plus douce et plus
-     moderne que l'ancien 16 px. */
-  border-radius: var(--r-2xl);
-  text-align: center;
+  padding: 14px 16px;
+  border: 1px solid var(--ipm-liseret);
+  border-radius: var(--r-lg);
+  text-align: start;
   cursor: pointer;
   transition:
     box-shadow 0.2s var(--mvt-courbe),
     border-color 0.2s var(--mvt-courbe);
 }
 /*
- * Document ouvert : carte BLANCHE (demande de l'utilisateur) à l'icône pleine
- * ROUGE de marque ; le libellé reste dans le gris doux. L'ombre douce et le
- * liseré la détachent du fond.
+ * Document ouvert : carte BLANCHE à l'icône ROUGE de marque (au trait) ; le
+ * libellé reste dans le gris doux. L'ombre douce et le liseré la détachent.
  */
 .ipm-tuile--ouverte {
   background: var(--ipm-surface);
@@ -757,49 +745,51 @@ button.ipm-carte-identite__portrait {
 .ipm-tuile--ouverte:active {
   box-shadow: none;
 }
-/* Document à venir : la même carte, éteinte d'un cran (sans ombre, estompée),
-   signalée par la puce « Bientôt ». */
+/* Document à venir : la même ligne, éteinte d'un cran (fond doux, sans ombre,
+   estompée) et marquée « Bientôt » à droite. */
 .ipm-tuile--avenir {
-  /* Place pour la puce « Bientôt » au-dessus du libellé. */
-  padding-top: var(--e-32);
   background: var(--ipm-surface-2);
   color: var(--ipm-texte-doux);
   box-shadow: none;
   opacity: 0.6;
 }
 
-/* L'icône pleine (comme le footer), dans le gris doux de marque : c'est elle
-   qui accroche l'œil, sans carré ni fond. */
+/* L'icône au trait, calée sur 44 px comme le cercle de CarteListe pour que les
+   libellés s'alignent d'une liste à l'autre. */
 .ipm-tuile__icone {
   flex-shrink: 0;
-  font-size: 40px;
+  width: 44px;
+  display: inline-flex;
+  justify-content: center;
+  font-size: 26px;
   color: var(--ipm-texte-doux);
 }
 .ipm-tuile__libelle {
+  flex: 1;
+  min-width: 0;
   font-size: 0.9375rem;
   font-weight: 700;
-  line-height: 1.2;
-  /* Deux lignes au plus ; « LG hospitalisation » ne doit pas déborder. */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
+  line-height: 1.25;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-/* Puce « Bientôt » au coin de la carte à venir. */
+/* Chevron de droite : la ligne mène à l'assistant de demande. */
+.ipm-tuile__chevron {
+  flex-shrink: 0;
+  font-size: 18px;
+  color: var(--ipm-texte-doux);
+}
+/* Puce « Bientôt », à droite de la ligne à venir (à la place du chevron). */
 .ipm-tuile__puce {
-  position: absolute;
-  /* Collée au coin : sans icône, la carte est basse et le libellé, centré,
-     passerait sinon sous la puce. */
-  top: var(--e-8);
-  inset-inline-end: var(--e-8);
-  padding: 3px 8px;
+  flex-shrink: 0;
+  padding: 3px 9px;
   border-radius: var(--r-pill);
   background: var(--ipm-surface);
   color: var(--ipm-texte-doux);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
-  line-height: 1.4;
+  white-space: nowrap;
 }
 
 /* --- Raccourci rond (seconde famille, §3.4) ----------------------------- */

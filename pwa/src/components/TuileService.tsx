@@ -1,14 +1,9 @@
 /**
- * Carte de service (SPEC_DESIGN §3.4) — la GRANDE carte de l'accueil, une par
- * type de document, sur deux colonnes : c'est le modèle donné par
- * l'utilisateur (images/2.png).
- *
- * Contenu centré verticalement : icône 34, libellé 15/700 centré. Rien
- * d'autre (demande de l'utilisateur) : ni disque derrière l'icône, ni mention
- * sous le libellé. La hauteur de la carte suit donc ces deux éléments. L'icône
- * porte le rouge de marque, et la carte d'un document à venir s'éteint d'un
- * cran et garde sa puce « Bientôt » au coin - seul repère qu'il n'est pas
- * encore ouvert.
+ * Carte de service (SPEC_DESIGN §3.4) — une LIGNE de l'accueil, un par type de
+ * document, en une seule colonne (demande de l'utilisateur : les grandes
+ * tuiles carrées étaient trop hautes). Même forme que CarteListe : icône
+ * rouge au trait à gauche, libellé, puis chevron. Un document à venir s'éteint
+ * d'un cran et porte la puce « Bientôt » à droite, à la place du chevron.
  *
  * Une carte « à venir » reste touchable : elle ouvre la feuille qui explique
  * où demander le document. Elle ne porte donc PAS `aria-disabled`, qui
@@ -21,6 +16,7 @@
  */
 
 import { IonIcon } from '@ionic/react'
+import { chevronForward } from 'ionicons/icons'
 
 import { haptique } from '../hooks/haptique'
 import { MENTION_BIENTOT, type TypeDocument } from '../services/catalogue'
@@ -54,15 +50,18 @@ export default function TuileService({ document, onOuvrir, onIndisponible }: Pro
       aria-label={indisponible ? `${document.libelle}, bientôt disponible` : document.libelle}
       onClick={toucher}
     >
-      {indisponible && (
+      {/* L'icône au TRAIT, rouge sur la carte blanche : on force la version
+          outline quel que soit le mode. */}
+      <IonIcon icon={document.icone} className="ipm-tuile__icone" aria-hidden="true" />
+      <span className="ipm-tuile__libelle">{document.libelle}</span>
+      {/* À droite : le chevron (document ouvert) ou la puce « Bientôt ». */}
+      {indisponible ? (
         <span className="ipm-tuile__puce" aria-hidden="true">
           {MENTION_BIENTOT}
         </span>
+      ) : (
+        <IonIcon icon={chevronForward} className="ipm-tuile__chevron" aria-hidden="true" />
       )}
-      {/* L'icône au TRAIT (demande de l'utilisateur), rouge sur la carte
-          blanche : on force la version outline quel que soit le mode. */}
-      <IonIcon icon={document.icone} className="ipm-tuile__icone" aria-hidden="true" />
-      <span className="ipm-tuile__libelle">{document.libelle}</span>
     </button>
   )
 }
