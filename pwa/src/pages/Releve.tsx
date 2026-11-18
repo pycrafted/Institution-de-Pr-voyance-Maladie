@@ -237,7 +237,6 @@ export default function Releve() {
                 teinte="neutre"
                 compact
                 titre="Aucun soin pour l’instant"
-                message="Vos soins pris en charge par l’IPM apparaîtront ici."
               />
             )}
           </section>
