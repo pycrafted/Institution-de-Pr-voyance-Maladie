@@ -61,12 +61,18 @@ import './scan/scan.css'
 type Etape = 'choix' | 'scan' | 'analyse' | 'invalide' | 'montant' | 'succes'
 type Camera = 'demarrage' | 'active' | 'indisponible'
 
-/** Les motifs de recours au pré-financement. Seul l'achat pharmacie est ouvert. */
+/**
+ * Les motifs de recours au pré-financement. Seul l'achat pharmacie est ouvert.
+ *
+ * Aucun sous-texte sous le libellé (demande de l'utilisateur) : ce qui
+ * distinguait les deux urgences (avec / hors consultation) passe donc DANS le
+ * libellé, sinon les deux lignes seraient identiques.
+ */
 const MOTIFS = [
-  { cle: 'pharmacie', libelle: 'Achat en pharmacie', detail: 'Ordonnance', icone: medkitOutline, ouvert: true },
-  { cle: 'consultation', libelle: 'Consultation', detail: 'Chez un médecin', icone: pulseOutline, ouvert: false },
-  { cle: 'urgence', libelle: 'Urgence', detail: 'Avec consultation', icone: storefrontOutline, ouvert: false },
-  { cle: 'urgence-hors', libelle: 'Urgence', detail: 'Hors consultation', icone: bedOutline, ouvert: false },
+  { cle: 'consultation', libelle: 'Consultation', icone: pulseOutline, ouvert: false },
+  { cle: 'pharmacie', libelle: 'Achat en pharmacie', icone: medkitOutline, ouvert: true },
+  { cle: 'urgence', libelle: 'Urgence avec consultation', icone: storefrontOutline, ouvert: false },
+  { cle: 'urgence-hors', libelle: 'Urgence hors consultation', icone: bedOutline, ouvert: false },
 ] as const
 
 export default function Scan() {
@@ -263,17 +269,10 @@ export default function Scan() {
                   icone={motif.icone}
                   teinte={motif.ouvert ? 'rouge' : 'neutre'}
                   titre={motif.libelle}
-                  details={motif.detail}
                   rang={rang}
                   className={motif.ouvert ? undefined : 'scan__motif--bientot'}
                   puce={motif.ouvert ? undefined : <span className="scan__puce-bientot">Bientôt</span>}
-                  etiquette={
-                    motif.ouvert
-                      ? undefined
-                      : // Le détail distingue les deux « Urgence » : sans lui, le
-                        // lecteur d'écran annoncerait deux lignes identiques.
-                        `${motif.libelle}, ${motif.detail} - bientôt disponible`
-                  }
+                  etiquette={motif.ouvert ? undefined : `${motif.libelle} - bientôt disponible`}
                   onClick={motif.ouvert ? allerAuScan : undefined}
                 />
               ))}
