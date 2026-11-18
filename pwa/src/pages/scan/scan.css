@@ -396,6 +396,17 @@
   font-weight: 700;
   white-space: nowrap;
 }
+/* Tag « Urgence » (hospitalisation) : accent rouge de marque, pour le
+   distinguer d'un simple état « Bientôt ». */
+.scan__puce-urgence {
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
 
 /* ---------- Image figée, en carte (étapes invalide / validée) ---------- */
 .scan__capture--carte {

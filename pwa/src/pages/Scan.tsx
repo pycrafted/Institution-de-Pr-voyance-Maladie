@@ -62,17 +62,22 @@ type Etape = 'choix' | 'scan' | 'analyse' | 'invalide' | 'montant' | 'succes'
 type Camera = 'demarrage' | 'active' | 'indisponible'
 
 /**
- * Les motifs de recours au pré-financement. Seul l'achat pharmacie est ouvert.
+ * Les motifs de recours au pré-financement : les trois cas de dépense, et
+ * rien d'autre. Seul l'achat en pharmacie est ouvert aujourd'hui.
  *
- * Aucun sous-texte sous le libellé (demande de l'utilisateur) : ce qui
- * distinguait les deux urgences (avec / hors consultation) passe donc DANS le
- * libellé, sinon les deux lignes seraient identiques.
+ * Le pré-financement est une fonctionnalité NEUVE, qui n'existe pas dans
+ * LAMPS : ces motifs ne sont donc calqués sur aucun référentiel existant,
+ * c'est le métier qui les fixe. Aucun sous-texte sous le libellé.
+ *
+ * À ne pas confondre avec la CONDITION qui autorise l'avance (zone non
+ * desservie, hors horaires) : elle ne se choisit pas ici.
  */
 const MOTIFS = [
-  { cle: 'consultation', libelle: 'Consultation', icone: pulseOutline, ouvert: false },
-  { cle: 'pharmacie', libelle: 'Achat en pharmacie', icone: medkitOutline, ouvert: true },
-  { cle: 'urgence', libelle: 'Urgence avec consultation', icone: storefrontOutline, ouvert: false },
-  { cle: 'urgence-hors', libelle: 'Urgence hors consultation', icone: bedOutline, ouvert: false },
+  { cle: 'soins', libelle: 'Soins', icone: pulseOutline, ouvert: false, tag: null },
+  { cle: 'pharmacie', libelle: 'Achat en pharmacie', icone: medkitOutline, ouvert: true, tag: null },
+  // L'hospitalisation porte le tag « Urgence » : c'est le cas qui ne souffre
+  // aucune attente, et le tag le dit sur la ligne elle-même.
+  { cle: 'hospitalisation', libelle: 'Hospitalisation', icone: bedOutline, ouvert: false, tag: 'Urgence' },
 ] as const
 
 export default function Scan() {
@@ -271,8 +276,18 @@ export default function Scan() {
                   titre={motif.libelle}
                   rang={rang}
                   className={motif.ouvert ? undefined : 'scan__motif--bientot'}
-                  puce={motif.ouvert ? undefined : <span className="scan__puce-bientot">Bientôt</span>}
-                  etiquette={motif.ouvert ? undefined : `${motif.libelle} - bientôt disponible`}
+                  puce={
+                    motif.tag ? (
+                      <span className="scan__puce-urgence">{motif.tag}</span>
+                    ) : motif.ouvert ? undefined : (
+                      <span className="scan__puce-bientot">Bientôt</span>
+                    )
+                  }
+                  etiquette={
+                    motif.ouvert
+                      ? undefined
+                      : `${motif.libelle}${motif.tag ? `, ${motif.tag.toLowerCase()}` : ''} - bientôt disponible`
+                  }
                   onClick={motif.ouvert ? allerAuScan : undefined}
                 />
               ))}
