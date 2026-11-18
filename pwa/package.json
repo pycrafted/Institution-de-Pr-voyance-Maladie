@@ -5,7 +5,7 @@
   "description": "IPM Mobile : PWA des bons de pharmacie pour les participants de l'IPM SAR",
   "type": "module",
   "engines": {
-    "node": ">=20.19"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "vite",
