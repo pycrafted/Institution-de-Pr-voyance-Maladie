@@ -142,12 +142,6 @@ export default function Identite() {
             <h2 className="ipm-titre-section">Photos d’identité</h2>
           </div>
 
-          <p className="photos__consigne">
-            Ajoutez le portrait qui figurera sur la carte, la vôtre ou celle d’un de vos ayants
-            droit. <strong>Une photo ne s’envoie qu’une fois</strong> : pour la remplacer ensuite,
-            demandez son changement, l’IPM la réinitialisera.
-          </p>
-
           <ul className="photos__liste">
             {lignes.map((ligne) => (
               <li key={ligne.cle} className="photos__ligne">

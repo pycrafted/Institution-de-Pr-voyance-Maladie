@@ -1588,14 +1588,6 @@ ion-modal.carte-plein {
  * portrait (ou ses initiales), qui elle est, et soit « Ajouter », soit le
  * constat « Enregistrée » - une photo ne se pose qu'une fois.
  * ===================================================================== */
-.photos__consigne {
-  margin: var(--e-8) 0 var(--e-20);
-  /* Même retrait latéral que les cartes de réglage du profil (.ipm-pile) :
-     le contenu ne touche pas les bords, surtout sur tablette. */
-  padding-inline: var(--gouttiere);
-  font: var(--t-secondaire);
-  color: var(--ipm-texte-doux);
-}
 .photos__liste {
   list-style: none;
   margin: 0;
