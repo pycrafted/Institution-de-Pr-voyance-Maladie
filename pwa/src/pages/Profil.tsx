@@ -6,9 +6,9 @@
  * et leurs filets gris — les interdictions de §1 —, puis la carte d'adhérent
  * elle-même. Elle est déjà sur l'accueil, avec le portrait qu'on y change :
  * la répéter ici ne montrait rien de nouveau et repoussait les réglages hors
- * de l'écran. Enfin « Ma famille » : les cartes d'ayant droit se touchent
- * désormais depuis l'accueil (components/CartePleinEcran), là où l'employé
- * en a besoin, au lieu d'être rangées dans un écran de réglages.
+ * de l'écran. La section « Ayants droit » (les cartes des proches, ouvertes en
+ * grand par components/CartePleinEcran) a en revanche rejoint cet écran depuis
+ * l'accueil, avec le reste du « compte/perso » de l'agent.
  *
  * La déconnexion efface jeton, profil, bons et PDF en cache
  * (useSession().deconnecter) ; App.tsx revient seul à l'identification.
@@ -32,7 +32,9 @@ import {
 } from 'ionicons/icons'
 import { useMemo, useState } from 'react'
 
+import Avatar from '../components/Avatar'
 import CarteListe from '../components/CarteListe'
+import CartePleinEcran, { useFamille } from '../components/CartePleinEcran'
 import FeuilleChoix from '../components/FeuilleChoix'
 import { haptique } from '../hooks/haptique'
 import { useParticipant, useSession } from '../session'
@@ -46,8 +48,11 @@ export default function Profil() {
   const { participant } = useParticipant()
   const { rafraichir, deconnecter } = useSession()
   const sombre = useApparence() === 'sombre'
+  const famille = useFamille()
   // La question posée dans une feuille de choix, s'il y en a une.
   const [question, setQuestion] = useState<'deconnexion' | null>(null)
+  // Carte d'ayant droit montrée en grand (son matricule), ou null.
+  const [cartePleinEcran, setCartePleinEcran] = useState<string | null>(null)
   const routeur = useIonRouter()
   const installee = useMemo(estInstallee, [])
   const informations = useMemo(() => informationsDuParticipant(participant), [participant])
@@ -101,6 +106,38 @@ export default function Profil() {
             ))}
           </dl>
         </section>
+
+        {/* Les cartes des ayants droit : on présente souvent celle d'un proche
+            (l'enfant qu'on emmène en pharmacie), elle est ici en un toucher.
+            Venue de l'accueil, elle rejoint le profil - le « compte/perso » de
+            l'agent. Masquée s'il n'a pas d'ayant droit. */}
+        {famille.length > 0 && (
+          <section className="ipm-section">
+            <div className="ipm-entete-section">
+              <h2 className="ipm-titre-section">Ayants droit</h2>
+            </div>
+            <ul className="profil-famille" aria-label="Cartes d’ayant droit">
+              {famille.map((membre) => (
+                <li key={membre.matricule}>
+                  <button
+                    type="button"
+                    className="profil-famille__membre ipm-appui"
+                    aria-label={`Carte d’ayant droit de ${membre.prenoms} ${membre.nom}`}
+                    onClick={() => {
+                      haptique.leger()
+                      setCartePleinEcran(membre.matricule)
+                    }}
+                  >
+                    {/* La forme de la photo de la carte d'adhérent : le même
+                        visage se reconnaît d'un écran à l'autre. */}
+                    <Avatar nom={membre.nomComplet} photo={membre.photo} taille={56} forme="identite" />
+                    <span className="profil-famille__nom">{membre.prenoms}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section className="ipm-section">
           <div className="ipm-entete-section">
@@ -161,6 +198,8 @@ export default function Profil() {
         {/* La barre d'onglets flotte au-dessus du contenu : lui laisser la place. */}
         <div className="ipm-bas-page" />
       </IonContent>
+
+      <CartePleinEcran cible={cartePleinEcran} onFermer={() => setCartePleinEcran(null)} />
 
       <FeuilleChoix
         ouverte={question === 'deconnexion'}

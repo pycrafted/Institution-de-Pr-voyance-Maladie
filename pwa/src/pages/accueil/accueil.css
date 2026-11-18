@@ -39,52 +39,8 @@
   color: var(--ipm-texte);
 }
 
-/* --- Raccourcis vers les cartes d'ayant droit ---------------------------- */
-/* Une rangée qui défile horizontalement : la famille d'un employé SAR compte
-   souvent plus de trois personnes, et les empiler pousserait la barre du bas
-   hors de l'écran. Même gouttière que les autres sections, mais le défilement
-   va bord à bord — une pastille coupée au bord dit qu'il y en a d'autres. */
-.accueil-famille {
-  list-style: none;
-  margin: 0;
-  padding: 0 var(--gouttiere);
-  display: flex;
-  gap: var(--e-16);
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-}
-.accueil-famille::-webkit-scrollbar {
-  display: none;
-}
-/* La vignette est plus haute que large depuis qu'elle a la forme d'une photo
-   d'identité : la rangée doit lui laisser la place. */
-.accueil-famille__membre {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--e-8);
-  width: 72px;
-  scroll-snap-align: start;
-  cursor: pointer;
-  color: var(--ipm-texte);
-}
-/* Le prénom seul : le nom de famille est le même pour presque tous, il ne
-   distingue rien et ferait déborder la colonne. */
-.accueil-famille__nom {
-  max-width: 100%;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.2;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* Les raccourcis vers les cartes d'ayant droit ont rejoint le Profil
+   (pages/profil/profil.css, .profil-famille). */
 
 /* La carte d'adhérent est touchable : elle s'ouvre en grand et en paysage.
    Le bouton n'est qu'une enveloppe - aucun habillage propre, la carte garde
@@ -131,25 +87,10 @@
   }
 }
 
-/* Vignettes des ayants droit à l'échelle aussi. La taille passée au
-   composant (56) est le plancher ; la forme de photo d'identité est gardée. */
-.accueil-famille__membre {
-  width: clamp(72px, 19vw, 112px);
-}
-.accueil-famille__membre .ipm-avatar {
-  width: clamp(56px, 15vw, 96px) !important;
-  height: auto !important;
-  aspect-ratio: 4.75 / 6;
-  font-size: clamp(21px, 5.6vw, 36px) !important;
-}
-.accueil-famille__nom {
-  font-size: clamp(0.8125rem, 3.2vw, 1rem);
-}
-
 /* Axe vertical : l'accueil occupe toute la hauteur de l'écran. La zone qui
    défile devient une colonne, et la section des documents prend la hauteur
    qui reste - ses cartes grandissent jusqu'à un plafond, plutôt que de
-   laisser un vide sous les ayants droit. Sur un petit écran, rien ne
+   laisser un vide sous la carte d'adhérent. Sur un petit écran, rien ne
    rétrécit : le contenu défile comme avant. */
 .accueil ion-content::part(scroll) {
   display: flex;

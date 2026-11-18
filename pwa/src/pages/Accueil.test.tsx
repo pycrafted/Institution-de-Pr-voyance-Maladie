@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 
 import { ErreurApi } from '../api'
 import { DOCUMENTS, MESSAGE_BIENTOT } from '../services/catalogue'
-import { unBeneficiaire, unBon, unParticipant } from '../test/fabriques'
+import { unBon, unParticipant } from '../test/fabriques'
 import type { Bon } from '../types/api'
 import Accueil from './Accueil'
 import { preparerIonic, rendreEcran, uneSession } from './accueil/outils-test'
@@ -168,42 +168,10 @@ describe('Accueil', () => {
     expect(modale().isOpen).toBe(true)
   })
 
-  it('offre un raccourci vers la carte de chaque ayant droit', () => {
-    // La fabrique donne le titulaire + une conjointe : seule la conjointe est
-    // un ayant droit, le titulaire a déjà sa carte en haut de l'écran.
+  it('ne porte plus la section « Ayants droit » (passée au Profil)', () => {
+    // Les cartes des proches vivent désormais dans le Profil : l'accueil ne
+    // garde que la carte du titulaire.
     const { container } = rendreEcran(<Accueil />)
-    expect(screen.getByText('Ayants droit')).toBeInTheDocument()
-    const membres = container.querySelectorAll('.accueil-famille__membre')
-    expect(membres).toHaveLength(1)
-    expect(screen.getByLabelText('Carte d’ayant droit de Awa DIOP')).toBeInTheDocument()
-    // Le prénom seul sous la pastille : le nom est le même pour toute la famille.
-    expect(container.querySelector('.accueil-famille__nom')?.textContent).toBe('Awa')
-  })
-
-  it('montre la photo d’un ayant droit à la place de ses initiales', () => {
-    const { container } = rendreEcran(
-      <Accueil />,
-      uneSession({
-        beneficiaires: [
-          unBeneficiaire({
-            matricule: '1204-01',
-            nomComplet: 'Awa DIOP',
-            prenoms: 'Awa',
-            estParticipant: false,
-            photo: 'data:image/jpeg;base64,aa',
-          }),
-        ],
-      }),
-    )
-    const pastille = container.querySelector('.accueil-famille__membre .ipm-avatar')
-    expect(pastille?.querySelector('img')).toHaveAttribute('src', 'data:image/jpeg;base64,aa')
-    // Ni initiales, ni teinte de pastille : la photo occupe toute la place.
-    expect(pastille?.textContent).toBe('')
-    expect(pastille?.className).not.toMatch(/ipm-avatar--\d/)
-  })
-
-  it('n’affiche pas la section famille sans ayant droit', () => {
-    const { container } = rendreEcran(<Accueil />, uneSession({ beneficiaires: [] }))
     expect(screen.queryByText('Ayants droit')).toBeNull()
     expect(container.querySelector('.accueil-famille')).toBeNull()
   })

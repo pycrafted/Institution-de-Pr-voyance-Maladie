@@ -8,11 +8,11 @@
  *      la profondeur. Photo d'identité et champs nommés (nom, prénoms,
  *      matricule…), comme la carte que l'organisation remet à ses employés ;
  *      le bandeau n'en remet pas un portrait à 100 px de là ;
- *   3. « Ayants droit » : les cartes des proches, juste sous celle du
- *      titulaire — on présente souvent la carte d'un enfant, elle est là en un
- *      toucher (masquée si le participant n'a pas d'ayant droit) ;
- *   4. « Demander un document » : deux colonnes de grandes cartes (§3.4),
+ *   3. « Demander un document » : deux colonnes de grandes cartes (§3.4),
  *      une par type de bon, issues de DOCUMENTS.
+ *
+ * Les cartes des ayants droit ont rejoint le Profil (section « Ayants droit »,
+ * components/CartePleinEcran) : l'accueil ne garde que la carte du titulaire.
  *
  * Et rien d'autre : demander un document est la raison d'être de l'écran.
  * Les écrans utilitaires ne s'y invitent pas — « Mes bons »,
@@ -38,7 +38,7 @@ import { useState } from 'react'
 
 import { BoutonPrincipal } from '../components/Boutons'
 import CarteIdentite from '../components/CarteIdentite'
-import CartePleinEcran, { MOI, useFamille } from '../components/CartePleinEcran'
+import CartePleinEcran, { MOI } from '../components/CartePleinEcran'
 import Feuille from '../components/Feuille'
 import GrilleServices from '../components/GrilleServices'
 import { useNouveauBon } from '../components/NouveauBonModal'
@@ -48,7 +48,6 @@ import { haptique } from '../hooks/haptique'
 import { MESSAGE_BIENTOT, ouvreAssistant, type TypeDocument } from '../services/catalogue'
 import { estGenreDocument } from '../utils/documents'
 import { useParticipant, useSession } from '../session'
-import Avatar from '../components/Avatar'
 import { libelleLisible } from './accueil/accueil-utils'
 import './accueil/accueil.css'
 
@@ -57,7 +56,6 @@ export default function Accueil() {
   // Carte montrée en plein écran : `MOI` pour celle du titulaire, sinon le
   // matricule d'un ayant droit. C'est la même présentation pour les deux.
   const [cartePleinEcran, setCartePleinEcran] = useState<string | null>(null)
-  const famille = useFamille()
   const { rafraichir: rafraichirProfil } = useSession()
   const { erreur, depuisCache, synchroniseLe, rafraichir: rafraichirBons } = useBons()
   const { ouvrirAssistant } = useNouveauBon()
@@ -138,41 +136,6 @@ export default function Accueil() {
             qu'il emmène en pharmacie) : la chercher dans le profil faisait trois
             touchers, elle est ici en un. La section disparaît s'il n'a pas
             d'ayant droit. */}
-        {famille.length > 0 && (
-          <section className="ipm-section">
-            <div className="ipm-entete-section">
-              {/* « Ayants droit » : le mot du métier pour la famille du participant,
-                lui-même étant bénéficiaire (cf. REGISTRE.md §2). */}
-              <h2 className="ipm-titre-section">Ayants droit</h2>
-            </div>
-            <ul className="accueil-famille" aria-label="Cartes d’ayant droit">
-              {famille.map((membre) => (
-                <li key={membre.matricule}>
-                  <button
-                    type="button"
-                    className="accueil-famille__membre ipm-appui"
-                    aria-label={`Carte d’ayant droit de ${membre.prenoms} ${membre.nom}`}
-                    onClick={() => {
-                      haptique.leger()
-                      setCartePleinEcran(membre.matricule)
-                    }}
-                  >
-                    {/* La forme de la photo de la carte d'adhérent : le
-                        même visage se reconnaît d'un écran à l'autre. */}
-                    <Avatar
-                      nom={membre.nomComplet}
-                      photo={membre.photo}
-                      taille={56}
-                      forme="identite"
-                    />
-                    <span className="accueil-famille__nom">{membre.prenoms}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
         <section className="ipm-section accueil__documents">
           <div className="ipm-entete-section">
             <h2 className="ipm-titre-section">Demander un document</h2>
