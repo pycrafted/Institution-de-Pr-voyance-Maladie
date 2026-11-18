@@ -2,7 +2,27 @@
 
 from django.contrib import admin
 
-from .models import BonOptique, BonPharmacie, LettreGarantie, LettreHospitalisation
+from .models import BonOptique, BonPharmacie, LettreGarantie, LettreHospitalisation, ModelePdf
+
+
+@admin.register(ModelePdf)
+class ModelePdfAdmin(admin.ModelAdmin):
+    """
+    Les gabarits officiels déposés en base. En lecture seule : ils se déposent
+    par la commande ``deposer_modeles`` ou par /api/modeles-pdf/, qui vérifient
+    que le fichier est bien un PDF et vident le cache des documents déjà
+    fabriqués.
+    """
+
+    list_display = ('nom', 'taille', 'depose_le', 'depose_par')
+    readonly_fields = ('nom', 'taille', 'empreinte', 'depose_le', 'depose_par')
+    exclude = ('contenu',)
+
+    def has_add_permission(self, requete):
+        return False
+
+    def has_change_permission(self, requete, obj=None):
+        return False
 
 
 @admin.register(BonPharmacie)

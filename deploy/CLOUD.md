@@ -54,6 +54,26 @@ Fichiers : `render.yaml` (Blueprint), `backend/build.sh`,
    (`PUT` remplace la liste entière.) Sans eux, l'impression d'un bon répond
    503 « Modèle PDF absent » ; tout le reste fonctionne.
 
+   **Ailleurs que sur Render** (Railway, et tout hébergeur qui reconstruit le
+   conteneur depuis le dépôt à chaque déploiement), il n'y a ni fichier de
+   secret ni disque où poser les PDF. Les gabarits se déposent alors **en
+   base**, qui elle persiste, par `PUT /api/modeles-pdf/<nom>/` (réservé au
+   personnel). Depuis `backend/apps/documents/modeles/` :
+
+   ```
+   JETON=$(curl -s -X POST https://<api>/api/auth/login/ -H 'Content-Type: application/json' \
+     -d '{"username":"<admin>","password":"<mdp>"}' | python -c "import json,sys; print(json.load(sys.stdin)['token'])")
+   for n in bon_pharmacie.pdf bon_optique.pdf lettre_garantie.pdf; do
+     curl -s -X PUT -H "Authorization: Token $JETON" -F "fichier=@$n" https://<api>/api/modeles-pdf/$n/
+   done
+   curl -s -H "Authorization: Token $JETON" https://<api>/api/modeles-pdf/   # l'état des trois
+   ```
+
+   Depuis un serveur qui a déjà les fichiers (celui de l'IPM), la même chose
+   sans réseau : `python manage.py deposer_modeles` (et `--etat` pour voir ce
+   qui est déposé). Les gabarits restent lus en priorité sur le disque ; la
+   base n'est qu'un repli.
+
 Une fois les deux fronts en ligne, revenir ici (**Environment**) et renseigner
 `DJANGO_CORS_ORIGINS` avec leurs deux origines exactes, séparées par une
 virgule, sans `/` final :
