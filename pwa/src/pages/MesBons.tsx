@@ -42,6 +42,7 @@ import { useNouveauBon } from '../components/NouveauBonModal'
 import OfflineBanner from '../components/OfflineBanner'
 import { SqueletteCarte } from '../components/Skeletons'
 import StatutBadge from '../components/StatutBadge'
+import BarreActions from '../components/BarreActions'
 import { chargerBons, etatBons, useBons } from '../data/bons'
 import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
@@ -198,7 +199,7 @@ export default function MesBons() {
 
         {/* Pas d'en-tête : l'écran commence par sa recherche et ses puces.
             On ne garde que l'espace de la zone sûre (encoche du téléphone). */}
-        <div className="ipm-zone-sure" />
+        <BarreActions />
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 

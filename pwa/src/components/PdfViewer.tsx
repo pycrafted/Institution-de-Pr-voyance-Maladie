@@ -16,7 +16,7 @@
  *    transformation CSS calculée par pages/bons/zoom.ts.
  */
 
-import { IonIcon, IonSpinner } from '@ionic/react'
+import { IonIcon } from '@ionic/react'
 import { alertCircleOutline } from 'ionicons/icons'
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react'
 
@@ -36,6 +36,7 @@ import {
   type Transformation,
 } from '../pages/bons/zoom'
 import './PdfViewer.css'
+import Chargeur from './Chargeur'
 
 export interface PdfViewerProps {
   /** Le PDF (téléchargé par telechargerPdfBon ou lu dans le cache). */
@@ -145,6 +146,19 @@ export default function PdfViewer({
       aria-roledescription="visionneuse"
       aria-label={titre}
     >
+      {/* Original / Copie en haut, au-dessus de la page. */}
+      {pages.length > 1 && (
+        <PucesFiltre
+          className="pdf-visionneuse__pages"
+          puces={pucesPages}
+          active={String(pageActive)}
+          etiquette={`Pages de ${titre}`}
+          onChanger={(cle) => {
+            const index = Number(cle)
+            if (Number.isInteger(index) && index !== pageActive) allerA(index)
+          }}
+        />
+      )}
       <div
         ref={piste}
         className={`pdf-visionneuse__piste${zoome ? ' pdf-visionneuse__piste--zoome' : ''}`}
@@ -157,7 +171,7 @@ export default function PdfViewer({
               style={{ height: Math.round(largeur * rapportAttente) }}
               aria-busy="true"
             >
-              <IonSpinner name="crescent" aria-label="Préparation de l'aperçu" />
+              <Chargeur aria-label="Préparation de l'aperçu" />
             </div>
           </div>
         ) : (
@@ -175,23 +189,6 @@ export default function PdfViewer({
         )}
       </div>
 
-      {pages.length > 1 && (
-        <PucesFiltre
-          className="pdf-visionneuse__pages"
-          puces={pucesPages}
-          active={String(pageActive)}
-          etiquette={`Pages de ${titre}`}
-          onChanger={(cle) => {
-            const index = Number(cle)
-            if (Number.isInteger(index) && index !== pageActive) allerA(index)
-          }}
-        />
-      )}
-      {etat.phase === 'pret' && (
-        <p className="pdf-visionneuse__aide">
-          {pages.length > 1 ? 'Balayez pour changer de page · ' : ''}Pincez pour zoomer
-        </p>
-      )}
     </div>
   )
 }
@@ -463,7 +460,7 @@ function PageZoomable({ info, largeur, active, libelle, onZoom }: PropsPage) {
         <div ref={surface} className="pdf-visionneuse__surface" />
         {!rendue && (
           <div className="pdf-visionneuse__rendu-attente">
-            <IonSpinner name="crescent" aria-hidden="true" />
+            <Chargeur aria-hidden="true" />
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 /**
- * « Partager / Imprimer » et « Télécharger » le PDF officiel d'un bon.
+ * « Partager » et « Télécharger » le PDF officiel d'un bon.
  *
  * Le partage passe par la feuille de partage du téléphone (Web Share API
  * niveau 2, avec le fichier) : elle propose WhatsApp, e-mail… et surtout

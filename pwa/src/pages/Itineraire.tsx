@@ -17,7 +17,6 @@ import {
   IonContent,
   IonIcon,
   IonPage,
-  IonSpinner,
   useIonRouter,
   useIonViewWillEnter,
   useIonViewWillLeave,
@@ -50,6 +49,7 @@ import {
 } from './conventionnes/recherche'
 import { useConventionnes } from './conventionnes/useConventionnes'
 import './itineraire/itineraire.css'
+import Chargeur from '../components/Chargeur'
 
 // Google Maps n'est téléchargé qu'à l'ouverture d'une carte.
 const Carte = lazy(() => import('./itineraire/Carte'))
@@ -68,7 +68,7 @@ export default function Itineraire({ match }: ItineraireProps) {
   // disponible - sur le site de test en HTTP, le navigateur la refuse. On fait
   // alors partir l'itinéraire de la raffinerie plutôt que de rien. À RETIRER
   // une fois le site servi en HTTPS : `moi` redeviendra simplement la position.
-  const SAR_PAR_DEFAUT = { latitude: 14.740742, longitude: -17.347280 }
+  const SAR_PAR_DEFAUT = { latitude: 14.740742, longitude: -17.34728 }
   const geoloc = localisation.etat === 'trouvee' ? localisation.position : null
   const positionParDefaut = geoloc === null
   const moi = geoloc ?? SAR_PAR_DEFAUT
@@ -187,7 +187,7 @@ export default function Itineraire({ match }: ItineraireProps) {
             </>
           ) : (
             <div className="itineraire__chargement" aria-busy="true">
-              <IonSpinner name="crescent" aria-hidden="true" />
+              <Chargeur aria-hidden="true" />
               <span>{erreur ? 'Annuaire indisponible pour l’instant.' : 'Chargement…'}</span>
             </div>
           )}
@@ -252,7 +252,7 @@ function Resume({
   } else {
     contenu = (
       <p className="itineraire__message itineraire__message--attente" aria-busy="true">
-        <IonSpinner name="dots" aria-hidden="true" />
+        <Chargeur aria-hidden="true" />
         Calcul de l’itinéraire…
       </p>
     )

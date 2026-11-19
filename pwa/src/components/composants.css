@@ -58,6 +58,12 @@ ion-tab-bar.ipm-onglets {
      flottante de 64 px. */
   --padding-top: 8px;
   --padding-bottom: 8px;
+  /* Cinq onglets : chacun prend la largeur de son libellé (« Préfinancement »
+     est bien plus long que « Relevé »), sans retrait latéral superflu. */
+  --padding-start: 2px;
+  --padding-end: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
   max-width: none;
   background: transparent;
 }
@@ -72,9 +78,9 @@ ion-tab-bar.ipm-onglets {
   color: var(--ipm-rouge-texte);
 }
 .ipm-onglets ion-tab-button ion-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -290,76 +296,113 @@ ion-tab-bar.ipm-onglets {
 }
 
 /* ========================================================================
- * Barre du HAUT - « top app bar » FLOTTANTE (components/BarreActions.tsx)
+ * Barre du HAUT (components/BarreActions.tsx) - écrite dans la page
  * ---------------------------------------------------------------------
- * Une barre d'application posée comme une carte qui FLOTTE au-dessus du
- * contenu : détachée des bords (gouttière à gauche et à droite), coins
- * arrondis, ombre portée douce, un filet fin tout autour - la forme des
- * maquettes. Hamburger à gauche, nom de l'application au milieu, bascule
- * jour/nuit à droite. Elle est FIXE : le contenu des écrans défile dessous,
- * chaque en-tête lui réservant sa hauteur (`--barre-haut`), qui couvre
- * l'encoche, le petit retrait du haut et la barre elle-même.
+ * Ni carte flottante ni barre fixe : chaque écran l'écrit en tête de son
+ * contenu, sans fond ni bord, et elle défile avec la page. Le nom de l'appli
+ * à gauche, le solde IPM au milieu, les icônes d'action à droite.
  * ===================================================================== */
 .ipm-navbar {
-  position: fixed;
-  top: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + var(--e-8));
-  left: var(--gouttiere);
-  right: var(--gouttiere);
-  z-index: 11;
+  position: relative;
+  /* Nom à gauche, solde au milieu, icônes à droite. */
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--e-8);
+  min-height: 56px;
+  /* De l'air : sous l'encoche, et avant le premier contenu de l'écran. */
+  padding: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + var(--e-20)) var(--gouttiere)
+    var(--e-8);
+  margin-bottom: var(--e-16);
+  box-sizing: content-box;
+}
+/* Nom de l'application, à gauche. */
+.ipm-navbar__nom {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ipm-texte);
+  white-space: nowrap;
+}
+/* Le solde, au milieu, même dessin que l'ancienne ligne de l'accueil :
+   icône rouge sur pastille douce, puis le montant. */
+.ipm-navbar__solde {
+  justify-self: center;
+  appearance: none;
   display: flex;
-  align-items: stretch;
-  height: 64px;
-  padding: 0 var(--e-4);
-  /* Teinte demandée pour la barre : un gris rosé clair, dans le ton du fond. */
-  background: #ece4e3;
-  border: 1px solid var(--ipm-bordure);
-  border-radius: var(--r-lg);
-  box-shadow: var(--ipm-ombre-tuile);
+  align-items: center;
+  gap: var(--e-8);
+  min-width: 0;
+  padding: 4px 0;
+  border: 0;
+  border-radius: var(--r-md);
+  background: none;
+  color: var(--ipm-texte);
+  text-align: start;
+  cursor: pointer;
 }
-/* En mode sombre, la teinte claire n'aurait aucun sens : on garde une surface
-   tonale sombre. */
-:root.ion-palette-dark .ipm-navbar {
-  background: var(--ipm-surface-2);
+.ipm-navbar__solde-icone {
+  flex-shrink: 0;
+  box-sizing: content-box;
+  width: 16px;
+  height: 16px;
+  padding: 8px;
+  border-radius: var(--r-md);
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
 }
-/* Les actions, réparties à parts ÉGALES sur toute la largeur de la barre. */
+.ipm-navbar__solde-textes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 5px;
+  line-height: 1.15;
+}
+.ipm-navbar__solde-montant {
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ipm-navbar__solde-montant--du {
+  color: var(--ipm-rouge-texte);
+}
+.ipm-navbar__solde-montant--ajour {
+  color: var(--ipm-valide-texte);
+}
+/* Les actions, serrées à droite. */
 .ipm-navbar__actions {
-  flex: 1;
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  gap: 0;
 }
-/* Chaque action calquée sur un onglet du bas : icône de 24 et libellé de 12
-   dessous, en colonne, couleur douce, zone tactile pleine hauteur et répartie
-   en quart égal (`flex: 1`). */
+/* Une icône seule, zone tactile de 40 px. */
 .ipm-navbar__icone {
   appearance: none;
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0 2px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   border: 0;
+  border-radius: var(--r-pill);
   background: transparent;
-  color: var(--ipm-texte-doux);
+  color: var(--ipm-texte);
   cursor: pointer;
   transition: transform var(--mvt-appui) var(--mvt-courbe);
 }
 .ipm-navbar__icone:active {
   transform: scale(var(--mvt-appui-echelle));
+  background: var(--ipm-surface-2);
 }
 .ipm-navbar__icone ion-icon {
   font-size: 24px;
 }
-/* Enveloppe de l'icône : elle sert d'ancre à la pastille, posée en haut à
-   droite de l'icône sans décaler l'icône ni le libellé. */
+/* Enveloppe de l'icône : ancre de la pastille, en haut à droite. */
 .ipm-navbar__porte-icone {
   position: relative;
   display: inline-flex;
 }
-/* Pastille des notifications non lues : petit disque rouge, chiffre blanc,
-   calé sur le coin supérieur droit de la cloche. */
+/* Pastille des notifications non lues : petit disque rouge, chiffre blanc. */
 .ipm-navbar__pastille {
   position: absolute;
   top: -5px;
@@ -378,19 +421,8 @@ ion-tab-bar.ipm-onglets {
   font-size: 10px;
   font-weight: 700;
   line-height: 1;
-  /* Détache la pastille de l'icône sur le fond de la barre. */
-  box-shadow: 0 0 0 2px var(--ipm-surface);
-}
-/* Mêmes cotes de libellé qu'en bas : 12, demi-gras, coupé s'il déborde. */
-.ipm-navbar__libelle {
-  max-width: 100%;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  line-height: 1.1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Détache la pastille de l'icône sur le fond. */
+  box-shadow: 0 0 0 2px var(--ipm-fond);
 }
 
 /* ========================================================================
@@ -1598,6 +1630,20 @@ ion-modal.carte-plein {
   background: var(--ipm-surface);
   border: 1px solid var(--ipm-liseret);
 }
+/* Page Identité : les personnes posées directement sur la page, sans carte,
+   séparées par un simple filet. */
+.identite .photos__liste {
+  gap: 0;
+}
+.identite .photos__ligne {
+  padding: var(--e-12) 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.identite .photos__ligne + .photos__ligne {
+  border-top: 1px solid var(--ipm-bordure);
+}
 .photos__personne {
   display: flex;
   flex-direction: column;
@@ -1690,6 +1736,26 @@ ion-modal.carte-plein {
    l'appui (ipm-appui) ne la fait pas réagir. */
 .notifs__ligne:disabled {
   cursor: default;
+}
+/* Page Notifications : les décisions posées directement sur la page, sans
+   carte, séparées par un simple filet. */
+.notifications .notifs__liste {
+  gap: 0;
+  padding-inline: var(--gouttiere);
+}
+.notifications .notifs__ligne {
+  padding: var(--e-12) 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.notifications .notifs__liste li + li .notifs__ligne {
+  border-top: 1px solid var(--ipm-bordure);
+}
+.notifications .notifs__pastille {
+  /* L'icône seule, sans le rond de fond. */
+  background: none;
+  color: var(--ipm-rouge-texte);
 }
 .notifs__pastille {
   flex-shrink: 0;

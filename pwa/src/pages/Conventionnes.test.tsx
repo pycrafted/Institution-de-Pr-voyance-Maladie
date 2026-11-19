@@ -8,6 +8,11 @@ import Conventionnes from './Conventionnes'
 import { preparerIonic, rendreEcran, simulerReseau } from './conventionnes/outils-test'
 import { reinitialiserConventionnes } from './conventionnes/useConventionnes'
 
+// La barre du haut est écrite dans l'écran : elle charge son solde et ses
+// notifications, ce qui consommerait les réponses réseau simulées ici. Elle
+// a ses propres tests (components/BarreActions.test.tsx).
+vi.mock('../components/BarreActions', () => ({ default: () => null }))
+
 const fetchMock = vi.fn<typeof fetch>()
 
 const PHARMACIES = { code: '06', libelle: 'PHARMACIES' }

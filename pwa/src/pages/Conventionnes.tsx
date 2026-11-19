@@ -41,6 +41,7 @@ import CarteListe from '../components/CarteListe'
 import EtatVide from '../components/EtatVide'
 import OfflineBanner from '../components/OfflineBanner'
 import { SqueletteCarte } from '../components/Skeletons'
+import BarreActions from '../components/BarreActions'
 import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
 import type { Conventionne } from '../types/api'
@@ -165,7 +166,7 @@ export default function Conventionnes() {
 
         {/* Pas d'en-tête : l'écran commence par sa recherche et ses puces.
             On ne garde que l'espace de la zone sûre (encoche du téléphone). */}
-        <div className="ipm-zone-sure" />
+        <BarreActions />
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 

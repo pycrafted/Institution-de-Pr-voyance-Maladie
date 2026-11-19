@@ -1,0 +1,40 @@
+/* Chargeur : quatre points à traîne en rotation (cf. Chargeur.tsx). */
+.ipm-chargeur {
+  display: inline-block;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  color: inherit;
+  vertical-align: middle;
+}
+
+.ipm-chargeur__roue {
+  transform-origin: 20px 20px;
+  animation: ipm-chargeur-tourne 1s linear infinite;
+}
+
+.ipm-chargeur__traine {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.ipm-chargeur__point {
+  fill: currentColor;
+}
+
+@keyframes ipm-chargeur-tourne {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mouvement réduit : rotation plus lente plutôt qu'arrêtée (il doit rester
+   visible que quelque chose se passe). */
+@media (prefers-reduced-motion: reduce) {
+  .ipm-chargeur__roue {
+    animation-duration: 2.4s;
+  }
+}

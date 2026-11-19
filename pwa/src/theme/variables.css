@@ -117,10 +117,9 @@
   --r-2xl: 28px;
   --r-pill: 999px;
 
-  /* Hauteur de la barre d'actions du haut (hors zone sûre), reprise par les
-     en-têtes d'écran pour lui réserver sa place. 80, comme la barre du bas :
-     les deux encadrent le contenu de la même épaisseur. */
-  --barre-haut: 80px;
+  /* Hauteur réservée à une barre du haut FIXE. Il n'y en a plus : la barre
+     du haut est écrite dans chaque écran et défile avec lui. Rien à réserver. */
+  --barre-haut: 0px;
 
   /* ====================================================================
    * Ombres — niveaux d'élévation Material Design 3. Deux couches (ombre

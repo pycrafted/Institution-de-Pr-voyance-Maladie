@@ -4,13 +4,13 @@
  * Quand un agent se soigne, l'IPM règle le prestataire en entier, puis répartit
  * la facture : la part IPM (ce qu'elle prend en charge) et la part de l'agent
  * (ce qui lui reste à charge). Cette part se rembourse par des retenues sur
- * salaire. L'écran répond à deux questions, sans jargon comptable :
+ * salaire. L'écran montre les mouvements en trois vues, sans jargon comptable
+ * (le solde restant, lui, est affiché sur l'accueil) :
  *
- *   1. le bandeau en vedette - ce qui reste à payer à l'IPM, avec ce qu'elle a
- *      pris en charge et ce qui a déjà été remboursé ;
- *   2. « Vos soins » - pour chaque bon, ce que l'IPM a payé et la part de
- *      l'agent (le bon s'ouvre au clic) ;
- *   3. « Vos remboursements » - les retenues faites sur le salaire, mois par mois.
+ *   1. « Retenues » - ce qui a été prélevé sur le salaire, mois par mois ;
+ *   2. « Remboursements » - ce que l'IPM a rendu à l'agent (frais avancés) ;
+ *   3. « Soins » - pour chaque bon, ce que l'IPM a payé et la part de l'agent
+ *      (le bon s'ouvre au clic).
  *
  * Tirer pour rafraîchir, et disponible hors ligne (useCompte affiche le
  * dernier relevé en cache avant la réponse du serveur).
@@ -25,25 +25,20 @@ import {
   useIonViewDidEnter,
   type RefresherEventDetail,
 } from '@ionic/react'
-import {
-  cashOutline,
-  cloudOfflineOutline,
-  medkitOutline,
-  walletOutline,
-  warningOutline,
-} from 'ionicons/icons'
+import { cashOutline, cloudOfflineOutline, medkitOutline, warningOutline } from 'ionicons/icons'
 import { useState, type ReactNode } from 'react'
 
 import CarteListe from '../components/CarteListe'
 import EtatVide from '../components/EtatVide'
 import OfflineBanner from '../components/OfflineBanner'
 import { SqueletteCarte } from '../components/Skeletons'
+import BarreActions from '../components/BarreActions'
 import { chargerCompte, etatCompte, useCompte } from '../data/compte'
 import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
 import type { MouvementMensuel, Soin } from '../types/api'
 import { cheminDocument } from '../utils/documents'
-import { dateMoyenne, moisAnnee, montant, pluriel } from '../utils/format'
+import { dateMoyenne, moisAnnee, montant } from '../utils/format'
 import { typeDocument } from './bons/affichage'
 import './releve/Releve.css'
 
@@ -53,12 +48,22 @@ const FRAICHEUR_MS = 60_000
 /** Nombre de squelettes affichés tant que rien n'est connu. */
 const SQUELETTES = 4
 
+type Vue = 'retenues' | 'remboursements' | 'soins'
+
+/** Les trois onglets du relevé, libellés courts pour tenir sur une ligne. */
+const ONGLETS: readonly { cle: Vue; libelle: string }[] = [
+  { cle: 'retenues', libelle: 'Retenues' },
+  { cle: 'remboursements', libelle: 'Remboursements' },
+  { cle: 'soins', libelle: 'Soins' },
+]
+
 export default function Releve() {
   const { releve, chargement, erreur, depuisCache, synchroniseLe, rafraichir } = useCompte()
   const enLigne = useOnline()
   const [presenterToast] = useIonToast()
-  // Deux vues distinctes : ce qui est coupé sur la paie, et les soins consommés.
-  const [vue, setVue] = useState<'retenues' | 'soins'>('retenues')
+  // Trois vues distinctes : ce qui est coupé sur la paie, ce que l'IPM a
+  // rendu, et les soins consommés.
+  const [vue, setVue] = useState<Vue>('retenues')
 
   // Lu dans le magasin (et non par fermeture) : Ionic n'enregistre ce
   // rappel qu'une fois.
@@ -110,102 +115,71 @@ export default function Releve() {
           </div>
         </div>
       )
-  } else if (
-    releve.soins.length === 0 &&
-    releve.retenues.length === 0 &&
-    releve.remboursements.length === 0
-  ) {
-    contenu = (
-      <>
-        <BandeauSolde
-          solde={releve.solde}
-          totalPartIpm={releve.totalPartIpm}
-          totalRetenu={releve.totalRetenu}
-        />
-        <EtatVide
-          icone={walletOutline}
-          teinte="valide"
-          compact
-          titre="Aucun mouvement pour l’instant"
-        />
-      </>
-    )
   } else {
+    // Plus de carte du solde ici : il est affiché sur l'accueil. L'écran
+    // s'ouvre directement sur les trois vues (chacune dit si elle est vide).
     contenu = (
       <>
-        <BandeauSolde
-          solde={releve.solde}
-          totalPartIpm={releve.totalPartIpm}
-          totalRetenu={releve.totalRetenu}
-        />
-
-        {/* Deux vues distinctes : « Retenues sur salaire » et « Vos soins ». */}
+        {/* Trois vues distinctes : retenues sur salaire, remboursements reçus, soins. */}
         <div className="releve-onglets" role="tablist" aria-label="Vue du relevé">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={vue === 'retenues'}
-            className={`releve-onglet${vue === 'retenues' ? ' releve-onglet--actif' : ''}`}
-            onClick={() => {
-              haptique.leger()
-              setVue('retenues')
-            }}
-          >
-            Retenues sur salaire
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={vue === 'soins'}
-            className={`releve-onglet${vue === 'soins' ? ' releve-onglet--actif' : ''}`}
-            onClick={() => {
-              haptique.leger()
-              setVue('soins')
-            }}
-          >
-            Vos soins
-          </button>
+          {ONGLETS.map((onglet) => (
+            <button
+              key={onglet.cle}
+              type="button"
+              role="tab"
+              aria-selected={vue === onglet.cle}
+              className={`releve-onglet${vue === onglet.cle ? ' releve-onglet--actif' : ''}`}
+              onClick={() => {
+                haptique.leger()
+                setVue(onglet.cle)
+              }}
+            >
+              {onglet.libelle}
+            </button>
+          ))}
         </div>
 
-        {vue === 'retenues' ? (
-          <>
-            <section className="ipm-section releve-bloc" aria-label="Retenues sur salaire">
-              <p className="releve-sous-titre">
+        {vue === 'retenues' && (
+          <section className="ipm-section releve-bloc" aria-label="Retenues sur salaire">
+            <div className="ipm-entete-section">
+              <h2 className="ipm-titre-section">
                 Ce qui a été prélevé sur votre salaire, mois par mois.
-              </p>
-              {releve.retenues.length > 0 ? (
-                <>
-                  <div className="ipm-pile">
-                    {releve.retenues.map((retenue, rang) => (
-                      <CarteMois
-                        key={`ret-${retenue.id}`}
-                        mouvement={retenue}
-                        rang={rang}
-                        sens="retenue"
-                      />
-                    ))}
-                  </div>
-                  <p className="releve-total" aria-live="polite">
-                    {pluriel(releve.retenues.length, 'mois')} · {montant(releve.totalRetenu)} au total
-                  </p>
-                </>
-              ) : (
-                <EtatVide
-                  icone={cashOutline}
-                  teinte="neutre"
-                  compact
-                  titre="Aucune retenue pour l’instant"
-                  message="Les prélèvements faits sur votre salaire apparaîtront ici."
-                />
-              )}
-            </section>
+              </h2>
+            </div>
+            {releve.retenues.length > 0 ? (
+              <>
+                <div className="ipm-pile">
+                  {releve.retenues.map((retenue, rang) => (
+                    <CarteMois
+                      key={`ret-${retenue.id}`}
+                      mouvement={retenue}
+                      rang={rang}
+                      sens="retenue"
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <EtatVide
+                icone={cashOutline}
+                teinte="neutre"
+                compact
+                titre="Aucune retenue pour l’instant"
+                message="Les prélèvements faits sur votre salaire apparaîtront ici."
+              />
+            )}
+          </section>
+        )}
 
-            {releve.remboursements.length > 0 && (
-              <section className="ipm-section releve-bloc" aria-label="Remboursements reçus">
-                <h2 className="releve-titre">Remboursements reçus</h2>
-                <p className="releve-sous-titre">
-                  Ce que l’IPM vous a remboursé (frais que vous aviez avancés).
-                </p>
+        {vue === 'remboursements' && (
+          <section className="ipm-section releve-bloc" aria-label="Remboursements reçus">
+            <div className="ipm-entete-section">
+              <h2 className="ipm-titre-section">
+                Ce que l’IPM vous a remboursé (frais que vous aviez avancés).
+              </h2>
+            </div>
+            {releve.remboursements.length > 0 ? (
+              <>
                 <div className="ipm-pile">
                   {releve.remboursements.map((remb, rang) => (
                     <CarteMois
@@ -216,14 +190,26 @@ export default function Releve() {
                     />
                   ))}
                 </div>
-              </section>
+              </>
+            ) : (
+              <EtatVide
+                icone={cashOutline}
+                teinte="neutre"
+                compact
+                titre="Aucun remboursement pour l’instant"
+                message="Les frais que l’IPM vous rembourse apparaîtront ici."
+              />
             )}
-          </>
-        ) : (
+          </section>
+        )}
+
+        {vue === 'soins' && (
           <section className="ipm-section releve-bloc" aria-label="Vos soins">
-            <p className="releve-sous-titre">
-              Votre part et ce que l’IPM a pris en charge, par bon.
-            </p>
+            <div className="ipm-entete-section">
+              <h2 className="ipm-titre-section">
+                Votre part et ce que l’IPM a pris en charge, par bon.
+              </h2>
+            </div>
             {releve.soins.length > 0 ? (
               <div className="ipm-pile">
                 {releve.soins.map((soin, rang) => (
@@ -252,7 +238,7 @@ export default function Releve() {
         </IonRefresher>
 
         {/* Pas d'en-tête noir : l'écran commence par la zone sûre (encoche). */}
-        <div className="ipm-zone-sure" />
+        <BarreActions />
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 
@@ -262,55 +248,6 @@ export default function Releve() {
         <div className="ipm-bas-page" />
       </IonContent>
     </IonPage>
-  )
-}
-
-/**
- * Le bandeau en vedette : ce qui reste à payer, et - en dessous - ce que l'IPM
- * a pris en charge et ce qui a été retenu sur le salaire. Trois états de solde :
- * une dette (rouge), un compte à jour (vert), ou une avance en faveur de l'agent.
- */
-function BandeauSolde({
-  solde,
-  totalPartIpm,
-  totalRetenu,
-}: {
-  solde: number
-  totalPartIpm: number
-  totalRetenu: number
-}) {
-  let classe = 'releve-solde--ajour'
-  let intitule = 'Compte à jour'
-  let affiche = montant(0)
-  let note = 'Vous ne devez rien à l’IPM.'
-
-  if (solde > 0) {
-    classe = 'releve-solde--du'
-    intitule = 'Reste à payer'
-    affiche = montant(solde)
-    note = 'Votre part des soins, moins ce qui a déjà été retenu sur votre salaire.'
-  } else if (solde < 0) {
-    intitule = 'Avance en votre faveur'
-    affiche = montant(-solde)
-    note = 'Les retenues faites dépassent votre part : ce montant vous reste acquis.'
-  }
-
-  return (
-    <section className={`releve-solde ${classe}`} aria-label="Reste à payer">
-      <p className="releve-solde__intitule">{intitule}</p>
-      <p className="releve-solde__montant">{affiche}</p>
-      <p className="releve-solde__note">{note}</p>
-      <dl className="releve-solde__bilan">
-        <div>
-          <dt>Pris en charge par l’IPM</dt>
-          <dd>{montant(totalPartIpm)}</dd>
-        </div>
-        <div>
-          <dt>Retenu sur salaire</dt>
-          <dd>{montant(totalRetenu)}</dd>
-        </div>
-      </dl>
-    </section>
   )
 }
 
@@ -333,15 +270,31 @@ function CarteSoin({ soin, rang }: { soin: Soin; rang: number }) {
       titre={titre}
       details={
         <>
-          <span>{[soin.numeroBon, dateMoyenne(soin.date)].filter(Boolean).join(' · ')}</span>
-          <span className="releve-ipm">L’IPM a pris en charge {montant(soin.partIpm)}</span>
+          {soin.numeroBon && <span>{soin.numeroBon}</span>}
+          <span>{dateMoyenne(soin.date)}</span>
         </>
       }
-      etiquette={`${titre}, ${dateMoyenne(soin.date)}, l’IPM a pris en charge ${montant(
-        soin.partIpm,
-      )}, votre part ${montant(soin.partAgent)}${chemin ? ', voir le bon' : ''}`}
-      puce={<span className="releve-montant releve-montant--charge">{montant(soin.partAgent)}</span>}
-      meta="votre part"
+      // Les deux parts côte à côte, à droite de la ligne : la mienne et celle de l'IPM.
+      puce={
+        <span className="releve-parts">
+          <span className="releve-part">
+            <span className="releve-part__libelle">Ma part</span>
+            <span className="releve-part__montant releve-montant--charge">
+              {montant(soin.partAgent)}
+            </span>
+          </span>
+          <span className="releve-part">
+            <span className="releve-part__libelle">Part IPM</span>
+            <span className="releve-part__montant releve-ipm">{montant(soin.partIpm)}</span>
+          </span>
+        </span>
+      }
+      // Pas de flèche : elle décalait les colonnes des parts d'une ligne à
+      // l'autre. La ligne d'un bon reste cliquable.
+      chevron={false}
+      etiquette={`${titre}, ${dateMoyenne(soin.date)}, votre part ${montant(
+        soin.partAgent,
+      )}, part IPM ${montant(soin.partIpm)}${chemin ? ', voir le bon' : ''}`}
     />
   )
 }

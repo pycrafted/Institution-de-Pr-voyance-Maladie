@@ -78,7 +78,7 @@
   display: flex;
   flex-direction: column;
 }
-.accueil .ipm-zone-sure,
+.accueil .ipm-navbar,
 .accueil .accueil__carte,
 .accueil .ipm-section,
 .accueil .ipm-bas-page {
@@ -113,4 +113,139 @@
     height: clamp(130px, 20vh, 260px);
     height: clamp(130px, 20dvh, 260px);
   }
+}
+
+/* --- « Demander un document » en cartes ---------------------------------
+ * Deux colonnes de cartes COMPACTES (une seule sous 340 px) : l'icône rouge
+ * sur une pastille douce à gauche, le libellé à droite (deux lignes au
+ * besoin). Ni flèche ni ombre portée : un liseré fin suffit, la grille reste
+ * légère sous la carte d'adhérent. Le document à venir est éteint et dit
+ * « Bientôt » sous son libellé.
+ */
+.accueil__documents .ipm-grille-services {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Toutes les cartes à la même hauteur, quelle que soit la longueur du libellé. */
+  grid-auto-rows: 1fr;
+  gap: var(--e-8);
+}
+@media (max-width: 339px) {
+  .accueil__documents .ipm-grille-services {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.accueil__documents .ipm-grille-services > [role='listitem'] {
+  display: flex;
+}
+.accueil__documents .ipm-tuile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto;
+  align-items: center;
+  column-gap: 10px;
+  min-height: 64px;
+  padding: var(--e-12) 10px var(--e-12) var(--e-12);
+  border-radius: var(--r-lg);
+  box-shadow: none;
+}
+.accueil__documents .ipm-tuile--ouverte:active {
+  background: var(--ipm-rouge-doux);
+}
+.accueil__documents .ipm-tuile__icone {
+  box-sizing: content-box;
+  width: 18px;
+  height: 18px;
+  padding: 9px;
+  border-radius: var(--r-md);
+  background: var(--ipm-rouge-doux);
+  font-size: 18px;
+}
+.accueil__documents .ipm-tuile__libelle {
+  color: var(--ipm-texte);
+  font-size: 0.84375rem;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.accueil__documents .ipm-tuile__chevron {
+  display: none;
+}
+/* À venir : même carte, éteinte (fond doux, icône neutre), avec une petite
+   étiquette « Bientôt » dans le coin - elle n'ajoute pas de ligne, donc
+   toutes les cartes gardent la même hauteur. */
+.accueil__documents .ipm-tuile--avenir {
+  opacity: 1;
+  background: var(--ipm-surface-2);
+}
+.accueil__documents .ipm-tuile--avenir .ipm-tuile__icone {
+  background: var(--ipm-surface);
+  color: var(--ipm-texte-doux);
+}
+.accueil__documents .ipm-tuile--avenir .ipm-tuile__libelle {
+  color: var(--ipm-texte-doux);
+}
+.accueil__documents .ipm-tuile__puce {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte-doux);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* --- Ayants droit --------------------------------------------------------
+ * Rangée horizontale des cartes de proches, sous la carte de l'employé : une vignette
+ * à la forme d'une photo d'identité, le prénom dessous, et la carte s'ouvre en
+ * grand au toucher (components/CartePleinEcran). Défile sur le côté si la
+ * famille est nombreuse.
+ */
+.accueil-famille {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--gouttiere);
+  display: flex;
+  gap: var(--e-16);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.accueil-famille::-webkit-scrollbar {
+  display: none;
+}
+.accueil-famille__membre {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--e-8);
+  width: clamp(72px, 19vw, 112px);
+  scroll-snap-align: start;
+  cursor: pointer;
+  color: var(--ipm-texte);
+}
+/* La vignette reprend la forme (4.75/6) et l'échelle de la carte d'adhérent. */
+.accueil-famille__membre .ipm-avatar {
+  width: clamp(56px, 15vw, 96px) !important;
+  height: auto !important;
+  aspect-ratio: 4.75 / 6;
+  font-size: clamp(21px, 5.6vw, 36px) !important;
+}
+/* Le prénom seul : le nom de famille est le même pour presque tous. */
+.accueil-famille__nom {
+  max-width: 100%;
+  font-size: clamp(0.8125rem, 3.2vw, 1rem);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

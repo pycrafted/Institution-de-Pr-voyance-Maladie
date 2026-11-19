@@ -39,24 +39,30 @@ function rendre(noeud: ReactNode) {
 }
 
 describe('§3.1 barre d’onglets flottante', () => {
-  it('porte la classe flottante et un bouton par onglet, dont « Scanner »', () => {
+  it('porte la classe flottante et un bouton par onglet, dont « Préfinancement »', () => {
     const { container } = rendre(<BarreOngletsFlottante />)
     const barre = container.querySelector('ion-tab-bar')
     expect(barre).toHaveClass('ipm-onglets')
     const boutons = Array.from(container.querySelectorAll('ion-tab-button'))
     expect(boutons.map((b) => b.getAttribute('tab'))).toEqual(ONGLETS.map((o) => o.cle))
     expect(boutons.map((b) => b.getAttribute('href'))).toEqual(ONGLETS.map((o) => o.href))
-    expect(boutons[boutons.length - 1]).toHaveTextContent('Scanner')
+    expect(boutons[boutons.length - 1]).toHaveTextContent('Préfinancement')
   })
 
-  it('mène aux quatre écrans principaux, dont l’annuaire et le scan', () => {
+  it('mène aux cinq écrans principaux, dont l’annuaire et le scan', () => {
     // L'annuaire est un onglet et non un raccourci de l'accueil : c'est ce
     // qu'on consulte en cherchant où se soigner, il doit être à un toucher.
     // Le scan (pré-financement) est devenu un onglet ; le relevé et le profil
     // sont en haut (compte/perso).
-    expect(ONGLETS.map((o) => o.href)).toEqual(['/accueil', '/bons', '/conventionnes', '/scan'])
+    expect(ONGLETS.map((o) => o.href)).toEqual([
+      '/accueil',
+      '/bons',
+      '/releve',
+      '/conventionnes',
+      '/scan',
+    ])
     expect(ONGLETS.map((o) => o.libelle)).toContain('Structures')
-    expect(ONGLETS.map((o) => o.libelle)).toContain('Scanner')
+    expect(ONGLETS.map((o) => o.libelle)).toContain('Préfinancement')
   })
 })
 
@@ -301,7 +307,7 @@ describe('§3.7 boutons', () => {
     const bouton = container.querySelector('button') as HTMLButtonElement
     expect(bouton).toBeDisabled()
     expect(bouton).toHaveAttribute('aria-busy', 'true')
-    expect(container.querySelector('ion-spinner')).not.toBeNull()
+    expect(container.querySelector('.ipm-chargeur')).not.toBeNull()
     fireEvent.click(bouton)
     expect(action).not.toHaveBeenCalled()
   })

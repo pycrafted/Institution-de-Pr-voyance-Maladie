@@ -47,7 +47,8 @@ describe('PdfViewer', () => {
       screen.getByRole('img', { name: /BPI000123, Original \(page 1 sur 2\)/ }),
     ).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /Copie \(page 2 sur 2\)/ })).toBeInTheDocument()
-    expect(screen.getByText(/Pincez pour zoomer/)).toBeInTheDocument()
+    // Plus de texte d'aide sous l'aperçu.
+    expect(screen.queryByText(/Pincez pour zoomer/)).toBeNull()
     // §1 : le sélecteur de page est en puces pilules, plus en ion-segment.
     expect(document.querySelector('ion-segment')).toBeNull()
     expect(document.querySelectorAll('.ipm-puce')).toHaveLength(2)
@@ -75,7 +76,7 @@ describe('PdfViewer', () => {
     render(<PdfViewer pdf={pdf} />)
     expect(await screen.findByRole('img', { name: /Page 1 \(page 1 sur 1\)/ })).toBeInTheDocument()
     expect(screen.queryByText('Copie')).toBeNull()
-    expect(screen.getByText('Pincez pour zoomer')).toBeInTheDocument()
+    expect(screen.queryByText(/Pincez pour zoomer/)).toBeNull()
   })
 
   it('PDF illisible : message clair au lieu de l’aperçu', async () => {

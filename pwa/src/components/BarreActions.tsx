@@ -1,90 +1,82 @@
 /**
- * Barre du HAUT - « top app bar » FLOTTANTE (components/BarreActions.tsx)
+ * Barre du HAUT (components/BarreActions.tsx), posée directement sur la page.
  *
- * Posée comme une carte qui flotte au-dessus du contenu : le nom de
- * l'application à gauche, et à droite, EN ACCÈS DIRECT, les actions qui ne
- * dépendent d'aucun écran - photos d'identité, notifications, apparence,
- * déconnexion. Plus de menu caché derrière un hamburger : chaque action est
- * une icône sur la barre, comme les maquettes.
+ * Plus de carte flottante : un bandeau de la couleur du fond, sans bord ni
+ * ombre, comme l'en-tête d'une appli native. À GAUCHE, le nom de l'appli
+ * (« Nofly 😊 ») ; AU MILIEU, le solde IPM de l'agent (il ouvre le relevé) ;
+ * à DROITE, les actions en icônes seules - Identité, Notifications, Profil. La cloche porte une pastille tant qu'il
+ * reste des décisions de l'IPM non lues.
  *
- * Elle est posée par la coquille (App.tsx), à côté de la barre d'onglets du
- * bas, et se montre donc sur TOUS les écrans. Elle garde la hauteur que les
- * écrans lui réservent (`--barre-haut`). Chaque action mène désormais à une
- * PAGE à part entière (Identité, Notifications, Mon relevé, Profil) : la barre
- * ne fait que naviguer, elle ne porte plus de feuille. La cloche affiche une
- * pastille tant qu'il reste des décisions de l'IPM non lues.
+ * Elle n'est PAS une barre fixe : chaque écran l'écrit en tête de son
+ * contenu (à la place de l'ancien espaceur `ipm-zone-sure`), et elle défile
+ * avec la page.
  */
 
 import { IonIcon, useIonRouter } from '@ionic/react'
-// Icônes PLEINES (en mode Material, le variant plein est rendu).
-import { idCard, notifications, person, wallet } from 'ionicons/icons'
+import { idCardOutline, notificationsOutline, personOutline, walletOutline } from 'ionicons/icons'
 
+import { useCompte } from '../data/compte'
 import { haptique } from '../hooks/haptique'
 import { useNotifications } from '../hooks/useNotifications'
+import { montant } from '../utils/format'
+
+// Les actions de droite : une icône au trait, sans libellé visible (lu par le
+// lecteur d'écran).
+const ACTIONS = [
+  { cle: 'identite', icone: idCardOutline, etiquette: 'Photos d’identité', chemin: '/identite' },
+  {
+    cle: 'notifications',
+    icone: notificationsOutline,
+    etiquette: 'Notifications',
+    chemin: '/notifications',
+  },
+  { cle: 'profil', icone: personOutline, etiquette: 'Mon profil', chemin: '/profil' },
+]
 
 export default function BarreActions() {
   const routeur = useIonRouter()
   const { nonLues } = useNotifications()
+  const { releve } = useCompte()
+  const solde = releve?.solde ?? null
 
-  // Les actions, réparties en quarts égaux sur la barre, comme les onglets du
-  // bas : une icône et son libellé dessous.
-  const actions = [
-    {
-      // Dote de portraits les cartes d'adhérent (titulaire + ayants droit) :
-      // « Identité » est plus juste et plus pro que l'ancien « Photos ». C'est
-      // désormais une PAGE à part entière (/identite), comme Profil.
-      cle: 'identite',
-      icone: idCard,
-      libelle: 'Identité',
-      etiquette: 'Photos d’identité',
-      agir: () => {
-        haptique.leger()
-        routeur.push('/identite', 'forward', 'push')
-      },
-    },
-    {
-      // Désormais une PAGE à part entière (/notifications), comme Identité.
-      // La pastille porte le nombre de décisions encore non lues.
-      cle: 'notifications',
-      icone: notifications,
-      libelle: 'Notifications',
-      etiquette: 'Notifications',
-      agir: () => {
-        haptique.leger()
-        routeur.push('/notifications', 'forward', 'push')
-      },
-    },
-    {
-      // Le relevé du compte IPM de l'agent (ticket modérateur + retenues) a
-      // quitté le footer pour rejoindre le profil ici : tout le « compte/perso »
-      // est désormais regroupé dans la barre du haut.
-      cle: 'releve',
-      icone: wallet,
-      libelle: 'Mon relevé',
-      etiquette: 'Mon relevé de compte IPM',
-      agir: () => {
-        haptique.leger()
-        routeur.push('/releve', 'forward', 'push')
-      },
-    },
-    {
-      // Le profil remplace « Quitter » : la déconnexion ET l'apparence
-      // (clair/sombre) s'y trouvent désormais, à l'intérieur de l'écran.
-      cle: 'profil',
-      icone: person,
-      libelle: 'Profil',
-      etiquette: 'Mon profil',
-      agir: () => {
-        haptique.leger()
-        routeur.push('/profil', 'forward', 'push')
-      },
-    },
-  ]
+  function aller(chemin: string) {
+    haptique.leger()
+    routeur.push(chemin, 'forward', 'push')
+  }
 
   return (
     <header className="ipm-navbar">
+      {/* Le nom de l'application, à gauche. */}
+      <span className="ipm-navbar__nom">
+        Nofly <span aria-hidden="true">😊</span>
+      </span>
+
+      {/* Le solde IPM, à gauche : ce qui reste à payer (rouge), rien (vert),
+          ou une avance (montant négatif). Il ouvre le relevé. */}
+      {solde !== null ? (
+        <button
+          type="button"
+          className="ipm-navbar__solde ipm-appui"
+          aria-label={`Solde restant : ${montant(solde)}, voir le relevé`}
+          onClick={() => aller('/releve')}
+        >
+          <IonIcon icon={walletOutline} className="ipm-navbar__solde-icone" aria-hidden="true" />
+          <span className="ipm-navbar__solde-textes">
+            <span
+              className={`ipm-navbar__solde-montant ipm-chiffres${
+                solde > 0 ? ' ipm-navbar__solde-montant--du' : ''
+              }${solde === 0 ? ' ipm-navbar__solde-montant--ajour' : ''}`}
+            >
+              {montant(solde)}
+            </span>
+          </span>
+        </button>
+      ) : (
+        <span className="ipm-navbar__solde" aria-hidden="true" />
+      )}
+
       <nav className="ipm-navbar__actions" aria-label="Actions">
-        {actions.map((action) => {
+        {ACTIONS.map((action) => {
           // Seule la cloche porte une pastille : le nombre de décisions non lues.
           const pastille = action.cle === 'notifications' ? nonLues : 0
           return (
@@ -95,7 +87,7 @@ export default function BarreActions() {
               aria-label={
                 pastille > 0 ? `${action.etiquette} (${pastille} non lues)` : action.etiquette
               }
-              onClick={action.agir}
+              onClick={() => aller(action.chemin)}
             >
               <span className="ipm-navbar__porte-icone">
                 <IonIcon icon={action.icone} aria-hidden="true" />
@@ -105,7 +97,6 @@ export default function BarreActions() {
                   </span>
                 )}
               </span>
-              <span className="ipm-navbar__libelle">{action.libelle}</span>
             </button>
           )
         })}

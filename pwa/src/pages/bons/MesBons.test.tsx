@@ -12,6 +12,11 @@ import { preparerIonic, rendreEcran } from './outils-test'
 // L'hôte du modal « Nouveau bon » vit dans App (sous le routeur) : ici, on
 // ne vérifie que l'appel.
 const { ouvrirNouveauBon } = vi.hoisted(() => ({ ouvrirNouveauBon: vi.fn() }))
+// La barre du haut est écrite dans l'écran : elle charge son solde et ses
+// notifications, ce qui consommerait les réponses réseau simulées ici. Elle
+// a ses propres tests (components/BarreActions.test.tsx).
+vi.mock('../../components/BarreActions', () => ({ default: () => null }))
+
 vi.mock('../../components/NouveauBonModal', () => ({
   useNouveauBon: () => ({ ouvrirNouveauBon }),
 }))

@@ -3,7 +3,6 @@ import { beforeAll, describe, expect, it, vi } from 'vitest'
 
 import type { ReactNode } from 'react'
 
-import { VERSION } from '../version'
 import { preparerIonic, rendreEcran, uneSession } from './accueil/outils-test'
 import Profil from './Profil'
 
@@ -56,11 +55,11 @@ describe('Profil', () => {
       'href',
       'tel:771234567',
     )
-    // Elle ouvre l'écran ; les ayants droit puis les réglages suivent.
+    // Elle ouvre l'écran ; les réglages suivent (les ayants droit sont sur l'accueil).
     const titres = Array.from(container.querySelectorAll('.ipm-titre-section')).map(
       (t) => t.textContent,
     )
-    expect(titres).toEqual(['Mes informations', 'Ayants droit', 'Réglages'])
+    expect(titres).toEqual(['Mes informations', 'Réglages'])
   })
 
   it('ouvre l’écran directement sur ses sections, sans en-tête ni toolbar ni liste à filets', () => {
@@ -74,60 +73,21 @@ describe('Profil', () => {
     expect(container.querySelector('ion-list')).toBeNull()
   })
 
-  it('liste les ayants droit, venus de l’accueil, chacun en un toucher', () => {
-    // La fabrique donne le titulaire + une conjointe : seule la conjointe est
-    // un ayant droit (le titulaire a sa carte à l'accueil).
+  it('ne montre plus les ayants droit (ils sont sur l’accueil)', () => {
     const { container } = rendreEcran(<Profil />)
-    expect(screen.getByText('Ayants droit')).toBeInTheDocument()
-    const membres = container.querySelectorAll('.profil-famille__membre')
-    expect(membres).toHaveLength(1)
-    expect(screen.getByLabelText('Carte d’ayant droit de Awa DIOP')).toBeInTheDocument()
-    // Le prénom seul sous la vignette : le nom est le même pour toute la famille.
-    expect(container.querySelector('.profil-famille__nom')?.textContent).toBe('Awa')
-    // Toujours pas de liste Ionic à filets pleine largeur (§1).
-    expect(container.querySelector('ion-item')).toBeNull()
-  })
-
-  it('masque la section « Ayants droit » sans proche', () => {
-    const { container } = rendreEcran(<Profil />, uneSession({ beneficiaires: [] }))
     expect(screen.queryByText('Ayants droit')).toBeNull()
-    expect(container.querySelector('.profil-famille')).toBeNull()
+    expect(container.querySelector('.accueil-famille')).toBeNull()
   })
 
-  it('ouvre la carte d’un ayant droit en grand quand on la touche', () => {
-    // Sous jsdom, Ionic ne monte pas le dedans de la fenêtre (pas de
-    // « framework delegate ») : on vérifie qu'elle s'ouvre, le dedans étant
-    // couvert ailleurs.
+  it('ne propose plus « Assistance » ni « À propos »', () => {
     rendreEcran(<Profil />)
-    const modale = () => document.body.querySelector('ion-modal.carte-plein') as HTMLIonModalElement
-    expect(modale().isOpen).toBe(false)
-    fireEvent.click(screen.getByLabelText('Carte d’ayant droit de Awa DIOP'))
-    expect(modale().isOpen).toBe(true)
+    expect(screen.queryByText('Assistance')).toBeNull()
+    expect(screen.queryByText('À propos')).toBeNull()
   })
 
-  it('donne accès à l’assistance, qui n’a pas d’onglet', () => {
-    // Elle a quitté l'accueil avec la rangée de raccourcis : sans cette carte,
-    // l'écran serait injoignable.
+  it('« Télécharger l’application » : sans invitation du navigateur, mène aux explications', async () => {
     rendreEcran(<Profil />)
-    expect(screen.getByText('Assistance')).toBeInTheDocument()
-  })
-
-  it('affiche la version de l’application sur la carte « À propos »', () => {
-    rendreEcran(<Profil />)
-    expect(screen.getByText('À propos')).toBeInTheDocument()
-    expect(screen.getByText(VERSION)).toBeInTheDocument()
-  })
-
-  it('mène à l’écran « À propos », comme à l’assistance', async () => {
-    rendreEcran(<Profil />)
-    fireEvent.click(screen.getByText('À propos'))
-    await waitFor(() => expect(window.location.pathname).toBe('/a-propos'))
-    window.history.replaceState(null, '', '/')
-  })
-
-  it('mène à l’écran d’installation, comme à l’assistance', async () => {
-    rendreEcran(<Profil />)
-    fireEvent.click(await screen.findByText('Installer sur l’écran d’accueil'))
+    fireEvent.click(await screen.findByText('Télécharger l’application'))
     await waitFor(() => expect(window.location.pathname).toBe('/installation'))
     window.history.replaceState(null, '', '/')
   })

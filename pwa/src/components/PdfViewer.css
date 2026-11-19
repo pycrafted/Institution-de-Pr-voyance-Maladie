@@ -71,14 +71,7 @@
 /* Sélecteur de page en puces pilules (§3.6), centré sous l'aperçu. */
 .ipm-puces.pdf-visionneuse__pages {
   justify-content: center;
-  padding: var(--e-12) var(--gouttiere) 0;
-}
-
-.pdf-visionneuse__aide {
-  margin: var(--e-8) var(--gouttiere) var(--e-12);
-  text-align: center;
-  font-size: 0.75rem;
-  color: var(--ipm-texte-doux);
+  padding: var(--e-12) var(--gouttiere);
 }
 
 .pdf-visionneuse--erreur {

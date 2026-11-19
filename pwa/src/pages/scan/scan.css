@@ -177,7 +177,7 @@
   backdrop-filter: blur(1px);
 }
 
-.scan__voile ion-spinner {
+.scan__voile .ipm-chargeur {
   width: 34px;
   height: 34px;
 }
@@ -377,35 +377,6 @@
 
 .scan__lien-galerie ion-icon {
   font-size: 1.125rem;
-}
-
-/* ---------- Choix du motif (cartes partagées CarteListe) ----------
-   Un motif encore à venir : la même carte, mais discrète (fond doux, sans
-   ombre, légèrement estompée) et marquée « Bientôt ». */
-.ipm-carte-liste.scan__motif--bientot {
-  background: var(--ipm-surface-2);
-  box-shadow: none;
-  opacity: 0.75;
-}
-.scan__puce-bientot {
-  padding: 3px 9px;
-  border-radius: var(--r-pill);
-  background: var(--ipm-surface);
-  color: var(--ipm-texte-doux);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-/* Tag « Urgence » (hospitalisation) : accent rouge de marque, pour le
-   distinguer d'un simple état « Bientôt ». */
-.scan__puce-urgence {
-  padding: 3px 9px;
-  border-radius: var(--r-pill);
-  background: var(--ipm-rouge-doux);
-  color: var(--ipm-rouge-texte);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  white-space: nowrap;
 }
 
 /* ---------- Image figée, en carte (étapes invalide / validée) ---------- */

@@ -82,10 +82,16 @@
 
 /* Les deux actions de la charte (§3.7), sous l'aperçu. */
 .detail-bon__actions {
+  /* Partager et Télécharger côte à côte, à parts égales, au-dessus du bon. */
   display: flex;
-  flex-direction: column;
   gap: var(--e-12);
-  padding: var(--e-20) var(--gouttiere) 0;
+  padding: var(--e-16) var(--gouttiere) 0;
+}
+.detail-bon__actions .ipm-bouton {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--e-12);
+  white-space: nowrap;
 }
 
 /* Appel direct de la pharmacie, posé à droite de sa carte : le cercle et sa

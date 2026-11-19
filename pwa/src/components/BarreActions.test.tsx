@@ -88,15 +88,11 @@ describe('barre du haut', () => {
     expect(screen.queryByLabelText('Passer en mode sombre')).toBeNull()
   })
 
-  it('porte des icônes pleines, comme la barre du bas', () => {
-    // La barre du bas rend le variant plein en mode Material : la barre du
-    // haut ne doit pas lui répondre avec des icônes au trait.
+  it('porte des icônes au trait, sans libellé visible, posées sur la page', () => {
     const { container } = rendreEcran(<BarreActions />)
-    const icones = container.querySelectorAll('.ipm-navbar ion-icon')
-    expect(icones.length).toBeGreaterThan(0)
-    for (const icone of icones) {
-      expect(icone.getAttribute('icon')).not.toMatch(/outline/)
-    }
+    const icones = container.querySelectorAll('.ipm-navbar__icone ion-icon')
+    expect(icones).toHaveLength(3)
+    expect(container.querySelector('.ipm-navbar__libelle')).toBeNull()
   })
 
   it('la cloche mène à la page Notifications, sans ouvrir de feuille', () => {

@@ -273,7 +273,7 @@
   align-items: center;
   gap: var(--e-8);
 }
-.itineraire__message--attente ion-spinner {
+.itineraire__message--attente .ipm-chargeur {
   width: 22px;
   color: var(--ipm-rouge);
 }

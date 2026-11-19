@@ -6,8 +6,8 @@
  *      juste en dessous, sur le fond clair ;
  *   2. l'aperçu du PDF officiel dans une carte (rayon --r-lg, ombre-2), rendu
  *      par PdfViewer (Original / Copie) ;
- *   3. les actions en boutons de la charte (§3.7) : « Partager / Imprimer »
- *      et « Télécharger le PDF ».
+ *   3. les actions en boutons de la charte (§3.7) : « Partager »
+ *      et « Télécharger ».
  *
  * L'écran ne répète pas en cartes ce que le bon porte déjà — bénéficiaire,
  * prescripteur, pharmacie, ordonnance : c'est le PDF officiel, celui que lira
@@ -24,7 +24,6 @@ import {
   IonPage,
   IonRefresher,
   IonRefresherContent,
-  IonSpinner,
   useIonRouter,
   useIonToast,
   type RefresherEventDetail,
@@ -58,6 +57,8 @@ import { typeDocument } from './bons/affichage'
 import { nomFichierPdf, partagerPdf, telechargerFichier } from './bons/partage'
 import { empreinteImpression, lireIdentifiant, useDetailBon, usePdfBon } from './bons/useDetailBon'
 import './bons/DetailBon.css'
+import Chargeur from '../components/Chargeur'
+import BarreActions from '../components/BarreActions'
 
 export type DetailBonProps = RouteComponentProps<{ id: string }>
 
@@ -157,8 +158,26 @@ export default function DetailBon({ match, location }: DetailBonProps) {
   } else {
     contenu = (
       <>
-        <Validite bon={bon} />
-        <p className="detail-bon__explication">{explicationStatut(bon.statut, genre)}</p>
+        {/* Bon d'optique : aucun texte au-dessus des boutons, le bon parle de lui-même. */}
+        {genre !== 'bon-optique' && (
+          <>
+            <Validite bon={bon} />
+            <p className="detail-bon__explication">{explicationStatut(bon.statut, genre)}</p>
+          </>
+        )}
+
+        <div className="detail-bon__actions">
+          <BoutonSecondaire
+            disabled={!partageable}
+            icone={shareOutline}
+            onClick={() => void partager()}
+          >
+            Partager
+          </BoutonSecondaire>
+          <BoutonPrincipal disabled={!partageable} icone={downloadOutline} onClick={telecharger}>
+            Télécharger
+          </BoutonPrincipal>
+        </div>
 
         <div className="ipm-carte detail-bon__apercu">
           {enAttente ? (
@@ -180,23 +199,10 @@ export default function DetailBon({ match, location }: DetailBonProps) {
             />
           ) : (
             <div className="detail-bon__apercu-attente" aria-busy="true">
-              <IonSpinner name="crescent" aria-hidden="true" />
+              <Chargeur aria-hidden="true" />
               <span>{lettre ? 'Préparation de la lettre…' : 'Préparation du bon…'}</span>
             </div>
           )}
-        </div>
-
-        <div className="detail-bon__actions">
-          <BoutonPrincipal
-            disabled={!partageable}
-            icone={shareOutline}
-            onClick={() => void partager()}
-          >
-            Partager / Imprimer
-          </BoutonPrincipal>
-          <BoutonSecondaire disabled={!partageable} icone={downloadOutline} onClick={telecharger}>
-            Télécharger le PDF
-          </BoutonSecondaire>
         </div>
       </>
     )
@@ -211,18 +217,23 @@ export default function DetailBon({ match, location }: DetailBonProps) {
 
         {/* En-tête d'app mobile : flèche retour Material + le numéro du bon,
             lisible à bout de bras au comptoir (§5). Le statut et la validité
-            viennent juste en dessous. */}
-        <EnteteEcran
-          titre={
-            bon ? (
-              <span className="detail-bon__numero ipm-chiffres selectionnable">{bon.code}</span>
-            ) : (
-              type.libelle
-            )
-          }
-          sousTitre={type.libelle}
-          onRetour={retour}
-        />
+            viennent juste en dessous. Bon d'optique : pas d'en-tête du tout. */}
+        {/* Sans en-tête, il faut quand même réserver la place de la barre
+            d'actions fixe du haut, sinon le bon passe dessous. */}
+        {genre === 'bon-optique' && <BarreActions />}
+        {genre !== 'bon-optique' && (
+          <EnteteEcran
+            titre={
+              bon ? (
+                <span className="detail-bon__numero ipm-chiffres selectionnable">{bon.code}</span>
+              ) : (
+                type.libelle
+              )
+            }
+            sousTitre={type.libelle}
+            onRetour={retour}
+          />
+        )}
 
         <OfflineBanner />
         {contenu}

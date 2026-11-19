@@ -3,13 +3,13 @@
  * pendant la lecture de la session et au moins DUREE_MIN_LANCEMENT_MS.
  *
  * Il prend le relais de l'écran de lancement d'iOS (public/splash/, généré
- * par scripts/generer-icones.py) SANS saut visible : même fond de marque,
- * même logo, même taille et même position. Le logo apparaît en fondu, puis
- * trois points de chargement si la lecture de la session traîne.
+ * par scripts/generer-icones.py) sur le même fond de marque. Ni logo ni texte à l'écran : seul le chargeur de l'app
+ * (Chargeur), centré, le temps de lire la session.
  */
 
 import { useLayoutEffect } from 'react'
 
+import Chargeur from './Chargeur'
 import LogoSar from './LogoSar'
 import './Splash.css'
 
@@ -73,17 +73,7 @@ export default function Splash() {
       aria-label="Chargement d'IPM Mobile"
       aria-busy="true"
     >
-      <div className="splash__logo">
-        <LogoSar largeur={160} />
-      </div>
-      <div className="splash__points" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
-      <p className="splash__pied" aria-hidden="true">
-        IPM
-      </p>
+      <Chargeur className="splash__chargeur" />
     </div>
   )
 }

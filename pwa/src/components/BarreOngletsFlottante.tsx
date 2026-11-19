@@ -13,14 +13,16 @@
 
 import { IonIcon, IonLabel, IonTabBar, IonTabButton } from '@ionic/react'
 import {
+  cash,
+  cashOutline,
   documentText,
   documentTextOutline,
   home,
   homeOutline,
   location,
   locationOutline,
-  scan,
-  scanOutline,
+  wallet,
+  walletOutline,
 } from 'ionicons/icons'
 
 export interface Onglet {
@@ -47,6 +49,15 @@ export const ONGLETS: readonly Onglet[] = [
     iconePleine: documentText,
   },
   {
+    // Le relevé du compte IPM (soins, retenues, remboursements) : remonté de
+    // la barre du haut, c'est un écran qu'on consulte souvent.
+    cle: 'releve',
+    href: '/releve',
+    libelle: 'Relevé',
+    icone: walletOutline,
+    iconePleine: wallet,
+  },
+  {
     // Toutes les structures conventionnées, et pas seulement les pharmacies.
     // L'épingle plutôt qu'un symbole médical : l'écran sert à trouver une
     // structure près de soi et à s'y rendre, et la croix se confondait avec
@@ -59,13 +70,15 @@ export const ONGLETS: readonly Onglet[] = [
   },
   {
     // Le scan (pré-financement) est devenu un onglet comme les autres, à la
-    // place du relevé, qui a rejoint la barre du haut (compte/perso). Cadre à
-    // quatre coins : le symbole universel « scanner un document ».
+    // place du relevé, qui a rejoint la barre du haut (compte/perso). Nommé
+    // d'après ce qu'il offre (une avance d'argent), pas d'après le geste : la
+    // consultation s'y fait sans rien scanner. Billet plutôt que portefeuille,
+    // déjà pris par le relevé dans la barre du haut.
     cle: 'scan',
     href: '/scan',
-    libelle: 'Scanner',
-    icone: scanOutline,
-    iconePleine: scan,
+    libelle: 'Préfinancement',
+    icone: cashOutline,
+    iconePleine: cash,
   },
 ]
 

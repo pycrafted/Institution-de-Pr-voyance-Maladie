@@ -24,23 +24,21 @@ import {
   IonContent,
   IonIcon,
   IonPage,
-  IonSpinner,
   useIonToast,
   useIonViewWillEnter,
   useIonViewWillLeave,
 } from '@ionic/react'
 import {
   alertCircleOutline,
-  bedOutline,
   calendarOutline,
   cameraOutline,
   cashOutline,
   checkmarkCircleOutline,
   checkmarkOutline,
   imageOutline,
+  medicalOutline,
   medkitOutline,
   personOutline,
-  pulseOutline,
   storefrontOutline,
   warningOutline,
 } from 'ionicons/icons'
@@ -56,14 +54,16 @@ import type { DocumentReconnu } from '../types/api'
 import { dateMoyenne, montant } from '../utils/format'
 import { ErreurPhoto, capturerVideoDocument, reduireDocument } from '../utils/photo'
 import './scan/scan.css'
+import Chargeur from '../components/Chargeur'
+import BarreActions from '../components/BarreActions'
 
 /** Les étapes du parcours (une seule à l'écran à la fois). */
 type Etape = 'choix' | 'scan' | 'analyse' | 'invalide' | 'montant' | 'succes'
 type Camera = 'demarrage' | 'active' | 'indisponible'
 
 /**
- * Les motifs de recours au pré-financement : les trois cas de dépense, et
- * rien d'autre. Seul l'achat en pharmacie est ouvert aujourd'hui.
+ * Les motifs de recours au pré-financement : la consultation et l'achat en
+ * pharmacie, et rien d'autre (soins et hospitalisation retirés).
  *
  * Le pré-financement est une fonctionnalité NEUVE, qui n'existe pas dans
  * LAMPS : ces motifs ne sont donc calqués sur aucun référentiel existant,
@@ -73,12 +73,13 @@ type Camera = 'demarrage' | 'active' | 'indisponible'
  * desservie, hors horaires) : elle ne se choisit pas ici.
  */
 const MOTIFS = [
-  { cle: 'soins', libelle: 'Soins', icone: pulseOutline, ouvert: false, tag: null },
-  { cle: 'pharmacie', libelle: 'Achat en pharmacie', icone: medkitOutline, ouvert: true, tag: null },
-  // L'hospitalisation porte le tag « Urgence » : c'est le cas qui ne souffre
-  // aucune attente, et le tag le dit sur la ligne elle-même.
-  { cle: 'hospitalisation', libelle: 'Hospitalisation', icone: bedOutline, ouvert: false, tag: 'Urgence' },
+  // Consultation : pas d'ordonnance à scanner avant. On saisit le prix, l'avance
+  // part, et la facture (ou le reçu) se scanne APRÈS la consultation.
+  { cle: 'consultation', libelle: 'Consultation', icone: medicalOutline },
+  { cle: 'pharmacie', libelle: 'Achat en pharmacie', icone: medkitOutline },
 ] as const
+
+type MotifOuvert = 'pharmacie' | 'consultation'
 
 export default function Scan() {
   const { participant } = useParticipant()
@@ -88,6 +89,9 @@ export default function Scan() {
   const champGalerie = useRef<HTMLInputElement>(null)
 
   const [etape, setEtape] = useState<Etape>('choix')
+  // Motif choisi : la consultation saute le scan d'ordonnance (prix saisi direct).
+  const [motif, setMotif] = useState<MotifOuvert>('pharmacie')
+  const consultation = motif === 'consultation'
   const [camera, setCamera] = useState<Camera>('demarrage')
   const [apercu, setApercu] = useState<string | null>(null)
   const [resultat, setResultat] = useState<DocumentReconnu | null>(null)
@@ -143,6 +147,20 @@ export default function Scan() {
     setErreur(null)
     setEtape('scan')
     void demarrerCamera()
+  }
+
+  /** Choix d'un motif ouvert : pharmacie → scan de l'ordonnance ; consultation → prix. */
+  function choisirMotif(cle: string) {
+    if (cle === 'consultation') {
+      haptique.leger()
+      setMotif('consultation')
+      setResultat(null)
+      setPrix('')
+      setEtape('montant')
+    } else {
+      setMotif('pharmacie')
+      allerAuScan()
+    }
   }
 
   /** Déclencheur : fige l'image du viseur et l'envoie à l'IA. */
@@ -226,7 +244,9 @@ export default function Scan() {
     const valeur = Number(prix.replace(/\D/g, '') || 0)
     if (valeur <= 0) {
       void presenterToast({
-        message: 'Indiquez le montant de l’ordonnance.',
+        message: consultation
+          ? 'Indiquez le prix de la consultation.'
+          : 'Indiquez le montant de l’ordonnance.',
         duration: 2200,
         position: 'top',
         icon: warningOutline,
@@ -252,16 +272,28 @@ export default function Scan() {
   return (
     <IonPage className="scan">
       <IonContent fullscreen>
-        <div className="ipm-zone-sure" />
+        <BarreActions />
 
-        <input ref={champCamera} type="file" accept="image/*" capture="environment" className="scan__fichier" onChange={surFichier} />
-        <input ref={champGalerie} type="file" accept="image/*" className="scan__fichier" onChange={surFichier} />
+        <input
+          ref={champCamera}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="scan__fichier"
+          onChange={surFichier}
+        />
+        <input
+          ref={champGalerie}
+          type="file"
+          accept="image/*"
+          className="scan__fichier"
+          onChange={surFichier}
+        />
 
         {/* 1. CHOIX du motif -------------------------------------------- */}
         {/* Même présentation que les réglages du profil et les lignes d'identité :
             en-tête de section, puis une pile de cartes partagées (CarteListe).
-            Le motif ouvert (pharmacie) se touche ; les autres sont en attente,
-            grisés et marqués « Bientôt ». */}
+            Les deux motifs (consultation, pharmacie) se touchent. */}
         {etape === 'choix' && (
           <section className="ipm-section">
             <div className="ipm-entete-section">
@@ -272,23 +304,10 @@ export default function Scan() {
                 <CarteListe
                   key={motif.cle}
                   icone={motif.icone}
-                  teinte={motif.ouvert ? 'rouge' : 'neutre'}
+                  teinte="rouge"
                   titre={motif.libelle}
                   rang={rang}
-                  className={motif.ouvert ? undefined : 'scan__motif--bientot'}
-                  puce={
-                    motif.tag ? (
-                      <span className="scan__puce-urgence">{motif.tag}</span>
-                    ) : motif.ouvert ? undefined : (
-                      <span className="scan__puce-bientot">Bientôt</span>
-                    )
-                  }
-                  etiquette={
-                    motif.ouvert
-                      ? undefined
-                      : `${motif.libelle}${motif.tag ? `, ${motif.tag.toLowerCase()}` : ''} - bientôt disponible`
-                  }
-                  onClick={motif.ouvert ? allerAuScan : undefined}
+                  onClick={() => choisirMotif(motif.cle)}
                 />
               ))}
             </div>
@@ -300,7 +319,14 @@ export default function Scan() {
           <div className="scan__viseur">
             {etape === 'scan' && camera !== 'indisponible' && (
               <>
-                <video ref={videoRef} className="scan__video" autoPlay playsInline muted aria-label="Viseur de la caméra" />
+                <video
+                  ref={videoRef}
+                  className="scan__video"
+                  autoPlay
+                  playsInline
+                  muted
+                  aria-label="Viseur de la caméra"
+                />
                 <div className="scan__cadre" aria-hidden="true">
                   <span className="scan__coin scan__coin--hg" />
                   <span className="scan__coin scan__coin--hd" />
@@ -309,12 +335,17 @@ export default function Scan() {
                 </div>
                 {camera === 'demarrage' && (
                   <div className="scan__voile" aria-live="polite">
-                    <IonSpinner name="crescent" />
+                    <Chargeur />
                     <span>Ouverture de la caméra…</span>
                   </div>
                 )}
                 {camera === 'active' && (
-                  <button type="button" className="scan__declencheur" onClick={declencher} aria-label="Photographier l’ordonnance">
+                  <button
+                    type="button"
+                    className="scan__declencheur"
+                    onClick={declencher}
+                    aria-label="Photographier l’ordonnance"
+                  >
                     <IonIcon icon={cameraOutline} aria-hidden="true" />
                   </button>
                 )}
@@ -325,15 +356,19 @@ export default function Scan() {
                 <span className="scan__repli-icone" aria-hidden="true">
                   <IonIcon icon={medkitOutline} />
                 </span>
-                <p className="scan__repli-texte">Photographiez l’ordonnance : l’IA la lit et vérifie qu’elle est valide.</p>
-                <BoutonPrincipal icone={cameraOutline} onClick={ouvrirAppliPhoto}>Prendre une photo</BoutonPrincipal>
+                <p className="scan__repli-texte">
+                  Photographiez l’ordonnance : l’IA la lit et vérifie qu’elle est valide.
+                </p>
+                <BoutonPrincipal icone={cameraOutline} onClick={ouvrirAppliPhoto}>
+                  Prendre une photo
+                </BoutonPrincipal>
               </div>
             )}
             {etape === 'analyse' && apercu && (
               <>
                 <img className="scan__capture" src={apercu} alt="Ordonnance photographiée" />
                 <div className="scan__voile" aria-live="polite">
-                  <IonSpinner name="crescent" />
+                  <Chargeur />
                   <span>Lecture de l’ordonnance…</span>
                 </div>
               </>
@@ -364,7 +399,13 @@ export default function Scan() {
         {/* 4. INVALIDE : une phrase, pas de détail inutile ------------- */}
         {etape === 'invalide' && (
           <section className="ipm-section scan__contenu">
-            {apercu && <img className="scan__capture scan__capture--carte" src={apercu} alt="Document photographié" />}
+            {apercu && (
+              <img
+                className="scan__capture scan__capture--carte"
+                src={apercu}
+                alt="Document photographié"
+              />
+            )}
             <div className="scan__erreur" role="alert">
               <IonIcon icon={alertCircleOutline} aria-hidden="true" />
               <span>
@@ -375,22 +416,32 @@ export default function Scan() {
               </span>
             </div>
             <div className="scan__actions">
-              <BoutonPrincipal icone={cameraOutline} onClick={allerAuScan}>Scanner à nouveau</BoutonPrincipal>
-              <button type="button" className="scan__lien-galerie" onClick={recommencer}>Changer de motif</button>
+              <BoutonPrincipal icone={cameraOutline} onClick={allerAuScan}>
+                Scanner à nouveau
+              </BoutonPrincipal>
+              <button type="button" className="scan__lien-galerie" onClick={recommencer}>
+                Changer de motif
+              </button>
             </div>
           </section>
         )}
 
-        {/* 5. MONTANT (ordonnance validée) ------------------------------ */}
-        {etape === 'montant' && resultat && (
+        {/* 5. MONTANT (ordonnance validée, ou prix de la consultation) --- */}
+        {etape === 'montant' && (resultat || consultation) && (
           <section className="ipm-section scan__contenu">
-            <div className="scan__valide" role="status">
-              <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />
-              <span>Ordonnance valide. {resultat.verdictMessage}</span>
-            </div>
-            <Resultat document={resultat} />
+            {resultat && !consultation && (
+              <>
+                <div className="scan__valide" role="status">
+                  <IonIcon icon={checkmarkCircleOutline} aria-hidden="true" />
+                  <span>Ordonnance valide. {resultat.verdictMessage}</span>
+                </div>
+                <Resultat document={resultat} />
+              </>
+            )}
             <div className="scan__prix">
-              <label className="scan__prix-label" htmlFor="scan-prix">Montant de l’ordonnance</label>
+              <label className="scan__prix-label" htmlFor="scan-prix">
+                {consultation ? 'Prix de la consultation' : 'Montant de l’ordonnance'}
+              </label>
               <div className="scan__prix-champ">
                 <input
                   id="scan-prix"
@@ -398,18 +449,33 @@ export default function Scan() {
                   placeholder="0"
                   value={prix}
                   onChange={(e) => setPrix(e.target.value.replace(/\D/g, ''))}
-                  aria-label="Montant de l’ordonnance en francs CFA"
+                  aria-label={
+                    consultation
+                      ? 'Prix de la consultation en francs CFA'
+                      : 'Montant de l’ordonnance en francs CFA'
+                  }
                 />
                 <span className="scan__prix-unite">F CFA</span>
               </div>
               <p className="scan__prix-aide">
-                C’est la somme qui sera avancée sur votre Orange Money. Vous devrez scanner la
-                facture correspondante.
+                {consultation
+                  ? 'C’est la somme qui sera avancée sur votre Orange Money. Après la consultation, vous devrez scanner la facture ou le reçu.'
+                  : 'C’est la somme qui sera avancée sur votre Orange Money. Vous devrez scanner la facture correspondante.'}
               </p>
             </div>
             <div className="scan__actions">
-              <BoutonPrincipal icone={cashOutline} onClick={envoyer}>Envoyer le pré-financement</BoutonPrincipal>
-              <button type="button" className="scan__lien-galerie" onClick={allerAuScan}>Scanner une autre ordonnance</button>
+              <BoutonPrincipal icone={cashOutline} onClick={envoyer}>
+                Envoyer le pré-financement
+              </BoutonPrincipal>
+              {consultation ? (
+                <button type="button" className="scan__lien-galerie" onClick={recommencer}>
+                  Changer de motif
+                </button>
+              ) : (
+                <button type="button" className="scan__lien-galerie" onClick={allerAuScan}>
+                  Scanner une autre ordonnance
+                </button>
+              )}
             </div>
           </section>
         )}
@@ -424,25 +490,41 @@ export default function Scan() {
             </div>
             <h2 className="scan__succes-titre">Pré-financement envoyé</h2>
             <p className="scan__succes-message">
-              <strong>{montant(verse)} F CFA</strong> ont été envoyés sur votre wallet
-              {' '}Orange Money <strong>{telephone}</strong>.
+              <strong>{montant(verse)} F CFA</strong> ont été envoyés sur votre wallet Orange Money{' '}
+              <strong>{telephone}</strong>.
             </p>
 
             <div className="scan__avertissement" role="alert">
               <IonIcon icon={warningOutline} aria-hidden="true" />
               <div>
-                <p className="scan__avertissement-titre">Scannez la facture sous 5 jours</p>
+                <p className="scan__avertissement-titre">
+                  {consultation
+                    ? 'Après la consultation, scannez la facture ou le reçu'
+                    : 'Scannez la facture sous 5 jours'}
+                </p>
                 <p className="scan__avertissement-texte">
-                  Sans facture du montant avancé dans les 5 jours, la somme sera défalquée de votre
-                  prochain salaire et vous risquez une suspension IPM de quelques mois à 1 an pour
-                  suspicion de fraude.
+                  {consultation ? 'Sans facture ou reçu' : 'Sans facture'} du montant avancé dans
+                  les 5 jours, la somme sera défalquée de votre prochain salaire et vous risquez une
+                  suspension IPM de quelques mois à 1 an pour suspicion de fraude.
                 </p>
               </div>
             </div>
 
             <div className="scan__actions">
-              <BoutonPrincipal icone={cameraOutline} onClick={allerAuScan}>Scanner la facture</BoutonPrincipal>
-              <button type="button" className="scan__lien-galerie" onClick={recommencer}>Terminer</button>
+              {/* Le justificatif passe par le même scan que la pharmacie : on
+                  quitte le mode consultation pour ne pas retomber sur la saisie du prix. */}
+              <BoutonPrincipal
+                icone={cameraOutline}
+                onClick={() => {
+                  setMotif('pharmacie')
+                  allerAuScan()
+                }}
+              >
+                {consultation ? 'Scanner la facture ou le reçu' : 'Scanner la facture'}
+              </BoutonPrincipal>
+              <button type="button" className="scan__lien-galerie" onClick={recommencer}>
+                Terminer
+              </button>
             </div>
           </section>
         )}
@@ -463,7 +545,11 @@ function Resultat({ document }: { document: DocumentReconnu }) {
       }`
     : null
   const champs = [
-    { icone: cashOutline, libelle: 'Montant', valeur: document.montantTotal != null ? montant(document.montantTotal) : null },
+    {
+      icone: cashOutline,
+      libelle: 'Montant',
+      valeur: document.montantTotal != null ? montant(document.montantTotal) : null,
+    },
     { icone: storefrontOutline, libelle: 'Prestataire', valeur: document.prestataire },
     { icone: personOutline, libelle: 'Patient', valeur: document.patient },
     { icone: calendarOutline, libelle: 'Date', valeur: dateTexte },

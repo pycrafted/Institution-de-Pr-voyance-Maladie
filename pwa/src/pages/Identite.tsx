@@ -21,7 +21,6 @@ import {
   IonPage,
   IonRefresher,
   IonRefresherContent,
-  IonSpinner,
   useIonToast,
   useIonViewWillEnter,
   type RefresherEventDetail,
@@ -37,6 +36,8 @@ import { useOnline } from '../hooks/useOnline'
 import { usePhoto } from './accueil/usePhoto'
 import { libelleLien } from './profil/famille'
 import { useParticipant, useSession } from '../session'
+import Chargeur from '../components/Chargeur'
+import BarreActions from '../components/BarreActions'
 
 export default function Identite() {
   const { participant } = useParticipant()
@@ -135,7 +136,7 @@ export default function Identite() {
 
         {/* La barre d'actions est fixe au-dessus : on lui réserve sa place,
             comme à l'accueil, au profil et dans les listes. */}
-        <div className="ipm-zone-sure" />
+        <BarreActions />
 
         <section className="ipm-section">
           <div className="ipm-entete-section">
@@ -165,7 +166,7 @@ export default function Identite() {
                     onClick={() => void demanderChangement(ligne.matriculeDemande)}
                   >
                     {demandeEnCours === ligne.matriculeDemande ? (
-                      <IonSpinner name="crescent" />
+                      <Chargeur />
                     ) : (
                       <IonIcon icon={refreshOutline} aria-hidden="true" />
                     )}
@@ -179,7 +180,7 @@ export default function Identite() {
                     onClick={() => ajouter(ligne.matricule)}
                   >
                     {photo.enCours && cibleEnCours === ligne.matricule ? (
-                      <IonSpinner name="crescent" />
+                      <Chargeur />
                     ) : (
                       <IonIcon icon={addOutline} aria-hidden="true" />
                     )}

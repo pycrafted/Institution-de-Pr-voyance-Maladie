@@ -12,10 +12,11 @@
  * ses marges et son fond par des variables qu'il faudrait toutes annuler.
  */
 
-import { IonIcon, IonSpinner } from '@ionic/react'
+import { IonIcon } from '@ionic/react'
 import type { ReactNode } from 'react'
 
 import { haptique } from '../hooks/haptique'
+import Chargeur from './Chargeur'
 
 interface PropsBouton {
   children: ReactNode
@@ -73,7 +74,7 @@ function Bouton({
       }}
     >
       {occupe ? (
-        <IonSpinner name="crescent" aria-hidden="true" className="ipm-bouton__roue" />
+        <Chargeur aria-hidden="true" className="ipm-bouton__roue" />
       ) : (
         icone && <IonIcon icon={icone} aria-hidden="true" className="ipm-bouton__icone" />
       )}

@@ -168,10 +168,19 @@ describe('Accueil', () => {
     expect(modale().isOpen).toBe(true)
   })
 
-  it('ne porte plus la section « Ayants droit » (passée au Profil)', () => {
-    // Les cartes des proches vivent désormais dans le Profil : l'accueil ne
-    // garde que la carte du titulaire.
+  it('montre les ayants droit sous la carte de l’employé, chacun en un toucher', () => {
+    // La fabrique donne le titulaire + une conjointe : seule la conjointe est
+    // un ayant droit.
     const { container } = rendreEcran(<Accueil />)
+    expect(screen.getByText('Ayants droit')).toBeInTheDocument()
+    expect(container.querySelectorAll('.accueil-famille__membre')).toHaveLength(1)
+    expect(screen.getByLabelText('Carte d’ayant droit de Awa DIOP')).toBeInTheDocument()
+    // Le prénom seul sous la vignette : le nom est le même pour toute la famille.
+    expect(container.querySelector('.accueil-famille__nom')?.textContent).toBe('Awa')
+  })
+
+  it('masque la section « Ayants droit » sans proche', () => {
+    const { container } = rendreEcran(<Accueil />, uneSession({ beneficiaires: [] }))
     expect(screen.queryByText('Ayants droit')).toBeNull()
     expect(container.querySelector('.accueil-famille')).toBeNull()
   })

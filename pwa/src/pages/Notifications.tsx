@@ -26,6 +26,7 @@ import { useEffect } from 'react'
 
 import { useNotifications } from '../hooks/useNotifications'
 import EtatVide from '../components/EtatVide'
+import BarreActions from '../components/BarreActions'
 import { haptique } from '../hooks/haptique'
 import type { NotificationMobile } from '../types/api'
 import { dateHeure } from '../utils/format'
@@ -71,7 +72,7 @@ export default function Notifications() {
 
         {/* La barre d'actions est fixe au-dessus : on lui réserve sa place,
             comme à l'accueil, au profil et à l'identité. */}
-        <div className="ipm-zone-sure" />
+        <BarreActions />
 
         <section className="ipm-section">
           <div className="ipm-entete-section">

@@ -6,9 +6,8 @@
  * et leurs filets gris — les interdictions de §1 —, puis la carte d'adhérent
  * elle-même. Elle est déjà sur l'accueil, avec le portrait qu'on y change :
  * la répéter ici ne montrait rien de nouveau et repoussait les réglages hors
- * de l'écran. La section « Ayants droit » (les cartes des proches, ouvertes en
- * grand par components/CartePleinEcran) a en revanche rejoint cet écran depuis
- * l'accueil, avec le reste du « compte/perso » de l'agent.
+ * de l'écran. Les cartes des ayants droit sont sur l'accueil, juste sous celle
+ * de l'employé.
  *
  * La déconnexion efface jeton, profil, bons et PDF en cache
  * (useSession().deconnecter) ; App.tsx revient seul à l'identification.
@@ -22,25 +21,17 @@ import {
   useIonRouter,
   type RefresherEventDetail,
 } from '@ionic/react'
-import {
-  downloadOutline,
-  helpBuoyOutline,
-  informationCircleOutline,
-  logOutOutline,
-  moon,
-  sunny,
-} from 'ionicons/icons'
+import { downloadOutline, logOutOutline, moon, sunny } from 'ionicons/icons'
 import { useMemo, useState } from 'react'
 
-import Avatar from '../components/Avatar'
 import CarteListe from '../components/CarteListe'
-import CartePleinEcran, { useFamille } from '../components/CartePleinEcran'
 import FeuilleChoix from '../components/FeuilleChoix'
+import BarreActions from '../components/BarreActions'
 import { haptique } from '../hooks/haptique'
 import { useParticipant, useSession } from '../session'
 import { basculerApparence, useApparence } from '../theme/apparence'
+import { useInstallation } from '../utils/installation'
 import { estInstallee } from '../utils/plateforme'
-import { VERSION } from '../version'
 import { informationsDuParticipant } from './profil/informations'
 import './profil/profil.css'
 
@@ -48,13 +39,25 @@ export default function Profil() {
   const { participant } = useParticipant()
   const { rafraichir, deconnecter } = useSession()
   const sombre = useApparence() === 'sombre'
-  const famille = useFamille()
   // La question posée dans une feuille de choix, s'il y en a une.
   const [question, setQuestion] = useState<'deconnexion' | null>(null)
-  // Carte d'ayant droit montrée en grand (son matricule), ou null.
-  const [cartePleinEcran, setCartePleinEcran] = useState<string | null>(null)
   const routeur = useIonRouter()
-  const installee = useMemo(estInstallee, [])
+  const dejaInstallee = useMemo(estInstallee, [])
+  const installation = useInstallation()
+  // Masquée une fois l'app installée (avant, ou à l'instant depuis ce bouton).
+  const installee = dejaInstallee || installation.installee
+
+  /**
+   * « Télécharger l'application » : ouvre directement la boîte d'installation
+   * du navigateur quand il la propose (Android, Chrome, Edge). Sinon (iPhone,
+   * Safari…), le navigateur n'offre pas d'installation en un geste : on mène
+   * à l'écran qui explique comment l'ajouter.
+   */
+  function telechargerApplication() {
+    haptique.leger()
+    if (installation.possible) void installation.proposer()
+    else routeur.push('/installation', 'forward', 'push')
+  }
   const informations = useMemo(() => informationsDuParticipant(participant), [participant])
 
   function actualiser(evenement: CustomEvent<RefresherEventDetail>) {
@@ -77,7 +80,7 @@ export default function Profil() {
         {/* La barre d'actions est fixe au-dessus : sans cette réserve, la
             première carte commençait dessous (comme à l'accueil et dans les
             listes, qui ouvrent par la même zone sûre). */}
-        <div className="ipm-zone-sure" />
+        <BarreActions />
 
         {/* Ce que l'IPM sait de l'employé, rubrique par rubrique. Rien ne s'y
             modifie : ces informations se corrigent à l'IPM, et la photo
@@ -107,38 +110,6 @@ export default function Profil() {
           </dl>
         </section>
 
-        {/* Les cartes des ayants droit : on présente souvent celle d'un proche
-            (l'enfant qu'on emmène en pharmacie), elle est ici en un toucher.
-            Venue de l'accueil, elle rejoint le profil - le « compte/perso » de
-            l'agent. Masquée s'il n'a pas d'ayant droit. */}
-        {famille.length > 0 && (
-          <section className="ipm-section">
-            <div className="ipm-entete-section">
-              <h2 className="ipm-titre-section">Ayants droit</h2>
-            </div>
-            <ul className="profil-famille" aria-label="Cartes d’ayant droit">
-              {famille.map((membre) => (
-                <li key={membre.matricule}>
-                  <button
-                    type="button"
-                    className="profil-famille__membre ipm-appui"
-                    aria-label={`Carte d’ayant droit de ${membre.prenoms} ${membre.nom}`}
-                    onClick={() => {
-                      haptique.leger()
-                      setCartePleinEcran(membre.matricule)
-                    }}
-                  >
-                    {/* La forme de la photo de la carte d'adhérent : le même
-                        visage se reconnaît d'un écran à l'autre. */}
-                    <Avatar nom={membre.nomComplet} photo={membre.photo} taille={56} forme="identite" />
-                    <span className="profil-famille__nom">{membre.prenoms}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
         <section className="ipm-section">
           <div className="ipm-entete-section">
             <h2 className="ipm-titre-section">Réglages</h2>
@@ -158,32 +129,11 @@ export default function Profil() {
               <CarteListe
                 icone={downloadOutline}
                 teinte="neutre"
-                titre="Installer sur l’écran d’accueil"
-                onClick={() => {
-                  haptique.leger()
-                  routeur.push('/installation', 'forward', 'push')
-                }}
+                titre="Télécharger l’application"
+                chevron={false}
+                onClick={telechargerApplication}
               />
             )}
-            <CarteListe
-              icone={helpBuoyOutline}
-              teinte="neutre"
-              titre="Assistance"
-              onClick={() => {
-                haptique.leger()
-                routeur.push('/assistance', 'forward', 'push')
-              }}
-            />
-            <CarteListe
-              icone={informationCircleOutline}
-              teinte="neutre"
-              titre="À propos"
-              meta={<span className="ipm-chiffres">{VERSION}</span>}
-              onClick={() => {
-                haptique.leger()
-                routeur.push('/a-propos', 'forward', 'push')
-              }}
-            />
             <CarteListe
               className="profil__deconnexion"
               icone={logOutOutline}
@@ -198,8 +148,6 @@ export default function Profil() {
         {/* La barre d'onglets flotte au-dessus du contenu : lui laisser la place. */}
         <div className="ipm-bas-page" />
       </IonContent>
-
-      <CartePleinEcran cible={cartePleinEcran} onFermer={() => setCartePleinEcran(null)} />
 
       <FeuilleChoix
         ouverte={question === 'deconnexion'}

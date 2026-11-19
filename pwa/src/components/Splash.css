@@ -1,9 +1,6 @@
 /*
- * Écran de lancement (Splash.tsx). Géométrie calquée sur public/splash/
- * (scripts/generer-icones.py, fonction lancement) : logo d'un tiers de la
- * largeur environ, centré puis remonté d'un vingtième de la hauteur. Les
- * unités de conteneur (cqw/cqh) suivent la « vue téléphone » centrée sur
- * grand écran ; vw/vh servent de repli aux navigateurs plus anciens.
+ * Écran de lancement (Splash.tsx) : fond de marque et chargeur centré, sans
+ * logo.
  */
 
 .splash {
@@ -19,63 +16,15 @@
   container-type: size;
 }
 
-.splash__logo {
+.splash__chargeur {
   position: absolute;
   left: 50%;
   top: 50%;
-  display: grid;
-  place-items: center;
-  transform: translate(-50%, -50%) translateY(-5vh);
-  transform: translate(-50%, -50%) translateY(-5cqh);
-  /* Part exactement de la taille de l'image d'iOS : pas de saut, un souffle. */
-  animation: splash-souffle 1.6s ease-in-out 0.3s infinite;
-}
-.splash__logo .ipm-logo {
-  width: 42vw;
-  width: 42cqw;
-  max-width: 220px;
-}
-
-.splash__points {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: calc(50% + 12cqh);
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  /* N'apparaissent que si le lancement dure : invisibles au lancement rapide. */
-  opacity: 0;
-  animation: splash-apparition 0.3s ease-out 0.6s forwards;
-}
-
-.splash__points span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: rgba(29, 27, 27, 0.35);
-  animation: splash-point 1s ease-in-out infinite;
-}
-.splash__points span:nth-child(2) {
-  animation-delay: 0.15s;
-}
-.splash__points span:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.splash__pied {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: calc(24px + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
-  margin: 0;
-  text-align: center;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  color: rgba(29, 27, 27, 0.55);
-  opacity: 0;
-  animation: splash-apparition 0.4s ease-out 0.3s forwards;
+  /* Grand : l'écran ne porte rien d'autre. */
+  width: min(36vw, 160px);
+  height: min(36vw, 160px);
+  transform: translate(-50%, -50%);
+  color: #5f5553;
 }
 
 /* Pastille de marque du logo (MotifIpm avec fond) : icône d'application
@@ -88,35 +37,4 @@
   border-radius: var(--r-xl);
   background: var(--deg-rouge);
   box-shadow: var(--ombre-rouge);
-}
-
-@keyframes splash-apparition {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes splash-souffle {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) translateY(-5cqh) scale(1);
-  }
-  50% {
-    transform: translate(-50%, -50%) translateY(-5cqh) scale(1.04);
-  }
-}
-
-@keyframes splash-point {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.45;
-  }
-  50% {
-    transform: translateY(-5px);
-    opacity: 1;
-  }
 }

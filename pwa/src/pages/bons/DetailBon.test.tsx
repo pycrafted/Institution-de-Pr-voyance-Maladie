@@ -92,7 +92,7 @@ describe('Détail du bon', () => {
     expect(screen.queryByText(/Prescripteur ·/)).toBeNull()
   })
 
-  it('« Partager / Imprimer » passe le PDF à la feuille de partage', async () => {
+  it('« Partager » passe le PDF à la feuille de partage', async () => {
     const share = vi.fn(() => Promise.resolve())
     Object.defineProperty(navigator, 'share', { value: share, configurable: true })
     Object.defineProperty(navigator, 'canShare', { value: () => true, configurable: true })
@@ -100,7 +100,7 @@ describe('Détail du bon', () => {
     afficher('4')
 
     await screen.findByTestId('visionneuse')
-    fireEvent.click(screen.getByText('Partager / Imprimer'))
+    fireEvent.click(screen.getByText('Partager'))
     await waitFor(() => expect(share).toHaveBeenCalledTimes(1))
     const donnees = (share.mock.calls[0] as unknown as [ShareData])[0]
     expect(donnees.files?.[0]?.name).toBe('BPI000123.pdf')
