@@ -1,0 +1,143 @@
+/*
+ * Page « Télécharger Nofly » (pages/Telecharger.tsx). Préfixe telecharger__.
+ * Une carte centrée sur le fond de l'app : icône, nom, accroche, atouts, les
+ * deux boutons, et les étapes d'installation qui se déplient dessous.
+ */
+
+.telecharger__page {
+  box-sizing: border-box;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-20);
+  padding: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + var(--e-32)) var(--gouttiere)
+    calc(var(--ion-safe-area-bottom, env(safe-area-inset-bottom)) + var(--e-24));
+  /* Un halo rouge très doux en haut : la page a de la présence sans image. */
+  background:
+    radial-gradient(120% 60% at 50% 0%, var(--ipm-rouge-doux) 0%, transparent 60%), var(--ipm-fond);
+}
+
+.telecharger__carte {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--e-32) var(--e-24) var(--e-24);
+  border-radius: 28px;
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-2);
+  text-align: center;
+}
+
+.telecharger__icone {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    0 0 0 1px var(--ipm-bordure);
+  overflow: hidden;
+}
+.telecharger__icone img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.telecharger__titre {
+  margin: var(--e-20) 0 0;
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ipm-texte);
+}
+
+.telecharger__accroche {
+  margin: var(--e-8) 0 0;
+  max-width: 30ch;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--ipm-texte-doux);
+}
+
+.telecharger__atouts {
+  list-style: none;
+  margin: var(--e-16) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.telecharger__atouts li {
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface-2);
+  color: var(--ipm-texte-doux);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.telecharger__actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  margin-top: var(--e-24);
+}
+
+/* Les étapes, dépliées sous les boutons. */
+.telecharger__etapes {
+  width: 100%;
+  margin-top: var(--e-20);
+  padding-top: var(--e-16);
+  border-top: 1px solid var(--ipm-bordure);
+  text-align: start;
+  scroll-margin-top: var(--e-24);
+}
+.telecharger__etapes ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+}
+.telecharger__etapes li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--ipm-texte);
+}
+.telecharger__numero {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.telecharger__etape-icone {
+  flex-shrink: 0;
+  font-size: 20px;
+  color: var(--ipm-texte-doux);
+}
+
+.telecharger__pied {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--ipm-texte-doux);
+}

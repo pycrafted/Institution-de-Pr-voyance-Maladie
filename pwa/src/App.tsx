@@ -27,6 +27,7 @@ import { haptique } from './hooks/haptique'
 import Accueil from './pages/Accueil'
 import Assistance from './pages/Assistance'
 import Installation from './pages/Installation'
+import Telecharger from './pages/Telecharger'
 import APropos from './pages/APropos'
 import DetailBon from './pages/DetailBon'
 import Identification from './pages/Identification'
@@ -100,15 +101,19 @@ function Coquille() {
 
 /** Chemins servis quand on est identifié ; le reste mène à l'accueil. */
 const CHEMINS_IDENTIFIE =
-  /^\/(accueil|bons|profil|conventionnes|releve|assistance|scan|identite|notifications|installation|a-propos)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
+  /^\/(accueil|bons|profil|conventionnes|releve|assistance|scan|identite|notifications|installation|a-propos|telecharger)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
 
 function Anonyme() {
   const { pathname } = useLocation()
   return (
     <>
-      {pathname !== '/identification' && <Redirect to="/identification" />}
+      {/* /telecharger se partage avant toute connexion : pas de redirection. */}
+      {pathname !== '/identification' && !/^\/telecharger\/?$/.test(pathname) && (
+        <Redirect to="/identification" />
+      )}
       <IonRouterOutlet>
         <Route exact path="/identification" component={Identification} />
+        <Route exact path="/telecharger" component={Telecharger} />
       </IonRouterOutlet>
     </>
   )
@@ -148,6 +153,7 @@ function Onglets() {
           <Route exact path="/notifications" component={Notifications} />
           {/* Ouverts depuis le profil, présentés comme l'assistance. */}
           <Route exact path="/installation" component={Installation} />
+          <Route exact path="/telecharger" component={Telecharger} />
           <Route exact path="/a-propos" component={APropos} />
         </IonRouterOutlet>
         {/* Barre flottante (SPEC_DESIGN §3.1) : le contenu passe dessous, les
