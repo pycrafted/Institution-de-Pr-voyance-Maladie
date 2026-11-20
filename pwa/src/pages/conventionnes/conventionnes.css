@@ -387,7 +387,8 @@
   display: grid;
   place-items: center;
   background: var(--ipm-fond);
-  color: var(--ipm-rouge-texte);
+  /* Même gris que le chargeur du lancement (Splash.css). */
+  color: #5f5553;
 }
 .conventionnes__chargement .ipm-chargeur {
   width: 56px;

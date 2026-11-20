@@ -27,7 +27,6 @@ import { useMemo, useState, type ReactNode } from 'react'
 import EtatVide from '../components/EtatVide'
 import OfflineBanner from '../components/OfflineBanner'
 import PucesFiltre from '../components/PucesFiltre'
-import Chargeur from '../components/Chargeur'
 import BarreActions from '../components/BarreActions'
 import { useOnline } from '../hooks/useOnline'
 import { filtrerConventionnes, filtresSpecialites, TOUS } from './conventionnes/recherche'
@@ -83,12 +82,7 @@ export default function Conventionnes() {
           }
           action={{ libelle: 'Réessayer', onClick: () => void rafraichir() }}
         />
-      ) : (
-        // L'annuaire se charge : le chargeur de l'application, au centre.
-        <div className="conventionnes__chargement" aria-busy="true">
-          <Chargeur aria-label="Chargement des structures" />
-        </div>
-      )
+      ) : null // L'annuaire se charge : la carte, déjà là, montre son chargeur.
   } else if (structures.length === 0) {
     contenu = (
       <EtatVide
@@ -119,7 +113,11 @@ export default function Conventionnes() {
         <div className="conventionnes__ecran">
           {/* La carte en fond, sur toute la page : un point par structure de
               la catégorie choisie. */}
-          {avecAnnuaire && <CarteStructures structures={trouvees} />}
+          {/* Créée sans attendre l'annuaire : script et tuiles se chargent
+              pendant la requête, les points arrivent avec la liste. */}
+          {(structures === null ? !erreur || chargement : avecAnnuaire) && (
+            <CarteStructures structures={trouvees} />
+          )}
           {/* Les structures sans position, de la catégorie choisie : un bouton
               sur la carte, qui les liste. */}
           {avecAnnuaire && <HorsCarte structures={trouvees.filter((s) => !s.position)} />}

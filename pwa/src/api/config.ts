@@ -16,10 +16,20 @@ export interface ConfigApp {
    * config.json du serveur (hors Git), restreinte par référent HTTP.
    */
   cleGoogleMaps: string
+  /**
+   * ID de carte Google (carte vectorielle et style « IPM clair » définis dans
+   * la console Google Cloud). Vide : l'ID par défaut du projet IPM (cf.
+   * itineraire/googleMaps.ts). Pas un secret : il ne sert qu'avec la clé.
+   */
+  idCarteGoogle: string
 }
 
 /** Valeur de repli si config.json est absent ou illisible (développement, proxy Vite). */
-export const CONFIG_PAR_DEFAUT: ConfigApp = { apiBase: '/api', cleGoogleMaps: '' }
+export const CONFIG_PAR_DEFAUT: ConfigApp = {
+  apiBase: '/api',
+  cleGoogleMaps: '',
+  idCarteGoogle: '',
+}
 
 export function normaliserConfig(brut: unknown): ConfigApp {
   const config: ConfigApp = { ...CONFIG_PAR_DEFAUT }
@@ -30,6 +40,9 @@ export function normaliserConfig(brut: unknown): ConfigApp {
     }
     if (typeof champs.cleGoogleMaps === 'string') {
       config.cleGoogleMaps = champs.cleGoogleMaps.trim()
+    }
+    if (typeof champs.idCarteGoogle === 'string') {
+      config.idCarteGoogle = champs.idCarteGoogle.trim()
     }
   }
   return config

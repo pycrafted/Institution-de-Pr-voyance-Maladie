@@ -13,7 +13,7 @@
  */
 
 import { IonIcon, useIonRouter } from '@ionic/react'
-import { idCardOutline, notificationsOutline, personOutline, walletOutline } from 'ionicons/icons'
+import { idCardOutline, notificationsOutline, personOutline } from 'ionicons/icons'
 
 import { useCompte } from '../data/compte'
 import { haptique } from '../hooks/haptique'
@@ -55,7 +55,6 @@ export default function BarreActions() {
           aria-label={`${libelleSolde(solde)} : ${montant(Math.abs(solde))}, voir les retenues`}
           onClick={() => aller('/releve')}
         >
-          <IonIcon icon={walletOutline} className="ipm-navbar__solde-icone" aria-hidden="true" />
           <span className="ipm-navbar__solde-textes">
             <span
               className={`ipm-navbar__solde-montant ipm-chiffres${

@@ -99,8 +99,10 @@ describe('Conventionnés', () => {
     fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
     const { container } = rendreEcran(<Conventionnes />)
 
-    // Squelettes tant que rien n'est connu (SPEC_DESIGN §6).
-    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull()
+    // La carte est là sans attendre l'annuaire (elle porte son chargeur) ;
+    // ses points arrivent avec la liste.
+    const carte = screen.getByRole('list', { name: 'Points de la carte' })
+    expect(carte.querySelectorAll('li')).toHaveLength(0)
 
     expect(await screen.findByText('Pharmacie du Plateau')).toBeInTheDocument()
     expect(screen.getByText('Clinique du Cap')).toBeInTheDocument()

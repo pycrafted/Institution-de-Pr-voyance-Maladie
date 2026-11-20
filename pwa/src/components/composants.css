@@ -338,16 +338,6 @@ ion-tab-bar.ipm-onglets {
   text-align: start;
   cursor: pointer;
 }
-.ipm-navbar__solde-icone {
-  flex-shrink: 0;
-  box-sizing: content-box;
-  width: 16px;
-  height: 16px;
-  padding: 8px;
-  border-radius: var(--r-md);
-  background: var(--ipm-rouge-doux);
-  color: var(--ipm-rouge-texte);
-}
 .ipm-navbar__solde-textes {
   /* Le montant, et la phrase qui l'explique juste en dessous. */
   display: flex;

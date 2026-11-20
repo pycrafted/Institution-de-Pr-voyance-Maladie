@@ -12,7 +12,14 @@
  *
  * Repli : si Routes API est refusée (non activée sur la clé, quota…), on
  * reprend l'ancien `DirectionsService`, lui aussi avec alternatives et trafic,
- * pour que la carte ne reste jamais sans trajet.
+ * pour que la carte ne reste jamais sans trajet. Le refus est retenu pour la
+ * session : on ne repaie pas un aller-retour perdu à chaque itinéraire.
+ *
+ * Mémoire tampon : un itinéraire calculé est gardé quelques minutes, par
+ * départ (arrondi à ~100 m) et destination. Rouvrir une structure, revenir
+ * sur un trajet ou passer d'un écran à l'autre l'affiche donc sur-le-champ.
+ * Le calcul EN COURS est lui aussi partagé : toucher un point lance le calcul
+ * dès l'appui (préchargement), et l'affichage reprend la même promesse.
  */
 
 import { chargerGoogleMaps } from './googleMaps'
@@ -21,8 +28,67 @@ import type { Point, Trajet } from './trajet'
 /** Les champs demandés à Routes API (masque obligatoire, et facturé au plus juste). */
 const CHAMPS_ROUTES = ['path', 'distanceMeters', 'durationMillis', 'staticDurationMillis']
 
-/** Le repli n'est signalé qu'une fois par session dans la console. */
-let repliSignale = false
+/**
+ * Routes API refusée une fois : on passe directement au repli pendant 24 h
+ * (retenu sur le téléphone), puis on la retente - elle a pu être activée.
+ */
+const CLE_REFUS = 'ipm.routes.refusee'
+const DUREE_REFUS_MS = 24 * 60 * 60_000
+let routesRefusee = lireRefus()
+
+function lireRefus(): boolean {
+  try {
+    const le = Number(window.localStorage.getItem(CLE_REFUS))
+    return Number.isFinite(le) && le > 0 && Date.now() - le < DUREE_REFUS_MS
+  } catch {
+    return false
+  }
+}
+
+function retenirRefus(): void {
+  routesRefusee = true
+  try {
+    window.localStorage.setItem(CLE_REFUS, String(Date.now()))
+  } catch {
+    // Stockage indisponible : le refus vaut pour la session seulement.
+  }
+}
+
+/** Durée de vie d'un itinéraire en mémoire (le trafic change, pas la route). */
+const DUREE_MEMOIRE_MS = 5 * 60_000
+/** Au-delà, les plus anciens sont oubliés. */
+const TAILLE_MEMOIRE = 40
+
+const memoire = new Map<string, { le: number; promesse: Promise<Trajet[]> }>()
+
+/** Départ arrondi à ~100 m (3 décimales), destination exacte. */
+function cle(depart: Point, arrivee: Point): string {
+  return [
+    depart.latitude.toFixed(3),
+    depart.longitude.toFixed(3),
+    arrivee.latitude.toFixed(6),
+    arrivee.longitude.toFixed(6),
+  ].join('|')
+}
+
+/** Oublie les itinéraires mémorisés (tests). */
+export function viderMemoireTrajets(): void {
+  memoire.clear()
+  routesRefusee = false
+  try {
+    window.localStorage.removeItem(CLE_REFUS)
+  } catch {
+    // Rien à effacer.
+  }
+}
+
+/**
+ * Lance le calcul sans attendre le résultat (appui sur un point de la carte) :
+ * quand l'affichage le demandera, il sera déjà en route, ou déjà là.
+ */
+export function prechargerTrajets(depart: Point, arrivee: Point): void {
+  void calculerTrajets(depart, arrivee).catch(() => undefined)
+}
 
 /**
  * Les itinéraires en voiture, le meilleur en premier (2 ou 3 le plus souvent,
@@ -34,18 +100,40 @@ export async function calculerTrajets(
   arrivee: Point,
   signal?: AbortSignal,
 ): Promise<Trajet[]> {
+  const k = cle(depart, arrivee)
+  const maintenant = Date.now()
+  let entree = memoire.get(k)
+  if (!entree || maintenant - entree.le > DUREE_MEMOIRE_MS) {
+    const promesse = calculer(depart, arrivee)
+    entree = { le: maintenant, promesse }
+    memoire.set(k, entree)
+    // Un échec n'est pas gardé : la prochaine demande réessaie.
+    promesse.catch(() => {
+      if (memoire.get(k)?.promesse === promesse) memoire.delete(k)
+    })
+    while (memoire.size > TAILLE_MEMOIRE) {
+      const plusAncienne = memoire.keys().next().value
+      if (plusAncienne === undefined) break
+      memoire.delete(plusAncienne)
+    }
+  }
+  // Le calcul partagé n'est pas annulé par un appelant pressé : seul son
+  // résultat est ignoré.
+  const trajets = await entree.promesse
+  return signal?.aborted ? [] : trajets
+}
+
+async function calculer(depart: Point, arrivee: Point): Promise<Trajet[]> {
   const maps = await chargerGoogleMaps()
-  if (signal?.aborted) return []
-  try {
-    return await parRoutes(maps, depart, arrivee)
-  } catch (erreur) {
-    if (signal?.aborted) return []
-    if (!repliSignale) {
-      repliSignale = true
+  if (!routesRefusee) {
+    try {
+      return await parRoutes(maps, depart, arrivee)
+    } catch (erreur) {
+      retenirRefus()
       console.warn('Routes API indisponible, repli sur DirectionsService :', erreur)
     }
-    return parDirections(maps, depart, arrivee)
   }
+  return parDirections(maps, depart, arrivee)
 }
 
 /** Le meilleur itinéraire seul (écran d'itinéraire), ou null. */
@@ -68,8 +156,11 @@ async function parRoutes(
     origin: { lat: depart.latitude, lng: depart.longitude },
     destination: { lat: arrivee.latitude, lng: arrivee.longitude },
     travelMode: 'DRIVING',
+    // Trafic au moment de la demande. Pas de `departureTime` : « maintenant »
+    // est déjà passé quand la requête arrive, et Google la refuse
+    // (« Timestamp must be set to a future time ») ; sans lui, il prend l'heure
+    // de réception.
     routingPreference: 'TRAFFIC_AWARE',
-    departureTime: new Date(),
     computeAlternativeRoutes: true,
     language: 'fr',
     region: 'SN',
