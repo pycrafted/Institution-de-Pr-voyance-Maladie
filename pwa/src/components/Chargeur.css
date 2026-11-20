@@ -16,9 +16,11 @@
 .ipm-chargeur__traine {
   fill: none;
   stroke: currentColor;
-  stroke-width: 2.2;
+  /* Trait fin et constant (1,5 px) quelle que soit la taille du chargeur. */
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
   stroke-linecap: round;
-  opacity: 0.55;
+  opacity: 0.45;
 }
 
 .ipm-chargeur__point {

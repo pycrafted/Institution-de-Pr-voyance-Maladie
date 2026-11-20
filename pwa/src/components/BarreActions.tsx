@@ -2,9 +2,9 @@
  * Barre du HAUT (components/BarreActions.tsx), posée directement sur la page.
  *
  * Plus de carte flottante : un bandeau de la couleur du fond, sans bord ni
- * ombre, comme l'en-tête d'une appli native. À GAUCHE, le nom de l'appli
- * (« Nofly 😊 ») ; AU MILIEU, le solde IPM de l'agent (il ouvre le relevé) ;
- * à DROITE, les actions en icônes seules - Identité, Notifications, Profil. La cloche porte une pastille tant qu'il
+ * ombre, comme l'en-tête d'une appli native. À GAUCHE, le solde IPM de
+ * l'agent (il ouvre les retenues) ; à DROITE, les actions en icônes seules -
+ * Identité, Notifications, Profil. La cloche porte une pastille tant qu'il
  * reste des décisions de l'IPM non lues.
  *
  * Elle n'est PAS une barre fixe : chaque écran l'écrit en tête de son
@@ -46,18 +46,13 @@ export default function BarreActions() {
 
   return (
     <header className="ipm-navbar">
-      {/* Le nom de l'application, à gauche. */}
-      <span className="ipm-navbar__nom">
-        Nofly <span aria-hidden="true">😊</span>
-      </span>
-
       {/* Le solde IPM, à gauche : ce qui reste à payer (rouge), rien (vert),
-          ou une avance (montant négatif). Il ouvre le relevé. */}
+          ou une avance (montant négatif). Il ouvre les retenues. */}
       {solde !== null ? (
         <button
           type="button"
           className="ipm-navbar__solde ipm-appui"
-          aria-label={`Solde restant : ${montant(solde)}, voir le relevé`}
+          aria-label={`${libelleSolde(solde)} : ${montant(Math.abs(solde))}, voir les retenues`}
           onClick={() => aller('/releve')}
         >
           <IonIcon icon={walletOutline} className="ipm-navbar__solde-icone" aria-hidden="true" />
@@ -67,8 +62,10 @@ export default function BarreActions() {
                 solde > 0 ? ' ipm-navbar__solde-montant--du' : ''
               }${solde === 0 ? ' ipm-navbar__solde-montant--ajour' : ''}`}
             >
-              {montant(solde)}
+              {montant(Math.abs(solde))}
             </span>
+            {/* Ce que veut dire le montant, en mots de tous les jours, sous le montant. */}
+            <span className="ipm-navbar__solde-libelle">{libelleSolde(solde)}</span>
           </span>
         </button>
       ) : (
@@ -103,4 +100,15 @@ export default function BarreActions() {
       </nav>
     </header>
   )
+}
+
+/**
+ * Le sens du solde, dit simplement : ce que l'agent doit encore à l'IPM (sa
+ * part des soins pas encore retenue sur son salaire), rien, ou ce que l'IPM
+ * lui doit (des retenues au-delà de sa part).
+ */
+function libelleSolde(solde: number): string {
+  if (solde > 0) return 'Vous devez à l’IPM'
+  if (solde < 0) return 'L’IPM vous doit'
+  return 'Vous ne devez rien à l’IPM'
 }

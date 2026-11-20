@@ -1,117 +1,97 @@
 /* Écran d'identification (pages/Identification.tsx). Préfixe identification__. */
 
 /*
- * Le fond de l'application, comme tous les autres écrans : aucun aplat de
- * marque, aucune feuille blanche rapportée. Ce qui porte l'écran, c'est la
- * carte en haut - l'objet que l'employé vient chercher.
+ * Un hero rouge SAR en tête, habillé de courbes de niveau (motif-topo.svg),
+ * qui se termine par une vague sur le fond de l'application ; dessous, le
+ * titre souligné de rouge, le champ et le bouton.
  */
 .identification__page {
   display: flex;
   flex-direction: column;
   min-height: 100%;
-  padding: calc(var(--ion-safe-area-top, env(safe-area-inset-top)) + max(var(--e-24), 7vh))
-    var(--gouttiere) calc(var(--e-32) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
+  min-height: 100dvh;
   box-sizing: border-box;
+  background: var(--ipm-fond);
 }
 
-/* --- L'aperçu de la carte d'adhérent ------------------------------------ */
-
-/* Deux cartes au format bancaire, la seconde dépassant derrière : la pile
-   d'un portefeuille. Largeur bornée pour qu'elle reste une vignette, et non
-   une carte grandeur nature. */
-.identification__cartes {
+/* --- Le hero ------------------------------------------------------------- */
+.identification__hero {
   position: relative;
-  align-self: center;
-  width: min(62%, 220px);
-  margin-bottom: var(--e-32);
-}
-
-.identification__carte {
-  position: relative;
-  display: block;
-  aspect-ratio: 1.586;
-  border-radius: 14px;
-  background: var(--deg-rouge);
-  box-shadow: var(--ombre-3);
-}
-/* Celle du dessous : décalée, inclinée, plus sombre - elle n'existe que pour
-   donner l'épaisseur d'une pile. */
-.identification__carte--dessous {
-  position: absolute;
-  inset: 0;
-  transform: rotate(-7deg) translateY(6px);
-  filter: brightness(0.82);
-}
-.identification__carte--dessus {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 14px 16px;
-  transform: rotate(2deg);
+  /* Le hero prend toute la hauteur que le formulaire laisse libre. */
+  flex: 1 1 auto;
+  min-height: 240px;
   overflow: hidden;
+  /* Rouge #cd1e18, à plat. */
+  background: #cd1e18;
 }
-
-/* Le guillochage de la vraie carte, repris à l'identique. */
-.identification__filigrane {
+/* Les courbes de niveau, en blanc discret, qui dérivent lentement. Le
+   SVG sert de masque : la couleur vient du thème (clair comme sombre). */
+.identification__motif {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.08) 0 34%, transparent 34.5%),
-    radial-gradient(circle at 74% 96%, rgba(255, 255, 255, 0.08) 0 26%, transparent 26.5%),
-    radial-gradient(circle at 104% 74%, rgba(255, 255, 255, 0.08) 0 20%, transparent 20.5%);
+  inset: -12%;
+  background: #ffffff;
+  -webkit-mask: url('./motif-topo.svg') center / cover no-repeat;
+  mask: url('./motif-topo.svg') center / cover no-repeat;
+  opacity: 0.22;
+  animation: identification-derive 28s ease-in-out infinite alternate;
+}
+@keyframes identification-derive {
+  from {
+    transform: translate3d(-2%, -1%, 0) scale(1.02);
+  }
+  to {
+    transform: translate3d(2%, 2%, 0) scale(1.08);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .identification__motif {
+    animation: none;
+  }
+}
+/* La vague : la couleur du fond de l'app, posée sur le bas du hero. */
+.identification__vague {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 72px;
+  fill: var(--ipm-fond);
 }
 
-.identification__carte--dessus .ipm-logo {
-  position: relative;
-}
-
-/* Deux traits à la place des champs : la carte est vierge tant qu'on n'est
-   pas identifié, et rien n'y laisse croire à une donnée. */
-.identification__lignes {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.identification__lignes i {
-  display: block;
-  height: 6px;
-  border-radius: var(--r-pill);
-  background: rgba(255, 255, 255, 0.35);
-}
-.identification__lignes i:first-child {
-  width: 68%;
-}
-.identification__lignes i:last-child {
-  width: 44%;
-}
-
-/* --- Le corps ----------------------------------------------------------- */
-
-/* Colonne : le formulaire suit le titre, et la signature est poussée au pied
-   de l'écran par sa marge automatique - le vide se range sous le bouton,
-   jamais entre deux éléments qui se répondent. */
+/* --- Le formulaire -------------------------------------------------------- */
 .identification__corps {
-  flex: 1;
+  /* Le formulaire, en bas : juste la place qu'il lui faut. */
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
+  padding: var(--e-8) var(--gouttiere)
+    calc(var(--e-24) + var(--ion-safe-area-bottom, env(safe-area-inset-bottom)));
 }
 
+/* Le logo de l'IPM, sans fond, à gauche du nom de l'institution. */
+.identification__entete {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: var(--e-24);
+}
+.identification__logo-ipm {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
 .identification__titre {
+  /* Le nom, en proportion du logo : ses capitales occupent environ les deux
+     tiers de la hauteur du logo (taille « display » de la charte). */
   margin: 0;
-  font: var(--t-titre);
-  font-size: 1.875rem;
-  letter-spacing: -0.02em;
+  font: var(--t-display);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
   color: var(--ipm-texte);
 }
-
-.identification__accroche {
-  margin: var(--e-4) 0 var(--e-24);
-  font: var(--t-corps);
-  color: var(--ipm-texte-doux);
-}
-
 /* Session expirée, déconnexion volontaire. */
 .identification__avis {
   display: flex;
@@ -162,16 +142,6 @@
   margin-top: var(--e-24);
 }
 
-/* Le nom de l'institution ferme l'écran, discrètement. */
-.identification__institution {
-  margin: auto 0 0;
-  padding-top: var(--e-32);
-  text-align: center;
-  font: var(--t-secondaire);
-  white-space: nowrap;
-  color: var(--ipm-texte-doux);
-}
-
 @keyframes identification-secousse {
   0%,
   100% {
@@ -189,4 +159,25 @@
   80% {
     transform: translateX(3px);
   }
+}
+
+/* Les champs, dessinés comme les cartes de l'application : blanc, coins
+   arrondis, liseré discret et ombre douce (et non plus un cadre gris). */
+.identification__corps .ipm-formulaire__saisie {
+  border: 1px solid var(--ipm-liseret);
+  box-shadow: var(--ombre-1);
+}
+.identification__corps .ipm-formulaire__saisie:focus {
+  border-color: var(--ipm-rouge);
+  box-shadow:
+    var(--ombre-1),
+    0 0 0 3px rgba(var(--ipm-rouge-rgb), 0.15);
+}
+
+/* « Continuer » en rouge #cc2d2a, sur cette page seulement. */
+.identification__actions .ipm-bouton--principal {
+  background: #cc2d2a;
+}
+.identification__actions .ipm-bouton--principal:active {
+  background: #a82422;
 }

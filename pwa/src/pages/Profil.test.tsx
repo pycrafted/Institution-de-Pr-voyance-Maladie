@@ -92,18 +92,12 @@ describe('Profil', () => {
     window.history.replaceState(null, '', '/')
   })
 
-  it('demande confirmation avant de se déconnecter', async () => {
+  it('déconnecte aussitôt, sans question', async () => {
     const session = uneSession()
     rendreEcran(<Profil />, session)
     fireEvent.click(await screen.findByText('Se déconnecter'))
 
-    // La question, dans une feuille : rien n'est encore effacé.
-    const feuille = screen.getByRole('dialog')
-    expect(feuille).toHaveTextContent('Se déconnecter d’IPM Mobile ?')
-    expect(session.deconnecter).not.toHaveBeenCalled()
-    expect(within(feuille).getByText('Annuler')).toBeInTheDocument()
-
-    fireEvent.click(within(feuille).getByText('Se déconnecter'))
+    expect(screen.queryByRole('dialog')).toBeNull()
     expect(session.deconnecter).toHaveBeenCalledWith('volontaire')
   })
 })

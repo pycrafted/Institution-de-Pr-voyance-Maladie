@@ -42,8 +42,10 @@ export const ROUTE_ASSISTANT = 'assistant'
 /** Un type de document demandable : une grande carte de service (§3.4). */
 export interface TypeDocument {
   cle: CleDocument
-  /** Libellé de la carte : court, deux lignes au plus. */
+  /** Nom court du document (titres, filtres, feuilles). */
   libelle: string
+  /** Libellé du bouton de demande : un verbe d'action, puis le document. */
+  action: string
   /** Le même au pluriel, pour nommer une CATEGORIE (filtre de « Mes bons »). */
   libellePluriel: string
   /** Phrase d'explication (feuille « Bientôt », accessibilité). */
@@ -75,6 +77,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
   {
     cle: 'bon-pharmacie',
     libelle: 'Bon de pharmacie',
+    action: 'Demander un bon de pharmacie',
     libellePluriel: 'Bons de pharmacie',
     description: 'Générer un bon à présenter en pharmacie avec votre ordonnance.',
     icone: medkitOutline,
@@ -85,6 +88,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
   {
     cle: 'bon-optique',
     libelle: "Bon d'optique",
+    action: "Demander un bon d'optique",
     libellePluriel: "Bons d'optique",
     description: "Bon à présenter chez l'opticien conventionné.",
     icone: eyeOutline,
@@ -95,6 +99,7 @@ export const DOCUMENTS: readonly TypeDocument[] = [
   {
     cle: 'lettre-garantie',
     libelle: 'Lettre de garantie',
+    action: 'Demander une lettre de garantie',
     libellePluriel: 'Lettres de garantie',
     description: "Prise en charge auprès d'un fournisseur de soins conventionné.",
     icone: mailOutline,
@@ -104,8 +109,9 @@ export const DOCUMENTS: readonly TypeDocument[] = [
   },
   {
     cle: 'hospitalisation',
-    libelle: 'LG hospitalisation',
-    libellePluriel: 'LG hospitalisation',
+    libelle: 'LGH',
+    action: 'Demander une LGH',
+    libellePluriel: 'LGH',
     description: 'Lettre de garantie pour une hospitalisation.',
     icone: bedOutline,
     iconePleine: bed,

@@ -134,9 +134,10 @@ describe('Accueil', () => {
     })
   })
 
-  it('titre la grille « Demander un document » et n’y met que des documents', () => {
+  it('nomme la liste « Demander un bon » (sans titre visible) et n’y met que des documents', () => {
     const { container } = rendreEcran(<Accueil />)
-    expect(screen.getByText('Demander un document')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Demander un bon' })).toBeInTheDocument()
+    expect(screen.queryByText('Demander un bon')).toBeNull()
     expect(container.querySelectorAll('.ipm-grille-services .ipm-tuile')).toHaveLength(
       DOCUMENTS.length,
     )
@@ -146,13 +147,13 @@ describe('Accueil', () => {
 
   it('ouvre l’assistant depuis la carte « Bon de pharmacie »', () => {
     rendreEcran(<Accueil />)
-    fireEvent.click(screen.getByLabelText('Bon de pharmacie'))
+    fireEvent.click(screen.getByLabelText('Demander un bon de pharmacie'))
     expect(simulations.ouvrirAssistant).toHaveBeenCalledWith('bon-pharmacie')
   })
 
   it('ouvre l’assistant de la lettre depuis la carte « Lettre de garantie »', () => {
     rendreEcran(<Accueil />)
-    fireEvent.click(screen.getByLabelText('Lettre de garantie'))
+    fireEvent.click(screen.getByLabelText('Demander une lettre de garantie'))
     expect(simulations.ouvrirAssistant).toHaveBeenCalledWith('lettre-garantie')
   })
 
@@ -188,7 +189,7 @@ describe('Accueil', () => {
   it('explique dans une feuille les documents encore à venir', () => {
     rendreEcran(<Accueil />)
     expect(screen.queryByRole('dialog')).toBeNull()
-    fireEvent.click(screen.getByLabelText('LG hospitalisation, bientôt disponible'))
+    fireEvent.click(screen.getByLabelText('Demander une LGH, bientôt disponible'))
     expect(screen.getByRole('dialog')).toHaveTextContent(MESSAGE_BIENTOT)
     expect(simulations.ouvrirAssistant).not.toHaveBeenCalled()
   })

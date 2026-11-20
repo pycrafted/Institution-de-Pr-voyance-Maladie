@@ -98,8 +98,8 @@
   }
 }
 
-/* Tablette en portrait : l'écran est haut, la carte et les documents
-   prennent cette hauteur plutôt que de laisser deux grands vides. */
+/* Tablette en portrait : l'écran est haut, la carte prend cette hauteur
+   plutôt que de laisser un grand vide. */
 @media (min-width: 640px) and (orientation: portrait) {
   .accueil__carte-bouton {
     max-width: min(740px, 62vh);
@@ -109,93 +109,61 @@
     font-size: clamp(15px, min(3.3vw, 2.25vh), 27px);
     font-size: clamp(15px, min(3.3vw, 2.25dvh), 27px);
   }
-  .accueil__documents .ipm-grille-services {
-    height: clamp(130px, 20vh, 260px);
-    height: clamp(130px, 20dvh, 260px);
-  }
 }
 
-/* --- « Demander un document » en cartes ---------------------------------
- * Deux colonnes de cartes COMPACTES (une seule sous 340 px) : l'icône rouge
- * sur une pastille douce à gauche, le libellé à droite (deux lignes au
- * besoin). Ni flèche ni ombre portée : un liseré fin suffit, la grille reste
- * légère sous la carte d'adhérent. Le document à venir est éteint et dit
- * « Bientôt » sous son libellé.
+/* --- « Demander un bon » : des cartes comme les réglages du Profil ---------
+ * Une carte blanche par document (mêmes cotes que la carte de liste de la
+ * charte : coins arrondis, ombre douce, espace entre les cartes), l'icône
+ * grise à gauche, le libellé en gras, la flèche à droite. Le document à venir
+ * garde la carte, estompée, avec « Bientôt » à la place de la flèche.
  */
 .accueil__documents .ipm-grille-services {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* Toutes les cartes à la même hauteur, quelle que soit la longueur du libellé. */
-  grid-auto-rows: 1fr;
-  gap: var(--e-8);
-}
-@media (max-width: 339px) {
-  .accueil__documents .ipm-grille-services {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-.accueil__documents .ipm-grille-services > [role='listitem'] {
   display: flex;
+  flex-direction: column;
+  gap: var(--inter-cartes);
 }
 .accueil__documents .ipm-tuile {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto;
+  display: flex;
   align-items: center;
-  column-gap: 10px;
-  min-height: 64px;
-  padding: var(--e-12) 10px var(--e-12) var(--e-12);
+  gap: var(--e-12);
+  min-height: 0;
+  padding: 14px 16px;
+  border: 1px solid var(--ipm-liseret);
   border-radius: var(--r-lg);
-  box-shadow: none;
-}
-.accueil__documents .ipm-tuile--ouverte:active {
-  background: var(--ipm-rouge-doux);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-1);
 }
 .accueil__documents .ipm-tuile__icone {
-  box-sizing: content-box;
-  width: 18px;
-  height: 18px;
-  padding: 9px;
-  border-radius: var(--r-md);
-  background: var(--ipm-rouge-doux);
-  font-size: 18px;
+  width: 44px;
+  font-size: 22px;
+  color: var(--ipm-texte-doux);
 }
 .accueil__documents .ipm-tuile__libelle {
+  flex: 1;
   color: var(--ipm-texte);
-  font-size: 0.84375rem;
+  font-size: 0.9375rem;
   font-weight: 700;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
   white-space: normal;
 }
 .accueil__documents .ipm-tuile__chevron {
-  display: none;
-}
-/* À venir : même carte, éteinte (fond doux, icône neutre), avec une petite
-   étiquette « Bientôt » dans le coin - elle n'ajoute pas de ligne, donc
-   toutes les cartes gardent la même hauteur. */
-.accueil__documents .ipm-tuile--avenir {
-  opacity: 1;
-  background: var(--ipm-surface-2);
-}
-.accueil__documents .ipm-tuile--avenir .ipm-tuile__icone {
-  background: var(--ipm-surface);
+  font-size: 18px;
   color: var(--ipm-texte-doux);
+}
+/* À venir : la même carte, estompée, « Bientôt » à droite. */
+.accueil__documents .ipm-tuile--avenir {
+  background: var(--ipm-surface);
+  opacity: 0.6;
 }
 .accueil__documents .ipm-tuile--avenir .ipm-tuile__libelle {
   color: var(--ipm-texte-doux);
 }
 .accueil__documents .ipm-tuile__puce {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  padding: 2px 7px;
+  padding: 2px 8px;
   border-radius: var(--r-pill);
-  background: var(--ipm-surface);
+  background: var(--ipm-surface-2);
   color: var(--ipm-texte-doux);
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 /* --- Ayants droit --------------------------------------------------------
@@ -248,4 +216,28 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* « Demander un bon » (sans titre) bien séparé des ayants droit : un filet
+   sur toute la largeur utile et davantage d'air au-dessus. */
+.accueil__famille + .accueil__documents {
+  margin-top: var(--e-24);
+  padding-top: var(--e-20);
+  border-top: 1px solid var(--ipm-bordure);
+  margin-inline: var(--gouttiere);
+}
+.accueil__famille + .accueil__documents .ipm-grille-services {
+  padding-inline: 0;
+}
+
+/* Le même filet entre la carte d'adhérent et les ayants droit. */
+.accueil__famille {
+  margin-top: var(--e-24);
+  padding-top: var(--e-20);
+  border-top: 1px solid var(--ipm-bordure);
+  margin-inline: var(--gouttiere);
+}
+.accueil__famille .ipm-titre-section,
+.accueil__famille .accueil-famille {
+  padding-inline: 0;
 }

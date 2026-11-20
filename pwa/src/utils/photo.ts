@@ -16,13 +16,6 @@
 /** Côté maximal d'une photo d'identité enregistrée, en pixels. */
 export const COTE_PHOTO = 320
 
-/**
- * Côté maximal d'un document scanné : assez grand pour que l'IA lise le texte
- * (ordonnance, reçu), sans gonfler l'appel. 1568 px est la limite au-delà de
- * laquelle l'IA redimensionne de toute façon ; autant le faire ici.
- */
-export const COTE_DOCUMENT = 1568
-
 /** Au-delà, inutile d'ouvrir le fichier. */
 const TAILLE_FICHIER_MAX = 20 * 1024 * 1024
 
@@ -30,8 +23,7 @@ export class ErreurPhoto extends Error {}
 
 /**
  * Lit le fichier choisi, le réduit au côté voulu et le rend en URL de données
- * JPEG, prête à envoyer. Partagé par la photo d'identité (petit) et le scan de
- * document (plus grand, pour rester lisible).
+ * JPEG, prête à envoyer.
  */
 async function reduire(fichier: File, cote: number, qualite: number): Promise<string> {
   if (!fichier.type.startsWith('image/')) {
@@ -62,31 +54,6 @@ async function reduire(fichier: File, cote: number, qualite: number): Promise<st
 /** Photo d'identité : petit format (cf. COTE_PHOTO). */
 export function reduirePhoto(fichier: File): Promise<string> {
   return reduire(fichier, COTE_PHOTO, 0.8)
-}
-
-/** Document scanné : format plus grand, pour que le texte reste lisible. */
-export function reduireDocument(fichier: File): Promise<string> {
-  return reduire(fichier, COTE_DOCUMENT, 0.8)
-}
-
-/**
- * Capture l'image courante d'un flux vidéo (le viseur caméra du scan) et la
- * rend en URL de données JPEG, au même format qu'un document importé
- * (COTE_DOCUMENT). La vidéo est déjà droite : aucune rotation à gérer.
- */
-export function capturerVideoDocument(video: HTMLVideoElement): string {
-  const largeur = video.videoWidth
-  const hauteur = video.videoHeight
-  if (!largeur || !hauteur) throw new ErreurPhoto('La caméra n’est pas encore prête.')
-  const echelle = Math.min(1, COTE_DOCUMENT / Math.max(largeur, hauteur))
-  const canevas = document.createElement('canvas')
-  canevas.width = Math.max(1, Math.round(largeur * echelle))
-  canevas.height = Math.max(1, Math.round(hauteur * echelle))
-  const contexte = canevas.getContext('2d')
-  if (!contexte) throw new ErreurPhoto('Ce navigateur ne sait pas préparer l’image.')
-  contexte.drawImage(video, 0, 0, canevas.width, canevas.height)
-  // JPEG : dix fois plus léger qu'un PNG à qualité égale.
-  return canevas.toDataURL('image/jpeg', 0.82)
 }
 
 function lire(fichier: File): Promise<string> {

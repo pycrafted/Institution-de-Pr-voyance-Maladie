@@ -1,136 +1,25 @@
 /**
- * Écran « Mon relevé » : les mouvements du compte IPM en trois vues
- * (retenues, remboursements, soins). Le solde, lui, est sur l'accueil.
+ * Écran « Retenues » (pages/Releve.tsx) : les retenues sur salaire, mois par
+ * mois. Le solde restant est dans la barre du haut.
  */
 
 .releve-bloc {
   margin-top: var(--ipm-espace-l);
 }
 
-/* Sélecteur à trois onglets : Retenues / Remboursements / Soins. */
-.releve-onglets {
-  display: flex;
-  gap: 4px;
-  margin: 0 var(--ipm-gouttiere) var(--ipm-espace-l);
-  padding: 4px;
-  background: var(--ipm-surface-2);
-  border-radius: var(--ipm-rayon-pilule);
-}
-
-.releve-onglet {
-  flex: 1;
-  padding: 10px 6px;
-  border: 0;
-  border-radius: var(--ipm-rayon-pilule);
-  background: transparent;
-  color: var(--ipm-texte-doux);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.2;
-  cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
-}
-
-.releve-onglet--actif {
-  background: var(--ipm-surface);
-  color: var(--ipm-texte);
-  box-shadow: var(--ombre-1);
-}
-
-.releve-titre {
-  margin: 0 var(--ipm-gouttiere) 2px;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--ipm-texte-secondaire);
-}
-
-/* Une ligne d'explication sous le titre d'une section. */
-
-/* La part IPM, en détail d'une carte de soin. */
-.releve-ipm {
-  color: var(--ipm-valide-texte);
-}
-
-/* Soins : le titre peut passer sur deux lignes plutôt que d'être tronqué
-   (la place est prise à droite par les deux parts). */
-.releve-bloc .ipm-carte-liste__titre {
-  white-space: normal;
-}
-
-/* Soins : « Ma part » et « Part IPM » côte à côte, à droite de la ligne,
-   chacune son libellé discret au-dessus de son montant, alignées à droite. */
-.releve-parts {
-  display: flex;
-  gap: var(--e-8);
-}
-/* Largeur fixe : les colonnes tombent au même endroit sur chaque ligne. */
-.releve-part {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  min-width: 5.25rem;
-}
-.releve-part__libelle {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--ipm-texte-doux);
-}
-.releve-part__montant {
-  font-size: 0.875rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* Le montant d'un mouvement, à droite de sa carte : signé et teinté. */
+/* Le montant d'une retenue, à droite de sa ligne : signé, en ambre (il retire
+   de la paie). */
 .releve-montant {
   font-size: 1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-
-.releve-montant--charge {
-  color: var(--ipm-rouge-texte);
-}
-
-/* Une retenue retire de la paie (ambre) ; un remboursement rend (vert). */
 .releve-montant--retenue {
   color: var(--ipm-expire-texte);
 }
 
-.releve-montant--remboursement {
-  color: var(--ipm-valide-texte);
-}
-
-/* --- Listes sous le solde, à la manière des Notifications ----------------
- * Retenues, remboursements et soins : des lignes posées directement sur la
- * page, sans carte, séparées par un filet fin. L'icône garde sa couleur
- * d'état (ambre retenue, vert remboursement, rouge soin).
+/* --- Les retenues en cartes, comme les réglages du Profil -----------------
+ * La carte de liste de la charte telle quelle : blanche, coins arrondis,
+ * ombre douce, espace entre les cartes ; l'icône grise à gauche.
  */
-.releve-bloc .ipm-pile {
-  gap: 0;
-}
-.releve-bloc .ipm-carte-liste {
-  padding: var(--e-12) 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-}
-.releve-bloc .ipm-carte-liste + .ipm-carte-liste {
-  border-top: 1px solid var(--ipm-bordure);
-}
-/* Un filet aussi sous la dernière ligne : la liste se referme. */
-.releve-bloc .ipm-carte-liste:last-child {
-  border-bottom: 1px solid var(--ipm-bordure);
-}
-.releve-bloc .ipm-carte-liste.ipm-appui:active {
-  transform: none;
-  background: var(--ipm-surface-2);
-}

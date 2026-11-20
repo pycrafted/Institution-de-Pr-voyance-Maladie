@@ -39,30 +39,22 @@ function rendre(noeud: ReactNode) {
 }
 
 describe('§3.1 barre d’onglets flottante', () => {
-  it('porte la classe flottante et un bouton par onglet, dont « Préfinancement »', () => {
+  it('porte la classe flottante et un bouton par onglet, dont « Structures »', () => {
     const { container } = rendre(<BarreOngletsFlottante />)
     const barre = container.querySelector('ion-tab-bar')
     expect(barre).toHaveClass('ipm-onglets')
     const boutons = Array.from(container.querySelectorAll('ion-tab-button'))
     expect(boutons.map((b) => b.getAttribute('tab'))).toEqual(ONGLETS.map((o) => o.cle))
     expect(boutons.map((b) => b.getAttribute('href'))).toEqual(ONGLETS.map((o) => o.href))
-    expect(boutons[boutons.length - 1]).toHaveTextContent('Préfinancement')
+    expect(boutons[boutons.length - 1]).toHaveTextContent('Structures')
   })
 
-  it('mène aux cinq écrans principaux, dont l’annuaire et le scan', () => {
+  it('mène aux quatre écrans principaux, dont l’annuaire et les retenues', () => {
     // L'annuaire est un onglet et non un raccourci de l'accueil : c'est ce
     // qu'on consulte en cherchant où se soigner, il doit être à un toucher.
-    // Le scan (pré-financement) est devenu un onglet ; le relevé et le profil
-    // sont en haut (compte/perso).
-    expect(ONGLETS.map((o) => o.href)).toEqual([
-      '/accueil',
-      '/bons',
-      '/releve',
-      '/conventionnes',
-      '/scan',
-    ])
+    // Les retenues sont un onglet ; le profil est en haut (compte/perso).
+    expect(ONGLETS.map((o) => o.href)).toEqual(['/accueil', '/bons', '/releve', '/conventionnes'])
     expect(ONGLETS.map((o) => o.libelle)).toContain('Structures')
-    expect(ONGLETS.map((o) => o.libelle)).toContain('Préfinancement')
   })
 })
 
@@ -199,13 +191,13 @@ describe('§3.4 cartes de service et raccourcis', () => {
   it('ouvre un document disponible', () => {
     const ouvrir = vi.fn()
     rendre(<GrilleServices onOuvrir={ouvrir} />)
-    fireEvent.click(screen.getByLabelText('Bon de pharmacie'))
+    fireEvent.click(screen.getByLabelText('Demander un bon de pharmacie'))
     expect(ouvrir).toHaveBeenCalledWith(documentParCle('bon-pharmacie'))
   })
 
   it('porte une icône au trait, sans peindre toute la carte en rouge', () => {
     rendre(<GrilleServices onOuvrir={vi.fn()} onIndisponible={vi.fn()} />)
-    const carte = screen.getByLabelText('Bon de pharmacie')
+    const carte = screen.getByLabelText('Demander un bon de pharmacie')
     expect(carte).toHaveClass('ipm-tuile--ouverte')
     expect(carte).not.toHaveClass('ipm-tuile--rouge')
     // L'icône est présente et au trait : on force la version outline (icon=…),
@@ -219,7 +211,7 @@ describe('§3.4 cartes de service et raccourcis', () => {
     const ouvrir = vi.fn()
     const indisponible = vi.fn()
     const { container } = rendre(<GrilleServices onOuvrir={ouvrir} onIndisponible={indisponible} />)
-    const carte = screen.getByLabelText('LG hospitalisation, bientôt disponible')
+    const carte = screen.getByLabelText('Demander une LGH, bientôt disponible')
     // Éteinte d'un cran par rapport à un document ouvert (§3.4).
     expect(carte).toHaveClass('ipm-tuile--avenir')
     // Surtout pas aria-disabled : la carte réagit (elle ouvre la feuille).

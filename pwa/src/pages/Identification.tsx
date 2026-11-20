@@ -8,12 +8,18 @@
  */
 
 import { IonContent, IonIcon, IonPage } from '@ionic/react'
-import { alertCircle, idCardOutline, timeOutline } from 'ionicons/icons'
+import {
+  alertCircle,
+  eyeOffOutline,
+  eyeOutline,
+  idCardOutline,
+  lockClosedOutline,
+  timeOutline,
+} from 'ionicons/icons'
 import { useRef, useState } from 'react'
 
 import { BoutonPrincipal } from '../components/Boutons'
 import { Saisie } from '../components/ChampsFormulaire'
-import LogoSar from '../components/LogoSar'
 import OfflineBanner from '../components/OfflineBanner'
 import { haptique } from '../hooks/haptique'
 import { useSession } from '../session'
@@ -27,6 +33,9 @@ export default function Identification() {
   // Change à chaque refus : rejoue la secousse du message d'erreur.
   const [refus, setRefus] = useState(0)
   const champMatricule = useRef<HTMLInputElement>(null)
+  // Côté écran seulement : le mot de passe n'est ni vérifié ni envoyé.
+  const [motDePasse, setMotDePasse] = useState('')
+  const [voirMotDePasse, setVoirMotDePasse] = useState(false)
 
   async function continuer() {
     const issue = await formulaire.envoyer()
@@ -45,26 +54,33 @@ export default function Identification() {
     <IonPage className="identification">
       <IonContent fullscreen>
         <div className="identification__page">
-          {/* Ce que l'employé vient chercher : sa carte. Deux cartes posées
-              l'une sur l'autre, vierges - aucune donnée avant d'être
-              identifié - celle du dessus porte la marque. */}
-          <div className="identification__cartes" aria-hidden="true">
-            <span className="identification__carte identification__carte--dessous" />
-            <span className="identification__carte identification__carte--dessus">
-              <span className="identification__filigrane" />
-              <LogoSar largeur={66} ton="blanc" />
-              <span className="identification__lignes">
-                <i />
-                <i />
-              </span>
-            </span>
-          </div>
+          {/* Le hero : le rouge SAR, habillé de courbes de niveau qui
+              bougent doucement, et une vague qui descend vers le fond de
+              l'application. */}
+          <header className="identification__hero">
+            <span className="identification__motif" aria-hidden="true" />
+            <svg
+              className="identification__vague"
+              viewBox="0 0 400 90"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path d="M0 52 C 70 8, 150 6, 205 44 S 330 98, 400 40 L 400 90 L 0 90 Z" />
+            </svg>
+          </header>
 
           <main className="identification__corps">
-            <h1 className="identification__titre">Connexion</h1>
-            <p className="identification__accroche">
-              Saisissez votre matricule pour accéder à vos documents IPM.
-            </p>
+            <div className="identification__entete">
+              {/* Le logo de l'IPM, sans fond, à côté du nom de l'institution. */}
+              <img
+                className="identification__logo-ipm"
+                src="/logo-ipm.png"
+                alt="IPM"
+                width={44}
+                height={44}
+              />
+              <h1 className="identification__titre">IPM-SAR</h1>
+            </div>
 
             <OfflineBanner />
 
@@ -77,7 +93,7 @@ export default function Identification() {
             {/* Pas d'avis après une déconnexion volontaire : l'employé vient de la
                 demander, l'écran de connexion suffit à la confirmer. */}
 
-            {/* Pas de bouton « submit » : l'envoi passe par « Continuer » ou
+            {/* Pas de bouton « submit » : l'envoi passe par « Connexion » ou
                 par la touche OK du clavier, jamais par un envoi implicite. */}
             <form className="ipm-formulaire" noValidate onSubmit={(e) => e.preventDefault()}>
               <Saisie
@@ -93,6 +109,34 @@ export default function Identification() {
                 onEntree={() => void continuer()}
               />
 
+              {/* Mot de passe : affiché seulement, pas encore vérifié. La
+                  connexion se fait toujours par le seul matricule (cf. le
+                  formulaire) ; ce champ n'est envoyé nulle part. */}
+              <Saisie
+                libelle="Mot de passe"
+                type={voirMotDePasse ? 'text' : 'password'}
+                placeholder="Votre mot de passe"
+                icone={lockClosedOutline}
+                autoComplete="current-password"
+                enterKeyHint="go"
+                valeur={motDePasse}
+                onChanger={setMotDePasse}
+                onEntree={() => void continuer()}
+                action={
+                  <button
+                    type="button"
+                    className="ipm-formulaire__action"
+                    aria-label={voirMotDePasse ? 'Masquer le mot de passe' : 'Voir le mot de passe'}
+                    onClick={() => setVoirMotDePasse((v) => !v)}
+                  >
+                    <IonIcon
+                      icon={voirMotDePasse ? eyeOffOutline : eyeOutline}
+                      aria-hidden="true"
+                    />
+                  </button>
+                }
+              />
+
               {formulaire.erreurServeur && (
                 <div key={refus} className="identification__erreur" role="alert">
                   <IonIcon icon={alertCircle} aria-hidden="true" />
@@ -102,12 +146,10 @@ export default function Identification() {
 
               <div className="identification__actions">
                 <BoutonPrincipal occupe={formulaire.envoi} onClick={() => void continuer()}>
-                  {formulaire.envoi ? 'Vérification…' : 'Continuer'}
+                  {formulaire.envoi ? 'Vérification…' : 'Connexion'}
                 </BoutonPrincipal>
               </div>
             </form>
-
-            <p className="identification__institution">Institution de Prévoyance Maladie</p>
           </main>
         </div>
       </IonContent>

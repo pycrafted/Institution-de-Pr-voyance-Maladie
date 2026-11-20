@@ -18,6 +18,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 import { CleManquante, chargerGoogleMaps } from './googleMaps'
+import { estSombre, styleCarte } from './styleCarte'
 import type { Point } from './trajet'
 
 /** Sans aucun point connu : le centre de Dakar, où sont la plupart des structures. */
@@ -136,10 +137,20 @@ const Carte = forwardRef<CarteHandle, CarteProps>(function Carte(
       const chemin = trace.map(([lat, lng]) => ({ lat, lng }))
       // Bordure blanche d'abord, trait rouge par-dessus : lisible sur tous les fonds.
       ajouter(
-        new api.Polyline({ path: chemin, strokeColor: '#ffffff', strokeOpacity: 0.9, strokeWeight: 10 }),
+        new api.Polyline({
+          path: chemin,
+          strokeColor: '#ffffff',
+          strokeOpacity: 0.9,
+          strokeWeight: 10,
+        }),
       )
       ajouter(
-        new api.Polyline({ path: chemin, strokeColor: '#1A73E8', strokeOpacity: 1, strokeWeight: 6 }),
+        new api.Polyline({
+          path: chemin,
+          strokeColor: '#1A73E8',
+          strokeOpacity: 1,
+          strokeWeight: 6,
+        }),
       )
     }
     if (position) {
@@ -208,11 +219,6 @@ const Carte = forwardRef<CarteHandle, CarteProps>(function Carte(
 
 export default Carte
 
-/** Vrai si l'application est en mode sombre (classe posée sur <html>). */
-function estSombre(): boolean {
-  return document.documentElement.classList.contains('ion-palette-dark')
-}
-
 /**
  * Une surcouche DOM positionnée sur une coordonnée : un élément HTML (point
  * bleu, épingle) ancré au pixel voulu. `ancre` est le point de l'élément, en
@@ -247,24 +253,4 @@ function surcoucheDom(
     element = undefined
   }
   return surcouche
-}
-
-/**
- * Le style de la carte. En clair, AUCUN style : on garde le rendu Google par
- * défaut (points d'intérêt, couleurs), pour coller à l'application Google Maps
- * vers laquelle renvoie le guidage. En sombre, une palette de nuit, car une
- * carte blanche éblouit dans le noir d'une rue la nuit.
- */
-function styleCarte(sombre: boolean): google.maps.MapTypeStyle[] {
-  if (!sombre) return []
-  return [
-    { elementType: 'geometry', stylers: [{ color: '#242220' }] },
-    { elementType: 'labels.text.fill', stylers: [{ color: '#a3a099' }] },
-    { elementType: 'labels.text.stroke', stylers: [{ color: '#111110' }] },
-    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2e2b28' }] },
-    { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1c1a18' }] },
-    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3a3733' }] },
-    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#14181f' }] },
-    { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#1c1a18' }] },
-  ]
 }

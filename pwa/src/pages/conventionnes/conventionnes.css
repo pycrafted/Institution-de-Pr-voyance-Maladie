@@ -80,3 +80,316 @@
   line-clamp: 2;
   white-space: normal;
 }
+
+/* --- Filtres et carte, en tête de l'écran ------------------------------- */
+/* La barre du haut et les filtres, posés sur la carte : un voile du fond
+   de l'app, translucide et flouté, pour rester lisibles sur la carte. */
+.conventionnes__dessus {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding-bottom: var(--e-12);
+  background: color-mix(in srgb, var(--ipm-fond) 86%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 var(--ipm-bordure);
+}
+.conventionnes__dessus .ipm-navbar {
+  margin-bottom: var(--e-8);
+}
+/* Les puces, pleines (et non transparentes) au-dessus de la carte. */
+.conventionnes__filtres .ipm-puce:not(.ipm-puce--active) {
+  background: var(--ipm-surface);
+}
+
+/* État (chargement, vide, erreur) posé au milieu, sur la carte. */
+.conventionnes__etat {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 160px 0 var(--bas-page);
+  background: var(--ipm-fond);
+}
+
+/* --- Écran plein : la carte en fond, le reste par-dessus ---------------- */
+.conventionnes__ecran {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* La carte Google occupe toute la page, sous la barre et les filtres. */
+.conventionnes__carte {
+  position: absolute;
+  inset: 0;
+  background: var(--ipm-surface-2);
+}
+.conventionnes__carte-fond {
+  position: absolute;
+  inset: 0;
+}
+.conventionnes__carte-erreur {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: var(--e-24);
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--ipm-texte-doux);
+}
+
+/* Vignette de la structure touchée, posée en bas de la carte. */
+.conventionnes__vignette {
+  position: absolute;
+  left: var(--gouttiere);
+  right: var(--gouttiere);
+  /* Au-dessus de la barre d'onglets flottante. */
+  bottom: calc(var(--bas-page) - var(--e-8));
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  padding: var(--e-16);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-2);
+}
+.conventionnes__vignette-entete {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--e-8);
+}
+.conventionnes__vignette-textes {
+  flex: 1;
+  min-width: 0;
+}
+.conventionnes__vignette-nom {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ipm-texte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.conventionnes__vignette-specialite {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--ipm-texte-doux);
+}
+.conventionnes__vignette-fermer {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ipm-texte-doux);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* « Ma position » : bouton rond en bas à droite, au-dessus des onglets ; il
+   remonte au-dessus de la vignette quand une structure est ouverte. */
+.conventionnes__moi {
+  appearance: none;
+  position: absolute;
+  right: var(--gouttiere);
+  bottom: calc(var(--bas-page) + var(--e-8));
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  color: #1a73e8;
+  font-size: 24px;
+  box-shadow: var(--ombre-2);
+  cursor: pointer;
+}
+.conventionnes__moi--haut {
+  bottom: calc(var(--bas-page) + 150px);
+}
+
+/* Le trajet dans la vignette : le temps en voiture en vedette, la distance
+   et la marche à côté. */
+.conventionnes__trajet {
+  display: flex;
+  align-items: center;
+  gap: var(--e-16);
+  min-height: 40px;
+}
+.conventionnes__trajet-duree {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--ipm-valide-texte);
+  white-space: nowrap;
+}
+.conventionnes__trajet-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.8125rem;
+  color: var(--ipm-texte-doux);
+}
+.conventionnes__trajet-attente {
+  font-size: 0.875rem;
+  color: var(--ipm-texte-doux);
+}
+.conventionnes__trajet-depart {
+  margin: calc(-1 * var(--e-4)) 0 0;
+  font-size: 0.75rem;
+  color: var(--ipm-texte-doux);
+}
+.conventionnes__vignette-icones {
+  display: flex;
+  align-items: center;
+  gap: var(--e-4);
+  flex-shrink: 0;
+}
+/* Icônes rondes de la vignette : appel, Google Maps. */
+.conventionnes__icone {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface-2);
+  color: var(--ipm-texte);
+  font-size: 20px;
+  text-decoration: none;
+}
+.conventionnes__icone--maps {
+  background: var(--ipm-rouge-doux);
+  color: var(--ipm-rouge-texte);
+}
+
+/* --- Structures sans position ------------------------------------------- */
+/* Le bouton « N hors carte », en bas à gauche de la carte (sous la vignette
+   d'une structure ouverte). */
+.conventionnes__hors-carte {
+  appearance: none;
+  position: absolute;
+  left: var(--gouttiere);
+  bottom: calc(var(--bas-page) + var(--e-8));
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 var(--e-16);
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface);
+  color: var(--ipm-texte);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--ombre-2);
+  cursor: pointer;
+}
+.conventionnes__hors-carte ion-icon {
+  font-size: 18px;
+  color: var(--ipm-texte-doux);
+}
+
+/* La liste, dans la feuille. */
+.conventionnes__hors-carte-intro {
+  margin: 0 0 var(--e-12);
+  font-size: 0.875rem;
+  color: var(--ipm-texte-doux);
+}
+.conventionnes__hors-carte-liste {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.conventionnes__hors-carte-ligne {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+  padding: var(--e-12) 0;
+}
+.conventionnes__hors-carte-ligne + .conventionnes__hors-carte-ligne {
+  border-top: 1px solid var(--ipm-bordure);
+}
+.conventionnes__hors-carte-textes {
+  flex: 1;
+  min-width: 0;
+}
+.conventionnes__hors-carte-nom {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--ipm-texte);
+}
+.conventionnes__hors-carte-detail {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--ipm-texte-doux);
+}
+.conventionnes__hors-carte-detail ion-icon {
+  vertical-align: -2px;
+}
+
+/* Le retard dû au trafic, à côté du temps en voiture. */
+.conventionnes__trajet-trafic {
+  color: var(--ipm-rouge-texte);
+  font-weight: 600;
+}
+
+/* Les itinéraires possibles : une puce par itinéraire, le retenu en bleu. */
+.conventionnes__itineraires {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.conventionnes__itineraire {
+  appearance: none;
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--ipm-bordure);
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--ipm-texte-doux);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.conventionnes__itineraire--actif {
+  border-color: #1a73e8;
+  background: #e8f0fe;
+  color: #1a73e8;
+}
+
+/* Chargement (annuaire, puis carte) : le chargeur de l'application, au centre
+   de l'écran, sur le fond de l'app. */
+.conventionnes__chargement {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: var(--ipm-fond);
+  color: var(--ipm-rouge-texte);
+}
+.conventionnes__chargement .ipm-chargeur {
+  width: 56px;
+  height: 56px;
+}

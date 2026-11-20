@@ -22,10 +22,9 @@ import {
   type RefresherEventDetail,
 } from '@ionic/react'
 import { downloadOutline, logOutOutline, moon, sunny } from 'ionicons/icons'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import CarteListe from '../components/CarteListe'
-import FeuilleChoix from '../components/FeuilleChoix'
 import BarreActions from '../components/BarreActions'
 import { haptique } from '../hooks/haptique'
 import { useParticipant, useSession } from '../session'
@@ -39,8 +38,6 @@ export default function Profil() {
   const { participant } = useParticipant()
   const { rafraichir, deconnecter } = useSession()
   const sombre = useApparence() === 'sombre'
-  // La question posée dans une feuille de choix, s'il y en a une.
-  const [question, setQuestion] = useState<'deconnexion' | null>(null)
   const routeur = useIonRouter()
   const dejaInstallee = useMemo(estInstallee, [])
   const installation = useInstallation()
@@ -65,9 +62,10 @@ export default function Profil() {
     void rafraichir().finally(() => evenement.detail.complete())
   }
 
-  function confirmerDeconnexion() {
-    haptique.avertissement()
-    setQuestion('deconnexion')
+  // Pas de question : toucher « Se déconnecter » déconnecte aussitôt.
+  function seDeconnecter() {
+    haptique.leger()
+    void deconnecter('volontaire')
   }
 
   return (
@@ -140,7 +138,7 @@ export default function Profil() {
               teinte="annule"
               titre="Se déconnecter"
               chevron={false}
-              onClick={confirmerDeconnexion}
+              onClick={seDeconnecter}
             />
           </div>
         </section>
@@ -148,22 +146,6 @@ export default function Profil() {
         {/* La barre d'onglets flotte au-dessus du contenu : lui laisser la place. */}
         <div className="ipm-bas-page" />
       </IonContent>
-
-      <FeuilleChoix
-        ouverte={question === 'deconnexion'}
-        onFermer={() => setQuestion(null)}
-        titre="Se déconnecter d’IPM Mobile ?"
-        message="Les bons enregistrés sur ce téléphone seront effacés. Vous les retrouverez en vous identifiant à nouveau."
-        icone={logOutOutline}
-        choix={[
-          {
-            libelle: 'Se déconnecter',
-            genre: 'principal',
-            onClick: () => void deconnecter('volontaire'),
-          },
-          { libelle: 'Annuler' },
-        ]}
-      />
     </IonPage>
   )
 }

@@ -4,73 +4,48 @@
  * laboratoires, cabinets… — et non plus des seules pharmacies.
  *
  * De haut en bas :
- *   1. bandeau de marque compact (§3.2) ; c'est un onglet, donc sans retour ;
- *   2. menu déroulant des catégories (spécialités), avec leur compte ;
- *   3. puces de filtre (§3.6) : « Tous », puis une par spécialité présente,
- *      les plus fournies d'abord ;
- *   4. une CARTE AUTONOME par structure (§3.5) : nom, spécialité, adresse,
+ *   1. la barre du haut (nom, solde, actions) ;
+ *   2. les filtres : « Toutes », puis une puce par spécialité présente, les
+ *      plus fournies d'abord, avec leur compte ;
+ *   3. la CARTE Google des structures de la catégorie choisie, un point par
+ *      structure localisée (conventionnes/CarteStructures.tsx) ;
+ *   (plus de liste dessous : les structures sont les points de la carte,
+ *   une vignette par point touché) ; l'ancienne carte autonome (§3.5) donnait
+ *   nom, spécialité, adresse,
  *      téléphone, et deux boutons ronds — « Appeler » (`tel:`) et « S'y
  *      rendre », qui ouvre la carte de l'itinéraire DANS l'application
  *      (pages/Itineraire.tsx).
  *
- * Tirer pour rafraîchir. Squelettes tant que rien n'est connu, état vide
+ * La carte occupe toute la page (pas de « tirer pour rafraîchir »). Squelettes tant que rien n'est connu, état vide
  * illustré (§3.10) quand l'annuaire est vide, introuvable ou hors de portée.
  */
 
-import {
-  IonContent,
-  IonIcon,
-  IonPage,
-  IonRefresher,
-  IonRefresherContent,
-  useIonRouter,
-  type RefresherEventDetail,
-} from '@ionic/react'
-import {
-  callOutline,
-  chevronDown,
-  cloudOfflineOutline,
-  locationOutline,
-  medicalOutline,
-  navigateOutline,
-  warningOutline,
-} from 'ionicons/icons'
+import { IonContent, IonPage } from '@ionic/react'
+import { cloudOfflineOutline, medicalOutline, warningOutline } from 'ionicons/icons'
 import { useMemo, useState, type ReactNode } from 'react'
 
-import CarteListe from '../components/CarteListe'
 import EtatVide from '../components/EtatVide'
 import OfflineBanner from '../components/OfflineBanner'
-import { SqueletteCarte } from '../components/Skeletons'
+import PucesFiltre from '../components/PucesFiltre'
+import Chargeur from '../components/Chargeur'
 import BarreActions from '../components/BarreActions'
-import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
-import type { Conventionne } from '../types/api'
-import { pluriel, telephone as formaterTelephone } from '../utils/format'
-import { nomPropre } from '../utils/libelles'
-import {
-  filtrerConventionnes,
-  filtresSpecialites,
-  libelleSpecialite,
-  lienTelephone,
-  nomStructure,
-  TOUS,
-} from './conventionnes/recherche'
+import { filtrerConventionnes, filtresSpecialites, TOUS } from './conventionnes/recherche'
+import CarteStructures from './conventionnes/CarteStructures'
+import HorsCarte from './conventionnes/HorsCarte'
 import { useConventionnes } from './conventionnes/useConventionnes'
 import './conventionnes/conventionnes.css'
-
-/** Nombre de squelettes affichés tant que rien n'est connu. */
-const SQUELETTES = 5
 
 export default function Conventionnes() {
   const { structures, chargement, erreur, synchroniseLe, rafraichir } = useConventionnes()
   const enLigne = useOnline()
   const [specialite, setSpecialite] = useState(TOUS)
 
-  /** « Toutes les catégories », puis une entrée par spécialité, avec son compte. */
+  /** « Toutes », puis une puce par spécialité, avec son compte. */
   const categories = useMemo(() => {
     if (!structures) return []
     return [
-      { cle: TOUS, libelle: 'Toutes les catégories', nombre: structures.length },
+      { cle: TOUS, libelle: 'Toutes', nombre: structures.length },
       ...filtresSpecialites(structures).map((f) => ({
         cle: f.code,
         libelle: f.libelle,
@@ -89,16 +64,11 @@ export default function Conventionnes() {
   // au lieu de laisser croire que l'annuaire est à jour.
   const serveurInjoignable = structures !== null && erreur !== null && !chargement
 
-  function actualiser(evenement: CustomEvent<RefresherEventDetail>) {
-    haptique.leger()
-    void rafraichir().finally(() => evenement.detail.complete())
-  }
-
   function toutAfficher() {
     setSpecialite(TOUS)
   }
 
-  let contenu: ReactNode
+  let contenu: ReactNode = null
   if (structures === null) {
     contenu =
       erreur && !chargement ? (
@@ -114,10 +84,9 @@ export default function Conventionnes() {
           action={{ libelle: 'Réessayer', onClick: () => void rafraichir() }}
         />
       ) : (
-        <div className="conventionnes__squelettes">
-          {Array.from({ length: SQUELETTES }, (_, i) => (
-            <SqueletteCarte key={i} hauteur={96} />
-          ))}
+        // L'annuaire se charge : le chargeur de l'application, au centre.
+        <div className="conventionnes__chargement" aria-busy="true">
+          <Chargeur aria-label="Chargement des structures" />
         </div>
       )
   } else if (structures.length === 0) {
@@ -135,154 +104,46 @@ export default function Conventionnes() {
         teinte="neutre"
         titre="Aucune structure trouvée"
         message="Aucune structure dans cette catégorie."
-        action={{ libelle: 'Toutes les catégories', onClick: toutAfficher, secondaire: true }}
+        action={{ libelle: 'Toutes les structures', onClick: toutAfficher, secondaire: true }}
       />
     )
-  } else {
-    contenu = (
-      <section className="ipm-section" aria-label="Structures conventionnées">
-        <div className="ipm-entete-section">
-          <h2 className="ipm-titre-section" aria-live="polite">
-            {trouvees.length === structures.length
-              ? pluriel(structures.length, 'structure')
-              : `${pluriel(trouvees.length, 'structure')} sur ${structures.length}`}
-          </h2>
-        </div>
-        <div className="ipm-pile">
-          {trouvees.map((structure, rang) => (
-            <CarteStructure key={structure.code} structure={structure} rang={rang} />
-          ))}
-        </div>
-      </section>
-    )
   }
+  // Sinon, rien sous la carte : les structures sont les points de la carte
+  // (un point touché ouvre sa vignette, avec « Appeler » et « S'y rendre »).
 
   return (
     <IonPage className="conventionnes">
-      <IonContent fullscreen>
-        <IonRefresher slot="fixed" onIonRefresh={actualiser}>
-          <IonRefresherContent />
-        </IonRefresher>
+      {/* Pas de défilement ni de « tirer pour rafraîchir » : le geste sur la
+          page appartient à la carte, qui en occupe tout le fond. */}
+      <IonContent fullscreen scrollY={false}>
+        <div className="conventionnes__ecran">
+          {/* La carte en fond, sur toute la page : un point par structure de
+              la catégorie choisie. */}
+          {avecAnnuaire && <CarteStructures structures={trouvees} />}
+          {/* Les structures sans position, de la catégorie choisie : un bouton
+              sur la carte, qui les liste. */}
+          {avecAnnuaire && <HorsCarte structures={trouvees.filter((s) => !s.position)} />}
 
-        {/* Pas d'en-tête : l'écran commence par sa recherche et ses puces.
-            On ne garde que l'espace de la zone sûre (encoche du téléphone). */}
-        <BarreActions />
-
-        <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
-
-        {avecAnnuaire && (
-          /* Un menu déroulant plutôt qu'un champ de recherche et une rangée de
-             puces : l'annuaire compte plus de trente spécialités, la rangée
-             défilait sans fin et l'employé cherche une CATÉGORIE (« une
-             pharmacie »), pas un nom. Un `select` natif ouvre le sélecteur du
-             téléphone, celui que l'employé connaît déjà. */
-          <div className="ipm-menu-categorie">
-            <label className="ipm-menu-categorie__libelle" htmlFor="conventionnes-categorie">
-              Catégorie
-            </label>
-            <div className="ipm-menu-categorie__cadre">
-              <select
-                id="conventionnes-categorie"
-                className="ipm-menu-categorie__choix"
-                value={specialite}
-                onChange={(e) => {
-                  haptique.leger()
-                  setSpecialite(e.target.value)
-                }}
-              >
-                {categories.map((categorie) => (
-                  <option key={categorie.cle} value={categorie.cle}>
-                    {categorie.libelle}
-                  </option>
-                ))}
-              </select>
-              <IonIcon
-                className="ipm-menu-categorie__chevron"
-                icon={chevronDown}
-                aria-hidden="true"
+          {/* Par-dessus, en haut : la barre de l'application et les filtres. */}
+          <div className="conventionnes__dessus">
+            <BarreActions />
+            <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
+            {avecAnnuaire && (
+              <PucesFiltre
+                className="conventionnes__filtres"
+                puces={categories}
+                active={specialite}
+                etiquette="Catégories de structures"
+                onChanger={setSpecialite}
               />
-            </div>
+            )}
           </div>
-        )}
 
-        {contenu}
-
-        {/* La barre d'onglets flotte au-dessus du contenu : lui laisser la place. */}
-        <div className="ipm-bas-page" />
+          {/* Chargement, annuaire vide ou injoignable, catégorie vide : posé
+              au-dessus de la carte, au milieu. */}
+          {contenu && <div className="conventionnes__etat">{contenu}</div>}
+        </div>
       </IonContent>
     </IonPage>
-  )
-}
-
-/**
- * Une structure en carte autonome (§3.5). La carte n'est pas touchable dans
- * son ensemble : seuls ses deux boutons ronds le sont, pour qu'un pouce qui
- * lit une adresse ne déclenche jamais un appel par mégarde.
- */
-function CarteStructure({ structure, rang }: { structure: Conventionne; rang: number }) {
-  const nom = nomStructure(structure)
-  const specialite = libelleSpecialite(structure.specialite?.libelle)
-  const adresse = nomPropre(structure.adresse)
-  const lien = lienTelephone(structure.telephone)
-  const numero = formaterTelephone(structure.telephone)
-  const routeur = useIonRouter()
-
-  return (
-    <CarteListe
-      rang={rang}
-      titre={nom}
-      details={
-        <>
-          {specialite && <span className="conventionnes__specialite">{specialite}</span>}
-          {adresse && (
-            <span className="conventionnes__ligne">
-              <IonIcon icon={locationOutline} aria-hidden="true" />
-              <span>{adresse}</span>
-            </span>
-          )}
-          {numero && (
-            <span className="conventionnes__ligne">
-              <IonIcon icon={callOutline} aria-hidden="true" />
-              <span className="ipm-chiffres">{numero}</span>
-            </span>
-          )}
-        </>
-      }
-      puce={
-        <span className="conventionnes__actions">
-          {lien && (
-            <a
-              className="conventionnes__action ipm-cercle--neutre ipm-appui"
-              href={lien}
-              aria-label={`Appeler ${nom}`}
-              onClick={() => haptique.leger()}
-            >
-              <IonIcon icon={callOutline} aria-hidden="true" />
-            </a>
-          )}
-          {/* La carte de l'itinéraire, dans l'application : la position
-                de l'employé, le trajet, le temps — et de là, le guidage.
-                Affiché seulement si la structure est localisée : sans position,
-                pas de carte à montrer. */}
-          {structure.position && (
-            <button
-              type="button"
-              className="conventionnes__action conventionnes__action--itineraire ipm-appui"
-              aria-label={`S’y rendre : itinéraire vers ${nom}`}
-              onClick={() => {
-                haptique.leger()
-                routeur.push(
-                  `/conventionnes/${encodeURIComponent(structure.code)}`,
-                  'forward',
-                  'push',
-                )
-              }}
-            >
-              <IonIcon icon={navigateOutline} aria-hidden="true" />
-            </button>
-          )}
-        </span>
-      }
-    />
   )
 }

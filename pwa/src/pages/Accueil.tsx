@@ -179,10 +179,9 @@ export default function Accueil() {
             qu'il emmène en pharmacie) : la chercher dans le profil faisait trois
             touchers, elle est ici en un. La section disparaît s'il n'a pas
             d'ayant droit. */}
-        <section className="ipm-section accueil__documents">
-          <div className="ipm-entete-section">
-            <h2 className="ipm-titre-section">Demander un document</h2>
-          </div>
+        {/* Pas de titre : le filet la sépare des ayants droit ; son nom reste
+            lu par les lecteurs d'écran. */}
+        <section className="ipm-section accueil__documents" aria-label="Demander un bon">
           <GrilleServices
             onOuvrir={ouvrirDocument}
             onIndisponible={setAVenir}

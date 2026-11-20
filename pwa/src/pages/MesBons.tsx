@@ -19,7 +19,6 @@
 
 import {
   IonContent,
-  IonIcon,
   IonPage,
   IonRefresher,
   IonRefresherContent,
@@ -27,27 +26,23 @@ import {
   useIonViewDidEnter,
   type RefresherEventDetail,
 } from '@ionic/react'
-import {
-  add,
-  chevronDown,
-  cloudOfflineOutline,
-  documentTextOutline,
-  warningOutline,
-} from 'ionicons/icons'
+import { add, cloudOfflineOutline, documentTextOutline, warningOutline } from 'ionicons/icons'
 import { useMemo, useState, type ReactNode } from 'react'
 
 import CarteListe from '../components/CarteListe'
 import EtatVide from '../components/EtatVide'
 import { useNouveauBon } from '../components/NouveauBonModal'
 import OfflineBanner from '../components/OfflineBanner'
+import PucesFiltre from '../components/PucesFiltre'
 import { SqueletteCarte } from '../components/Skeletons'
 import StatutBadge from '../components/StatutBadge'
 import BarreActions from '../components/BarreActions'
 import { chargerBons, etatBons, useBons } from '../data/bons'
+import { useCompte } from '../data/compte'
 import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
 import type { Bon } from '../types/api'
-import { dateRelative, pluriel } from '../utils/format'
+import { dateRelative, montant } from '../utils/format'
 import { nomPropre } from '../utils/libelles'
 import { joursRestants, libelleValidite, STATUTS } from '../utils/statut'
 import { cheminDocument, cleDocument } from '../utils/documents'
@@ -79,6 +74,22 @@ export default function MesBons() {
   const enLigne = useOnline()
   const [filtre, setFiltre] = useState<FiltreType>('tous')
   const [presenterToast] = useIonToast()
+  // Les parts d'un bon traité (ce que l'agent paie, ce que l'IPM prend en
+  // charge) viennent du relevé du compte : un soin par bon, relié par genre et
+  // numéro interne.
+  const { releve } = useCompte()
+  const parts = useMemo(() => {
+    const index = new Map<string, { partAgent: number; partIpm: number }>()
+    for (const soin of releve?.soins ?? []) {
+      if (soin.document) {
+        index.set(cleDocument(soin.document), {
+          partAgent: soin.partAgent,
+          partIpm: soin.partIpm,
+        })
+      }
+    }
+    return index
+  }, [releve])
 
   const visibles = useMemo(() => (bons ? filtrerBons(bons, filtre, '') : []), [bons, filtre])
   const comptes = useMemo(() => compterParType(bons ?? []), [bons])
@@ -88,7 +99,7 @@ export default function MesBons() {
     () =>
       FILTRES.filter((f) => f === 'tous' || comptes[f] > 0).map((f) => ({
         cle: f,
-        libelle: f === 'tous' ? 'Tous les documents' : libelleFiltre(f),
+        libelle: f === 'tous' ? 'Tous' : libelleFiltre(f),
         nombre: comptes[f],
       })),
     [comptes],
@@ -174,18 +185,18 @@ export default function MesBons() {
         {/* Une seule liste, du plus récent au plus ancien : les
             intercalaires par mois coupaient la lecture sans rien apprendre,
             la date de chaque document est déjà sur sa carte. */}
-        <section className="ipm-section" aria-label="Vos documents">
+        <section className="ipm-section mes-documents__liste" aria-label="Vos documents">
           <div className="ipm-pile">
             {visibles.map((bon, rang) => (
-              <CarteDocument key={cleDocument(bon)} bon={bon} rang={rang} />
+              <CarteDocument
+                key={cleDocument(bon)}
+                bon={bon}
+                rang={rang}
+                parts={bon.statut === 'traite' ? parts.get(cleDocument(bon)) : undefined}
+              />
             ))}
           </div>
         </section>
-        <p className="mes-documents__total" aria-live="polite">
-          {visibles.length === bons.length
-            ? pluriel(bons.length, 'document')
-            : `${pluriel(visibles.length, 'document')} sur ${bons.length}`}
-        </p>
       </>
     )
   }
@@ -203,41 +214,18 @@ export default function MesBons() {
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 
+        {/* Les mêmes filtres que l'annuaire des structures : « Tous », puis une
+            puce par type de document présent, avec son compte. */}
         {avecDocuments && (
-          /* Un menu déroulant plutôt qu'un champ de recherche et une rangée de
-             puces, comme sur l'annuaire des conventionnés : l'employé range
-             ses documents par TYPE (« mes lettres de garantie »), il ne les
-             cherche pas par numéro. Le statut, lui, se lit sur chaque carte
-             et change tout seul : il ne fait pas une catégorie. Un `select`
-             natif ouvre le sélecteur du téléphone. */
-          <div className="ipm-menu-categorie">
-            {/* Pas de libellé visible au-dessus du menu : le choix affiché
-                (« Tous les documents », « Bons de pharmacie »…) se suffit. Le nom
-                reste porté pour les lecteurs d'écran. */}
-            <div className="ipm-menu-categorie__cadre">
-              <select
-                id="bons-categorie"
-                className="ipm-menu-categorie__choix"
-                aria-label="Type de document"
-                value={filtre}
-                onChange={(e) => {
-                  haptique.leger()
-                  if (estFiltreType(e.target.value)) setFiltre(e.target.value)
-                }}
-              >
-                {categories.map((categorie) => (
-                  <option key={categorie.cle} value={categorie.cle}>
-                    {categorie.libelle}
-                  </option>
-                ))}
-              </select>
-              <IonIcon
-                className="ipm-menu-categorie__chevron"
-                icon={chevronDown}
-                aria-hidden="true"
-              />
-            </div>
-          </div>
+          <PucesFiltre
+            className="mes-documents__filtres"
+            puces={categories}
+            active={filtre}
+            etiquette="Type de document"
+            onChanger={(cle) => {
+              if (estFiltreType(cle)) setFiltre(cle)
+            }}
+          />
         )}
 
         {contenu}
@@ -267,7 +255,16 @@ function messageSansResultat(filtre: FiltreType): string {
 /** En deçà, la carte rappelle le délai restant (« Expire demain »). */
 const JOURS_ALERTE = 7
 
-function CarteDocument({ bon, rang }: { bon: Bon; rang: number }) {
+function CarteDocument({
+  bon,
+  rang,
+  parts,
+}: {
+  bon: Bon
+  rang: number
+  /** Bon traité : la part de l'agent et la part IPM, si l'IPM les a comptées. */
+  parts?: { partAgent: number; partIpm: number }
+}) {
   const type = typeDocument(bon)
   const validite = libelleValidite(bon.statut, bon.valableJusquAu)
   // Le délai ne s'affiche que s'il reste une semaine ou moins.
@@ -280,7 +277,9 @@ function CarteDocument({ bon, rang }: { bon: Bon; rang: number }) {
     <CarteListe
       rang={rang}
       routerLink={cheminDocument(bon)}
-      teinte={bon.statut}
+      // L'icône de son type, en gris comme les réglages du profil.
+      icone={type.icone}
+      teinte="neutre"
       titre={type.libelle}
       etiquette={[
         `${type.libelle} ${bon.code}`,
@@ -307,6 +306,23 @@ function CarteDocument({ bon, rang }: { bon: Bon; rang: number }) {
                   {validite}
                 </span>
               )}
+            </span>
+          )}
+          {/* Bon traité : ce que l'agent paie et ce que l'IPM a pris en charge. */}
+          {parts && (
+            <span className="mes-documents__parts">
+              <span>
+                Ma part{' '}
+                <strong className="mes-documents__part--agent ipm-chiffres">
+                  {montant(parts.partAgent)}
+                </strong>
+              </span>
+              <span>
+                Part IPM{' '}
+                <strong className="mes-documents__part--ipm ipm-chiffres">
+                  {montant(parts.partIpm)}
+                </strong>
+              </span>
             </span>
           )}
         </>

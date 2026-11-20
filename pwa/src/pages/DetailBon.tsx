@@ -29,6 +29,7 @@ import {
   type RefresherEventDetail,
 } from '@ionic/react'
 import {
+  arrowBack,
   checkmarkCircleOutline,
   cloudOfflineOutline,
   documentTextOutline,
@@ -40,19 +41,14 @@ import {
 import { type ReactNode } from 'react'
 import type { RouteComponentProps } from 'react-router'
 
-import EnteteEcran from '../components/EnteteEcran'
 import { BoutonPrincipal, BoutonSecondaire } from '../components/Boutons'
 import EtatVide from '../components/EtatVide'
 import OfflineBanner from '../components/OfflineBanner'
 import PdfViewer from '../components/PdfViewer'
 import { SqueletteCarte } from '../components/Skeletons'
-import StatutBadge from '../components/StatutBadge'
 import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
-import type { Bon } from '../types/api'
 import { genreDuChemin } from '../utils/documents'
-import { dateMoyenne } from '../utils/format'
-import { explicationStatut, libelleValidite } from '../utils/statut'
 import { typeDocument } from './bons/affichage'
 import { nomFichierPdf, partagerPdf, telechargerFichier } from './bons/partage'
 import { empreinteImpression, lireIdentifiant, useDetailBon, usePdfBon } from './bons/useDetailBon'
@@ -158,15 +154,20 @@ export default function DetailBon({ match, location }: DetailBonProps) {
   } else {
     contenu = (
       <>
-        {/* Bon d'optique : aucun texte au-dessus des boutons, le bon parle de lui-même. */}
-        {genre !== 'bon-optique' && (
-          <>
-            <Validite bon={bon} />
-            <p className="detail-bon__explication">{explicationStatut(bon.statut, genre)}</p>
-          </>
-        )}
-
+        {/* Aucun texte au-dessus des boutons : le bon parle de lui-même. */}
         <div className="detail-bon__actions">
+          {/* Retour à la liste « Mes bons ». */}
+          <button
+            type="button"
+            className="detail-bon__retour ipm-appui"
+            aria-label="Retour"
+            onClick={() => {
+              haptique.leger()
+              retour()
+            }}
+          >
+            <IonIcon icon={arrowBack} aria-hidden="true" />
+          </button>
           <BoutonSecondaire
             disabled={!partageable}
             icone={shareOutline}
@@ -215,25 +216,9 @@ export default function DetailBon({ match, location }: DetailBonProps) {
           <IonRefresherContent />
         </IonRefresher>
 
-        {/* En-tête d'app mobile : flèche retour Material + le numéro du bon,
-            lisible à bout de bras au comptoir (§5). Le statut et la validité
-            viennent juste en dessous. Bon d'optique : pas d'en-tête du tout. */}
-        {/* Sans en-tête, il faut quand même réserver la place de la barre
-            d'actions fixe du haut, sinon le bon passe dessous. */}
-        {genre === 'bon-optique' && <BarreActions />}
-        {genre !== 'bon-optique' && (
-          <EnteteEcran
-            titre={
-              bon ? (
-                <span className="detail-bon__numero ipm-chiffres selectionnable">{bon.code}</span>
-              ) : (
-                type.libelle
-              )
-            }
-            sousTitre={type.libelle}
-            onRetour={retour}
-          />
-        )}
+        {/* La barre du haut de l'application (solde, identité, notifications,
+            profil), comme sur les autres écrans : plus d'en-tête propre. */}
+        <BarreActions />
 
         <OfflineBanner />
         {contenu}
@@ -242,23 +227,6 @@ export default function DetailBon({ match, location }: DetailBonProps) {
         <div className="ipm-bas-page" />
       </IonContent>
     </IonPage>
-  )
-}
-
-/** Puce de statut et « valable jusqu'au … », posées sur le bandeau rouge. */
-function Validite({ bon }: { bon: Bon }) {
-  const reste = libelleValidite(bon.statut, bon.valableJusquAu)
-  const jusquau = dateMoyenne(bon.valableJusquAu)
-  const libelle =
-    bon.statut === 'expire' ? `Était valable jusqu’au ${jusquau}` : `Valable jusqu’au ${jusquau}`
-  return (
-    <div className="detail-bon__validite">
-      <StatutBadge statut={bon.statut} icone />
-      <span className="detail-bon__jusquau">
-        {libelle}
-        {reste && <strong className="detail-bon__reste"> · {reste}</strong>}
-      </span>
-    </div>
   )
 }
 

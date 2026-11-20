@@ -10,7 +10,6 @@ import type {
   Bon,
   CodeLibelle,
   Conventionne,
-  DocumentReconnu,
   Fournisseur,
   GenreDocument,
   IdentificationCorps,
@@ -49,21 +48,6 @@ export function lireMoi({ signal }: Signal = {}) {
 /** Le relevé du compte IPM du participant : solde dû et mouvements. */
 export function lireCompte({ signal }: Signal = {}) {
   return requete<ReleveCompte>('/mobile/moi/compte/', { signal })
-}
-
-/**
- * Reconnaissance d'un document photographié par l'IA : type, date, prestataire,
- * montant, éléments. L'image (URL de données JPEG) part au serveur, qui appelle
- * l'IA ; la clé ne transite jamais par le téléphone.
- */
-export function reconnaitreDocument(image: string, { signal }: Signal = {}) {
-  return requete<DocumentReconnu>('/mobile/scan/', {
-    methode: 'POST',
-    corps: { image },
-    signal,
-    // L'analyse par l'IA prend quelques secondes : plus de marge que les appels JSON.
-    delaiMs: 60_000,
-  })
 }
 
 /**

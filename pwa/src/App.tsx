@@ -38,7 +38,6 @@ import Notifications from './pages/Notifications'
 import Conventionnes from './pages/Conventionnes'
 import Profil from './pages/Profil'
 import Releve from './pages/Releve'
-import Scan from './pages/Scan'
 import { SessionProvider, useSession } from './session'
 
 /** Durée minimale de l'écran de lancement : assez pour son animation, pas plus. */
@@ -101,7 +100,7 @@ function Coquille() {
 
 /** Chemins servis quand on est identifié ; le reste mène à l'accueil. */
 const CHEMINS_IDENTIFIE =
-  /^\/(accueil|bons|profil|conventionnes|releve|assistance|scan|identite|notifications|installation|a-propos|telecharger)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
+  /^\/(accueil|bons|profil|conventionnes|releve|assistance|identite|notifications|installation|a-propos|telecharger)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
 
 function Anonyme() {
   const { pathname } = useLocation()
@@ -145,8 +144,6 @@ function Onglets() {
           {/* La carte de l'itinéraire vers une structure, dans l'application. */}
           <Route exact path="/conventionnes/:code" component={Itineraire} />
           <Route exact path="/assistance" component={Assistance} />
-          {/* Pré-financement : scan de l'ordonnance et du reçu (à construire). */}
-          <Route exact path="/scan" component={Scan} />
           {/* Photos d'identité des cartes d'adhérent, en page (ouverte du haut). */}
           <Route exact path="/identite" component={Identite} />
           {/* Décisions de l'IPM sur les demandes, en page (ouverte de la cloche). */}
@@ -157,8 +154,7 @@ function Onglets() {
           <Route exact path="/a-propos" component={APropos} />
         </IonRouterOutlet>
         {/* Barre flottante (SPEC_DESIGN §3.1) : le contenu passe dessous, les
-            écrans réservent donc --bas-page en fin de contenu. Le scan y est
-            désormais un onglet comme les autres (plus de bouton flottant). */}
+            écrans réservent donc --bas-page en fin de contenu. */}
         <BarreOngletsFlottante />
       </IonTabs>
     </>

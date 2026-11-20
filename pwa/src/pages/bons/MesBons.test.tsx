@@ -73,9 +73,18 @@ beforeEach(async () => {
 })
 
 /** Le menu déroulant des types de document, seul filtre de l'écran. */
-const menu = () => screen.getByLabelText('Type de document') as HTMLSelectElement
+// Les filtres sont des puces (comme l'annuaire des structures) : on lit leurs
+// clés et on touche celle voulue.
+const puces = () =>
+  Array.from(document.querySelectorAll('.mes-documents__filtres [data-puce]')).map((p) =>
+    p.getAttribute('data-puce'),
+  )
 /** Choisit un type par sa clé (« tous », « lettre-garantie »…). */
-const choisir = (cle: string) => fireEvent.change(menu(), { target: { value: cle } })
+const choisir = (cle: string) => {
+  const puce = document.querySelector(`.mes-documents__filtres [data-puce="${cle}"]`)
+  if (!puce) throw new Error(`Puce ${cle} absente`)
+  fireEvent.click(puce)
+}
 
 describe('Mes documents', () => {
   it('liste les documents avec type, numéro, bénéficiaire, pharmacie et statut', async () => {
@@ -114,29 +123,25 @@ describe('Mes documents', () => {
     expect(numeros).toEqual(['BPI000123', 'BPI000045'])
   })
 
-  it('aucun filet : les documents sont des cartes autonomes (§1)', async () => {
+  it('une carte par document, comme les réglages du profil', async () => {
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
     await screen.findByLabelText(/BPI000123/)
 
-    expect(document.querySelectorAll('.ipm-carte-liste')).toHaveLength(BONS.length)
+    expect(document.querySelectorAll('.mes-documents__liste .ipm-carte-liste')).toHaveLength(
+      BONS.length,
+    )
     expect(document.querySelector('ion-item')).toBeNull()
     expect(document.querySelector('ion-segment')).toBeNull()
   })
 
-  it('ne propose au menu que les types présents', async () => {
+  it('ne propose en filtre que les types présents', async () => {
     lettres = [LETTRE]
     bonsMock.mockResolvedValue(reponseJson(BONS))
     rendreEcran(<MesBons />)
     await screen.findByLabelText(/LGI000075/)
 
-    await waitFor(() =>
-      expect(Array.from(menu().options).map((o) => o.textContent)).toEqual([
-        'Tous les documents',
-        'Bons de pharmacie',
-        'Lettres de garantie',
-      ]),
-    )
+    await waitFor(() => expect(puces()).toEqual(['tous', 'bon-pharmacie', 'lettre-garantie']))
   })
 
   it('n’offre pas un type dont l’employé n’a aucun document', async () => {
@@ -145,8 +150,7 @@ describe('Mes documents', () => {
     rendreEcran(<MesBons />)
     await screen.findByLabelText(/BPI000123/)
 
-    const libelles = Array.from(menu().options).map((o) => o.textContent)
-    expect(libelles).toEqual(['Tous les documents', 'Bons de pharmacie'])
+    expect(puces()).toEqual(['tous', 'bon-pharmacie'])
   })
 
   it('filtre sur le type choisi, et revient à tous les documents', async () => {
@@ -158,7 +162,6 @@ describe('Mes documents', () => {
     choisir('lettre-garantie')
     await waitFor(() => expect(screen.queryByLabelText(/BPI000123/)).toBeNull())
     expect(screen.getByLabelText(/LGI000075/)).toBeInTheDocument()
-    expect(screen.getByText('1 document sur 4')).toBeInTheDocument()
 
     choisir('bon-pharmacie')
     expect(await screen.findByLabelText(/BPI000123/)).toBeInTheDocument()

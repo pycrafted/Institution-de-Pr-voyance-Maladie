@@ -243,51 +243,6 @@ export interface ReleveCompte {
   remboursements: MouvementMensuel[]
 }
 
-/** Un élément relevé sur un document scanné (médicament, acte, ligne de reçu). */
-export interface ElementDocument {
-  libelle: string
-  quantite: string | null
-  montant: number | null
-}
-
-/** POST /api/mobile/scan/ — ce que l'IA a reconnu sur la photo d'un document. */
-export interface DocumentReconnu {
-  /** Catégorie machine : ordonnance, recu, facture, bon, carte, autre. */
-  type: string
-  /** Nom lisible du type (« Ordonnance médicale »). */
-  typeLibelle: string
-  /** false si la photo est floue/illisible. */
-  lisible: boolean
-  /** Date du document (ISO) ou null. */
-  date: DateISO | null
-  /** Prestataire (médecin, pharmacie, clinique…) ou null. */
-  prestataire: string | null
-  /** Patient ou null. */
-  patient: string | null
-  /** Montant total en francs CFA ou null. */
-  montantTotal: number | null
-  /** Médicaments / actes / lignes relevés. */
-  elements: ElementDocument[]
-  /** Une phrase décrivant le document. */
-  resume: string
-  /** Vrai si c'est une ordonnance médicale. */
-  estOrdonnance: boolean
-  /** Confiance que l'ordonnance est authentique et exploitable. */
-  fiabilite: 'haute' | 'moyenne' | 'faible'
-  /** Problèmes constatés (illisible, pas de signature, date absente…). */
-  alertes: string[]
-  /** Âge de l'ordonnance en jours (depuis sa date), ou null si date inconnue. */
-  ageJours: number | null
-  /** Vrai si l'ordonnance est récente (dans le délai). */
-  recente: boolean
-  /** Seuil de fraîcheur appliqué, en jours. */
-  seuilJours: number
-  /** Verdict de pré-financement : ok, attention, ou « autre » (hors ordonnance). */
-  verdict: 'ok' | 'attention' | 'autre'
-  /** Message du verdict, à montrer tel quel. */
-  verdictMessage: string
-}
-
 /** POST /api/mobile/bons-pharmacie/ */
 export interface NouveauBonCorps {
   /**

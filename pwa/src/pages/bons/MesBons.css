@@ -24,10 +24,35 @@
   margin-top: var(--inter-sections);
 }
 
-/* Décompte discret sous la dernière carte. */
-.mes-documents__total {
-  margin: var(--e-20) var(--gouttiere) 0;
-  text-align: center;
-  font: var(--t-secondaire);
-  color: var(--ipm-texte-doux);
+/* Les filtres : les mêmes puces que l'annuaire des structures, les inactives
+   sur fond blanc. */
+.mes-documents__filtres .ipm-puce:not(.ipm-puce--active) {
+  background: var(--ipm-surface);
+}
+.ipm-puces.mes-documents__filtres {
+  margin-bottom: var(--e-4);
+}
+
+/* Bon traité : la part de l'agent (rouge) et la part IPM (vert), côte à côte. */
+.mes-documents__parts {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: var(--e-12);
+  margin-top: 2px;
+}
+.mes-documents__part--agent {
+  color: var(--ipm-rouge-texte);
+}
+.mes-documents__part--ipm {
+  color: var(--ipm-valide-texte);
+}
+
+/* --- Les bons en cartes, comme les réglages du Profil ---------------------
+ * Une carte blanche par document (la carte de liste de la charte : coins
+ * arrondis, ombre douce, espace entre les cartes), l'icône du type à gauche,
+ * centrée sur la carte.
+ */
+.mes-documents__liste .ipm-carte-liste__cercle {
+  width: 32px;
+  font-size: 22px;
 }

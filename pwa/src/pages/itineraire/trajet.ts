@@ -15,8 +15,10 @@ export interface Point {
 export interface Trajet {
   /** En mètres, par la route. */
   distance: number
-  /** En secondes, en voiture, trafic non compris. */
+  /** En secondes, en voiture, trafic en temps réel compris (quand Google le donne). */
   duree: number
+  /** En secondes, en voiture, route dégagée : pour dire le retard dû au trafic. */
+  dureeSansTrafic?: number
   /** Le tracé, de point en point, pour la carte. */
   trace: [number, number][]
 }

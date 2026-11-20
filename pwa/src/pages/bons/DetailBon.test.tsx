@@ -10,6 +10,11 @@ import { preparerIonic, rendreEcran } from './outils-test'
 
 // La visionneuse (pdf.js) a ses propres tests : ici, un simple témoin.
 // (createElement importé dans la fabrique : vi.mock est remonté avant les imports.)
+// La barre du haut est écrite dans l'écran : elle charge son solde et ses
+// notifications, ce qui consommerait les réponses réseau simulées ici. Elle
+// a ses propres tests (components/BarreActions.test.tsx).
+vi.mock('../../components/BarreActions', () => ({ default: () => null }))
+
 vi.mock('../../components/PdfViewer', async () => {
   const { createElement } = await import('react')
   return {
@@ -63,13 +68,15 @@ afterEach(() => {
 })
 
 describe('Détail du bon', () => {
-  it('montre numéro, statut, validité et le PDF officiel', async () => {
+  it('montre directement les boutons et le PDF officiel, sans en-tête ni statut', async () => {
     serveur(unBon({ id: 4, code: 'BPI000123', statut: 'valide', valableJusquAu: '2099-10-18' }))
     afficher('4')
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'BPI000123' })).toBeInTheDocument()
-    expect(screen.getByText('Valide')).toBeInTheDocument()
-    expect(screen.getByText(/Valable jusqu’au 18 oct\. 2099/)).toBeInTheDocument()
+    expect(await screen.findByText('Partager')).toBeInTheDocument()
+    // Plus d'en-tête propre (numéro, flèche retour) ni de bandeau de statut :
+    // la barre du haut de l'application et, juste dessous, les boutons.
+    expect(screen.queryByRole('heading', { level: 1, name: 'BPI000123' })).toBeNull()
+    expect(screen.queryByText(/Valable jusqu’au/)).toBeNull()
 
     expect(await screen.findByTestId('visionneuse')).toHaveTextContent(
       'application/pdf Original/Copie',
@@ -111,7 +118,7 @@ describe('Détail du bon', () => {
     afficher('4')
 
     expect(await screen.findByText('Aperçu indisponible hors ligne')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 1, name: 'BPI000123' })).toBeInTheDocument()
+    expect(screen.getByText('Partager')).toBeInTheDocument()
     expect(screen.queryByTestId('visionneuse')).toBeNull()
   })
 

@@ -12,6 +12,8 @@
  */
 
 import { IonIcon, IonLabel, IonTabBar, IonTabButton } from '@ionic/react'
+import type { ComponentProps } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   cash,
   cashOutline,
@@ -21,8 +23,6 @@ import {
   homeOutline,
   location,
   locationOutline,
-  wallet,
-  walletOutline,
 } from 'ionicons/icons'
 
 export interface Onglet {
@@ -49,13 +49,13 @@ export const ONGLETS: readonly Onglet[] = [
     iconePleine: documentText,
   },
   {
-    // Le relevé du compte IPM (soins, retenues, remboursements) : remonté de
-    // la barre du haut, c'est un écran qu'on consulte souvent.
+    // Les retenues sur salaire, mois par mois. Les billets plutôt que le
+    // portefeuille, déjà pris par le solde dans la barre du haut.
     cle: 'releve',
     href: '/releve',
-    libelle: 'Relevé',
-    icone: walletOutline,
-    iconePleine: wallet,
+    libelle: 'Retenues',
+    icone: cashOutline,
+    iconePleine: cash,
   },
   {
     // Toutes les structures conventionnées, et pas seulement les pharmacies.
@@ -68,18 +68,6 @@ export const ONGLETS: readonly Onglet[] = [
     icone: locationOutline,
     iconePleine: location,
   },
-  {
-    // Le scan (pré-financement) est devenu un onglet comme les autres, à la
-    // place du relevé, qui a rejoint la barre du haut (compte/perso). Nommé
-    // d'après ce qu'il offre (une avance d'argent), pas d'après le geste : la
-    // consultation s'y fait sans rien scanner. Billet plutôt que portefeuille,
-    // déjà pris par le relevé dans la barre du haut.
-    cle: 'scan',
-    href: '/scan',
-    libelle: 'Préfinancement',
-    icone: cashOutline,
-    iconePleine: cash,
-  },
 ]
 
 interface Props {
@@ -90,11 +78,31 @@ export default function BarreOngletsFlottante({ onglets = ONGLETS }: Props) {
   return (
     <IonTabBar slot="bottom" className="ipm-onglets">
       {onglets.map((onglet) => (
-        <IonTabButton key={onglet.cle} tab={onglet.cle} href={onglet.href}>
+        <OngletRacine key={onglet.cle} tab={onglet.cle} href={onglet.href} racine={onglet.href}>
           <IonIcon ios={onglet.icone} md={onglet.iconePleine} aria-hidden="true" />
           <IonLabel>{onglet.libelle}</IonLabel>
-        </IonTabButton>
+        </OngletRacine>
       ))}
     </IonTabBar>
   )
 }
+
+/**
+ * Un bouton d'onglet qui ramène TOUJOURS à la racine de son onglet quand on y
+ * revient d'ailleurs. Par défaut, Ionic rouvre la dernière page vue dans
+ * l'onglet (un bon ouvert, par exemple) : la barre lui passe cette adresse en
+ * `href`. On la remplace par la racine (« /bons ») tant qu'on est dans un
+ * AUTRE onglet ; dans l'onglet lui-même, on laisse Ionic faire (retoucher
+ * l'onglet ramène déjà à sa racine).
+ */
+function OngletRacine({
+  racine,
+  href,
+  ...props
+}: Omit<ComponentProps<typeof IonTabButton>, 'ref'> & { racine: string }) {
+  const { pathname } = useLocation()
+  const dansLOnglet = pathname === racine || pathname.startsWith(`${racine}/`)
+  return <IonTabButton {...props} href={dansLOnglet ? href : racine} />
+}
+// IonTabBar ne pilote que ses boutons d'onglet : ce drapeau le lui dit.
+OngletRacine.isTabButton = true

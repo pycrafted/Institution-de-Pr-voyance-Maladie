@@ -16,7 +16,7 @@ interface Props {
 }
 
 const CENTRE = 20
-const RAYON = 13
+const RAYON = 14
 /** Longueur de la traîne derrière chaque point, en degrés. */
 const TRAINE = 55
 
@@ -52,7 +52,7 @@ export default function Chargeur({ className, ...aria }: Props) {
         {BRANCHES.map((b, i) => (
           <g key={i}>
             <path d={b.arc} className="ipm-chargeur__traine" />
-            <circle cx={b.tete.x} cy={b.tete.y} r={3.4} className="ipm-chargeur__point" />
+            <circle cx={b.tete.x} cy={b.tete.y} r={2.4} className="ipm-chargeur__point" />
           </g>
         ))}
       </g>

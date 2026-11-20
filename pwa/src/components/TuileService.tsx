@@ -47,13 +47,13 @@ export default function TuileService({ document, onOuvrir, onIndisponible }: Pro
       type="button"
       className={`ipm-tuile ipm-tuile--${indisponible ? 'avenir' : 'ouverte'} ipm-appui`}
       data-service={document.cle}
-      aria-label={indisponible ? `${document.libelle}, bientôt disponible` : document.libelle}
+      aria-label={indisponible ? `${document.action}, bientôt disponible` : document.action}
       onClick={toucher}
     >
       {/* L'icône au TRAIT, rouge sur la carte blanche : on force la version
           outline quel que soit le mode. */}
       <IonIcon icon={document.icone} className="ipm-tuile__icone" aria-hidden="true" />
-      <span className="ipm-tuile__libelle">{document.libelle}</span>
+      <span className="ipm-tuile__libelle">{document.action}</span>
       {/* À droite : le chevron (document ouvert) ou la puce « Bientôt ». */}
       {indisponible ? (
         <span className="ipm-tuile__puce" aria-hidden="true">

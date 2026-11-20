@@ -104,8 +104,11 @@ export default function Notifications() {
                       </span>
                       <span className="notifs__corps">
                         <span className="notifs__titre">{notification.titre}</span>
-                        <span className="notifs__message">{notification.message}</span>
-                        <span className="notifs__date">{dateHeure(notification.date)}</span>
+                        {/* La description, et l'heure tout à droite sur la même ligne. */}
+                        <span className="notifs__bas">
+                          <span className="notifs__message">{notification.message}</span>
+                          <span className="notifs__date">{quand(notification.date)}</span>
+                        </span>
                       </span>
                       {cliquable && (
                         <IonIcon
@@ -127,4 +130,9 @@ export default function Notifications() {
       </IonContent>
     </IonPage>
   )
+}
+
+/** « Hier à 12:05 », « 18 nov. à 12:30 » : sans l'année quand c'est l'année en cours. */
+function quand(date: string): string {
+  return dateHeure(date).replace(` ${new Date().getFullYear()}`, '')
 }

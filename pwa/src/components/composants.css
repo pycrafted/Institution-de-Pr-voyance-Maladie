@@ -58,8 +58,8 @@ ion-tab-bar.ipm-onglets {
      flottante de 64 px. */
   --padding-top: 8px;
   --padding-bottom: 8px;
-  /* Cinq onglets : chacun prend la largeur de son libellé (« Préfinancement »
-     est bien plus long que « Relevé »), sans retrait latéral superflu. */
+  /* Chaque onglet prend la largeur de son libellé, sans retrait latéral
+     superflu. */
   --padding-start: 2px;
   --padding-end: 2px;
   flex: 1 1 auto;
@@ -304,9 +304,9 @@ ion-tab-bar.ipm-onglets {
  * ===================================================================== */
 .ipm-navbar {
   position: relative;
-  /* Nom à gauche, solde au milieu, icônes à droite. */
+  /* Solde à gauche, icônes à droite. */
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: var(--e-8);
   min-height: 56px;
@@ -316,18 +316,10 @@ ion-tab-bar.ipm-onglets {
   margin-bottom: var(--e-16);
   box-sizing: content-box;
 }
-/* Nom de l'application, à gauche. */
-.ipm-navbar__nom {
-  font-size: 1.125rem;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--ipm-texte);
-  white-space: nowrap;
-}
-/* Le solde, au milieu, même dessin que l'ancienne ligne de l'accueil :
+/* Le solde, à gauche, même dessin que l'ancienne ligne de l'accueil :
    icône rouge sur pastille douce, puis le montant. */
 .ipm-navbar__solde {
-  justify-self: center;
+  justify-self: start;
   appearance: none;
   display: flex;
   align-items: center;
@@ -352,11 +344,17 @@ ion-tab-bar.ipm-onglets {
   color: var(--ipm-rouge-texte);
 }
 .ipm-navbar__solde-textes {
+  /* Le montant, et la phrase qui l'explique juste en dessous. */
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  column-gap: 5px;
+  flex-direction: column;
+  gap: 1px;
   line-height: 1.15;
+}
+.ipm-navbar__solde-libelle {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ipm-texte-doux);
+  white-space: nowrap;
 }
 .ipm-navbar__solde-montant {
   font-size: 1rem;
@@ -733,7 +731,7 @@ button.ipm-carte-identite__portrait {
  */
 /* Une LISTE d'une colonne (demande de l'utilisateur) : les grandes tuiles
    carrées devenaient trop hautes. Chaque document est une ligne compacte,
-   comme les réglages du profil et le choix du scan - même gouttière, même
+   comme les réglages du profil - même gouttière, même
    espacement entre cartes. */
 .ipm-grille-services {
   display: flex;
@@ -1630,19 +1628,17 @@ ion-modal.carte-plein {
   background: var(--ipm-surface);
   border: 1px solid var(--ipm-liseret);
 }
-/* Page Identité : les personnes posées directement sur la page, sans carte,
-   séparées par un simple filet. */
+/* Page Identité : une carte blanche par personne, comme les réglages du
+   Profil (coins arrondis, ombre douce, espace entre les cartes). */
 .identite .photos__liste {
-  gap: 0;
+  gap: var(--inter-cartes);
 }
 .identite .photos__ligne {
-  padding: var(--e-12) 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
-}
-.identite .photos__ligne + .photos__ligne {
-  border-top: 1px solid var(--ipm-bordure);
+  padding: 14px 16px;
+  border: 1px solid var(--ipm-liseret);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-1);
 }
 .photos__personne {
   display: flex;
@@ -1737,25 +1733,39 @@ ion-modal.carte-plein {
 .notifs__ligne:disabled {
   cursor: default;
 }
-/* Page Notifications : les décisions posées directement sur la page, sans
-   carte, séparées par un simple filet. */
+/* Page Notifications : une carte blanche par décision, comme les réglages
+   du Profil et les bons (coins arrondis, ombre douce, espace entre les
+   cartes). */
 .notifications .notifs__liste {
-  gap: 0;
+  gap: var(--inter-cartes);
   padding-inline: var(--gouttiere);
 }
 .notifications .notifs__ligne {
-  padding: var(--e-12) 0;
-  border: 0;
-  border-radius: 0;
-  background: none;
+  padding: 14px 16px;
+  border: 1px solid var(--ipm-liseret);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  box-shadow: var(--ombre-1);
 }
-.notifications .notifs__liste li + li .notifs__ligne {
-  border-top: 1px solid var(--ipm-bordure);
+/* La description à gauche, l'heure tout à droite, sur la même ligne. */
+.notifications .notifs__bas {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--e-12);
+}
+.notifications .notifs__bas .notifs__message {
+  flex: 1;
+  min-width: 0;
+}
+.notifications .notifs__bas .notifs__date {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .notifications .notifs__pastille {
-  /* L'icône seule, sans le rond de fond. */
+  /* L'icône seule, sans le rond de fond, en gris comme les réglages. */
   background: none;
-  color: var(--ipm-rouge-texte);
+  color: var(--ipm-texte-doux);
 }
 .notifs__pastille {
   flex-shrink: 0;

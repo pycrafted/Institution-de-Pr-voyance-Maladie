@@ -12,6 +12,20 @@ import { reinitialiserConventionnes } from './conventionnes/useConventionnes'
 // notifications, ce qui consommerait les réponses réseau simulées ici. Elle
 // a ses propres tests (components/BarreActions.test.tsx).
 vi.mock('../components/BarreActions', () => ({ default: () => null }))
+// La carte Google (chargement de script, clé) n'a pas sa place sous jsdom :
+// on la remplace par la liste des noms qu'elle recevrait, un par point.
+vi.mock('./conventionnes/CarteStructures', async () => {
+  const { nomStructure } = await import('./conventionnes/recherche')
+  return {
+    default: ({ structures }: { structures: { code: string }[] }) => (
+      <ul aria-label="Points de la carte">
+        {structures.map((s) => (
+          <li key={s.code}>{nomStructure(s as Parameters<typeof nomStructure>[0])}</li>
+        ))}
+      </ul>
+    ),
+  }
+})
 
 const fetchMock = vi.fn<typeof fetch>()
 
@@ -56,9 +70,13 @@ const ANNUAIRE: Conventionne[] = [
 ]
 
 /** Le menu déroulant des catégories, seul filtre de l'écran. */
-const menu = () => screen.getByLabelText('Catégorie') as HTMLSelectElement
 /** Choisit une catégorie par son code de spécialité (TOUS : « * »). */
-const choisir = (code: string) => fireEvent.change(menu(), { target: { value: code } })
+// Les filtres sont des puces (plus un menu déroulant) : on touche celle du code.
+const choisir = (code: string) => {
+  const puce = document.querySelector(`[data-puce="${code}"]`)
+  if (!puce) throw new Error(`Puce ${code} absente`)
+  fireEvent.click(puce)
+}
 
 beforeAll(() => preparerIonic())
 
@@ -77,7 +95,7 @@ afterEach(() => {
 })
 
 describe('Conventionnés', () => {
-  it('annonce le chargement, puis une carte par structure, toutes spécialités', async () => {
+  it('annonce le chargement, puis un point par structure sur la carte, toutes spécialités', async () => {
     fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
     const { container } = rendreEcran(<Conventionnes />)
 
@@ -87,21 +105,12 @@ describe('Conventionnés', () => {
     expect(await screen.findByText('Pharmacie du Plateau')).toBeInTheDocument()
     expect(screen.getByText('Clinique du Cap')).toBeInTheDocument()
     expect(screen.getByText('Bio 24')).toBeInTheDocument()
-    // La spécialité est écrite sur chaque carte (et sur sa puce de filtre).
-    const specialites = Array.from(container.querySelectorAll('.conventionnes__specialite')).map(
-      (s) => s.textContent,
-    )
-    expect(specialites).toEqual([
-      'Pharmacies',
-      'Pharmacies',
-      'Cliniques',
-      'Laboratoires d’analyses',
-    ])
-    expect(screen.getByText('4 structures')).toBeInTheDocument()
+    // Plus de liste de cartes sous la carte : les structures sont ses points.
+    expect(container.querySelector('.ipm-carte-liste')).toBeNull()
     expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/mobile/conventionnes/')
   })
 
-  it('commence directement par la recherche, sans en-tête ni retour ni filets (§1)', async () => {
+  it('commence par les filtres, la carte en fond, sans en-tête ni retour ni liste (§1)', async () => {
     fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
     const { container } = rendreEcran(<Conventionnes />)
     await screen.findByText('Pharmacie du Plateau')
@@ -111,7 +120,10 @@ describe('Conventionnés', () => {
     expect(container.querySelector('.ipm-entete')).toBeNull()
     // Un onglet : on en change, on n'en revient pas.
     expect(screen.queryByLabelText('Retour')).toBeNull()
-    expect(container.querySelectorAll('.ipm-pile .ipm-carte-liste')).toHaveLength(ANNUAIRE.length)
+    // Les filtres en tête : « Toutes » puis une puce par spécialité présente.
+    expect(container.querySelectorAll('.conventionnes__filtres [data-puce]')).toHaveLength(4)
+    // Plus de liste de cartes : les structures sont les points de la carte.
+    expect(container.querySelector('.ipm-carte-liste')).toBeNull()
     expect(container.querySelector('ion-item')).toBeNull()
     expect(container.querySelector('ion-segment')).toBeNull()
   })
@@ -121,15 +133,12 @@ describe('Conventionnés', () => {
     rendreEcran(<Conventionnes />)
     await screen.findByText('Pharmacie du Plateau')
 
-    const libelles = Array.from(menu().options).map((o) => o.textContent)
-    expect(libelles).toEqual([
-      'Toutes les structures',
-      'Pharmacies',
-      'Cliniques',
-      'Laboratoires d’analyses',
-    ])
-    // Toutes les structures au départ : l'annuaire entier.
-    expect(menu().value).toBe('*')
+    const puces = Array.from(document.querySelectorAll('.conventionnes__filtres [data-puce]'))
+    // « Toutes », puis Pharmacies (2), Cliniques (1), Laboratoires (1).
+    expect(puces.map((p) => p.getAttribute('data-puce'))).toEqual(['*', '06', '08', '28'])
+    expect(puces[0]).toHaveTextContent('Toutes')
+    // Toutes au départ : l'annuaire entier.
+    expect(puces[0]).toHaveAttribute('aria-selected', 'true')
   })
 
   it('filtre sur la catégorie choisie, et revient à l’annuaire entier', async () => {
@@ -140,61 +149,9 @@ describe('Conventionnés', () => {
     choisir('08') // Cliniques
     await waitFor(() => expect(screen.queryByText('Pharmacie du Plateau')).toBeNull())
     expect(screen.getByText('Clinique du Cap')).toBeInTheDocument()
-    expect(screen.getByText('1 structure sur 4')).toBeInTheDocument()
 
     choisir('*')
     expect(await screen.findByText('Pharmacie du Plateau')).toBeInTheDocument()
-    expect(screen.getByText('4 structures')).toBeInTheDocument()
-  })
-
-  it('appelle d’un toucher, et le dit quand le numéro manque', async () => {
-    fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
-    rendreEcran(<Conventionnes />)
-    await screen.findByText('Pharmacie du Plateau')
-
-    expect(screen.getByLabelText(/^Appeler Clinique du Cap/)).toHaveAttribute(
-      'href',
-      'tel:338480000',
-    )
-    expect(screen.getByLabelText(/^Appeler Pharmacie de l'Aeroport/)).toHaveAttribute(
-      'href',
-      'tel:+221338201122',
-    )
-    expect(screen.queryByLabelText(/^Appeler Bio 24/)).toBeNull()
-    // Le numéro ne s'écrit plus sur la carte : le bouton le compose et le dit.
-    expect(screen.getByLabelText(/^Appeler Clinique du Cap au /)).toBeInTheDocument()
-    expect(screen.queryByText('Téléphone non communiqué')).toBeNull()
-  })
-
-  it('chaque structure a son bouton « S’y rendre », qui ouvre la carte dans l’application', async () => {
-    fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
-    rendreEcran(<Conventionnes />)
-    await screen.findByText('Pharmacie du Plateau')
-
-    const cap = screen.getByLabelText('S’y rendre : itinéraire vers Clinique du Cap')
-    // Un bouton de l'application, et non un lien qui la quitte.
-    expect(cap.tagName).toBe('BUTTON')
-    expect(cap).not.toHaveAttribute('href')
-    fireEvent.click(cap)
-    await waitFor(() => expect(window.location.pathname).toBe('/conventionnes/CL001'))
-    // Deux boutons par structure qui a un numéro, un seul sinon.
-    expect(screen.getAllByLabelText(/^S’y rendre/)).toHaveLength(ANNUAIRE.length)
-    expect(screen.getAllByLabelText(/^Appeler/)).toHaveLength(3)
-  })
-
-  it('propose de revenir à toutes les catégories quand l’une est vide', async () => {
-    // Une spécialité de l'annuaire dont aucune structure n'est chargée : le
-    // cas se produit quand une structure est désactivée entre deux syncs.
-    fetchMock.mockResolvedValue(reponseJson(ANNUAIRE))
-    rendreEcran(<Conventionnes />)
-    await screen.findByText('Pharmacie du Plateau')
-
-    choisir('99') // aucune structure ne porte ce code
-    expect(await screen.findByText('Aucune structure trouvée')).toBeInTheDocument()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Toutes les structures' }))
-    expect(await screen.findByText('Pharmacie du Plateau')).toBeInTheDocument()
-    expect(menu().value).toBe('*')
   })
 
   it('annuaire vide : un état vide illustré, sans menu de catégories', async () => {

@@ -112,3 +112,20 @@
   gap: var(--inter-cartes);
   margin-top: var(--e-16);
 }
+
+/* Bouton retour, rond, au début de la rangée des actions. */
+.detail-bon__retour {
+  appearance: none;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--ipm-surface-2);
+  color: var(--ipm-texte);
+  font-size: 22px;
+  cursor: pointer;
+}
