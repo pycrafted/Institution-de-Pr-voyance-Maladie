@@ -1,7 +1,7 @@
 /*
  * Page « Télécharger Nofly » (pages/Telecharger.tsx). Préfixe telecharger__.
- * Une carte centrée sur le fond de l'app : icône, nom, accroche, atouts, les
- * deux boutons, et les étapes d'installation qui se déplient dessous.
+ * Une carte centrée sur le fond de l'app : logo et nom,
+ * atouts, les étapes d'installation, puis le bouton « Télécharger ».
  */
 
 .telecharger__page {
@@ -26,45 +26,37 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--e-32) var(--e-24) var(--e-24);
-  border-radius: 28px;
+  /* Une carte comme celles de l'app (réglages du profil) : blanche, liseret,
+     coins arrondis, ombre douce. */
+  padding: var(--e-24) var(--e-20);
   background: var(--ipm-surface);
-  box-shadow: var(--ombre-2);
+  border: 1px solid var(--ipm-liseret);
+  border-radius: var(--r-lg);
+  box-shadow: var(--ombre-1);
   text-align: center;
 }
 
-.telecharger__icone {
-  display: grid;
-  place-items: center;
-  width: 112px;
-  height: 112px;
-  border-radius: 28px;
-  background: #fff;
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.1),
-    0 0 0 1px var(--ipm-bordure);
-  overflow: hidden;
+.telecharger__entete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
-.telecharger__icone img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.telecharger__logo {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
 }
 
 .telecharger__titre {
-  margin: var(--e-20) 0 0;
-  font-size: 2rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  /* Comme le titre de la page de connexion. */
+  margin: 0;
+  font: var(--t-display);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
   color: var(--ipm-texte);
-}
-
-.telecharger__accroche {
-  margin: var(--e-8) 0 0;
-  max-width: 30ch;
-  font-size: 0.9375rem;
-  line-height: 1.45;
-  color: var(--ipm-texte-doux);
 }
 
 .telecharger__atouts {
@@ -93,14 +85,27 @@
   margin-top: var(--e-24);
 }
 
-/* Les étapes, dépliées sous les boutons. */
+/* Les étapes, toujours visibles, au-dessus du bouton « Télécharger ». */
 .telecharger__etapes {
   width: 100%;
-  margin-top: var(--e-20);
-  padding-top: var(--e-16);
-  border-top: 1px solid var(--ipm-bordure);
+  margin-top: var(--e-24);
   text-align: start;
   scroll-margin-top: var(--e-24);
+}
+.telecharger__etapes-titre {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ipm-texte);
+}
+.telecharger__etapes-question {
+  margin: 4px 0 var(--e-8);
+  font-size: 0.875rem;
+  color: var(--ipm-texte-doux);
+}
+.telecharger__telephones {
+  padding: 0;
+  margin-bottom: var(--e-20);
 }
 .telecharger__etapes ol {
   list-style: none;
@@ -108,36 +113,57 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--e-12);
+  gap: var(--e-16);
 }
-.telecharger__etapes li {
+.telecharger__etape {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  color: var(--ipm-texte);
+  align-items: flex-start;
+  gap: 12px;
 }
 .telecharger__numero {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--r-pill);
-  background: var(--ipm-rouge-doux);
-  color: var(--ipm-rouge-texte);
-  font-size: 0.75rem;
+  background: var(--ipm-rouge);
+  color: #fff;
+  font-size: 0.875rem;
   font-weight: 800;
 }
-.telecharger__etape-icone {
-  flex-shrink: 0;
-  font-size: 20px;
+.telecharger__etape-textes {
+  flex: 1;
+  min-width: 0;
+}
+.telecharger__etape-action {
+  margin: 3px 0 0;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: var(--ipm-texte);
+}
+.telecharger__etape-action strong {
+  font-weight: 700;
+}
+.telecharger__etape-aide {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
   color: var(--ipm-texte-doux);
 }
-
-.telecharger__pied {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--ipm-texte-doux);
+.telecharger__etape-aide strong {
+  color: var(--ipm-texte);
+  font-weight: 600;
+}
+/* Le dessin du bouton à chercher sur l'écran, comme une touche. */
+.telecharger__etape-touche {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--ipm-surface-2);
+  color: var(--ipm-texte);
+  font-size: 22px;
 }

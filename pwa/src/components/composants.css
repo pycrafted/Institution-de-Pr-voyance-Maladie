@@ -24,6 +24,11 @@
  * de 12 dessous. Le contenu défile dessous : les écrans réservent `--bas-page`
  * (88 px), qui couvre le retrait, la barre et la zone sûre.
  */
+/* Sur /telecharger, la barre d'onglets n'apparaît jamais. */
+ion-tab-bar.ipm-onglets.ipm-onglets--masquee {
+  display: none;
+}
+
 ion-tab-bar.ipm-onglets {
   position: absolute;
   left: var(--gouttiere);

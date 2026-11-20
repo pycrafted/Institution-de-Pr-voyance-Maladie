@@ -1,0 +1,373 @@
+/*
+ * Petits écrans de téléphone du guide d'installation
+ * (pages/telecharger/Illustrations.tsx). Préfixe tel-.
+ * L'écran reste clair même en mode sombre : c'est celui du téléphone.
+ */
+
+/* --- Le téléphone -------------------------------------------------------- */
+.tel {
+  --tel-bleu: #0a84ff;
+  --tel-texte: #1c1c1e;
+  --tel-doux: #8e8e93;
+  --tel-fond: #f2f2f7;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 230px;
+  height: 150px;
+  margin-top: var(--e-12);
+  border: 6px solid #1f1f22;
+  background: #1f1f22;
+  overflow: hidden;
+}
+/* Le haut du téléphone : coins arrondis en haut, coupé en bas. */
+.tel--haut {
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  -webkit-mask-image: linear-gradient(#000 88%, transparent);
+  mask-image: linear-gradient(#000 88%, transparent);
+}
+/* Le bas du téléphone : coupé en haut, coins arrondis en bas. */
+.tel--bas {
+  border-top: 0;
+  border-radius: 0 0 28px 28px;
+  -webkit-mask-image: linear-gradient(transparent, #000 25%);
+  mask-image: linear-gradient(transparent, #000 25%);
+}
+.tel__ecran {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--tel-fond);
+  color: var(--tel-texte);
+  font-size: 11px;
+  line-height: 1.2;
+  overflow: hidden;
+}
+.tel--haut .tel__ecran {
+  border-radius: 22px 22px 0 0;
+}
+.tel--bas .tel__ecran {
+  border-radius: 0 0 22px 22px;
+  justify-content: flex-end;
+}
+
+/* --- Ce qu'il faut toucher : entouré de rouge, un cercle qui pulse ------- */
+.tel-cible {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  box-shadow: 0 0 0 2px var(--ipm-rouge);
+}
+.tel-cible::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--ipm-rouge);
+  animation: tel-pulse 1.6s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes tel-pulse {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tel-cible::after {
+    animation: none;
+  }
+}
+.tel-cible--appli {
+  border-radius: 12px;
+}
+.tel-cible--ligne {
+  display: flex;
+  border-radius: 8px;
+}
+.tel-cible--ligne::after {
+  animation-name: tel-pulse-ligne;
+}
+@keyframes tel-pulse-ligne {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.06, 1.4);
+  }
+}
+
+/* --- Écran d'accueil ---------------------------------------------------- */
+.tel-accueil {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 8px;
+  padding: 18px 14px 0;
+  background: linear-gradient(160deg, #c9d6ff, #e2e2f5 60%, #f6dede);
+  height: 100%;
+}
+.tel-appli {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.tel-appli__icone {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.tel-appli__icone img {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+}
+.tel-appli__icone--t1 {
+  background: #ffffffaa;
+}
+.tel-appli__icone--t2 {
+  background: #ffffff77;
+}
+.tel-appli__icone--t3 {
+  background: #ffffff99;
+}
+.tel-appli__icone--t4 {
+  background: #ffffff66;
+}
+.tel-appli__icone--safari {
+  background: linear-gradient(#fff, #e9eef5);
+  color: var(--tel-bleu);
+  font-size: 28px;
+}
+.tel-appli__icone--chrome {
+  background: #fff;
+  color: #1a73e8;
+  font-size: 26px;
+}
+.tel-appli__icone--ipm {
+  background: #fff;
+}
+.tel-appli__icone--petite {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  flex-shrink: 0;
+}
+.tel-appli__nom {
+  width: 26px;
+  height: 4px;
+  border-radius: 2px;
+  background: #ffffff99;
+}
+.tel-appli__libelle {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--tel-texte);
+  white-space: nowrap;
+}
+
+/* --- Safari : la page, l'adresse, la barre d'outils ---------------------- */
+.tel-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 26px 14px 0;
+  background: #fff;
+}
+.tel-ligne {
+  height: 6px;
+  border-radius: 3px;
+  background: #e5e5ea;
+}
+.tel-ligne--courte {
+  width: 60%;
+}
+.tel-adresse {
+  margin: 6px 12px 0;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  text-align: center;
+  color: var(--tel-texte);
+}
+.tel-outils {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 8px 6px 14px;
+  font-size: 18px;
+  color: var(--tel-bleu);
+}
+.tel-outils .tel-cible {
+  padding: 3px 5px;
+}
+
+/* --- La feuille « Partager » d'iPhone ----------------------------------- */
+.tel-feuille {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 10px 16px;
+}
+.tel-feuille__ligne {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 11px;
+}
+.tel-feuille__ligne ion-icon {
+  font-size: 15px;
+}
+
+/* --- La confirmation d'iPhone (« Ajouter ») ----------------------------- */
+.tel-entete {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 10px 10px;
+  background: #fff;
+}
+.tel-entete__titre {
+  font-weight: 600;
+}
+.tel-lien {
+  color: var(--tel-bleu);
+}
+.tel-lien--gras {
+  padding: 2px 5px;
+  font-weight: 700;
+}
+.tel-apercu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 10px 0;
+  padding: 8px;
+  border-radius: 10px;
+  background: #fff;
+}
+.tel-apercu .tel-appli__icone {
+  box-shadow: 0 0 0 1px #e5e5ea;
+}
+.tel-champ {
+  flex: 1;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e5e5ea;
+}
+
+/* --- La fenêtre d'installation d'Android -------------------------------- */
+.tel-voile {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 8px 14px;
+  background: rgba(0, 0, 0, 0.35);
+}
+.tel-dialogue {
+  width: 100%;
+  padding: 10px;
+  border-radius: 16px;
+  background: #fff;
+}
+.tel-dialogue__tete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--tel-doux);
+}
+.tel-dialogue__tete strong {
+  font-size: 11px;
+  color: var(--tel-texte);
+}
+.tel-dialogue__boutons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+}
+.tel-cible:has(.tel-bouton-android) {
+  border-radius: 999px;
+}
+.tel-lien--android {
+  color: #1a73e8;
+  font-weight: 600;
+}
+.tel-bouton-android {
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #1a73e8;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* --- Chrome : la barre du haut et le menu des trois points --------------- */
+.tel-chrome {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 8px 6px;
+  background: #fff;
+}
+.tel-adresse--chrome {
+  flex: 1;
+  margin: 0;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #f1f3f4;
+  box-shadow: none;
+  text-align: start;
+}
+.tel-chrome__points {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #e8eaed;
+  font-size: 15px;
+}
+.tel-menu {
+  align-self: flex-end;
+  width: 72%;
+  margin: 2px 6px 0 0;
+  padding: 4px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.tel-menu__ligne {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  font-size: 10.5px;
+  white-space: nowrap;
+}
+.tel-menu__ligne ion-icon {
+  font-size: 13px;
+  color: #5f6368;
+}

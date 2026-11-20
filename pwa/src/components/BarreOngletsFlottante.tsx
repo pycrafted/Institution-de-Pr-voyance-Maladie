@@ -74,9 +74,15 @@ interface Props {
   onglets?: readonly Onglet[]
 }
 
+/** Pages sans barre d'onglets : la page « Télécharger Nofly » se suffit à elle-même. */
+const SANS_ONGLETS = /^\/telecharger\/?$/
+
 export default function BarreOngletsFlottante({ onglets = ONGLETS }: Props) {
+  const { pathname } = useLocation()
+  // Masquée par CSS plutôt que retirée : IonTabs a besoin de sa barre.
+  const masquee = SANS_ONGLETS.test(pathname)
   return (
-    <IonTabBar slot="bottom" className="ipm-onglets">
+    <IonTabBar slot="bottom" className={`ipm-onglets${masquee ? ' ipm-onglets--masquee' : ''}`}>
       {onglets.map((onglet) => (
         <OngletRacine key={onglet.cle} tab={onglet.cle} href={onglet.href} racine={onglet.href}>
           <IonIcon ios={onglet.icone} md={onglet.iconePleine} aria-hidden="true" />
