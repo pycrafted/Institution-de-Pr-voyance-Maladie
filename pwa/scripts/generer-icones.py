@@ -32,9 +32,9 @@ LANCEMENT = PUBLIC / 'splash'
 DEG_ROUGE = (150, (0xE5, 0x26, 0x21), (0xB3, 0x16, 0x0F))
 DEG_MARQUE = (160, (0x1D, 0x1D, 0x1B), (0x33, 0x30, 0x2C))
 BLANC = (255, 255, 255)
-# Fond des écrans de lancement : le rose pâle de l'application, logo rouge
-# dessus (cf. FOND_LANCEMENT dans src/components/Splash.tsx).
-FOND_LANCEMENT = (0xEC, 0xE4, 0xE3)
+# Fond des écrans de lancement : le rose pâle de l'application, sans logo
+# (cf. FOND_LANCEMENT dans src/components/Splash.tsx).
+FOND_LANCEMENT = (0xF8, 0xF1, 0xF0)
 
 # Rayon de l'icône « any », en proportion du côté : celui d'iOS/Android.
 RAYON_ICONE = 112 / 512
@@ -142,12 +142,11 @@ def icone(taille, arrondi=True, part=PART_ICONE):
 
 def lancement(largeur, hauteur):
     """
-    Écran de lancement : fond #ECE4E3, logo rouge centré puis remonté d'un
-    vingtième de la hauteur — mêmes cotes que src/components/Splash.css, pour
-    que le relais entre l'image d'iOS et l'application ne saute pas.
+    Écran de lancement : le fond de l'application, et rien d'autre. Un seul
+    chargeur dans l'app (components/Chargeur, affiché par Splash) : l'image
+    d'iOS ne doit pas en montrer un second (logo) avant lui.
     """
-    fond = Image.new('RGBA', (largeur, hauteur), FOND_LANCEMENT + (255,))
-    return poser_logo(fond, logo_rouge(), PART_LANCEMENT, -hauteur / 20).convert('RGB')
+    return Image.new('RGB', (largeur, hauteur), FOND_LANCEMENT)
 
 
 def main():
