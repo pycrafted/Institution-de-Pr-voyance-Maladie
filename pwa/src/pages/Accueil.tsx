@@ -11,8 +11,7 @@
  *   3. « Demander un document » : deux colonnes de grandes cartes (§3.4),
  *      une par type de bon, issues de DOCUMENTS.
  *
- * Les ayants droit sont juste sous la carte du titulaire (section « Ayants
- * droit »). Le solde IPM est dans la barre du haut.
+ * Les ayants droit sont au Profil. Le solde IPM est dans la barre du haut.
  *
  * Et rien d'autre : demander un document est la raison d'être de l'écran.
  * Les écrans utilitaires ne s'y invitent pas — « Mes bons »,
@@ -38,7 +37,6 @@ import { useState } from 'react'
 
 import { BoutonPrincipal } from '../components/Boutons'
 import CarteIdentite from '../components/CarteIdentite'
-import Avatar from '../components/Avatar'
 import Feuille from '../components/Feuille'
 import GrilleServices from '../components/GrilleServices'
 import { useNouveauBon } from '../components/NouveauBonModal'
@@ -47,7 +45,6 @@ import BarreActions from '../components/BarreActions'
 import { useBons } from '../data/bons'
 import { useCompte } from '../data/compte'
 import { haptique } from '../hooks/haptique'
-import { useFamille } from '../hooks/useFamille'
 import { MESSAGE_BIENTOT, ouvreAssistant, type TypeDocument } from '../services/catalogue'
 import { estGenreDocument } from '../utils/documents'
 import { useParticipant, useSession } from '../session'
@@ -60,7 +57,6 @@ export default function Accueil() {
   const { erreur, depuisCache, synchroniseLe, rafraichir: rafraichirBons } = useBons()
   // Le solde est dans la barre du haut ; l'accueil le rafraîchit au tirer.
   const { rafraichir: rafraichirCompte } = useCompte()
-  const famille = useFamille()
   const { ouvrirAssistant } = useNouveauBon()
   const routeur = useIonRouter()
   // Document à venir dont on explique l'absence, dans une feuille (§3.9).
@@ -124,41 +120,6 @@ export default function Accueil() {
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 
-        {/* Les ayants droit, juste sous la carte de l'employé : photo et
-            prénom. Masquée sans ayant droit. */}
-        {famille.length > 0 && (
-          <section className="ipm-section accueil__famille">
-            <div className="ipm-entete-section">
-              <h2 className="ipm-titre-section">Ayants droit</h2>
-            </div>
-            <ul className="accueil-famille" aria-label="Cartes d’ayant droit">
-              {famille.map((membre) => (
-                <li key={membre.matricule}>
-                  <div
-                    className="accueil-famille__membre"
-                    aria-label={`${membre.prenoms} ${membre.nom}`}
-                  >
-                    {/* La forme de la photo de la carte d'adhérent : le même
-                        visage se reconnaît d'un écran à l'autre. */}
-                    <Avatar
-                      nom={membre.nomComplet}
-                      photo={membre.photo}
-                      taille={56}
-                      forme="identite"
-                    />
-                    <span className="accueil-famille__nom">{membre.prenoms}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Raccourcis vers les cartes d'ayant droit, juste sous la carte du
-            titulaire. L'employé présente souvent la carte d'un proche (l'enfant
-            qu'il emmène en pharmacie) : la chercher dans le profil faisait trois
-            touchers, elle est ici en un. La section disparaît s'il n'a pas
-            d'ayant droit. */}
         {/* Pas de titre : le filet la sépare des ayants droit ; son nom reste
             lu par les lecteurs d'écran. */}
         <section className="ipm-section accueil__documents" aria-label="Demander un bon">

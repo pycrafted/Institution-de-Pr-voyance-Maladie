@@ -157,19 +157,8 @@ describe('Accueil', () => {
     expect(simulations.ouvrirAssistant).toHaveBeenCalledWith('lettre-garantie')
   })
 
-  it('montre les ayants droit sous la carte de l’employé', () => {
-    // La fabrique donne le titulaire + une conjointe : seule la conjointe est
-    // un ayant droit.
+  it('ne montre plus les ayants droit (ils sont au Profil)', () => {
     const { container } = rendreEcran(<Accueil />)
-    expect(screen.getByText('Ayants droit')).toBeInTheDocument()
-    expect(container.querySelectorAll('.accueil-famille__membre')).toHaveLength(1)
-    expect(screen.getByLabelText('Awa DIOP')).toBeInTheDocument()
-    // Le prénom seul sous la vignette : le nom est le même pour toute la famille.
-    expect(container.querySelector('.accueil-famille__nom')?.textContent).toBe('Awa')
-  })
-
-  it('masque la section « Ayants droit » sans proche', () => {
-    const { container } = rendreEcran(<Accueil />, uneSession({ beneficiaires: [] }))
     expect(screen.queryByText('Ayants droit')).toBeNull()
     expect(container.querySelector('.accueil-famille')).toBeNull()
   })
