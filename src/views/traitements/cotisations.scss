@@ -6,9 +6,9 @@
 // la barre de boutons colorés que l'original porte sur ses deux onglets.
 
 $cot-rouge: #e52621;
-$cot-encre: #11151d;
-$cot-doux: #6b7280;
-$cot-bordure: #d9dde2;
+$cot-encre: #1d1b1b;
+$cot-doux: #736968;
+$cot-bordure: #ddd4d3;
 $cot-vert: #1f9d55;
 $cot-bleu: #4a9fd8;
 
@@ -43,7 +43,7 @@ $cot-bleu: #4a9fd8;
     color 0.14s ease;
 
   &:hover {
-    background-color: rgba(17, 21, 29, 0.05);
+    background-color: rgba(29, 27, 27, 0.05);
     color: $cot-encre;
   }
 }
@@ -158,14 +158,6 @@ $cot-bleu: #4a9fd8;
   color: #fff;
 }
 
-// « Actualiser » : bleu pâle sur l'onglet Saisie, noir sur l'onglet Appels.
-// Les deux captures ne s'accordent pas, et on reprend chacune telle quelle.
-.cot-bouton-azur {
-  background: lighten($cot-bleu, 28%);
-  border-color: lighten($cot-bleu, 22%);
-  color: darken($cot-bleu, 22%);
-}
-
 .cot-bouton-bleu {
   background: $cot-bleu;
   border-color: $cot-bleu;
@@ -241,7 +233,7 @@ $cot-bleu: #4a9fd8;
 // En retrait, sans disparaître - on le consulte encore.
 .cot-fige td {
   color: $cot-doux;
-  background: rgba(107, 114, 128, 0.06);
+  background: rgba(121, 111, 110, 0.06);
 }
 
 .cot-vide {
@@ -254,7 +246,7 @@ $cot-bleu: #4a9fd8;
   display: inline-block;
   border-radius: 0.3rem;
   padding: 0.12rem 0.45rem;
-  background: rgba(107, 114, 128, 0.14);
+  background: rgba(121, 111, 110, 0.14);
   color: $cot-doux;
   font-size: 0.78rem;
   font-weight: 600;

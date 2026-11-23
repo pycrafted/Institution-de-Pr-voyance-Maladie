@@ -32,7 +32,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody, CSpinner } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCalculator, cilLoopCircular, cilPrint, cilSpreadsheet } from '@coreui/icons'
+import { cilCalculator, cilPrint, cilSpreadsheet } from '@coreui/icons'
 
 import { request, telecharger } from '../../services/api'
 import { messageErreur } from '../../services/erreurs'
@@ -372,10 +372,9 @@ const SaisieJournal = () => {
                 <CIcon icon={cilPrint} className="cot-icone" />
                 Imprimer
               </button>
-              <button type="button" className="cot-bouton cot-bouton-azur" onClick={charger}>
-                <CIcon icon={cilLoopCircular} className="cot-icone" />
-                Actualiser
-              </button>
+              {/* Pas de bouton « Actualiser » : la liste se recharge d'elle-même
+                  au changement de filtre ou de page, et après chaque action
+                  (saisie d'une pièce, comptabilisation). */}
             </div>
           </div>
 

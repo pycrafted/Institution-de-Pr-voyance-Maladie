@@ -34,7 +34,7 @@
 // et un secteur quasi noir de la taille d'un quart de disque fait un pavé qui
 // écrase toute la carte. Cinq marches suffisamment écartées dans une plage
 // resserrée se distinguent tout aussi bien, sans peser.
-const RAMPE = ['#a2a9b4', '#8b939f', '#747d8a', '#5d6673', '#464f5c']
+const RAMPE = ['#b0a6a5', '#9a908e', '#847a78', '#6d6361', '#554c4b']
 
 // -----------------------------------------------------------------------------
 // Chrome du graphique : encres, grilles, surfaces
@@ -43,14 +43,14 @@ const RAMPE = ['#a2a9b4', '#8b939f', '#747d8a', '#5d6673', '#464f5c']
 // tableaux, pour que rien ne détonne d'une page à l'autre.
 const CHROME = {
   surface: '#ffffff',
-  grille: '#eceff2',
-  axe: '#d9dde2',
+  grille: '#f4edec',
+  axe: '#ddd4d3',
   encre: '#1d1d1b',
-  encreDouce: '#4b5563',
-  encreMuette: '#6b7280',
+  encreDouce: '#5b5250',
+  encreMuette: '#736968',
   // Marque à série unique : le graphite d'un cran plus foncé que le milieu
   // de rampe, pour se détacher sans peser.
-  neutre: '#3f4753',
+  neutre: '#4c4443',
   accent: '#e52621',
   // L'infobulle reprend le noir SAR des en-têtes de tableaux et du bandeau
   // des panneaux : c'est la même surface « inversée » d'un bout à l'autre.

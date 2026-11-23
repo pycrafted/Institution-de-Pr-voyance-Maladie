@@ -8,11 +8,11 @@
 
 $cx-rouge: #e52621;
 $cx-rouge-fonce: #c81f1b;
-$cx-encre: #1c2434;
-$cx-bordure: #e2e8f0;
-$cx-texte-doux: #64748b;
-$cx-texte-pale: #8a99af;
-$cx-fond-champ: #eff4fb;
+$cx-encre: #1d1b1b;
+$cx-bordure: #ece4e3;
+$cx-texte-doux: #736968;
+$cx-texte-pale: #9f9594;
+$cx-fond-champ: #f9f2f1;
 
 // La raffinerie de Mbao en fond de page, sous un voile clair dans le blanc de
 // la carte : la photo dit d'emblée de quelle maison relève l'application, et
@@ -26,13 +26,14 @@ $cx-fond-champ: #eff4fb;
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem;
-  background-color: #f7f9fc;
+  background-color: #fef7f6;
   background-image: url('../../../assets/raffinerie.jpg');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
 
-  // Voile blanc bleuté - le gris clair des pages et le blanc de la carte -,
+  // Voile blanc légèrement chaud - le gris clair des pages et le blanc de la
+  // carte -,
   // plus dense au centre, où se tient le formulaire, que sur les bords.
   &::before {
     content: '';
@@ -42,8 +43,8 @@ $cx-fond-champ: #eff4fb;
       radial-gradient(
         ellipse 55% 65% at 50% 50%,
         rgba(255, 255, 255, 0.5) 0%,
-        rgba(247, 249, 252, 0.38) 55%,
-        rgba(241, 245, 249, 0.22) 100%
+        rgba(254, 247, 246, 0.38) 55%,
+        rgba(250, 243, 242, 0.22) 100%
       );
     backdrop-filter: blur(1.5px);
     -webkit-backdrop-filter: blur(1.5px);
@@ -67,7 +68,7 @@ $cx-fond-champ: #eff4fb;
   background-color: #fff;
   border: 1px solid $cx-bordure;
   border-radius: 0.75rem;
-  box-shadow: 0 20px 40px -16px rgba(16, 24, 40, 0.25);
+  box-shadow: 0 20px 40px -16px rgba(26, 24, 23, 0.25);
 }
 
 .cx-carte-entete {
@@ -261,7 +262,7 @@ $cx-fond-champ: #eff4fb;
   margin: 1.5rem 0 0;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #334155;
+  color: #453e3d;
   text-align: center;
   text-shadow: 0 0 6px rgba(255, 255, 255, 0.9);
 }

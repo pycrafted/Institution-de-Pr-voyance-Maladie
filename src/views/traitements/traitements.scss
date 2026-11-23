@@ -2,9 +2,9 @@
 // « Données de base » ; la carte d'en-tête rappelle le bandeau orange de
 // l'application d'origine.
 $trt-rouge: #e52621;
-$trt-bordure: #d9dde2;
-$trt-doux: #6b7280;
-$trt-encre: #11151d;
+$trt-bordure: #ddd4d3;
+$trt-doux: #736968;
+$trt-encre: #1d1b1b;
 
 .trt-chargement {
   display: flex;
@@ -55,7 +55,7 @@ $trt-encre: #11151d;
   justify-content: space-between;
   gap: 1rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #f1f3f5;
+  border-bottom: 1px solid #f8f1f0;
 
   &:last-child {
     border-bottom: 0;
@@ -108,7 +108,7 @@ $trt-encre: #11151d;
 }
 
 .trt-total td {
-  background: #f8f9fa;
+  background: #fef7f6;
   border-top: 2px solid $trt-bordure;
 }
 
@@ -483,7 +483,7 @@ $trt-encre: #11151d;
   margin-top: 1.25rem;
   padding: 0.85rem 1rem;
   border-radius: 0.5rem;
-  background: #f4f5f7;
+  background: #faf3f2;
 }
 
 .ba-valider {

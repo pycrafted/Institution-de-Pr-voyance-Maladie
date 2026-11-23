@@ -8,13 +8,13 @@
 
 $ddb-rouge: #e52621;
 $ddb-rouge-fonce: #c81f1b;
-$ddb-noir: #17181d;
-$ddb-encre: #11151d;
-$ddb-bordure: #e8ecf2;
-$ddb-bordure-forte: #d4dbe4;
-$ddb-rail-bg: #f8fafc;
-$ddb-texte-doux: #64748b;
-$ddb-texte-pale: #94a3b8;
+$ddb-noir: #1d1d1b;
+$ddb-encre: #1d1b1b;
+$ddb-bordure: #f1eae9;
+$ddb-bordure-forte: #e1d8d7;
+$ddb-rail-bg: #fef8f7;
+$ddb-texte-doux: #736968;
+$ddb-texte-pale: #a99f9e;
 // Le bleu de l'import et le vert de l'export et de l'enregistrement.
 $ddb-bleu: #3f86dd;
 $ddb-vert: #679f2e;
@@ -26,7 +26,7 @@ $ddb-hauteur: 2.5rem;
 // Hauteur d'un champ de formulaire.
 $ddb-hauteur-champ: 2.75rem;
 $ddb-anneau: 0 0 0 3px rgba(229, 38, 33, 0.12);
-$ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
+$ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 
 .ddb-carte {
   border-color: $ddb-bordure;
@@ -78,7 +78,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   border: 0;
   border-radius: $ddb-rayon;
   background: transparent;
-  color: #334155;
+  color: #453e3d;
   font-size: 0.875rem;
   font-weight: 500;
   text-align: left;
@@ -87,7 +87,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
     color 0.12s ease;
 
   &:hover {
-    background-color: #eef2f6;
+    background-color: #f7f0ef;
     color: $ddb-noir;
   }
 
@@ -336,7 +336,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
 .ddb-stats-pastille {
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
-  background-color: #f1f5f9;
+  background-color: #faf3f2;
   color: $ddb-texte-doux;
   font-size: 0.8rem;
   font-weight: 600;
@@ -382,7 +382,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   padding: 0.2rem;
   border: 1px solid $ddb-bordure;
   border-radius: $ddb-rayon;
-  background-color: #f1f5f9;
+  background-color: #faf3f2;
 }
 
 .ddb-segment {
@@ -392,7 +392,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   padding: 0 0.9rem;
   font-size: 0.84rem;
   font-weight: 500;
-  color: #475569;
+  color: #5b5150;
   white-space: nowrap;
   transition:
     background-color 0.12s ease,
@@ -706,7 +706,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   .modal-content {
     border: 0;
     border-radius: 0.75rem;
-    box-shadow: 0 1.25rem 3rem rgba(16, 24, 40, 0.2);
+    box-shadow: 0 1.25rem 3rem rgba(26, 24, 23, 0.2);
   }
 
   .modal-header {
@@ -864,9 +864,9 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
 .ddb-action {
   --cui-btn-bg: transparent;
   --cui-btn-border-color: transparent;
-  --cui-btn-hover-bg: #f1f5f9;
+  --cui-btn-hover-bg: #faf3f2;
   --cui-btn-hover-border-color: transparent;
-  --cui-btn-active-bg: #e2e8f0;
+  --cui-btn-active-bg: #ece4e3;
   --cui-btn-active-border-color: transparent;
   width: 2rem;
   height: 2rem;
@@ -937,7 +937,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   border: 1px solid $ddb-bordure;
   border-radius: $ddb-rayon;
   background: #fff;
-  color: #334155;
+  color: #453e3d;
   font-size: 0.82rem;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -987,7 +987,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   width: 28rem !important;
   max-width: 100vw;
   border-left: 0 !important;
-  box-shadow: -12px 0 32px -12px rgba(16, 24, 40, 0.25);
+  box-shadow: -12px 0 32px -12px rgba(26, 24, 23, 0.25);
 }
 
 // Les fiches à onglets portent des lignes à deux champs : il leur faut de la
@@ -1006,7 +1006,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   color: $ddb-encre;
   padding: 1.25rem 1.6rem;
   border-bottom: 1px solid $ddb-bordure;
-  box-shadow: 0 6px 16px -12px rgba(16, 24, 40, 0.3);
+  box-shadow: 0 6px 16px -12px rgba(26, 24, 23, 0.3);
   flex: 0 0 auto;
   z-index: 2;
 }
@@ -1036,7 +1036,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
 
   &:hover {
     color: $ddb-noir;
-    background-color: #f1f5f9;
+    background-color: #faf3f2;
     // Petite rotation de la croix au survol : micro-interaction.
     transform: rotate(90deg);
   }
@@ -1077,7 +1077,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
     color 0.18s ease;
 
   &:hover {
-    background-color: rgba(17, 21, 29, 0.05);
+    background-color: rgba(29, 27, 27, 0.05);
     color: $ddb-noir;
   }
 
@@ -1153,7 +1153,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   cursor: pointer;
 
   &:hover {
-    background-color: rgba(17, 21, 29, 0.05);
+    background-color: rgba(29, 27, 27, 0.05);
     color: $ddb-noir;
   }
 
@@ -1230,7 +1230,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   padding: 1.1rem 1.75rem;
   border-top: 1px solid $ddb-bordure;
   background-color: #fff;
-  box-shadow: 0 -10px 24px -14px rgba(16, 24, 40, 0.22);
+  box-shadow: 0 -10px 24px -14px rgba(26, 24, 23, 0.22);
   z-index: 2;
 }
 
@@ -1286,10 +1286,10 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   overflow: hidden;
   border: 0;
   border-radius: 14px;
-  background: linear-gradient(160deg, #f4f7fb, #e9eef6);
+  background: linear-gradient(160deg, #fcf5f4, #f3eceb);
   box-shadow:
-    inset 0 0 0 1px rgba(16, 24, 40, 0.07),
-    0 8px 18px -10px rgba(16, 24, 40, 0.3);
+    inset 0 0 0 1px rgba(26, 24, 23, 0.07),
+    0 8px 18px -10px rgba(26, 24, 23, 0.3);
   transition:
     box-shadow 0.2s ease,
     transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1297,8 +1297,8 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   &:hover {
     transform: translateY(-1px);
     box-shadow:
-      inset 0 0 0 1px rgba(16, 24, 40, 0.1),
-      0 12px 24px -10px rgba(16, 24, 40, 0.35);
+      inset 0 0 0 1px rgba(26, 24, 23, 0.1),
+      0 12px 24px -10px rgba(26, 24, 23, 0.35);
   }
 }
 
@@ -1311,7 +1311,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
 .ddb-photo-silhouette {
   width: 2.5rem;
   height: 2.5rem;
-  color: #aab2bf;
+  color: #b9afae;
 }
 
 .ddb-photo-actions {
@@ -1334,7 +1334,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   font-weight: 600;
   color: $ddb-encre;
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: 0 1px 2px rgba(26, 24, 23, 0.04);
   transition:
     background-color 0.14s ease,
     border-color 0.14s ease,
@@ -1344,7 +1344,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   &:hover {
     background-color: $ddb-rail-bg;
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px -4px rgba(16, 24, 40, 0.15);
+    box-shadow: 0 4px 10px -4px rgba(26, 24, 23, 0.15);
   }
 
   &:active {
@@ -1616,7 +1616,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   background: #fff;
   border: 1.5px solid $ddb-bordure;
   border-radius: $ddb-rayon;
-  box-shadow: 0 10px 30px rgba(17, 21, 29, 0.12);
+  box-shadow: 0 10px 30px rgba(29, 27, 27, 0.12);
   overflow: hidden;
 }
 
@@ -1781,7 +1781,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
   gap: 0.2rem;
   border: 1px solid $ddb-bordure;
   border-radius: $ddb-rayon;
-  background-color: #f1f5f9;
+  background-color: #faf3f2;
 }
 
 .ddb-etat-choix {
@@ -1812,7 +1812,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(16, 24, 40, 0.05);
 .ddb-bascule-actif {
   background: $ddb-encre;
   color: #fff;
-  box-shadow: 0 2px 6px -2px rgba(17, 21, 29, 0.5);
+  box-shadow: 0 2px 6px -2px rgba(29, 27, 27, 0.5);
 }
 
 // « Actualiser » : repère hérité de LAMPS, posé juste après le champ de
@@ -1892,8 +1892,8 @@ $ddb-ease: cubic-bezier(0.22, 1, 0.36, 1);
 .ddb-carte {
   border-radius: 1rem;
   box-shadow:
-    0 1px 2px rgba(16, 24, 40, 0.04),
-    0 12px 32px -14px rgba(16, 24, 40, 0.14);
+    0 1px 2px rgba(26, 24, 23, 0.04),
+    0 12px 32px -14px rgba(26, 24, 23, 0.14);
   // `backwards` et non `both` : avec `both`, l'animation laisse un transform
   // résiduel (matrice identité) sur la carte, qui fait d'elle le bloc englobant
   // des éléments `position: fixed` rendus à l'intérieur (le panneau et son fond
@@ -1989,8 +1989,8 @@ $ddb-ease: cubic-bezier(0.22, 1, 0.36, 1);
   border-radius: 20px;
   overflow: hidden;
   box-shadow:
-    0 26px 70px -22px rgba(16, 24, 40, 0.42),
-    0 8px 24px -12px rgba(16, 24, 40, 0.22);
+    0 26px 70px -22px rgba(26, 24, 23, 0.42),
+    0 8px 24px -12px rgba(26, 24, 23, 0.22);
   display: flex;
   flex-direction: column;
   // Caché : entièrement hors écran malgré la marge de droite.
@@ -2065,14 +2065,14 @@ $ddb-ease: cubic-bezier(0.22, 1, 0.36, 1);
 // « Chargement… », pour une attente plus douce. ---
 .ddb-ligne-squelette td {
   padding: 0.95rem 1rem;
-  border-color: #eef2f6;
+  border-color: #f7f0ef;
 }
 .ddb-squelette {
   display: block;
   height: 0.8rem;
   width: 70%;
   border-radius: 6px;
-  background: linear-gradient(90deg, #eef1f5 25%, #e1e7ef 37%, #eef1f5 63%);
+  background: linear-gradient(90deg, #f6efee 25%, #ece4e3 37%, #f6efee 63%);
   background-size: 400% 100%;
   animation: ddb-shimmer 1.3s ease infinite;
 }

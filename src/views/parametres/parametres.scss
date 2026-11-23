@@ -7,11 +7,11 @@
 // fiche d'informations et le plan.
 
 $prm-rouge: #e52621;
-$prm-encre: #11151d;
-$prm-bordure: #e8ecf2;
-$prm-doux: #64748b;
-$prm-pale: #94a3b8;
-$prm-fond: #f8fafc;
+$prm-encre: #1d1b1b;
+$prm-bordure: #f1eae9;
+$prm-doux: #736968;
+$prm-pale: #a99f9e;
+$prm-fond: #fef8f7;
 $prm-rayon: 0.5rem;
 $prm-ombre: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
 
@@ -40,7 +40,7 @@ $prm-ombre: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
     color 0.12s ease;
 
   &:hover {
-    background-color: rgba(17, 21, 29, 0.05);
+    background-color: rgba(29, 27, 27, 0.05);
     color: $prm-encre;
   }
 
@@ -307,7 +307,7 @@ $prm-ombre: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
 .prm-total {
   font-size: 0.9rem;
   font-weight: 500;
-  color: #6b7280;
+  color: #736968;
 }
 
 .prm-case {

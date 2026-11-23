@@ -36,7 +36,6 @@ import {
   cilCalculator,
   cilCloudDownload,
   cilCloudUpload,
-  cilLoopCircular,
   cilPrint,
   cilSpreadsheet,
   cilTrash,
@@ -607,14 +606,9 @@ const Cotisations = () => {
                     <CIcon icon={cilPrint} className="cot-icone" />
                     Imprimer
                   </button>
-                  <button
-                    type="button"
-                    className="cot-bouton cot-bouton-azur"
-                    onClick={chargerSaisie}
-                  >
-                    <CIcon icon={cilLoopCircular} className="cot-icone" />
-                    Actualiser
-                  </button>
+                  {/* Pas de bouton « Actualiser » : la liste se recharge
+                      d'elle-même à l'ouverture de l'onglet, et après chaque
+                      action (saisie d'un appel, comptabilisation). */}
                 </div>
               </div>
 
@@ -807,14 +801,9 @@ const Cotisations = () => {
                   className="d-none"
                   onChange={importer}
                 />
-                <button
-                  type="button"
-                  className="cot-bouton cot-bouton-encre"
-                  onClick={chargerAppel}
-                >
-                  <CIcon icon={cilLoopCircular} className="cot-icone" />
-                  Actualiser
-                </button>
+                {/* Pas de bouton « Actualiser » : les lignes se rechargent
+                    d'elles-mêmes à l'ouverture de l'onglet, et après chaque
+                    action (appel, import, comptabilisation, suppression). */}
               </div>
 
               <div className="tableau-conteneur cot-tableau-cadre">

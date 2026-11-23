@@ -496,11 +496,10 @@ const Retenues = () => {
                 </button>
               ))}
             </div>
-
-            <button type="button" className="rfm-bouton rfm-bouton-azur" onClick={charger}>
-              <CIcon icon={cilLoopCircular} className="rfm-icone" />
-              Actualiser
-            </button>
+            {/* Pas de bouton « Actualiser » : la liste se recharge d'elle-même
+                au changement de campagne et après chaque action (appel, import,
+                comptabilisation). Le proposer laissait croire qu'il fallait y
+                penser. */}
           </div>
 
           <div className="tableau-conteneur rfm-tableau-cadre">

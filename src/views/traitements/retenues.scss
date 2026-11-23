@@ -11,9 +11,9 @@
 // sa production porte 310 cas pour 8 563 422 F.
 
 $rfm-rouge: #e52621;
-$rfm-encre: #11151d;
-$rfm-doux: #6b7280;
-$rfm-bordure: #d9dde2;
+$rfm-encre: #1d1b1b;
+$rfm-doux: #736968;
+$rfm-bordure: #ddd4d3;
 $rfm-vert: #1f9d55;
 $rfm-bleu: #4a9fd8;
 $rfm-ambre: #b45309;
@@ -178,12 +178,6 @@ $rfm-ambre: #b45309;
   color: #fff;
 }
 
-.rfm-bouton-azur {
-  background: lighten($rfm-bleu, 28%);
-  border-color: lighten($rfm-bleu, 22%);
-  color: darken($rfm-bleu, 22%);
-}
-
 // --- Le tableau -------------------------------------------------------------
 // Bordure et arrondi viennent de `.tableau-conteneur` ; ce cadre ne porte que
 // le défilement.
@@ -217,7 +211,7 @@ $rfm-ambre: #b45309;
 // livre. En retrait, sans disparaître - on la consulte encore.
 .rfm-fige td {
   color: $rfm-doux;
-  background: rgba(107, 114, 128, 0.06);
+  background: rgba(121, 111, 110, 0.06);
 }
 
 // La ligne où la paie a prélevé au-delà de la dette.
@@ -245,7 +239,7 @@ $rfm-ambre: #b45309;
   display: inline-block;
   border-radius: 0.3rem;
   padding: 0.12rem 0.45rem;
-  background: rgba(107, 114, 128, 0.14);
+  background: rgba(121, 111, 110, 0.14);
   color: $rfm-doux;
   font-size: 0.78rem;
   font-weight: 600;
@@ -289,8 +283,8 @@ $rfm-ambre: #b45309;
   position: sticky;
   bottom: 0;
   z-index: 1;
-  background: #eef0f3;
-  box-shadow: inset 0 1px 0 rgba(17, 21, 29, 0.18);
+  background: #f5eeed;
+  box-shadow: inset 0 1px 0 rgba(29, 27, 27, 0.18);
   font-weight: 600;
 }
 
@@ -319,7 +313,7 @@ $rfm-ambre: #b45309;
   }
 
   &:hover:not(.rfm-segment-actif) {
-    background: rgba(17, 21, 29, 0.05);
+    background: rgba(29, 27, 27, 0.05);
   }
 }
 
@@ -387,7 +381,7 @@ $rfm-ambre: #b45309;
   margin: 0 0 0.8rem;
   border-left: 3px solid $rfm-bordure;
   padding: 0.4rem 0.7rem;
-  background: rgba(107, 114, 128, 0.07);
+  background: rgba(121, 111, 110, 0.07);
   color: $rfm-doux;
   font-size: 0.85rem;
   line-height: 1.4;

@@ -4,8 +4,8 @@
 $ffs-rouge: #e52621;
 $ffs-vert: #5cb85c;
 $ffs-noir: #1d1d1b;
-$ffs-bordure: #d9dde2;
-$ffs-texte-doux: #6b7280;
+$ffs-bordure: #ddd4d3;
+$ffs-texte-doux: #736968;
 
 .ffs-fiche .modal-content {
   border: 0;
@@ -103,7 +103,7 @@ $ffs-texte-doux: #6b7280;
   overflow: hidden;
   border: 1px solid $ffs-bordure;
   border-radius: 0.25rem;
-  background-color: #f7f8fa;
+  background-color: #fdf6f5;
 
   iframe {
     display: block;

@@ -27,7 +27,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCloudDownload, cilReload, cilChevronBottom } from '@coreui/icons'
+import { cilChevronBottom } from '@coreui/icons'
 
 import { request } from '../../services/api'
 import { listerEntrees } from '../../services/referentiels'
@@ -370,9 +370,9 @@ const JournalCentral = () => {
                 >
                   <CIcon icon={cilChevronBottom} /> Gestion
                 </button>
-                <button type="button" className="jc-bouton jc-actualiser" onClick={() => charger()}>
-                  <CIcon icon={cilReload} /> Actualiser
-                </button>
+                {/* Pas de bouton « Actualiser » : la liste et le bandeau de
+                    contrôle se rechargent d'eux-mêmes à chaque changement de
+                    filtre, de recherche ou de page. */}
               </div>
             </div>
           </header>

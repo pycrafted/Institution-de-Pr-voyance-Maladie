@@ -1,9 +1,9 @@
 // Page Participants - barre d'onglets, formulaire de création dans le panneau
 // glissant, et champs radio. Reprend le rouge SAR et les tons de « Données de base ».
 $prt-rouge: #e52621;
-$prt-bordure: #d9dde2;
-$prt-texte-doux: #6b7280;
-$prt-noir: #11151d;
+$prt-bordure: #ddd4d3;
+$prt-texte-doux: #736968;
+$prt-noir: #1d1b1b;
 
 // --- En-tête : titre + onglets ---------------------------------------------
 .prt-entete {
@@ -228,7 +228,7 @@ $prt-noir: #11151d;
 
 // Ligne parente dépliée : légèrement teintée pour la relier à son panneau.
 .ddb-ligne-depliee > * {
-  background: #f3f5f8;
+  background: #faf3f2;
   font-weight: 600;
 }
 
@@ -241,7 +241,7 @@ $prt-noir: #11151d;
 
 .ddb-depli-cellule {
   padding: 0 !important;
-  background: #f7f8fa;
+  background: #fdf6f5;
   border-top: 0;
 }
 
@@ -278,7 +278,7 @@ $prt-noir: #11151d;
   height: 1.4rem;
   padding: 0 0.4rem;
   border-radius: 999px;
-  background: #e7ebf0;
+  background: #f0e9e8;
   color: $prt-noir;
   font-size: 0.75rem;
   font-weight: 700;
@@ -337,7 +337,7 @@ $prt-noir: #11151d;
 
   td {
     padding: 0.4rem 0.6rem;
-    border-bottom: 1px solid #eceef1;
+    border-bottom: 1px solid #f3eceb;
     color: $prt-noir;
     vertical-align: middle;
   }
@@ -364,6 +364,6 @@ $prt-noir: #11151d;
   cursor: pointer;
 
   &:hover td {
-    background: #eef1f5;
+    background: #f6efee;
   }
 }

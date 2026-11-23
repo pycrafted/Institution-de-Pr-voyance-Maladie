@@ -6,9 +6,9 @@
 // deux côtés, et la colonne à cocher du lettrage.
 
 $ic-rouge: #e52621;
-$ic-encre: #11151d;
-$ic-doux: #6b7280;
-$ic-bordure: #d9dde2;
+$ic-encre: #1d1b1b;
+$ic-doux: #736968;
+$ic-bordure: #ddd4d3;
 
 .ic-page {
   padding-top: 1.25rem;
@@ -240,7 +240,7 @@ $ic-bordure: #d9dde2;
   color: $ic-doux;
 
   &:hover:not(:disabled) {
-    background: rgba(17, 21, 29, 0.05);
+    background: rgba(29, 27, 27, 0.05);
     color: $ic-encre;
   }
 }
@@ -307,7 +307,7 @@ $ic-bordure: #d9dde2;
   border: 1px solid $ic-bordure;
   border-radius: 0.45rem;
   background: #fff;
-  box-shadow: 0 8px 24px rgba(17, 21, 29, 0.12);
+  box-shadow: 0 8px 24px rgba(29, 27, 27, 0.12);
 }
 
 // --- Le bandeau noir --------------------------------------------------------
@@ -367,7 +367,7 @@ $ic-bordure: #d9dde2;
 // Une écriture lettrée : rapprochée, donc en retrait sans disparaître.
 .ic-lettree td {
   color: $ic-doux;
-  background: rgba(107, 114, 128, 0.06);
+  background: rgba(121, 111, 110, 0.06);
 }
 
 @media (max-width: 991.98px) {

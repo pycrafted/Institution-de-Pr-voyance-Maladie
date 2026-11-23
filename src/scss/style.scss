@@ -21,9 +21,9 @@
 // =============================================================================
 // IPM - thème inspiré d'OpsDigital (TailAdmin), aux couleurs SAR
 // =============================================================================
-// Menu latéral sombre, barre supérieure blanche légèrement ombrée, fond
-// gris-bleu très clair, cartes blanches arrondies à ombre douce. Les couleurs
-// restent celles de la charte : rouge et noir SAR.
+// Menu latéral sombre, barre supérieure blanche légèrement ombrée, fond très
+// clair, cartes blanches arrondies à ombre douce. Les couleurs restent celles
+// de la charte : rouge et noir SAR.
 
 // Satoshi (Indian Type Foundry, licence Fontshare), en police variable : un
 // seul fichier porte toutes les graisses, de 300 à 900.
@@ -47,26 +47,41 @@
 $sar-red: #e52621; // Rouge SAR (RVB 229/38/33)
 // Noir SAR rafraîchi : un charbon un peu plus profond et plus neutre pour le
 // menu sombre - plus moderne, même emplacement.
-$sar-black: #17181d;
+$sar-black: #1d1d1b;
 // Noir SAR éclairci : l'entrée active du menu sombre.
-$sar-graphite: #2c2d33;
+$sar-graphite: #333330;
 
-// Neutres rafraîchis : fond de page plus aéré, filets plus doux, encre plus
-// profonde. Hues inchangées (bleu-ardoise), pour ne pas dépayser.
+// Neutres CHAUDS, ceux de l'app mobile (pwa/src/theme/variables.css) : des
+// gris dérivés du rouge SAR, à la manière des surfaces tonales de Material 3,
+// plutôt que le bleu-ardoise d'OpsDigital. Un soupçon de chaleur dans les gris
+// suffit à ce que les deux applications se reconnaissent comme la même maison.
+//
+// Chaque gris a gardé SA clarté - la hiérarchie du front lui appartient, et
+// elle compte bien plus de paliers que la PWA ; seules la teinte (27°) et la
+// saturation (très retenue : 0,008 dans les tons clairs) ont changé. Cinq
+// valeurs sont reprises au hexadécimal près de la charte mobile : le fond de
+// page (--ipm-fond), le filet (--ipm-surface-2), la ligne active
+// (--ipm-rouge-doux), l'encre (--ipm-texte) et le noir du menu (--ipm-noir).
+//
+// Une seule exception à la clarté conservée : `$texte-doux`, descendu de deux
+// crans. Le fond de page de la PWA est un cran plus sombre que l'ancien, et
+// l'ardoise d'avant n'y tenait plus que 4,30:1 - sous le plancher de 4,5:1 où
+// elle était déjà, de justesse, avant le rechauffement. À #736968 elle rend
+// 4,77:1 sur le fond et 5,32:1 sur une carte.
 $openkm-navbar-bg: $sar-black;
 $openkm-navbar-border: $sar-graphite;
-$openkm-thead-bg: #f8fafc;
-$openkm-content-bg: #f4f6fa;
-$openkm-card-border: #e8ecf2;
+$openkm-thead-bg: #fef8f7;
+$openkm-content-bg: #f8f1f0;
+$openkm-card-border: #f1eae9;
 $openkm-row-active-bg: #fdecec;
-$openkm-row-hover-bg: #f7f9fc;
-$texte-doux: #64748b;
+$openkm-row-hover-bg: #fef7f6;
+$texte-doux: #736968;
 // L'ombre des cartes d'OpsDigital (« shadow-default »).
 $ombre-carte: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
 
 body {
   background-color: $openkm-content-bg;
-  color: #11151d;
+  color: #1d1b1b;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -114,7 +129,7 @@ body.app-a-barre-pages .wrapper {
   padding-inline: 1.25rem 1.5rem;
   background-color: #fff;
   border-bottom: 1px solid $openkm-card-border;
-  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  box-shadow: 0 1px 3px rgba(26, 24, 23, 0.06);
   @include transition(left 0.15s);
 }
 
@@ -256,7 +271,7 @@ body.app-a-barre-pages .wrapper {
     color 0.14s ease;
 
   &:hover {
-    background-color: rgba(17, 21, 29, 0.05);
+    background-color: rgba(29, 27, 27, 0.05);
     color: $sar-black;
   }
 }
@@ -275,7 +290,7 @@ body.app-a-barre-pages .wrapper {
 .app-section-inerte {
   flex: 0 0 auto;
   padding: 0.45rem 1rem;
-  color: rgba(100, 116, 139, 0.45);
+  color: rgba(122, 112, 111, 0.45);
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -301,7 +316,7 @@ body.app-a-barre-pages .wrapper {
   align-items: stretch;
   background-color: #fff;
   border-top: 1px solid $openkm-card-border;
-  box-shadow: 0 -1px 3px rgba(16, 24, 40, 0.05);
+  box-shadow: 0 -1px 3px rgba(26, 24, 23, 0.05);
 }
 
 .app-pages-piste {
@@ -343,7 +358,7 @@ body.app-a-barre-pages .wrapper {
     color 0.14s ease;
 
   &:hover {
-    background-color: rgba(17, 21, 29, 0.05);
+    background-color: rgba(29, 27, 27, 0.05);
     color: $sar-black;
   }
 }
@@ -366,7 +381,7 @@ body.app-a-barre-pages .wrapper {
   align-items: center;
   flex: 0 0 auto;
   padding: 0 0.85rem;
-  color: rgba(100, 116, 139, 0.45);
+  color: rgba(122, 112, 111, 0.45);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -411,7 +426,7 @@ body.app-a-barre-pages .wrapper {
 .modal-content {
   border: 0;
   border-radius: 0.75rem;
-  box-shadow: 0 1.25rem 3rem rgba(16, 24, 40, 0.18);
+  box-shadow: 0 1.25rem 3rem rgba(26, 24, 23, 0.18);
 }
 
 .modal-header {
@@ -436,7 +451,7 @@ body.app-a-barre-pages .wrapper {
     color 0.12s ease;
 
   &:hover:not(:disabled) {
-    background-color: rgba(46, 74, 98, 0.08);
+    background-color: rgba(77, 69, 68, 0.08);
     color: $openkm-navbar-bg;
   }
 
@@ -461,7 +476,7 @@ body.app-a-barre-pages .wrapper {
   transition: background-color 0.1s ease;
 
   &:hover td {
-    background-color: rgba(46, 74, 98, 0.03);
+    background-color: rgba(77, 69, 68, 0.03);
   }
 }
 
@@ -491,13 +506,13 @@ body.app-a-barre-pages .wrapper {
   background: transparent;
   padding-left: 0;
   padding-right: 0;
-  box-shadow: inset 0 -1px 0 rgba(46, 74, 98, 0.15);
+  box-shadow: inset 0 -1px 0 rgba(77, 69, 68, 0.15);
   transition: box-shadow 0.15s ease;
   resize: none;
   overflow: hidden;
 
   &:hover {
-    box-shadow: inset 0 -1px 0 rgba(46, 74, 98, 0.35);
+    box-shadow: inset 0 -1px 0 rgba(77, 69, 68, 0.35);
   }
 
   &:focus {
@@ -532,7 +547,7 @@ body.app-a-barre-pages .wrapper {
   background-color: white;
   border: 1px solid $openkm-card-border;
   border-radius: 0.5rem;
-  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.12);
+  box-shadow: 0 8px 24px rgba(26, 24, 23, 0.12);
   padding: 0.25rem 0;
   font-size: 0.875rem;
 
@@ -622,14 +637,14 @@ body.app-a-barre-pages .wrapper {
 // vingtaine d'endroits et renommer n'aurait rien changé à l'écran. Le
 // nouveau code écrit `.tableau`.
 
-$tableau-entete-fond: #f7f9fc;
+$tableau-entete-fond: #fef7f6;
 // L'intitulé de colonne est en **noir** depuis le 2026-11-06, sur demande du
 // métier. L'ardoise `#475569` d'avant le posait à mi-chemin entre le fond et
 // la donnée, et sur un tableau à treize colonnes on cherchait sa colonne.
-$tableau-entete-encre: #17181d;
-$tableau-filet: #e2e8f0;
-$tableau-bordure: #cbd5e1; // Cadre + ligne sous l'en-tete, plus fonce que le filet.
-$tableau-survol: #f8fafc;
+$tableau-entete-encre: #1d1d1b;
+$tableau-filet: #ece4e3;
+$tableau-bordure: #dad1d0; // Cadre + ligne sous l'en-tete, plus fonce que le filet.
+$tableau-survol: #fef8f7;
 
 .tableau-conteneur,
 .ddb-tableau-conteneur {
@@ -751,7 +766,7 @@ $tableau-survol: #f8fafc;
 // Barres de défilement fines et discrètes, sur tout le site.
 * {
   scrollbar-width: thin;
-  scrollbar-color: #c3ccd8 transparent;
+  scrollbar-color: #d2c9c7 transparent;
 }
 *::-webkit-scrollbar {
   width: 10px;
@@ -761,13 +776,13 @@ $tableau-survol: #f8fafc;
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: #c3ccd8;
+  background: #d2c9c7;
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #9aa6b6;
+  background: #aca2a1;
   background-clip: padding-box;
 }
 
