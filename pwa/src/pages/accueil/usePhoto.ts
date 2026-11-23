@@ -19,6 +19,7 @@ import { useCallback, useRef, useState, type MutableRefObject } from 'react'
 
 import { ErreurApi, poserPhoto } from '../../api'
 import { haptique } from '../../hooks/haptique'
+import { liberer, marquerOccupe } from '../../utils/occupation'
 import { ErreurPhoto, reduirePhoto } from '../../utils/photo'
 
 export interface Photo {
@@ -59,6 +60,9 @@ export function usePhoto(
       return
     }
     haptique.leger()
+    // L'appareil photo met l'application en arrière-plan : pas de mise à
+    // jour automatique pendant ce temps (cf. MiseAJour).
+    marquerOccupe()
     inputRef.current?.click()
   }, [enLigne])
 
@@ -67,7 +71,10 @@ export function usePhoto(
       // Le champ garde le dernier fichier : le vider permet de rechoisir le
       // même après une erreur.
       if (inputRef.current) inputRef.current.value = ''
-      if (!fichier) return
+      if (!fichier) {
+        liberer()
+        return
+      }
       setEnCours(true)
       try {
         const reduite = await reduirePhoto(fichier)
@@ -79,6 +86,7 @@ export function usePhoto(
         setMessage(messageErreur(e))
       } finally {
         setEnCours(false)
+        liberer()
       }
     },
     [rafraichir, poser],
