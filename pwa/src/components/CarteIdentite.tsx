@@ -9,8 +9,7 @@
  *
  * Elle reprend l'habillage de la carte d'adhérent (dégradé rouge SAR,
  * filigrane, rayon, ombre — classes .ipm-carte-adherent) ; seule la
- * disposition intérieure change. La MÊME carte sert à l'accueil et à la
- * présentation plein écran (components/CartePleinEcran).
+ * disposition intérieure change. Elle s'affiche sur l'accueil.
  *
  * Rien ne s'y touche : une pièce d'identité ne se modifie pas au moment où
  * on la présente. La photo s'envoie depuis la feuille « Photos d'identité »

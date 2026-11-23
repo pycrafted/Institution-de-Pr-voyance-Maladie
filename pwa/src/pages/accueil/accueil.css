@@ -42,18 +42,11 @@
 /* Les raccourcis vers les cartes d'ayant droit ont rejoint le Profil
    (pages/profil/profil.css, .profil-famille). */
 
-/* La carte d'adhérent est touchable : elle s'ouvre en grand et en paysage.
-   Le bouton n'est qu'une enveloppe - aucun habillage propre, la carte garde
-   exactement son apparence. */
+/* L'enveloppe de la carte d'adhérent : aucun habillage propre, la carte garde
+   exactement son apparence. Elle ne s'ouvre plus en grand. */
 .accueil__carte-bouton {
-  appearance: none;
   display: block;
   width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  text-align: start;
-  cursor: pointer;
 }
 
 /* ========================================================================
@@ -168,9 +161,8 @@
 
 /* --- Ayants droit --------------------------------------------------------
  * Rangée horizontale des cartes de proches, sous la carte de l'employé : une vignette
- * à la forme d'une photo d'identité, le prénom dessous, et la carte s'ouvre en
- * grand au toucher (components/CartePleinEcran). Défile sur le côté si la
- * famille est nombreuse.
+ * à la forme d'une photo d'identité, le prénom dessous. Défile sur le côté si
+ * la famille est nombreuse.
  */
 .accueil-famille {
   list-style: none;

@@ -65,10 +65,10 @@ export default defineConfig({
         // l'ancienne icône en place, même après réinstallation. À incrémenter
         // à chaque refonte des icônes.
         icons: [
-          { src: '/icons/icone-192.png?v=5', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icone-512.png?v=5', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icone-192.png?v=6', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/icons/icone-512.png?v=6', sizes: '512x512', type: 'image/png', purpose: 'any' },
           {
-            src: '/icons/icone-maskable-512.png?v=5',
+            src: '/icons/icone-maskable-512.png?v=6',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
