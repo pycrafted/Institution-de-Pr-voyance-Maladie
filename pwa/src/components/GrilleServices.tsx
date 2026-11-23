@@ -28,6 +28,8 @@ interface Props {
   onIndisponible?: (document: TypeDocument) => void
   /** Libellé lu par le lecteur d'écran pour la grille entière. */
   etiquette?: string
+  /** Présentation de chaque document : ligne (défaut) ou tuile de grille. */
+  forme?: 'liste' | 'tuile'
 }
 
 export default function GrilleServices({
@@ -35,9 +37,14 @@ export default function GrilleServices({
   onOuvrir,
   onIndisponible,
   etiquette = 'Documents',
+  forme = 'liste',
 }: Props) {
   return (
-    <div className="ipm-grille-services" role="list" aria-label={etiquette}>
+    <div
+      className={`ipm-grille-services${forme === 'tuile' ? ' ipm-grille-services--tuiles' : ''}`}
+      role="list"
+      aria-label={etiquette}
+    >
       {documents.map((document, rang) => (
         <div
           role="listitem"
@@ -45,7 +52,12 @@ export default function GrilleServices({
           className="ipm-entree"
           style={{ '--rang': rang } as CSSProperties}
         >
-          <TuileService document={document} onOuvrir={onOuvrir} onIndisponible={onIndisponible} />
+          <TuileService
+            document={document}
+            onOuvrir={onOuvrir}
+            onIndisponible={onIndisponible}
+            forme={forme}
+          />
         </div>
       ))}
     </div>

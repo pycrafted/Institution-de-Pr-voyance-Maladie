@@ -27,9 +27,20 @@ interface Props {
   onOuvrir: (document: TypeDocument) => void
   /** Toucher d'un document à venir (feuille « Bientôt disponible »). */
   onIndisponible?: (document: TypeDocument) => void
+  /**
+   * « liste » : une ligne (icône, phrase d'action, flèche). « tuile » : une
+   * case de grille, icône en haut et libellé court centré dessous (accueil).
+   */
+  forme?: 'liste' | 'tuile'
 }
 
-export default function TuileService({ document, onOuvrir, onIndisponible }: Props) {
+export default function TuileService({
+  document,
+  onOuvrir,
+  onIndisponible,
+  forme = 'liste',
+}: Props) {
+  const tuile = forme === 'tuile'
   const indisponible = !document.disponible
 
   const toucher = () => {
@@ -45,7 +56,9 @@ export default function TuileService({ document, onOuvrir, onIndisponible }: Pro
   return (
     <button
       type="button"
-      className={`ipm-tuile ipm-tuile--${indisponible ? 'avenir' : 'ouverte'} ipm-appui`}
+      className={`ipm-tuile ipm-tuile--${indisponible ? 'avenir' : 'ouverte'}${
+        tuile ? ' ipm-tuile--case' : ''
+      } ipm-appui`}
       data-service={document.cle}
       aria-label={indisponible ? `${document.action}, bientôt disponible` : document.action}
       onClick={toucher}
@@ -53,9 +66,12 @@ export default function TuileService({ document, onOuvrir, onIndisponible }: Pro
       {/* L'icône au TRAIT, rouge sur la carte blanche : on force la version
           outline quel que soit le mode. */}
       <IonIcon icon={document.icone} className="ipm-tuile__icone" aria-hidden="true" />
-      <span className="ipm-tuile__libelle">{document.action}</span>
-      {/* À droite : le chevron (document ouvert) ou la puce « Bientôt ». */}
-      {indisponible ? (
+      {/* En tuile, le libellé court (« Bon de pharmacie ») : la phrase
+          d'action entière ne tient pas dans une case. */}
+      <span className="ipm-tuile__libelle">{tuile ? document.libelle : document.action}</span>
+      {/* À droite (ou dessous, en tuile) : le chevron du document ouvert, ou
+          la puce « Bientôt ». La tuile n'a pas de chevron. */}
+      {tuile && !indisponible ? null : indisponible ? (
         <span className="ipm-tuile__puce" aria-hidden="true">
           {MENTION_BIENTOT}
         </span>

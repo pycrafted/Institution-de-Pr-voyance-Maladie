@@ -124,6 +124,7 @@ export default function Accueil() {
             lu par les lecteurs d'écran. */}
         <section className="ipm-section accueil__documents" aria-label="Demander un bon">
           <GrilleServices
+            forme="tuile"
             onOuvrir={ouvrirDocument}
             onIndisponible={setAVenir}
             etiquette="Documents à demander"

@@ -159,3 +159,46 @@
   font-weight: 600;
 }
 
+
+/* --- « Demander un bon » en grille de tuiles (2 x 2) ----------------------
+ * Une case blanche arrondie par document : l'icône rouge au trait en haut,
+ * le libellé court centré dessous. Le document à venir garde sa case,
+ * estompée, avec « Bientôt » sous le libellé.
+ */
+.accueil__documents .ipm-grille-services--tuiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e-12);
+}
+.accueil__documents .ipm-tuile--case {
+  height: 100%;
+  min-height: 112px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--e-8);
+  padding: var(--e-16) var(--e-12);
+  text-align: center;
+}
+.accueil__documents .ipm-tuile--case .ipm-tuile__icone {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  font-size: 32px;
+  color: var(--ipm-rouge);
+}
+.accueil__documents .ipm-tuile--case .ipm-tuile__libelle {
+  flex: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.accueil__documents .ipm-tuile--case.ipm-tuile--avenir .ipm-tuile__icone {
+  color: var(--ipm-texte-doux);
+}
+/* Très petits écrans : une colonne, pour que les libellés respirent. */
+@media (max-width: 300px) {
+  .accueil__documents .ipm-grille-services--tuiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
