@@ -15,6 +15,7 @@
  * l'animation de succès.
  */
 
+import { photoManquante } from '../../components/PhotoBeneficiaireRequise'
 import { IonContent, IonIcon, useIonToast } from '@ionic/react'
 import { alertCircleOutline, cloudOfflineOutline, trashOutline } from 'ionicons/icons'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -142,6 +143,15 @@ export default function NouveauBonOptique({ onFermer, onCree }: NouveauBonOptiqu
   const enregistrer = async () => {
     const corps = corpsDepuisSaisie(saisie)
     if (!corps || envoi || !enLigne || bonCree) return
+    // Le bon imprime la photo du bénéficiaire : sans elle, pas de bon.
+    if (photoManquante(saisie.beneficiaire, beneficiaires)) {
+      haptique.erreur()
+      setErreurs((avant) => ({
+        ...avant,
+        beneficiaire: 'Ajoutez la photo du bénéficiaire pour générer le bon.',
+      }))
+      return
+    }
     // Le formulaire a pu rester ouvert depuis la veille : la date se revérifie.
     const dateRefusee = corps.datePrescription
       ? erreurDate(corps.datePrescription, aujourdhuiISO())

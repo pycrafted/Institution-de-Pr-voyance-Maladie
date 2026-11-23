@@ -21,6 +21,7 @@ import { Choix, Section } from '../../components/ChampsFormulaire'
 import type { Beneficiaire, CodeLibelle, DateISO, Fournisseur, Specialite } from '../../types/api'
 import { nomPropre } from '../../utils/libelles'
 import Alerte from '../NouveauBon/Alerte'
+import PhotoBeneficiaireRequise from '../../components/PhotoBeneficiaireRequise'
 import type { Chargement } from '../NouveauBon/chargement'
 import { bornesDate, type ErreursSaisie, type Saisie } from './assistant'
 
@@ -114,6 +115,8 @@ export default function FormulaireBonOptique({
             />
           </>
         )}
+        {/* Pas encore de photo : elle est demandée avant de générer le bon. */}
+        <PhotoBeneficiaireRequise beneficiaire={saisie.beneficiaire} fige={fige} />
         {erreurs.beneficiaire && <Alerte message={erreurs.beneficiaire} />}
         {avertissement && (
           <p className="nouveau-bon__info ipm-carte" role="note">

@@ -11,7 +11,7 @@ import { etatBons, reinitialiserBons } from '../../data/bons'
 import { viderCache } from '../../offline/stockage'
 import { reponseJson } from '../../test/fabriques'
 import NouveauBon from './index'
-import { BON_CREE, fauxServeur, preparerIonic, rendreAvecSession } from './outils-test'
+import { BON_CREE, fauxServeur, preparerIonic, rendreAvecSession, uneSession } from './outils-test'
 
 // Les toasts sont une surcouche Ionic hors du DOM de l'écran : on vérifie ce
 // qui leur est demandé.
@@ -185,6 +185,22 @@ describe('Nouveau bon', () => {
     // Le bon rejoint la liste sans attendre la resynchronisation.
     await waitFor(() => expect(etatBons().bons?.[0]?.code).toBe(BON_CREE.code))
     await waitFor(() => expect(onCree).toHaveBeenCalledWith(BON_CREE), { timeout: 3000 })
+  })
+
+  it('demande la photo du bénéficiaire qui n’en a pas, et ne génère pas le bon sans elle', async () => {
+    const { appels } = fauxServeur()
+    const session = uneSession()
+    session.beneficiaires = session.beneficiaires.map((b) => ({ ...b, photo: null }))
+    rendreAvecSession(<NouveauBon onFermer={vi.fn()} onCree={vi.fn()} />, session)
+    await remplirTout()
+
+    expect(screen.getByText('Photo du bénéficiaire requise')).toBeInTheDocument()
+    expect(screen.getByText(/afin de permettre au prestataire de santé/)).toBeInTheDocument()
+    fireEvent.click(bouton('Enregistrer'))
+    expect(
+      await screen.findByText('Ajoutez la photo du bénéficiaire pour générer le bon.'),
+    ).toBeInTheDocument()
+    expect(appels.some((a) => a.methode === 'POST')).toBe(false)
   })
 
   it('affiche le refus du serveur sous le champ concerné', async () => {

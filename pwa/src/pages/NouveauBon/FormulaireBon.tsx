@@ -25,6 +25,7 @@ import { Choix, Section } from '../../components/ChampsFormulaire'
 import type { Beneficiaire, DateISO, Fournisseur, Specialite } from '../../types/api'
 import { nomPropre } from '../../utils/libelles'
 import Alerte from './Alerte'
+import PhotoBeneficiaireRequise from '../../components/PhotoBeneficiaireRequise'
 import {
   ARTICLES_MAX,
   ARTICLES_MIN,
@@ -117,6 +118,8 @@ export default function FormulaireBon({
             />
           </>
         )}
+        {/* Pas encore de photo : elle est demandée avant de générer le bon. */}
+        <PhotoBeneficiaireRequise beneficiaire={saisie.beneficiaire} fige={fige} />
         {erreurs.beneficiaire && <Alerte message={erreurs.beneficiaire} />}
       </Section>
 
