@@ -71,6 +71,8 @@ export default function Identification() {
   const champMatricule = useRef<HTMLInputElement>(null)
   const champMotDePasse = useRef<HTMLInputElement>(null)
   const [voirMotDePasse, setVoirMotDePasse] = useState(false)
+  // Le code de l'IPM a été tapé comme mot de passe : on l'a reconnu.
+  const [codeReconnu, setCodeReconnu] = useState(false)
 
   // Empreinte / Face ID : seulement si cet appareil porte déjà une clé.
   const [cle] = useState(cleDeLAppareil)
@@ -92,6 +94,14 @@ export default function Identification() {
     const issue = await formulaire.envoyer()
     if (issue === 'ok') {
       haptique.succes()
+    } else if (issue === 'activation') {
+      // Le « mot de passe » était le code de l'IPM : on passe au choix du
+      // mot de passe, matricule et code déjà remplis.
+      haptique.leger()
+      activation.changerMatricule(formulaire.matricule)
+      activation.changerCode(formulaire.motDePasse)
+      setCodeReconnu(true)
+      setMode('activation')
     } else if (issue === 'invalide') {
       haptique.erreur()
       if (formulaire.controle.matricule) champMatricule.current?.focus()
@@ -242,10 +252,19 @@ export default function Identification() {
               </form>
             ) : (
               <form className="ipm-formulaire" noValidate onSubmit={(e) => e.preventDefault()}>
-                <p className="identification__explication">
-                  L’IPM vous remet un <strong>code à 6 chiffres</strong>, valable 7 jours. Avec lui,
-                  choisissez votre mot de passe : il vous servira à chaque connexion.
-                </p>
+                {codeReconnu ? (
+                  <div className="identification__avis" role="status">
+                    <IonIcon icon={keypadOutline} aria-hidden="true" />
+                    <span>
+                      C’est votre code de l’IPM : choisissez maintenant votre mot de passe.
+                    </span>
+                  </div>
+                ) : (
+                  <p className="identification__explication">
+                    L’IPM vous remet un <strong>code à 6 chiffres</strong>, valable 7 jours. Avec
+                    lui, choisissez votre mot de passe : il vous servira à chaque connexion.
+                  </p>
+                )}
                 <Saisie
                   libelle="Matricule"
                   placeholder="Ex. 949"
@@ -306,7 +325,10 @@ export default function Identification() {
                 <button
                   type="button"
                   className="identification__lien"
-                  onClick={() => setMode('connexion')}
+                  onClick={() => {
+                    setMode('connexion')
+                    setCodeReconnu(false)
+                  }}
                 >
                   J’ai déjà mon mot de passe : <strong>me connecter</strong>
                 </button>

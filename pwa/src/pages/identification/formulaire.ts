@@ -56,7 +56,7 @@ export interface ErreursIdentification {
 }
 
 /** Issue d'un envoi, pour le retour haptique et le placement du focus. */
-export type IssueEnvoi = 'ok' | 'invalide' | 'refuse' | 'annule' | 'occupe'
+export type IssueEnvoi = 'ok' | 'invalide' | 'refuse' | 'annule' | 'occupe' | 'activation'
 
 /**
  * État du formulaire. Les erreurs de champ n'apparaissent qu'après un
@@ -104,6 +104,9 @@ export function useFormulaireIdentification(
       return 'ok'
     } catch (e) {
       if (estErreurApi(e) && e.genre === 'annulee') return 'annule'
+      // 409 : c'est le code d'activation de l'IPM qui a été tapé comme mot de
+      // passe. L'écran passe au choix du mot de passe (rien à afficher ici).
+      if (estErreurApi(e) && e.statut === 409) return 'activation'
       // 401 identité incorrecte, 403 dossier inactif, 429, réseau… : le
       // message du client est déjà une phrase française montrable.
       setErreurServeur(messageErreur(e))

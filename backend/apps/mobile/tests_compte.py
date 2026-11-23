@@ -73,6 +73,16 @@ class CompteMobileTests(TestCase):
         # Le code est brûlé : il ne sert qu'une fois.
         self.assertEqual(self.activer(code, 'Autre-Mot-2026').status_code, 400)
 
+    def test_code_tape_comme_mot_de_passe(self):
+        code = self.moi.generer_code_activation()
+        reponse = self.identifier(code)
+        self.assertEqual(reponse.status_code, 409)
+        self.assertTrue(reponse.data['activation'])
+        # Pas consommé : l'activation passe ensuite.
+        self.assertEqual(self.activer(code, 'Raffinerie-2026').status_code, 200)
+        # Un code faux reste un simple refus.
+        self.assertEqual(self.identifier('000000' if code != '000000' else '111111').status_code, 401)
+
     def test_code_faux_ou_expire(self):
         code = self.moi.generer_code_activation()
         faux = '000000' if code != '000000' else '111111'

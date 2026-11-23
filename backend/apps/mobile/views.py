@@ -89,6 +89,7 @@ from .serializers import (
 
 IDENTITE_INCORRECTE = 'Matricule ou mot de passe incorrect.'
 DOSSIER_INACTIF = 'Votre dossier IPM n’est pas actif. Rapprochez-vous de l’IPM.'
+CODE_A_ACTIVER = 'C’est votre code de l’IPM : choisissez maintenant votre mot de passe.'
 
 
 def adresse_du_client(request):
@@ -219,6 +220,20 @@ class IdentificationView(APIView):
             not self._mot_de_passe_ok(participant, mot_de_passe)
             or (societe and (not participant.adherent_id or participant.adherent.code != societe))
         ):
+            # Le code d'activation de l'IPM tapé à la place du mot de passe :
+            # on le dit (409), sans le consommer, pour que l'application
+            # passe d'elle-même au choix du mot de passe. Ne révèle rien de
+            # plus que la vue d'activation, et subit les mêmes freins.
+            code = mot_de_passe.replace(' ', '')
+            if (
+                len(code) == 6
+                and code.isdigit()
+                and any(d.verifier_code_activation(code) for d in candidats)
+            ):
+                return Response(
+                    {'detail': CODE_A_ACTIVER, 'activation': True},
+                    status=status.HTTP_409_CONFLICT,
+                )
             return self._refus()
 
         # L'identité est exacte : on peut dire pourquoi l'accès est refusé

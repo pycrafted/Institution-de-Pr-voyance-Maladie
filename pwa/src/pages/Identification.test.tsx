@@ -70,6 +70,19 @@ describe('Identification', () => {
     await waitFor(() => expect(activer).toHaveBeenCalledWith('949', '123456', 'Raffinerie-2026'))
   })
 
+  it('reconnaît le code de l’IPM tapé comme mot de passe et passe à l’activation', async () => {
+    const identifier = vi.fn(() =>
+      Promise.reject(new ErreurApi('inconnue', { statut: 409, message: 'Code' })),
+    )
+    rendreEcran(<Identification />, anonyme({ identifier }))
+    saisirMatricule('1100')
+    saisirMotDePasse('221421')
+    fireEvent.click(screen.getByRole('button', { name: 'Connexion' }))
+    expect(await screen.findByText(/C’est votre code de l’IPM/)).toBeInTheDocument()
+    expect(champ('Matricule').value).toBe('1100')
+    expect(champ('Code de l’IPM').value).toBe('221421')
+  })
+
   it('refuse deux mots de passe différents sans appeler le serveur', async () => {
     const activer = vi.fn(() => Promise.resolve())
     rendreEcran(<Identification />, anonyme({ activer }))
