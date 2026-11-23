@@ -48,12 +48,12 @@ export default function Profil() {
    * « Télécharger l'application » : ouvre directement la boîte d'installation
    * du navigateur quand il la propose (Android, Chrome, Edge). Sinon (iPhone,
    * Safari…), le navigateur n'offre pas d'installation en un geste : on mène
-   * à l'écran qui explique comment l'ajouter.
+   * à /telecharger, l'écran qui explique comment l'ajouter.
    */
   function telechargerApplication() {
     haptique.leger()
     if (installation.possible) void installation.proposer()
-    else routeur.push('/installation', 'forward', 'push')
+    else routeur.push('/telecharger', 'forward', 'push')
   }
   const informations = useMemo(() => informationsDuParticipant(participant), [participant])
 

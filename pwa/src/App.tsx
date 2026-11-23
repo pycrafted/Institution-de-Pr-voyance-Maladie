@@ -19,14 +19,12 @@ import { useEffect, useState } from 'react'
 import { Redirect, Route, useLocation } from 'react-router-dom'
 
 import BarreOngletsFlottante from './components/BarreOngletsFlottante'
-import InstallSheet from './components/InstallSheet'
 import MiseAJour from './components/MiseAJour'
 import { NouveauBonProvider } from './components/NouveauBonModal'
 import Splash from './components/Splash'
 import { haptique } from './hooks/haptique'
 import Accueil from './pages/Accueil'
 import Assistance from './pages/Assistance'
-import Installation from './pages/Installation'
 import Telecharger from './pages/Telecharger'
 import APropos from './pages/APropos'
 import DetailBon from './pages/DetailBon'
@@ -82,8 +80,6 @@ function Coquille() {
           <Anonyme />
         </IonReactRouter>
       )}
-      {/* Proposée d'elle-même une fois identifié, jamais pendant la saisie. */}
-      <InstallSheet spontanee={statut === 'identifie'} />
     </>
   )
 }
@@ -100,7 +96,7 @@ function Coquille() {
 
 /** Chemins servis quand on est identifié ; le reste mène à l'accueil. */
 const CHEMINS_IDENTIFIE =
-  /^\/(accueil|bons|profil|conventionnes|releve|assistance|identite|notifications|installation|a-propos|telecharger)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
+  /^\/(accueil|bons|profil|conventionnes|releve|assistance|identite|notifications|a-propos|telecharger)\/?$|^\/(bons|conventionnes)\/[^/]+\/?$|^\/bons\/(lettres|optique)\/[^/]+\/?$/
 
 function Anonyme() {
   const { pathname } = useLocation()
@@ -126,9 +122,12 @@ function Onglets() {
       {/* L'annuaire s'appelait « Pharmacies » : une icône installée ou un
           favori sur l'ancienne adresse mène au nouvel écran, pas à l'accueil. */}
       {/^\/pharmacies\/?$/.test(pathname) && <Redirect to="/conventionnes" />}
-      {!CHEMINS_IDENTIFIE.test(pathname) && !/^\/pharmacies\/?$/.test(pathname) && (
-        <Redirect to="/accueil" />
-      )}
+      {/* « /installation » a été retiré en novembre 2026 : son contenu était le
+          troisième exemplaire du même guide. Une icône installée ou un favori
+          sur l'ancienne adresse mène à /telecharger, qui le dit mieux. */}
+      {/^\/installation\/?$/.test(pathname) && <Redirect to="/telecharger" />}
+      {!CHEMINS_IDENTIFIE.test(pathname) &&
+        !/^\/(pharmacies|installation)\/?$/.test(pathname) && <Redirect to="/accueil" />}
       <IonTabs onIonTabsWillChange={() => haptique.leger()}>
         <IonRouterOutlet>
           <Route exact path="/accueil" component={Accueil} />
@@ -148,8 +147,7 @@ function Onglets() {
           <Route exact path="/identite" component={Identite} />
           {/* Décisions de l'IPM sur les demandes, en page (ouverte de la cloche). */}
           <Route exact path="/notifications" component={Notifications} />
-          {/* Ouverts depuis le profil, présentés comme l'assistance. */}
-          <Route exact path="/installation" component={Installation} />
+          {/* Ouvert depuis le profil, présenté comme l'assistance. */}
           <Route exact path="/telecharger" component={Telecharger} />
           <Route exact path="/a-propos" component={APropos} />
         </IonRouterOutlet>

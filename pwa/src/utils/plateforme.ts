@@ -1,6 +1,7 @@
 /**
  * Où tourne l'application : iOS / Android, installée ou dans le navigateur.
- * Sert à la feuille d'installation et aux petits écarts de comportement.
+ * Sert au guide d'installation (/telecharger) et aux petits écarts de
+ * comportement.
  * (Le mode visuel ios/md est choisi par Ionic lui-même : ne pas le forcer.)
  */
 
@@ -17,4 +18,20 @@ export function estAndroid(ua = navigator.userAgent): boolean {
 export function estInstallee(): boolean {
   const standaloneIOS = (navigator as Navigator & { standalone?: boolean }).standalone === true
   return standaloneIOS || window.matchMedia?.('(display-mode: standalone)').matches === true
+}
+
+/**
+ * Les trois familles d'appareils, du point de vue de l'installation : iOS ne
+ * sait l'offrir que par le menu « Partager » de Safari, Android la propose en
+ * un geste, et les autres passent par le menu de leur navigateur.
+ *
+ * Vivait dans components/InstallSheet.tsx, retirée en novembre 2026 : la
+ * fonction est restée, la fenêtre non.
+ */
+export type PlateformeInstallation = 'ios' | 'android' | 'autre'
+
+export function plateformeCourante(): PlateformeInstallation {
+  if (estIOS()) return 'ios'
+  if (estAndroid()) return 'android'
+  return 'autre'
 }

@@ -88,7 +88,7 @@ describe('Profil', () => {
   it('« Télécharger l’application » : sans invitation du navigateur, mène aux explications', async () => {
     rendreEcran(<Profil />)
     fireEvent.click(await screen.findByText('Télécharger l’application'))
-    await waitFor(() => expect(window.location.pathname).toBe('/installation'))
+    await waitFor(() => expect(window.location.pathname).toBe('/telecharger'))
     window.history.replaceState(null, '', '/')
   })
 
