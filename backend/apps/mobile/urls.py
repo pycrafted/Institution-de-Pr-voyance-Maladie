@@ -6,6 +6,16 @@ Les chemins qu'appelle l'application IPM Mobile (pwa/src/api/).
 
 from django.urls import path
 
+from .cles_acces import (
+    CleView,
+    ClesView,
+    ConnexionOptionsView,
+    ConnexionView,
+    InscriptionOptionsView,
+    InscriptionView,
+)
+from .compte import ActivationView, MotDePasseView
+
 from .views import (
     ArticlesOptiqueView,
     BeneficiairePhotoView,
@@ -35,6 +45,16 @@ from .views import (
 
 urlpatterns = [
     path('identification/', IdentificationView.as_view(), name='mobile-identification'),
+    # Le compte : choisir son mot de passe (code de l'IPM), le changer.
+    path('activation/', ActivationView.as_view(), name='mobile-activation'),
+    path('moi/mot-de-passe/', MotDePasseView.as_view(), name='mobile-mot-de-passe'),
+    # Empreinte / Face ID (clés d'accès WebAuthn).
+    path('cles/connexion/options/', ConnexionOptionsView.as_view(), name='mobile-cle-connexion-options'),
+    path('cles/connexion/', ConnexionView.as_view(), name='mobile-cle-connexion'),
+    path('moi/cles/inscription/options/', InscriptionOptionsView.as_view(), name='mobile-cle-inscription-options'),
+    path('moi/cles/inscription/', InscriptionView.as_view(), name='mobile-cle-inscription'),
+    path('moi/cles/', ClesView.as_view(), name='mobile-cles'),
+    path('moi/cles/<int:pk>/', CleView.as_view(), name='mobile-cle'),
     path('moi/', MoiView.as_view(), name='mobile-moi'),
     path('moi/compte/', CompteView.as_view(), name='mobile-compte'),
     path('scan/', ScanView.as_view(), name='mobile-scan'),

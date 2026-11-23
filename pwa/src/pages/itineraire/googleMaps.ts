@@ -10,6 +10,12 @@
  * `chargerGoogleMaps()` résout sur l'objet `google.maps` prêt à l'emploi ; en
  * cas d'échec (clé absente, réseau, Google injoignable), la promesse est
  * oubliée pour qu'une nouvelle tentative reparte de zéro.
+ *
+ * `prechargerGoogleMaps()` le lance en arrière-plan, quand le téléphone n'a
+ * rien d'autre à faire, dès que l'employé est connecté : à l'ouverture de
+ * l'onglet « Structures », le script est déjà là et la carte s'affiche tout
+ * de suite. Les connexions vers Google sont ouvertes d'avance (preconnect
+ * dans index.html).
  */
 
 import { chargerConfig } from '../../api/config'
@@ -22,6 +28,21 @@ export class CleManquante extends Error {
   }
 }
 
+/**
+ * ID de carte du projet Google « ipm-mobile » : carte VECTORIELLE (zoom continu
+ * et fluide, rotation, inclinaison, comme l'application Google Maps) et style
+ * « IPM clair » (fond adouci, ni commerces ni transports) réglé dans la console
+ * Google Cloud. config.json peut en donner un autre (`idCarteGoogle`).
+ */
+const ID_CARTE_PAR_DEFAUT = '90632891372333d5a8af4a35'
+
+let idCarteLu = ID_CARTE_PAR_DEFAUT
+
+/** L'ID de carte à donner aux cartes (connu une fois Google Maps chargé). */
+export function idCarte(): string {
+  return idCarteLu
+}
+
 // Le nom de la fonction que Google rappelle quand l'API est prête.
 const RAPPEL = '__ipmGoogleMapsPret'
 
@@ -32,7 +53,8 @@ export function chargerGoogleMaps(): Promise<typeof google.maps> {
   promesse = (async () => {
     // Déjà chargé (deuxième ouverture d'une carte dans la même session).
     if (typeof google !== 'undefined' && google.maps) return google.maps
-    const { cleGoogleMaps } = await chargerConfig()
+    const { cleGoogleMaps, idCarteGoogle } = await chargerConfig()
+    if (idCarteGoogle) idCarteLu = idCarteGoogle
     if (!cleGoogleMaps) throw new CleManquante()
     await injecter(cleGoogleMaps)
     return google.maps
@@ -42,6 +64,13 @@ export function chargerGoogleMaps(): Promise<typeof google.maps> {
     promesse = null
   })
   return promesse
+}
+
+/** Charge Google Maps quand le téléphone est libre, sans rien bloquer. */
+export function prechargerGoogleMaps(): void {
+  const lancer = () => void chargerGoogleMaps().catch(() => undefined)
+  if ('requestIdleCallback' in window) window.requestIdleCallback(lancer, { timeout: 4000 })
+  else setTimeout(lancer, 1500)
 }
 
 function injecter(cle: string): Promise<void> {
@@ -56,6 +85,9 @@ function injecter(cle: string): Promise<void> {
         key: cle,
         v: 'weekly',
         libraries: 'geometry',
+        // Chargement asynchrone recommandé par Google : le script ne bloque
+        // pas la page, et les bibliothèques arrivent à la demande.
+        loading: 'async',
         language: 'fr',
         region: 'SN',
         callback: RAPPEL,

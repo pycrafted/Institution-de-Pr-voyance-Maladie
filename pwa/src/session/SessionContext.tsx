@@ -1,10 +1,12 @@
 /**
  * Session de l'employé : jeton, participant, bénéficiaires.
  *
- * L'identification (matricule + mot de passe mobile) rend un
- * jeton signé valable 90 jours, conservé en IndexedDB pour ne pas se
- * réidentifier à chaque lancement. Le futur système de comptes remplacera
- * cette étape sans toucher aux écrans, qui ne connaissent que useSession().
+ * Trois façons d'obtenir le jeton signé (valable 90 jours, conservé en
+ * IndexedDB pour ne pas se réidentifier à chaque lancement) :
+ *   - matricule + mot de passe choisi par l'employé ;
+ *   - activation : matricule + code de l'IPM + nouveau mot de passe ;
+ *   - empreinte digitale / Face ID (clé d'accès de l'appareil).
+ * Toutes ouvrent la session de la même façon (`ouvrir`).
  */
 
 import {
@@ -17,11 +19,20 @@ import {
   type ReactNode,
 } from 'react'
 
-import { chargerConfig, configurerClient, identifier as identifierApi, lireMoi } from '../api'
+import {
+  activer as activerApi,
+  chargerConfig,
+  configurerClient,
+  connecterParCle,
+  identifier as identifierApi,
+  lireMoi,
+  optionsConnexionCle,
+} from '../api'
 import { reinitialiserBons } from '../data/bons'
 import { reinitialiserCompte } from '../data/compte'
 import { effacerSession, enregistrerSession, lireSession, viderCache } from '../offline/stockage'
-import type { Beneficiaire, Participant } from '../types/api'
+import type { Beneficiaire, IdentificationReponse, Participant } from '../types/api'
+import { utiliserCle } from '../utils/clesAcces'
 
 export type StatutSession = 'chargement' | 'anonyme' | 'identifie'
 
@@ -40,6 +51,16 @@ export interface Session {
    * montrable tel quel.
    */
   identifier: (matricule: string, motDePasse: string) => Promise<void>
+  /**
+   * Première connexion ou mot de passe oublié : matricule + code d'activation
+   * remis par l'IPM + mot de passe choisi. Ouvre la session.
+   */
+  activer: (matricule: string, code: string, motDePasse: string) => Promise<void>
+  /**
+   * Connexion par empreinte / Face ID. Rejette l'erreur du navigateur si
+   * l'employé referme la fenêtre (cf. estAbandon), ou une ErreurApi.
+   */
+  connecterParEmpreinte: () => Promise<void>
   /** Recharge participant et bénéficiaires (profil) ; silencieux hors ligne. */
   rafraichir: () => Promise<void>
   /** Efface jeton, profil, bons et PDF en cache. */
@@ -113,11 +134,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const identifier = useCallback(async (matricule: string, motDePasse: string) => {
-    const { jeton, participant } = await identifierApi({
-      matricule: matricule.trim(),
-      mot_de_passe: motDePasse,
-    })
+  /** Ouvre la session avec la réponse du serveur (jeton + participant). */
+  const ouvrir = useCallback(async ({ jeton, participant }: IdentificationReponse) => {
     configurerClient({ jeton })
     // Bénéficiaires tout de suite : l'accueil et l'assistant en ont besoin.
     // S'ils ne viennent pas (réseau), la session reste ouverte et le profil
@@ -145,6 +163,32 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       motifDeconnexion: null,
     })
   }, [])
+
+  const identifier = useCallback(
+    async (matricule: string, motDePasse: string) => {
+      await ouvrir(await identifierApi({ matricule: matricule.trim(), mot_de_passe: motDePasse }))
+    },
+    [ouvrir],
+  )
+
+  const activer = useCallback(
+    async (matricule: string, code: string, motDePasse: string) => {
+      await ouvrir(
+        await activerApi({
+          matricule: matricule.trim(),
+          code: code.replace(/\s/g, ''),
+          mot_de_passe: motDePasse,
+        }),
+      )
+    },
+    [ouvrir],
+  )
+
+  const connecterParEmpreinte = useCallback(async () => {
+    const { options, jeton } = await optionsConnexionCle()
+    const reponse = await utiliserCle(options)
+    await ouvrir(await connecterParCle(jeton, reponse))
+  }, [ouvrir])
 
   // Démarrage : config.json, puis session enregistrée.
   useEffect(() => {
@@ -188,10 +232,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       beneficiaires: etat.beneficiaires,
       motifDeconnexion: etat.motifDeconnexion,
       identifier,
+      activer,
+      connecterParEmpreinte,
       rafraichir,
       deconnecter,
     }),
-    [etat, identifier, rafraichir, deconnecter],
+    [etat, identifier, activer, connecterParEmpreinte, rafraichir, deconnecter],
   )
 
   return <SessionContext.Provider value={valeur}>{children}</SessionContext.Provider>

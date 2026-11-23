@@ -45,12 +45,18 @@ export function verifierMatricule(matricule: string): string | undefined {
   return undefined
 }
 
+/** Message d'erreur du mot de passe saisi à la connexion, ou undefined. */
+export function verifierMotDePasse(motDePasse: string): string | undefined {
+  return motDePasse ? undefined : 'Saisissez votre mot de passe.'
+}
+
 export interface ErreursIdentification {
   matricule?: string
+  motDePasse?: string
 }
 
 /** Issue d'un envoi, pour le retour haptique et le placement du focus. */
-export type IssueEnvoi = 'ok' | 'invalide' | 'refuse' | 'annule' | 'occupe'
+export type IssueEnvoi = 'ok' | 'invalide' | 'refuse' | 'annule' | 'occupe' | 'activation'
 
 /**
  * État du formulaire. Les erreurs de champ n'apparaissent qu'après un
@@ -61,6 +67,7 @@ export function useFormulaireIdentification(
   identifier: (matricule: string, motDePasse: string) => Promise<void>,
 ) {
   const [matricule, setMatricule] = useState('')
+  const [motDePasse, setMotDePasse] = useState('')
   const [tente, setTente] = useState(false)
   const [envoi, setEnvoi] = useState(false)
   const [erreurServeur, setErreurServeur] = useState<string | null>(null)
@@ -69,6 +76,7 @@ export function useFormulaireIdentification(
 
   const erreurs: ErreursIdentification = {
     matricule: verifierMatricule(matriculePourEnvoi(matricule)),
+    motDePasse: verifierMotDePasse(motDePasse),
   }
 
   function changerMatricule(saisie: string): string {
@@ -78,22 +86,27 @@ export function useFormulaireIdentification(
     return propre
   }
 
+  function changerMotDePasse(saisie: string) {
+    setMotDePasse(saisie)
+    setErreurServeur(null)
+  }
+
   async function envoyer(): Promise<IssueEnvoi> {
     if (enCours.current) return 'occupe'
     setTente(true)
-    if (erreurs.matricule) return 'invalide'
+    if (erreurs.matricule || erreurs.motDePasse) return 'invalide'
     enCours.current = true
     setEnvoi(true)
     setErreurServeur(null)
     try {
-      const m = matriculePourEnvoi(matricule)
-      // Connexion simplifiée : le matricule sert aussi de mot de passe. Un
-      // participant se connecte juste en tapant son matricule (le serveur
-      // l'accepte comme mot de passe, cf. mobile.views.IdentificationView).
-      await identifier(m, m)
+      // Le mot de passe que l'employé a choisi (avec le code de l'IPM).
+      await identifier(matriculePourEnvoi(matricule), motDePasse)
       return 'ok'
     } catch (e) {
       if (estErreurApi(e) && e.genre === 'annulee') return 'annule'
+      // 409 : c'est le code d'activation de l'IPM qui a été tapé comme mot de
+      // passe. L'écran passe au choix du mot de passe (rien à afficher ici).
+      if (estErreurApi(e) && e.statut === 409) return 'activation'
       // 401 identité incorrecte, 403 dossier inactif, 429, réseau… : le
       // message du client est déjà une phrase française montrable.
       setErreurServeur(messageErreur(e))
@@ -106,6 +119,7 @@ export function useFormulaireIdentification(
 
   return {
     matricule,
+    motDePasse,
     envoi,
     erreurServeur,
     /** Erreurs à afficher (vides tant que l'employé n'a pas tenté d'envoyer). */
@@ -113,6 +127,7 @@ export function useFormulaireIdentification(
     /** Contrôles de l'état courant, affichés ou non (où placer le focus). */
     controle: erreurs,
     changerMatricule,
+    changerMotDePasse,
     envoyer,
   }
 }

@@ -9,6 +9,9 @@ taille. Les cadres qu'il laissait vides (prescripteur, ordonnance,
 fournisseur) sont remplis quand le bon les porte ; le tableau des médicaments
 et le montant total restent à la main du pharmacien, comme à l'origine.
 
+Sous « Le PARTICIPANT », la photo d'identité du titulaire du bon (le
+participant, ou l'ayant droit soigné) : cf. photo_bon.
+
 Coordonnées en points PDF, relevées sur le modèle ; identiques sur les deux
 pages.
 """
@@ -19,6 +22,7 @@ import pymupdf
 from django.utils import timezone
 
 from .modeles import modele, ouvrir_modele
+from .photo_bon import legende, poser_photo
 
 MODELE = modele('bon_pharmacie.pdf')
 
@@ -182,6 +186,17 @@ def bon_pharmacie_pdf(bon, edite_par):
             if alignement == 'centre':
                 x -= mesure.text_length(texte, fontsize=taille) / 2
             page.insert_text((x, y), texte, fontname=nom_police, fontsize=taille, color=(0, 0, 0))
+
+        # 3. La photo du titulaire du bon, sous « Le PARTICIPANT ».
+        titulaire = bon.beneficiaire or bon.participant
+        poser_photo(
+            page,
+            titulaire.photo if titulaire else '',
+            legende(bon.beneficiaire),
+            x=43.0,
+            haut=632.0,
+            largeur=132.0,
+        )
     _nommer(doc, bon.code)
     contenu = doc.tobytes(garbage=3, deflate=True)
     doc.close()

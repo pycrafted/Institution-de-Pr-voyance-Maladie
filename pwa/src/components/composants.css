@@ -338,16 +338,6 @@ ion-tab-bar.ipm-onglets {
   text-align: start;
   cursor: pointer;
 }
-.ipm-navbar__solde-icone {
-  flex-shrink: 0;
-  box-sizing: content-box;
-  width: 16px;
-  height: 16px;
-  padding: 8px;
-  border-radius: var(--r-md);
-  background: var(--ipm-rouge-doux);
-  color: var(--ipm-rouge-texte);
-}
 .ipm-navbar__solde-textes {
   /* Le montant, et la phrase qui l'explique juste en dessous. */
   display: flex;
@@ -517,8 +507,7 @@ ion-tab-bar.ipm-onglets {
   aspect-ratio: 1.586;
   /* TOUTES les cotes de la carte sont en `em` à partir de cette base : une
      seule déclaration de `font-size` la fait alors grandir d'un bloc, texte,
-     photo et marges ensemble. C'est ce qui permet à la carte plein écran de
-     remplir l'écran sans se vider (cf. .carte-plein__carte). 16px = la valeur
+     photo et marges ensemble. 16px = la valeur
      des `rem` d'origine : l'aspect ne bouge pas là où rien n'est redéfini. */
   font-size: 16px;
   padding: 1.25em;
@@ -1261,6 +1250,31 @@ ion-modal.ipm-feuille {
   margin-top: var(--e-20);
 }
 
+/* Paragraphes et boutons d'une page (proposition d'empreinte, mot de passe). */
+.ipm-feuille__texte {
+  margin: 0 0 var(--e-12);
+  color: var(--ipm-texte);
+}
+.ipm-feuille__texte--doux {
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.ipm-feuille__texte--erreur {
+  color: var(--ipm-rouge-texte);
+}
+.ipm-feuille__boutons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  margin-top: var(--e-24);
+}
+.ipm-feuille__boutons > .ipm-bouton {
+  width: 100%;
+}
+.ipm-feuille__corps .ipm-formulaire {
+  padding: 0;
+}
+
 /* Feuille de choix (components/FeuilleChoix) : la question, puis les boutons
    empilés sur toute la largeur. */
 .ipm-feuille-choix__message {
@@ -1522,91 +1536,6 @@ ion-skeleton-text.skeleton-text-animated::after {
 }
 .ipm-hors-ligne ion-icon {
   font-size: 1rem;
-}
-
-/* ========================================================================
- * Carte d'ayant droit en plein écran (components/CarteMembrePleinEcran)
- * ---------------------------------------------------------------------
- * Partagée par le profil et l'accueil : ces règles vivaient dans
- * profil.css, que l'accueil n'importe pas - la modale s'y serait affichée
- * sans style.
- * ===================================================================== */
-/* --- Carte d'un ayant droit en plein écran ------------------------------- */
-/* Ouverte en touchant un membre de la famille : la carte occupe toute la
-   largeur, centrée, pour être tendue au prestataire. */
-ion-modal.carte-plein {
-  --background: var(--ipm-fond);
-  --width: 100%;
-  --height: 100%;
-  --max-width: 100%;
-  --border-radius: 0;
-}
-.carte-plein__contenu {
-  position: relative;
-  height: 100%;
-  overflow: hidden;
-  background: var(--ipm-fond);
-}
-/* La scène est centrée en absolu, puis pivotée d'un quart de tour : la carte
-   s'affiche en paysage, centrée, quelle que soit la taille de la modale. Sa
-   boîte s'ajuste à son contenu (pas de taille en vw/vh géante qui déréglait
-   le centrage). */
-.carte-plein__scene {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) rotate(90deg);
-  display: flex;
-  align-items: center;
-}
-.carte-plein__fermer {
-  position: absolute;
-  top: calc(var(--e-12) + var(--ion-safe-area-top, env(safe-area-inset-top)));
-  inset-inline-end: var(--gouttiere);
-  appearance: none;
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--r-pill);
-  background: var(--ipm-surface);
-  border: 1px solid var(--ipm-liseret);
-  box-sizing: border-box;
-  box-shadow: var(--ombre-1);
-  color: var(--ipm-texte);
-  font-size: 24px;
-  cursor: pointer;
-}
-/* La carte en paysage, au ratio d'une carte (1.586), AUSSI GRANDE que l'écran
-   le permet - c'est une pièce qu'on tend à bout de bras au pharmacien.
-
-   Elle est pivotée d'un quart de tour : sa HAUTEUR CSS devient la largeur
-   visible, et sa LARGEUR CSS la hauteur visible. Les deux contraintes de
-   l'écran se lisent donc en diagonale :
-     - largeur visible  ≤ largeur de l'écran        → hauteur CSS ≤ 100vw
-     - hauteur visible  ≤ hauteur de l'écran        → hauteur CSS ≤ 100vh / 1.586
-   La plus serrée des deux gagne, et le ratio fait le reste. Plus de plafond
-   en pixels : c'est l'écran qui décide. */
-.carte-plein__carte {
-  --carte-marge: 24px;
-  /* Largeur visible une fois pivotée (= hauteur CSS). Plus grande qu'avant
-     (300 -> 360) pour se lire de plus loin au comptoir, mais pas plein écran :
-     c'est la MÊME carte, simplement plus visible. */
-  --carte-cote: min(
-    calc(100vw - 2 * var(--carte-marge)),
-    calc((100vh - 2 * var(--carte-marge)) / 1.586),
-    360px
-  );
-  height: var(--carte-cote);
-  width: calc(var(--carte-cote) * 1.586);
-  max-width: none;
-  aspect-ratio: auto;
-  /* Le contenu grandit AVEC la carte : la base `em` du gabarit suit sa taille,
-     300px de côté valant les 16px d'origine. La carte n'est donc pas
-     redessinée, elle est mise à l'échelle - texte, photo et marges ensemble.
-     Sans cela, une carte plus grande garderait son texte d'avant et se
-     viderait. */
-  font-size: calc(var(--carte-cote) / 300 * 16);
 }
 
 /* ========================================================================
@@ -2055,4 +1984,53 @@ select.ipm-formulaire__saisie {
 .notifs__date {
   font-size: 0.75rem;
   color: var(--ipm-texte-doux);
+}
+
+/* ========================================================================
+ * Photo du bénéficiaire demandée dans les assistants de bon
+ * (components/PhotoBeneficiaireRequise)
+ * ===================================================================== */
+.photo-requise {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  margin-top: var(--e-12);
+  padding: var(--e-16);
+  border-radius: var(--r-lg);
+  background: var(--ipm-surface);
+  border: 1px solid var(--ipm-liseret);
+  box-shadow: var(--ombre-1);
+}
+.photo-requise__entete {
+  display: flex;
+  align-items: center;
+  gap: var(--e-12);
+}
+.photo-requise__texte {
+  min-width: 0;
+}
+.photo-requise__titre {
+  margin: 0 0 2px;
+  font-weight: 700;
+  color: var(--ipm-texte);
+}
+.photo-requise__note {
+  margin: 0;
+  font: var(--t-secondaire);
+  line-height: 1.45;
+  color: var(--ipm-texte-doux);
+}
+.photo-requise > .ipm-bouton {
+  width: 100%;
+}
+.photo-requise__message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.photo-requise__fichier {
+  display: none;
 }

@@ -59,7 +59,7 @@ describe('Profil', () => {
     const titres = Array.from(container.querySelectorAll('.ipm-titre-section')).map(
       (t) => t.textContent,
     )
-    expect(titres).toEqual(['Mes informations', 'Réglages'])
+    expect(titres).toEqual(['Mes informations', 'Ayants droit', 'Réglages'])
   })
 
   it('ouvre l’écran directement sur ses sections, sans en-tête ni toolbar ni liste à filets', () => {
@@ -73,10 +73,18 @@ describe('Profil', () => {
     expect(container.querySelector('ion-list')).toBeNull()
   })
 
-  it('ne montre plus les ayants droit (ils sont sur l’accueil)', () => {
+  it('montre les ayants droit, chacun en carte avec sa photo ou ses initiales', () => {
+    // La fabrique donne le titulaire + une conjointe : seule la conjointe est
+    // un ayant droit.
     const { container } = rendreEcran(<Profil />)
+    expect(screen.getByText('Ayants droit')).toBeInTheDocument()
+    expect(screen.getByText('Awa DIOP')).toBeInTheDocument()
+    expect(container.querySelectorAll('.ipm-pile .ipm-avatar').length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('n’affiche pas la section sans ayant droit', () => {
+    rendreEcran(<Profil />, uneSession({ beneficiaires: [] }))
     expect(screen.queryByText('Ayants droit')).toBeNull()
-    expect(container.querySelector('.accueil-famille')).toBeNull()
   })
 
   it('ne propose plus « Assistance » ni « À propos »', () => {

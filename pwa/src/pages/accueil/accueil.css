@@ -42,18 +42,11 @@
 /* Les raccourcis vers les cartes d'ayant droit ont rejoint le Profil
    (pages/profil/profil.css, .profil-famille). */
 
-/* La carte d'adhérent est touchable : elle s'ouvre en grand et en paysage.
-   Le bouton n'est qu'une enveloppe - aucun habillage propre, la carte garde
-   exactement son apparence. */
+/* L'enveloppe de la carte d'adhérent : aucun habillage propre, la carte garde
+   exactement son apparence. Elle ne s'ouvre plus en grand. */
 .accueil__carte-bouton {
-  appearance: none;
   display: block;
   width: 100%;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  text-align: start;
-  cursor: pointer;
 }
 
 /* ========================================================================
@@ -166,78 +159,3 @@
   font-weight: 600;
 }
 
-/* --- Ayants droit --------------------------------------------------------
- * Rangée horizontale des cartes de proches, sous la carte de l'employé : une vignette
- * à la forme d'une photo d'identité, le prénom dessous, et la carte s'ouvre en
- * grand au toucher (components/CartePleinEcran). Défile sur le côté si la
- * famille est nombreuse.
- */
-.accueil-famille {
-  list-style: none;
-  margin: 0;
-  padding: 0 var(--gouttiere);
-  display: flex;
-  gap: var(--e-16);
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  scrollbar-width: none;
-}
-.accueil-famille::-webkit-scrollbar {
-  display: none;
-}
-.accueil-famille__membre {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--e-8);
-  width: clamp(72px, 19vw, 112px);
-  scroll-snap-align: start;
-  cursor: pointer;
-  color: var(--ipm-texte);
-}
-/* La vignette reprend la forme (4.75/6) et l'échelle de la carte d'adhérent. */
-.accueil-famille__membre .ipm-avatar {
-  width: clamp(56px, 15vw, 96px) !important;
-  height: auto !important;
-  aspect-ratio: 4.75 / 6;
-  font-size: clamp(21px, 5.6vw, 36px) !important;
-}
-/* Le prénom seul : le nom de famille est le même pour presque tous. */
-.accueil-famille__nom {
-  max-width: 100%;
-  font-size: clamp(0.8125rem, 3.2vw, 1rem);
-  font-weight: 600;
-  line-height: 1.2;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* « Demander un bon » (sans titre) bien séparé des ayants droit : un filet
-   sur toute la largeur utile et davantage d'air au-dessus. */
-.accueil__famille + .accueil__documents {
-  margin-top: var(--e-24);
-  padding-top: var(--e-20);
-  border-top: 1px solid var(--ipm-bordure);
-  margin-inline: var(--gouttiere);
-}
-.accueil__famille + .accueil__documents .ipm-grille-services {
-  padding-inline: 0;
-}
-
-/* Le même filet entre la carte d'adhérent et les ayants droit. */
-.accueil__famille {
-  margin-top: var(--e-24);
-  padding-top: var(--e-20);
-  border-top: 1px solid var(--ipm-bordure);
-  margin-inline: var(--gouttiere);
-}
-.accueil__famille .ipm-titre-section,
-.accueil__famille .accueil-famille {
-  padding-inline: 0;
-}

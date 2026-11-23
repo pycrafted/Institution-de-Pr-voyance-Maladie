@@ -2,6 +2,8 @@ Django==5.2.17
 django-cors-headers==4.9.0
 djangorestframework==3.17.2
 python-dotenv==1.2.2
+# Empreinte / Face ID de l'application mobile (clés d'accès WebAuthn).
+webauthn==2.7.0
 PyMuPDF==1.28.2
 psycopg2-binary==2.9.13
 # Hébergement Render (cf. render.yaml) : serveur WSGI et service des statiques.

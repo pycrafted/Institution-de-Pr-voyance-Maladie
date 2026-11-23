@@ -89,6 +89,7 @@ from .serializers import (
 
 IDENTITE_INCORRECTE = 'Matricule ou mot de passe incorrect.'
 DOSSIER_INACTIF = 'Votre dossier IPM n’est pas actif. Rapprochez-vous de l’IPM.'
+CODE_A_ACTIVER = 'C’est votre code de l’IPM : choisissez maintenant votre mot de passe.'
 
 
 def adresse_du_client(request):
@@ -219,6 +220,20 @@ class IdentificationView(APIView):
             not self._mot_de_passe_ok(participant, mot_de_passe)
             or (societe and (not participant.adherent_id or participant.adherent.code != societe))
         ):
+            # Le code d'activation de l'IPM tapé à la place du mot de passe :
+            # on le dit (409), sans le consommer, pour que l'application
+            # passe d'elle-même au choix du mot de passe. Ne révèle rien de
+            # plus que la vue d'activation, et subit les mêmes freins.
+            code = mot_de_passe.replace(' ', '')
+            if (
+                len(code) == 6
+                and code.isdigit()
+                and any(d.verifier_code_activation(code) for d in candidats)
+            ):
+                return Response(
+                    {'detail': CODE_A_ACTIVER, 'activation': True},
+                    status=status.HTTP_409_CONFLICT,
+                )
             return self._refus()
 
         # L'identité est exacte : on peut dire pourquoi l'accès est refusé
@@ -230,24 +245,15 @@ class IdentificationView(APIView):
             {'jeton': emettre_jeton(participant), 'participant': representer_participant(participant)}
         )
 
-    @staticmethod
-    def _comme_matricule(valeur):
-        """Normalise une saisie comme un matricule : sans préfixe société, sur
-        quatre chiffres. « 01-949 » comme « 949 » donnent « 0949 »."""
-        reste = (valeur or '').rpartition('-')[2]
-        return reste.zfill(4) if reste.isdigit() else reste
-
     @classmethod
     def _mot_de_passe_ok(cls, participant, mot_de_passe):
-        """Le mot de passe mobile habituel, OU le matricule lui-même.
+        """Le mot de passe que l'employé a CHOISI, et lui seul.
 
-        Consigne (2026-11-12) : tout participant se connecte juste en tapant son
-        matricule, qui sert alors de mot de passe. Celui qui a choisi un mot de
-        passe mobile peut toujours s'en servir ; son matricule reste accepté.
+        Consigne (2026-11-22) : fini le matricule qui servait de mot de passe
+        (2026-11-12) et le « 0000 » posé d'office. Un employé choisit son mot
+        de passe avec le code d'activation que lui remet l'IPM (ActivationView).
         """
-        if participant.verifier_mot_de_passe(mot_de_passe):
-            return True
-        return cls._comme_matricule(mot_de_passe) == participant.matricule
+        return participant.verifier_mot_de_passe(mot_de_passe)
 
     @staticmethod
     def _refus():

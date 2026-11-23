@@ -178,6 +178,27 @@ export interface IdentificationReponse {
   participant: Participant
 }
 
+/** POST /api/mobile/activation/ — code d'activation de l'IPM + mot de passe choisi. */
+export interface ActivationCorps {
+  matricule: string
+  code: string
+  mot_de_passe: string
+}
+
+/** Options WebAuthn (base64url) et jeton signé du défi, à renvoyer avec la réponse. */
+export interface OptionsCle {
+  options: Record<string, unknown>
+  jeton: string
+}
+
+/** Une clé d'accès (empreinte / Face ID) enregistrée sur un appareil. */
+export interface CleAcces {
+  id: number
+  nom: string
+  creeLe: string
+  utiliseeLe: string | null
+}
+
 /** GET /api/mobile/moi/ */
 export interface MoiReponse {
   participant: Participant

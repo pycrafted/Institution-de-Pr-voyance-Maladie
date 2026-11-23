@@ -19,23 +19,41 @@ import {
   IonRefresher,
   IonRefresherContent,
   useIonRouter,
+  useIonToast,
   type RefresherEventDetail,
 } from '@ionic/react'
-import { downloadOutline, logOutOutline, moon, sunny } from 'ionicons/icons'
-import { useMemo } from 'react'
+import {
+  checkmarkCircleOutline,
+  downloadOutline,
+  fingerPrint,
+  keyOutline,
+  logOutOutline,
+  moon,
+  sunny,
+} from 'ionicons/icons'
+import { useEffect, useMemo, useState } from 'react'
 
+import Avatar from '../components/Avatar'
 import CarteListe from '../components/CarteListe'
 import BarreActions from '../components/BarreActions'
 import { haptique } from '../hooks/haptique'
+import { useFamille } from '../hooks/useFamille'
+import { messageErreur } from '../api'
 import { useParticipant, useSession } from '../session'
+import { activerEmpreinte, desactiverEmpreinte } from '../session/empreinte'
 import { basculerApparence, useApparence } from '../theme/apparence'
 import { useInstallation } from '../utils/installation'
+import { cleDeLAppareil, empreinteDisponible, estAbandon } from '../utils/clesAcces'
 import { estInstallee } from '../utils/plateforme'
+import { detailBeneficiaire } from './profil/famille'
+import ChangerMotDePasse from './profil/ChangerMotDePasse'
+import { nomPropre } from '../utils/libelles'
 import { informationsDuParticipant } from './profil/informations'
 import './profil/profil.css'
 
 export default function Profil() {
   const { participant } = useParticipant()
+  const famille = useFamille()
   const { rafraichir, deconnecter } = useSession()
   const sombre = useApparence() === 'sombre'
   const routeur = useIonRouter()
@@ -56,6 +74,51 @@ export default function Profil() {
     else routeur.push('/telecharger', 'forward', 'push')
   }
   const informations = useMemo(() => informationsDuParticipant(participant), [participant])
+
+  const [presenterToast] = useIonToast()
+  const [motDePasseOuvert, setMotDePasseOuvert] = useState(false)
+  // Empreinte / Face ID : proposée si le téléphone sait le faire.
+  const [empreintePossible, setEmpreintePossible] = useState(false)
+  const [empreinteActive, setEmpreinteActive] = useState(() => cleDeLAppareil() !== null)
+  const [empreinteEnCours, setEmpreinteEnCours] = useState(false)
+  useEffect(() => {
+    let vivant = true
+    void empreinteDisponible().then((oui) => {
+      if (vivant) setEmpreintePossible(oui)
+    })
+    return () => {
+      vivant = false
+    }
+  }, [])
+
+  function annoncer(message: string) {
+    void presenterToast({ message, duration: 2400, position: 'top', icon: checkmarkCircleOutline })
+  }
+
+  async function basculerEmpreinte() {
+    if (empreinteEnCours || !participant) return
+    haptique.leger()
+    setEmpreinteEnCours(true)
+    try {
+      if (empreinteActive) {
+        await desactiverEmpreinte()
+        setEmpreinteActive(false)
+        annoncer('Empreinte retirée de cet appareil.')
+      } else {
+        await activerEmpreinte(participant.matriculeAffiche)
+        setEmpreinteActive(true)
+        haptique.succes()
+        annoncer('Empreinte activée : connectez-vous d’un geste.')
+      }
+    } catch (e) {
+      if (!estAbandon(e)) {
+        haptique.erreur()
+        void presenterToast({ message: messageErreur(e), duration: 3000, position: 'top' })
+      }
+    } finally {
+      setEmpreinteEnCours(false)
+    }
+  }
 
   function actualiser(evenement: CustomEvent<RefresherEventDetail>) {
     haptique.leger()
@@ -108,6 +171,35 @@ export default function Profil() {
           </dl>
         </section>
 
+        {/* La famille couverte : une carte par ayant droit, sa photo
+            d'identité (ou ses initiales), son nom, son lien et son âge. */}
+        {famille.length > 0 && (
+          <section className="ipm-section">
+            <div className="ipm-entete-section">
+              <h2 className="ipm-titre-section">Ayants droit</h2>
+            </div>
+            <div className="ipm-pile">
+              {famille.map((membre, rang) => (
+                <CarteListe
+                  key={membre.matricule}
+                  rang={rang}
+                  vignette={
+                    <Avatar
+                      nom={membre.nomComplet}
+                      photo={membre.photo}
+                      taille={44}
+                      forme="identite"
+                    />
+                  }
+                  titre={nomPropre(membre.nomComplet)}
+                  details={detailBeneficiaire(membre)}
+                  chevron={false}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="ipm-section">
           <div className="ipm-entete-section">
             <h2 className="ipm-titre-section">Réglages</h2>
@@ -121,6 +213,30 @@ export default function Profil() {
               onClick={() => {
                 haptique.leger()
                 basculerApparence()
+              }}
+            />
+            {empreintePossible && (
+              <CarteListe
+                icone={fingerPrint}
+                teinte="neutre"
+                titre={
+                  empreinteActive
+                    ? 'Retirer l’empreinte / Face ID'
+                    : 'Se connecter par empreinte / Face ID'
+                }
+                details={empreinteActive ? 'Activée sur cet appareil' : undefined}
+                chevron={false}
+                onClick={() => void basculerEmpreinte()}
+              />
+            )}
+            <CarteListe
+              icone={keyOutline}
+              teinte="neutre"
+              titre="Changer mon mot de passe"
+              chevron={false}
+              onClick={() => {
+                haptique.leger()
+                setMotDePasseOuvert(true)
               }}
             />
             {!installee && (
@@ -142,6 +258,14 @@ export default function Profil() {
             />
           </div>
         </section>
+
+        <ChangerMotDePasse
+          ouverte={motDePasseOuvert}
+          onFermer={(change) => {
+            setMotDePasseOuvert(false)
+            if (change) annoncer('Mot de passe changé.')
+          }}
+        />
 
         {/* La barre d'onglets flotte au-dessus du contenu : lui laisser la place. */}
         <div className="ipm-bas-page" />

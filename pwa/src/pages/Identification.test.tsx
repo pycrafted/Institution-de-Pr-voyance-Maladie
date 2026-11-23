@@ -12,6 +12,8 @@ beforeAll(() => preparerIonic())
 const champ = (libelle: string | RegExp) => screen.getByLabelText(libelle) as HTMLInputElement
 const saisirMatricule = (valeur: string) =>
   fireEvent.change(champ('Matricule'), { target: { value: valeur } })
+const saisirMotDePasse = (valeur: string) =>
+  fireEvent.change(champ('Mot de passe'), { target: { value: valeur } })
 
 function anonyme(surcharge: Parameters<typeof uneSession>[0] = {}) {
   return uneSession({ statut: 'anonyme', participant: null, beneficiaires: [], ...surcharge })
@@ -47,14 +49,51 @@ describe('Identification', () => {
     expect(champ('Mot de passe')).toHaveAttribute('type', 'password')
   })
 
-  it('le mot de passe n’est pas envoyé : la connexion reste au seul matricule', async () => {
+  it('sans mot de passe, le réclame', async () => {
     const session = anonyme()
     rendreEcran(<Identification />, session)
     saisirMatricule('949')
-    fireEvent.change(champ('Mot de passe'), { target: { value: 'secret' } })
     fireEvent.click(screen.getByRole('button', { name: 'Connexion' }))
-    await waitFor(() => expect(session.identifier).toHaveBeenCalled())
-    expect(session.identifier).not.toHaveBeenCalledWith(expect.anything(), 'secret')
+    expect(await screen.findByText('Saisissez votre mot de passe.')).toBeInTheDocument()
+    expect(session.identifier).not.toHaveBeenCalled()
+  })
+
+  it('passe au formulaire du code de l’IPM, et active le compte', async () => {
+    const activer = vi.fn((_m: string, _c: string, _p: string) => Promise.resolve())
+    rendreEcran(<Identification />, anonyme({ activer }))
+    fireEvent.click(screen.getByRole('button', { name: /J’ai un code de l’IPM/ }))
+    fireEvent.change(champ('Matricule'), { target: { value: '949' } })
+    fireEvent.change(champ('Code de l’IPM'), { target: { value: '12 34 56' } })
+    fireEvent.change(champ('Nouveau mot de passe'), { target: { value: 'Raffinerie-2026' } })
+    fireEvent.change(champ('Confirmer le mot de passe'), { target: { value: 'Raffinerie-2026' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Choisir mon mot de passe' }))
+    await waitFor(() => expect(activer).toHaveBeenCalledWith('949', '123456', 'Raffinerie-2026'))
+  })
+
+  it('reconnaît le code de l’IPM tapé comme mot de passe et passe à l’activation', async () => {
+    const identifier = vi.fn(() =>
+      Promise.reject(new ErreurApi('inconnue', { statut: 409, message: 'Code' })),
+    )
+    rendreEcran(<Identification />, anonyme({ identifier }))
+    saisirMatricule('1100')
+    saisirMotDePasse('221421')
+    fireEvent.click(screen.getByRole('button', { name: 'Connexion' }))
+    expect(await screen.findByText(/C’est votre code de l’IPM/)).toBeInTheDocument()
+    expect(champ('Matricule').value).toBe('1100')
+    expect(champ('Code de l’IPM').value).toBe('221421')
+  })
+
+  it('refuse deux mots de passe différents sans appeler le serveur', async () => {
+    const activer = vi.fn(() => Promise.resolve())
+    rendreEcran(<Identification />, anonyme({ activer }))
+    fireEvent.click(screen.getByRole('button', { name: /J’ai un code de l’IPM/ }))
+    fireEvent.change(champ('Matricule'), { target: { value: '949' } })
+    fireEvent.change(champ('Code de l’IPM'), { target: { value: '123456' } })
+    fireEvent.change(champ('Nouveau mot de passe'), { target: { value: 'Raffinerie-2026' } })
+    fireEvent.change(champ('Confirmer le mot de passe'), { target: { value: 'Autre-2026' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Choisir mon mot de passe' }))
+    expect(await screen.findByText('Les deux mots de passe sont différents.')).toBeInTheDocument()
+    expect(activer).not.toHaveBeenCalled()
   })
 
   it('dit que la session a expiré', () => {
@@ -83,12 +122,13 @@ describe('Identification', () => {
     expect(session.identifier).not.toHaveBeenCalled()
   })
 
-  it('identifie avec le matricule nettoyé, envoyé aussi comme mot de passe', async () => {
+  it('identifie avec le matricule nettoyé et le mot de passe saisi', async () => {
     const identifier = vi.fn((_matricule: string, _motDePasse: string) => Promise.resolve())
     rendreEcran(<Identification />, anonyme({ identifier }))
     saisirMatricule('01 0949')
+    saisirMotDePasse('Raffinerie-2026')
     fireEvent.click(screen.getByRole('button', { name: 'Connexion' }))
-    await waitFor(() => expect(identifier).toHaveBeenCalledWith('01-0949', '01-0949'))
+    await waitFor(() => expect(identifier).toHaveBeenCalledWith('01-0949', 'Raffinerie-2026'))
   })
 
   it('montre le refus du serveur', async () => {
@@ -102,6 +142,7 @@ describe('Identification', () => {
     )
     rendreEcran(<Identification />, anonyme({ identifier }))
     saisirMatricule('0949')
+    saisirMotDePasse('faux-mot-de-passe')
     fireEvent.click(screen.getByRole('button', { name: 'Connexion' }))
     const alerte = await screen.findByText('Matricule ou mot de passe incorrect.')
     expect(alerte.closest('[role="alert"]')).not.toBeNull()

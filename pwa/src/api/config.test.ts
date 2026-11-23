@@ -7,6 +7,7 @@ describe('normaliserConfig', () => {
     expect(normaliserConfig({ apiBase: ' https://sar-integration.sar.sn/api/ ' })).toEqual({
       apiBase: 'https://sar-integration.sar.sn/api',
       cleGoogleMaps: '',
+      idCarteGoogle: '',
     })
   })
 
@@ -31,6 +32,7 @@ describe('chargerConfig', () => {
     await expect(chargerConfig(fetchMock)).resolves.toEqual({
       apiBase: 'https://x.sn/api',
       cleGoogleMaps: '',
+      idCarteGoogle: '',
     })
     expect(fetchMock).toHaveBeenCalledWith('/config.json', { cache: 'no-cache' })
   })

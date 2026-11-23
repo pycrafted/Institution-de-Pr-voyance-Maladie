@@ -275,7 +275,7 @@
 }
 .itineraire__message--attente .ipm-chargeur {
   width: 22px;
-  color: var(--ipm-rouge);
+  color: #5f5553;
 }
 
 /* Le guidage en bouton principal, l'appel en cercle à côté. */

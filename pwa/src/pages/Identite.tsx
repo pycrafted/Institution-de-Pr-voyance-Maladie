@@ -30,7 +30,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { demanderChangementPhoto, messageErreur, poserPhoto, poserPhotoBeneficiaire } from '../api'
 import Avatar from '../components/Avatar'
-import { useFamille } from '../components/CartePleinEcran'
+import { useFamille } from '../hooks/useFamille'
 import { haptique } from '../hooks/haptique'
 import { useOnline } from '../hooks/useOnline'
 import { usePhoto } from './accueil/usePhoto'

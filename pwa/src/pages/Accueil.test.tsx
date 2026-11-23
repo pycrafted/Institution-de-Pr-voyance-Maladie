@@ -157,31 +157,8 @@ describe('Accueil', () => {
     expect(simulations.ouvrirAssistant).toHaveBeenCalledWith('lettre-garantie')
   })
 
-  it('ouvre sa propre carte en grand quand on la touche', () => {
-    // Même présentation que pour un ayant droit : la carte se tend au
-    // prestataire, en paysage et en plein écran. Sous jsdom, Ionic ne monte
-    // pas le dedans d'une fenêtre (pas de « framework delegate ») : on
-    // vérifie donc qu'elle s'ouvre, le dedans étant couvert ailleurs.
-    rendreEcran(<Accueil />)
-    const modale = () => document.body.querySelector('ion-modal.carte-plein') as HTMLIonModalElement
-    expect(modale().isOpen).toBe(false)
-    fireEvent.click(screen.getByLabelText('Voir ma carte d’adhérent en grand'))
-    expect(modale().isOpen).toBe(true)
-  })
-
-  it('montre les ayants droit sous la carte de l’employé, chacun en un toucher', () => {
-    // La fabrique donne le titulaire + une conjointe : seule la conjointe est
-    // un ayant droit.
+  it('ne montre plus les ayants droit (ils sont au Profil)', () => {
     const { container } = rendreEcran(<Accueil />)
-    expect(screen.getByText('Ayants droit')).toBeInTheDocument()
-    expect(container.querySelectorAll('.accueil-famille__membre')).toHaveLength(1)
-    expect(screen.getByLabelText('Carte d’ayant droit de Awa DIOP')).toBeInTheDocument()
-    // Le prénom seul sous la vignette : le nom est le même pour toute la famille.
-    expect(container.querySelector('.accueil-famille__nom')?.textContent).toBe('Awa')
-  })
-
-  it('masque la section « Ayants droit » sans proche', () => {
-    const { container } = rendreEcran(<Accueil />, uneSession({ beneficiaires: [] }))
     expect(screen.queryByText('Ayants droit')).toBeNull()
     expect(container.querySelector('.accueil-famille')).toBeNull()
   })

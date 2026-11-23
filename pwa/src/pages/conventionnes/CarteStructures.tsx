@@ -3,6 +3,10 @@
  * Google Maps (même chargement et même clé que l'itinéraire, cf.
  * itineraire/googleMaps.ts), un point rouge par structure localisée.
  *
+ * Chaque point porte la couleur et l'icône de sa famille (pharmacie, clinique,
+ * dentiste, optique…, cf. pictos.ts), et la position de l'employé est le
+ * point bleu de Google, avec son halo de précision.
+ *
  * Toucher un point trace AUSSITÔT les itinéraires sur cette même carte, calculés
  * par Google (Routes API : alternatives et trafic en temps réel, recalcul tous
  * les 50 m) : le retenu en bleu, les autres en gris - les toucher, ou leur puce
@@ -16,20 +20,38 @@
  * filtre ne déplace plus la carte, et « Ma position » la recentre. Sans
  * position (refusée, indisponible, page en HTTP), la carte se cadre sur les
  * structures, comme avant.
+ *
+ * Rapidité (comme l'application Google Maps) :
+ *   - le script Google et l'annuaire sont préchargés dès la connexion
+ *     (App.tsx), et la carte se crée sans attendre l'annuaire ;
+ *   - elle rouvre là où on l'a laissée (centre et zoom gardés sur le
+ *     téléphone) ; carte VECTORIELLE (ID de carte Google) : zoom continu,
+ *     rotation et inclinaison à deux doigts, comme l'application Google Maps ;
+ *   - un point par structure, créé une seule fois : changer de filtre ne fait
+ *     que montrer ou cacher des points existants ;
+ *   - de loin, les points proches se regroupent en bulles numérotées (moins
+ *     de points à dessiner, une carte lisible) ; toucher une bulle zoome
+ *     dessus, et à l'échelle d'un quartier chaque structure a son point ;
+ *   - l'itinéraire part dès que le doigt se pose sur un point (avant même le
+ *     « clic »), et les itinéraires déjà calculés sont gardés en mémoire
+ *     (itineraire/directions.ts).
  */
 
 import { IonIcon } from '@ionic/react'
+import { MarkerClusterer, SuperClusterAlgorithm } from '@googlemaps/markerclusterer'
 import { callOutline, closeOutline, locateOutline, mapOutline } from 'ionicons/icons'
 import { useEffect, useRef, useState } from 'react'
 
 import Chargeur from '../../components/Chargeur'
 import { haptique } from '../../hooks/haptique'
 import type { Conventionne } from '../../types/api'
-import { CleManquante, chargerGoogleMaps } from '../itineraire/googleMaps'
-import { estSombre, styleCarte } from '../itineraire/styleCarte'
+import { prechargerTrajets } from '../itineraire/directions'
+import { CleManquante, chargerGoogleMaps, idCarte } from '../itineraire/googleMaps'
+import { estSombre } from '../itineraire/styleCarte'
 import { dureeAPied, formaterDistance, formaterDuree, type Point } from '../itineraire/trajet'
 import { useGeolocalisation } from '../itineraire/useGeolocalisation'
 import { useTrajets } from '../itineraire/useTrajet'
+import { familleDe, imageGroupe, imagePastille, TAILLE_PASTILLE } from './pictos'
 import { libelleSpecialite, lienItineraire, lienTelephone, nomStructure } from './recherche'
 
 /** Sans aucun point : le centre de Dakar, où sont la plupart des structures. */
@@ -37,6 +59,12 @@ const DAKAR = { lat: 14.6937, lng: -17.4441 }
 
 /** Zoom autour de l'employé : un quartier, avec les structures proches. */
 const ZOOM_MOI = 14
+
+/** Jusqu'à ce zoom, les points proches se regroupent ; au-delà, tous sont seuls. */
+const ZOOM_MAX_GROUPES = 13
+
+/** Le bleu de la position, celui de Google Maps. */
+const BLEU_POSITION = '#1a73e8'
 
 /**
  * Départ du trajet quand la position de l'employé manque (refusée, page en
@@ -56,13 +84,46 @@ const COULEURS = {
 /** Marges du cadrage d'un trajet : la barre et les filtres en haut, la vignette en bas. */
 const MARGES_TRAJET = { top: 200, right: 40, bottom: 260, left: 40 }
 
+/** Où la carte était la dernière fois (centre et zoom), gardé sur le téléphone. */
+const CLE_CAMERA = 'ipm.carte.camera.v1'
+
+interface Camera {
+  lat: number
+  lng: number
+  zoom: number
+}
+
+function lireCamera(): Camera | null {
+  try {
+    const lu = JSON.parse(window.localStorage.getItem(CLE_CAMERA) ?? 'null') as Camera | null
+    return lu && Number.isFinite(lu.lat) && Number.isFinite(lu.lng) && Number.isFinite(lu.zoom)
+      ? lu
+      : null
+  } catch {
+    return null
+  }
+}
+
+function ecrireCamera(camera: Camera): void {
+  try {
+    window.localStorage.setItem(CLE_CAMERA, JSON.stringify(camera))
+  } catch {
+    // Stockage indisponible : la carte repartira de Dakar, sans plus.
+  }
+}
+
 export default function CarteStructures({ structures }: { structures: readonly Conventionne[] }) {
   const conteneur = useRef<HTMLDivElement>(null)
   const maps = useRef<typeof google.maps | null>(null)
   const carte = useRef<google.maps.Map | null>(null)
-  const points = useRef<google.maps.Marker[]>([])
-  // Le code de la structure de chaque point (même ordre que `points`).
-  const codes = useRef<string[]>([])
+  // Un point par structure (par code), créé une fois puis montré ou caché.
+  const points = useRef(new Map<string, google.maps.Marker>())
+  // La structure de chaque point (mise à jour à chaque nouvelle liste).
+  const structuresParCode = useRef(new Map<string, Conventionne>())
+  // Les codes des points visibles (catégorie choisie).
+  const visibles = useRef(new Set<string>())
+  // Une caméra gardée de la dernière visite : pas de recadrage sur les structures.
+  const cameraGardee = useRef(false)
   const [pret, setPret] = useState(false)
   // Fond de carte affiché (premières tuiles chargées) : le chargeur s'efface.
   const [affichee, setAffichee] = useState(false)
@@ -74,6 +135,11 @@ export default function CarteStructures({ structures }: { structures: readonly C
       ? { lat: localisation.position.latitude, lng: localisation.position.longitude }
       : null
   const fleche = useRef<google.maps.Marker | null>(null)
+  // Le halo de précision autour du point bleu.
+  const halo = useRef<google.maps.Circle | null>(null)
+  const precision = localisation.etat === 'trouvee' ? localisation.precision : null
+  // Les bulles de regroupement des points.
+  const groupes = useRef<MarkerClusterer | null>(null)
   // Centré une fois sur l'employé : ensuite, la carte reste où il la met.
   const centreSurMoi = useRef(false)
   // La position, lue par le cadrage des structures (qui ne doit pas l'écraser).
@@ -83,6 +149,9 @@ export default function CarteStructures({ structures }: { structures: readonly C
   // Le trajet vers la structure touchée : de l'employé, sinon de la SAR.
   const depart: Point = localisation.etat === 'trouvee' ? localisation.position : SAR_PAR_DEFAUT
   const departParDefaut = localisation.etat !== 'trouvee'
+  // Le départ courant, lu par l'appui sur un point (préchargement du trajet).
+  const departCourant = useRef(depart)
+  departCourant.current = depart
   const etatTrajets = useTrajets(choisie ? depart : null, choisie?.position ?? null)
   const trajets = etatTrajets.etat === 'pret' ? etatTrajets.trajets : []
   // L'itinéraire retenu parmi les alternatives (le meilleur au départ).
@@ -101,33 +170,59 @@ export default function CarteStructures({ structures }: { structures: readonly C
   // La carte, créée une fois Google chargé.
   useEffect(() => {
     let vivant = true
-    let observateur: MutationObserver | undefined
     chargerGoogleMaps()
       .then((api) => {
         if (!vivant || !conteneur.current) return
         maps.current = api
+        const camera = lireCamera()
+        cameraGardee.current = camera !== null
         carte.current = new api.Map(conteneur.current, {
-          center: DAKAR,
-          zoom: 12,
+          center: camera ? { lat: camera.lat, lng: camera.lng } : DAKAR,
+          zoom: camera?.zoom ?? 12,
+          // Carte vectorielle et style « IPM clair » de la console Google
+          // (fond épuré : rues et quartiers, sans commerces ni transports) ;
+          // en sombre, la palette de nuit de Google.
+          mapId: idCarte(),
+          colorScheme: estSombre() ? api.ColorScheme.DARK : api.ColorScheme.LIGHT,
           disableDefaultUI: true,
           clickableIcons: false,
           gestureHandling: 'greedy',
-          // Fond épuré : rues et quartiers, sans commerces ni transports.
-          styles: styleCarte(estSombre()),
+          // Deux doigts : tourner et incliner la carte, comme Google Maps.
+          headingInteractionEnabled: true,
+          tiltInteractionEnabled: true,
         })
-        // Suivre le passage clair/sombre (classe sur <html>) pour restyler.
         const instance = carte.current
-        observateur = new MutationObserver(() =>
-          instance.setOptions({ styles: styleCarte(estSombre()) }),
-        )
-        observateur.observe(document.documentElement, {
-          attributes: true,
-          attributeFilter: ['class'],
-        })
         // Toucher le fond de carte referme la vignette.
         carte.current.addListener('click', () => setChoisie(null))
+        // Chaque arrêt de la carte est retenu : la prochaine ouverture repart d'ici.
+        carte.current.addListener('idle', () => {
+          const centre = instance.getCenter()
+          const zoom = instance.getZoom()
+          if (centre && zoom !== undefined)
+            ecrireCamera({ lat: centre.lat(), lng: centre.lng(), zoom })
+        })
         api.event.addListenerOnce(carte.current, 'tilesloaded', () => {
           if (vivant) setAffichee(true)
+        })
+        // Les bulles : une par groupe de points proches, de loin seulement.
+        groupes.current = new MarkerClusterer({
+          map: instance,
+          algorithm: new SuperClusterAlgorithm({ radius: 64, maxZoom: ZOOM_MAX_GROUPES }),
+          renderer: {
+            render: ({ count, position }) => {
+              const { url, taille } = imageGroupe(count)
+              return new api.Marker({
+                position,
+                title: `${count} structures`,
+                zIndex: 500 + count,
+                icon: {
+                  url,
+                  scaledSize: new api.Size(taille, taille),
+                  anchor: new api.Point(taille / 2, taille / 2),
+                },
+              })
+            },
+          },
         })
         setPret(true)
       })
@@ -136,51 +231,79 @@ export default function CarteStructures({ structures }: { structures: readonly C
       })
     return () => {
       vivant = false
-      observateur?.disconnect()
       carte.current = null
       maps.current = null
     }
   }, [])
 
-  // Les points : redessinés et recadrés à chaque changement de filtre.
+  // Les points : créés une fois par structure, puis montrés ou cachés selon
+  // le filtre (bien plus rapide que de tout redessiner). Le premier affichage
+  // cadre la carte sur les structures, sauf si elle rouvre où on l'a laissée
+  // ou si la position de l'employé est connue.
+  const cadreInitial = useRef(false)
   useEffect(() => {
     const api = maps.current
     const instance = carte.current
     if (!api || !instance) return
-    for (const p of points.current) p.setMap(null)
-    points.current = []
-    codes.current = []
-    setChoisie(null)
 
+    const nouveaux = new Set<string>()
     const positions: google.maps.LatLngLiteral[] = []
     for (const structure of structures) {
       if (!structure.position) continue
       const position = { lat: structure.position.latitude, lng: structure.position.longitude }
-      const point = new api.Marker({
-        map: instance,
-        position,
-        title: nomStructure(structure),
-        icon: {
-          path: api.SymbolPath.CIRCLE,
-          scale: 7,
-          fillColor: '#e52621',
-          fillOpacity: 1,
-          strokeColor: '#ffffff',
-          strokeWeight: 2,
-        },
-      })
-      point.addListener('click', () => {
-        haptique.leger()
-        setChoisie(structure)
-      })
-      points.current.push(point)
-      codes.current.push(structure.code)
+      nouveaux.add(structure.code)
+      structuresParCode.current.set(structure.code, structure)
       positions.push(position)
+      let point = points.current.get(structure.code)
+      if (!point) {
+        const code = structure.code
+        // Posé sur la carte par les bulles de regroupement (pas ici).
+        point = new api.Marker({
+          position,
+          title: nomStructure(structure),
+          // Dessinés ensemble sur la carte (canevas) plutôt qu'un élément par point.
+          optimized: true,
+          icon: {
+            url: imagePastille(familleDe(structure.specialite?.code)),
+            scaledSize: new api.Size(TAILLE_PASTILLE, TAILLE_PASTILLE),
+            anchor: new api.Point(TAILLE_PASTILLE / 2, TAILLE_PASTILLE / 2),
+          },
+        })
+        // Le doigt se pose : l'itinéraire part déjà, le « clic » le trouvera prêt.
+        point.addListener('mousedown', () => {
+          const cible = structuresParCode.current.get(code)?.position
+          if (cible) prechargerTrajets(departCourant.current, cible)
+        })
+        point.addListener('click', () => {
+          const cible = structuresParCode.current.get(code)
+          if (!cible) return
+          haptique.leger()
+          setChoisie(cible)
+        })
+        points.current.set(code, point)
+      } else {
+        point.setPosition(position)
+      }
     }
+    // Les points de la catégorie choisie, remis aux bulles d'un seul coup.
+    const bulles = groupes.current
+    if (bulles) {
+      bulles.clearMarkers(true)
+      bulles.addMarkers(
+        [...nouveaux].flatMap((code) => points.current.get(code) ?? []),
+        true,
+      )
+      bulles.render()
+    }
+    visibles.current = nouveaux
+    // La structure ouverte n'est plus dans la catégorie : sa vignette se ferme.
+    setChoisie((ouverte) => (ouverte && !nouveaux.has(ouverte.code) ? null : ouverte))
 
-    // Position connue : la carte est centrée sur l'employé, les filtres ne la
-    // déplacent pas.
-    if (moiConnu.current) return
+    // Cadrage : seulement au premier affichage des points, et seulement si la
+    // carte ne rouvre pas où on l'a laissée ni sur la position de l'employé.
+    if (positions.length === 0 || cadreInitial.current) return
+    cadreInitial.current = true
+    if (moiConnu.current || cameraGardee.current) return
     const cadre = zonePrincipale(positions)
     if (cadre.length === 1 && cadre[0]) {
       instance.setCenter(cadre[0])
@@ -190,11 +313,20 @@ export default function CarteStructures({ structures }: { structures: readonly C
       cadre.forEach((p) => bornes.extend(p))
       // Marges : la barre et les filtres en haut, la barre d'onglets en bas.
       instance.fitBounds(bornes, { top: 190, right: 32, bottom: 130, left: 32 })
-    } else {
-      instance.setCenter(DAKAR)
-      instance.setZoom(12)
     }
   }, [pret, structures])
+
+  // Les points disparaissent avec la carte.
+  useEffect(
+    () => () => {
+      groupes.current?.clearMarkers()
+      groupes.current?.setMap(null)
+      groupes.current = null
+      for (const point of points.current.values()) point.setMap(null)
+      points.current.clear()
+    },
+    [],
+  )
 
   // La flèche de l'employé : posée, puis suivie ; la carte se centre dessus
   // la première fois que la position arrive.
@@ -203,23 +335,41 @@ export default function CarteStructures({ structures }: { structures: readonly C
     const instance = carte.current
     if (!api || !instance || !moi) return
     if (!fleche.current) {
+      // Le point bleu de Google : rond bleu, épais liseré blanc.
       fleche.current = new api.Marker({
         map: instance,
         position: moi,
         title: 'Ma position',
         zIndex: 1000,
+        clickable: false,
         icon: {
-          path: api.SymbolPath.FORWARD_CLOSED_ARROW,
-          scale: 7,
-          fillColor: '#1a73e8',
+          path: api.SymbolPath.CIRCLE,
+          scale: 8,
+          fillColor: BLEU_POSITION,
           fillOpacity: 1,
           strokeColor: '#ffffff',
-          strokeWeight: 2,
+          strokeWeight: 3,
         },
+      })
+      // Et son halo : la zone où l'employé se trouve, à la précision du GPS.
+      halo.current = new api.Circle({
+        map: instance,
+        center: moi,
+        radius: precision ?? 0,
+        clickable: false,
+        fillColor: BLEU_POSITION,
+        fillOpacity: 0.12,
+        strokeColor: BLEU_POSITION,
+        strokeOpacity: 0.25,
+        strokeWeight: 1,
+        zIndex: 1,
       })
     } else {
       fleche.current.setPosition(moi)
+      halo.current?.setCenter(moi)
     }
+    // Une précision grossière (réseau, > 1 km) ne mérite pas un halo géant.
+    halo.current?.setRadius(precision !== null && precision < 1000 ? precision : 0)
     if (!centreSurMoi.current) {
       centreSurMoi.current = true
       const centrer = () => {
@@ -232,13 +382,15 @@ export default function CarteStructures({ structures }: { structures: readonly C
       // posée, pour que la position ait le dernier mot.
       api.event.addListenerOnce(instance, 'idle', centrer)
     }
-  }, [pret, moi?.lat, moi?.lng]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pret, moi?.lat, moi?.lng, precision]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // La flèche disparaît avec la carte.
   useEffect(
     () => () => {
       fleche.current?.setMap(null)
       fleche.current = null
+      halo.current?.setMap(null)
+      halo.current = null
     },
     [],
   )
@@ -246,11 +398,11 @@ export default function CarteStructures({ structures }: { structures: readonly C
   // Pendant qu'un itinéraire est affiché, les autres structures s'estompent :
   // leurs points ne viennent plus brouiller le tracé.
   useEffect(() => {
-    points.current.forEach((point, i) => {
-      const autre = choisie !== null && codes.current[i] !== choisie.code
+    for (const [code, point] of points.current) {
+      const autre = choisie !== null && code !== choisie.code
       point.setOpacity(autre ? 0.25 : 1)
       point.setZIndex(autre ? 1 : undefined)
-    })
+    }
   }, [choisie, pret, structures])
 
   // Les tracés, dessinés comme Google Maps : l'itinéraire retenu en indigo

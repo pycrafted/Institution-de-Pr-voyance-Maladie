@@ -7,7 +7,10 @@
  */
 
 import type {
+  ActivationCorps,
   Bon,
+  CleAcces,
+  OptionsCle,
   CodeLibelle,
   Conventionne,
   Fournisseur,
@@ -38,6 +41,62 @@ export function identifier(corps: IdentificationCorps, { signal }: Signal = {}) 
     signal,
     authentifiee: false,
   })
+}
+
+/**
+ * Matricule + code d'activation de l'IPM + mot de passe choisi → jeton
+ * (première connexion, mot de passe oublié). Sans jeton, comme identifier.
+ */
+export function activer(corps: ActivationCorps, { signal }: Signal = {}) {
+  return requete<IdentificationReponse>('/mobile/activation/', {
+    methode: 'POST',
+    corps,
+    signal,
+    authentifiee: false,
+  })
+}
+
+/** Change le mot de passe (l'actuel est exigé). */
+export function changerMotDePasse(ancien: string, nouveau: string) {
+  return requete<void>('/mobile/moi/mot-de-passe/', {
+    methode: 'POST',
+    corps: { ancien, nouveau },
+  })
+}
+
+/** Empreinte / Face ID : options pour se connecter (sans jeton). */
+export function optionsConnexionCle() {
+  return requete<OptionsCle>('/mobile/cles/connexion/options/', {
+    methode: 'POST',
+    authentifiee: false,
+  })
+}
+
+/** Empreinte / Face ID : la signature de l'appareil contre un jeton. */
+export function connecterParCle(jeton: string, reponse: unknown) {
+  return requete<IdentificationReponse>('/mobile/cles/connexion/', {
+    methode: 'POST',
+    corps: { jeton, reponse },
+    authentifiee: false,
+  })
+}
+
+/** Empreinte / Face ID : options pour créer la clé de cet appareil (connecté). */
+export function optionsInscriptionCle() {
+  return requete<OptionsCle>('/mobile/moi/cles/inscription/options/', { methode: 'POST' })
+}
+
+/** Empreinte / Face ID : enregistre la clé créée par l'appareil. */
+export function inscrireCle(jeton: string, reponse: unknown) {
+  return requete<CleAcces>('/mobile/moi/cles/inscription/', {
+    methode: 'POST',
+    corps: { jeton, reponse },
+  })
+}
+
+/** Retire une clé (l'appareil ne pourra plus s'en servir). */
+export function retirerCle(id: number) {
+  return requete<void>(`/mobile/moi/cles/${id}/`, { methode: 'DELETE' })
 }
 
 /** Le participant et ses bénéficiaires (lui-même en premier). */

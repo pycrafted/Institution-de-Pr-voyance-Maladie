@@ -20,6 +20,7 @@ import { Redirect, Route, useLocation } from 'react-router-dom'
 
 import BarreOngletsFlottante from './components/BarreOngletsFlottante'
 import MiseAJour from './components/MiseAJour'
+import PropositionEmpreinte from './components/PropositionEmpreinte'
 import { NouveauBonProvider } from './components/NouveauBonModal'
 import Splash from './components/Splash'
 import { haptique } from './hooks/haptique'
@@ -36,6 +37,8 @@ import Notifications from './pages/Notifications'
 import Conventionnes from './pages/Conventionnes'
 import Profil from './pages/Profil'
 import Releve from './pages/Releve'
+import { prechargerConventionnes } from './pages/conventionnes/useConventionnes'
+import { prechargerGoogleMaps } from './pages/itineraire/googleMaps'
 import { SessionProvider, useSession } from './session'
 
 /** Durée minimale de l'écran de lancement : assez pour son animation, pas plus. */
@@ -116,6 +119,12 @@ function Anonyme() {
 
 function Onglets() {
   const { pathname } = useLocation()
+  // Connecté : la carte des structures se prépare en arrière-plan (script
+  // Google et annuaire), pour s'ouvrir aussitôt quand on touche l'onglet.
+  useEffect(() => {
+    prechargerGoogleMaps()
+    prechargerConventionnes()
+  }, [])
   return (
     <>
       {/* « / », « /identification » juste après l'identification, URL inconnue. */}
@@ -155,6 +164,8 @@ function Onglets() {
             écrans réservent donc --bas-page en fin de contenu. */}
         <BarreOngletsFlottante />
       </IonTabs>
+      {/* Après une connexion : proposer l'empreinte / Face ID, une fois. */}
+      <PropositionEmpreinte />
     </>
   )
 }

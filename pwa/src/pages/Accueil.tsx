@@ -11,9 +11,7 @@
  *   3. « Demander un document » : deux colonnes de grandes cartes (§3.4),
  *      une par type de bon, issues de DOCUMENTS.
  *
- * Les cartes des ayants droit sont juste sous celle du titulaire (section
- * « Ayants droit », ouvertes en grand par components/CartePleinEcran). Le
- * solde IPM est dans la barre du haut.
+ * Les ayants droit sont au Profil. Le solde IPM est dans la barre du haut.
  *
  * Et rien d'autre : demander un document est la raison d'être de l'écran.
  * Les écrans utilitaires ne s'y invitent pas — « Mes bons »,
@@ -39,8 +37,6 @@ import { useState } from 'react'
 
 import { BoutonPrincipal } from '../components/Boutons'
 import CarteIdentite from '../components/CarteIdentite'
-import Avatar from '../components/Avatar'
-import CartePleinEcran, { MOI, useFamille } from '../components/CartePleinEcran'
 import Feuille from '../components/Feuille'
 import GrilleServices from '../components/GrilleServices'
 import { useNouveauBon } from '../components/NouveauBonModal'
@@ -57,14 +53,10 @@ import './accueil/accueil.css'
 
 export default function Accueil() {
   const { participant } = useParticipant()
-  // Carte montrée en plein écran : `MOI` pour celle du titulaire, sinon le
-  // matricule d'un ayant droit. C'est la même présentation pour les deux.
-  const [cartePleinEcran, setCartePleinEcran] = useState<string | null>(null)
   const { rafraichir: rafraichirProfil } = useSession()
   const { erreur, depuisCache, synchroniseLe, rafraichir: rafraichirBons } = useBons()
   // Le solde est dans la barre du haut ; l'accueil le rafraîchit au tirer.
   const { rafraichir: rafraichirCompte } = useCompte()
-  const famille = useFamille()
   const { ouvrirAssistant } = useNouveauBon()
   const routeur = useIonRouter()
   // Document à venir dont on explique l'absence, dans une feuille (§3.9).
@@ -112,19 +104,9 @@ export default function Accueil() {
             pas au moment où on la présente. Les photos s'envoient depuis la
             feuille dédiée, ouverte par l'appareil photo du header.
 
-            La carte entière, elle, se touche : elle s'ouvre en grand et en
-            paysage pour être tendue au prestataire - comme les cartes de la
-            famille, juste en dessous. */}
+            Elle ne s'ouvre plus en grand : elle se lit telle quelle. */}
         <div className="accueil__carte">
-          <button
-            type="button"
-            className="accueil__carte-bouton ipm-appui"
-            aria-label="Voir ma carte d’adhérent en grand"
-            onClick={() => {
-              haptique.leger()
-              setCartePleinEcran(MOI)
-            }}
-          >
+          <div className="accueil__carte-bouton">
             <CarteIdentite
               nom={participant.nom}
               prenoms={participant.prenoms}
@@ -133,52 +115,11 @@ export default function Accueil() {
               societe={societe || undefined}
               photo={participant.photo}
             />
-          </button>
+          </div>
         </div>
 
         <OfflineBanner synchroniseLe={synchroniseLe} forcer={serveurInjoignable} />
 
-        {/* Les cartes des ayants droit, juste sous celle de l'employé : on
-            présente souvent celle d'un proche (l'enfant qu'on emmène en
-            pharmacie), elle est ici en un toucher. Masquée sans ayant droit. */}
-        {famille.length > 0 && (
-          <section className="ipm-section accueil__famille">
-            <div className="ipm-entete-section">
-              <h2 className="ipm-titre-section">Ayants droit</h2>
-            </div>
-            <ul className="accueil-famille" aria-label="Cartes d’ayant droit">
-              {famille.map((membre) => (
-                <li key={membre.matricule}>
-                  <button
-                    type="button"
-                    className="accueil-famille__membre ipm-appui"
-                    aria-label={`Carte d’ayant droit de ${membre.prenoms} ${membre.nom}`}
-                    onClick={() => {
-                      haptique.leger()
-                      setCartePleinEcran(membre.matricule)
-                    }}
-                  >
-                    {/* La forme de la photo de la carte d'adhérent : le même
-                        visage se reconnaît d'un écran à l'autre. */}
-                    <Avatar
-                      nom={membre.nomComplet}
-                      photo={membre.photo}
-                      taille={56}
-                      forme="identite"
-                    />
-                    <span className="accueil-famille__nom">{membre.prenoms}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Raccourcis vers les cartes d'ayant droit, juste sous la carte du
-            titulaire. L'employé présente souvent la carte d'un proche (l'enfant
-            qu'il emmène en pharmacie) : la chercher dans le profil faisait trois
-            touchers, elle est ici en un. La section disparaît s'il n'a pas
-            d'ayant droit. */}
         {/* Pas de titre : le filet la sépare des ayants droit ; son nom reste
             lu par les lecteurs d'écran. */}
         <section className="ipm-section accueil__documents" aria-label="Demander un bon">
@@ -191,8 +132,6 @@ export default function Accueil() {
 
         <div className="ipm-bas-page" />
       </IonContent>
-
-      <CartePleinEcran cible={cartePleinEcran} onFermer={() => setCartePleinEcran(null)} />
 
       {/* Document à venir : on explique, on ne bloque pas sèchement. */}
       <Feuille

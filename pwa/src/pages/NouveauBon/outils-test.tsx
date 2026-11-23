@@ -43,14 +43,19 @@ export function preparerIonic(): void {
   setupIonicReact({ innerHTMLTemplatesEnabled: false })
 }
 
+export const PHOTO_TEST = 'data:image/png;base64,iVBORw0KGgo='
+
 export function uneSession(surcharge: Partial<Session> = {}): Session {
   const moi = unMoi()
   return {
     statut: 'identifie',
     participant: moi.participant,
-    beneficiaires: moi.beneficiaires,
+    // Chacun a sa photo : les bons l'exigent (cf. PhotoBeneficiaireRequise).
+    beneficiaires: moi.beneficiaires.map((b) => ({ ...b, photo: PHOTO_TEST })),
     motifDeconnexion: null,
     identifier: vi.fn(() => Promise.resolve()),
+    activer: vi.fn(() => Promise.resolve()),
+    connecterParEmpreinte: vi.fn(() => Promise.resolve()),
     rafraichir: vi.fn(() => Promise.resolve()),
     deconnecter: vi.fn(() => Promise.resolve()),
     ...surcharge,

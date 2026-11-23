@@ -5,9 +5,11 @@
  * L'annuaire ne change pas d'une minute à l'autre : la dernière liste reçue
  * est gardée en mémoire du module, de sorte qu'un second passage sur l'écran
  * l'affiche instantanément, sans squelettes, pendant qu'une requête discrète
- * la rafraîchit. Cette mémoire n'est PAS un cache hors-ligne : elle disparaît
- * au rechargement de l'application (le socle `offline/stockage.ts` ne stocke
- * aujourd'hui que les bons et leurs PDF — cf. rapport).
+ * la rafraîchit. Elle est aussi recopiée dans le stockage du navigateur : au
+ * lancement suivant de l'application, la carte a ses points tout de suite
+ * (puis la liste est remise à jour en silence), et l'annuaire reste
+ * consultable hors ligne. `prechargerConventionnes()` la demande dès la
+ * connexion, pour que l'onglet « Structures » s'ouvre déjà rempli.
  *
  * Aucune donnée personnelle ici : l'annuaire est le même pour tout le monde,
  * il n'a donc pas à être effacé à la déconnexion.
@@ -24,7 +26,60 @@ interface Memoire {
   le: string
 }
 
-let memoire: Memoire | null = null
+/** Clé du stockage du navigateur (versionnée : un changement de forme l'invalide). */
+const CLE_STOCKAGE = 'ipm.conventionnes.v1'
+
+let memoire: Memoire | null = lireStockage()
+
+function lireStockage(): Memoire | null {
+  try {
+    const brut = window.localStorage.getItem(CLE_STOCKAGE)
+    if (!brut) return null
+    const lu = JSON.parse(brut) as Memoire
+    return Array.isArray(lu.structures) && typeof lu.le === 'string' ? lu : null
+  } catch {
+    return null
+  }
+}
+
+function memoriser(structures: Conventionne[]): Memoire {
+  memoire = { structures, le: new Date().toISOString() }
+  try {
+    window.localStorage.setItem(CLE_STOCKAGE, JSON.stringify(memoire))
+  } catch {
+    // Navigation privée ou stockage plein : la mémoire du module suffit.
+  }
+  return memoire
+}
+
+/**
+ * La requête en cours, partagée entre le préchargement et l'écran. Jamais
+ * annulée : un écran quitté ignore seulement la réponse (l'annuler privait
+ * l'autre demandeur de sa liste).
+ */
+let enCours: Promise<Memoire> | null = null
+
+function demander(): Promise<Memoire> {
+  if (!enCours) {
+    enCours = listerConventionnes()
+      .then(memoriser)
+      .finally(() => {
+        enCours = null
+      })
+  }
+  return enCours
+}
+
+/**
+ * Charge l'annuaire en arrière-plan (après la connexion), s'il n'a pas été
+ * reçu depuis plus de 10 minutes. Un échec est sans conséquence : l'écran
+ * réessaiera à son ouverture.
+ */
+export function prechargerConventionnes(): void {
+  const age = memoire ? Date.now() - Date.parse(memoire.le) : Number.POSITIVE_INFINITY
+  if (age < 10 * 60_000) return
+  void demander().catch(() => undefined)
+}
 
 export interface EtatConventionnes {
   /** null tant que rien n'est connu : c'est le moment des squelettes. */
@@ -39,6 +94,12 @@ export interface EtatConventionnes {
 /** Oublie la liste mémorisée (tests, et changement d'employé). */
 export function reinitialiserConventionnes(): void {
   memoire = null
+  enCours = null
+  try {
+    window.localStorage.removeItem(CLE_STOCKAGE)
+  } catch {
+    // Rien à effacer.
+  }
 }
 
 /**
@@ -55,14 +116,17 @@ export function useConventionnes(): EtatConventionnes & { rafraichir: () => Prom
   // L'écran peut être quitté pendant la requête : ne plus rien publier après.
   const vivant = useRef(true)
 
-  const charger = useCallback(async (signal?: AbortSignal) => {
+  const charger = useCallback(async () => {
     setEtat((precedent) => ({ ...precedent, chargement: true }))
     try {
-      const recues = await listerConventionnes({ signal })
+      const recue = await demander()
       if (!vivant.current) return
-      const le = new Date().toISOString()
-      memoire = { structures: recues, le }
-      setEtat({ structures: recues, chargement: false, erreur: null, synchroniseLe: le })
+      setEtat({
+        structures: recue.structures,
+        chargement: false,
+        erreur: null,
+        synchroniseLe: recue.le,
+      })
     } catch (e) {
       const erreur = e instanceof ErreurApi ? e : new ErreurApi('inconnue')
       // Requête annulée parce que l'écran a été quitté : rien à signaler.
@@ -73,11 +137,9 @@ export function useConventionnes(): EtatConventionnes & { rafraichir: () => Prom
 
   useEffect(() => {
     vivant.current = true
-    const controleur = new AbortController()
-    void charger(controleur.signal)
+    void charger()
     return () => {
       vivant.current = false
-      controleur.abort()
     }
   }, [charger])
 

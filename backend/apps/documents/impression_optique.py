@@ -17,6 +17,7 @@ import pymupdf
 from django.utils import timezone
 
 from .modeles import modele, ouvrir_modele
+from .photo_bon import legende, poser_photo
 from .impression import TYPOGRAPHIE, _age, _fr, _nommer, _polices
 
 MODELE = modele('bon_optique.pdf')
@@ -122,6 +123,9 @@ def _valeurs(bon, utilisateur):
         # Le matricule seul, sans le code de la société : « 0949 » à l'origine.
         'matricule': participant.matricule if participant else '',
         'beneficiaire': beneficiaire.nom_complet.upper() if beneficiaire else 'LUI-MÊME',
+        # La photo du titulaire du bon, imprimée sous « Le PARTICIPANT ».
+        'photo': personne.photo if personne else '',
+        'legende_photo': legende(beneficiaire),
         # « Participant » : ce bon imprime le type en minuscules.
         'type': bon.type_benef.libelle.capitalize() if bon.type_benef_id else '',
         'age': _age(personne.date_naissance if personne else None, bon.date),
@@ -167,6 +171,17 @@ def rendre(valeurs):
             elif alignement == 'droite':
                 x -= longueur
             page.insert_text((x, y), texte, fontname=nom_police, fontsize=taille, color=(0, 0, 0))
+
+        # 3. La photo du titulaire du bon, sous « Le PARTICIPANT ».
+        if 'legende_photo' in valeurs:
+            poser_photo(
+                page,
+                valeurs.get('photo', ''),
+                valeurs['legende_photo'],
+                x=40.0,
+                haut=536.0,
+                largeur=132.0,
+            )
     _nommer(doc, valeurs['code'])
     contenu = doc.tobytes(garbage=3, deflate=True)
     doc.close()

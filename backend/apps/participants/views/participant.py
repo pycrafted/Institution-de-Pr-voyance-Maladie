@@ -32,6 +32,25 @@ class ParticipantViewSet(_SansNumerotation):
     queryset = Participant.objects.select_related('adherent')
     serializer_class = ParticipantSerializer
 
+    @action(detail=True, methods=['post'], url_path='code-activation')
+    def code_activation(self, request, pk=None):
+        """
+        Un code d'activation de l'application mobile pour ce participant (six
+        chiffres, sept jours) : première connexion, ou mot de passe oublié.
+        Rendu en clair cette fois seulement, à remettre à l'employé ; il
+        remplace le précédent. Le mot de passe actuel reste valable tant que
+        l'employé n'en a pas choisi un nouveau avec ce code.
+        """
+        participant = self.get_object()
+        code = participant.generer_code_activation()
+        return Response(
+            {
+                'code': code,
+                'expireLe': participant.code_activation_expire.isoformat(),
+                'participant': self.get_serializer(participant).data,
+            }
+        )
+
 
 class BeneficiaireViewSet(_SansNumerotation):
     # `select_related` : la liste affiche le nom et la société du participant
