@@ -33,9 +33,11 @@ import {
 } from 'ionicons/icons'
 import { useEffect, useMemo, useState } from 'react'
 
+import Avatar from '../components/Avatar'
 import CarteListe from '../components/CarteListe'
 import BarreActions from '../components/BarreActions'
 import { haptique } from '../hooks/haptique'
+import { useFamille } from '../hooks/useFamille'
 import { messageErreur } from '../api'
 import { useParticipant, useSession } from '../session'
 import { activerEmpreinte, desactiverEmpreinte } from '../session/empreinte'
@@ -43,12 +45,15 @@ import { basculerApparence, useApparence } from '../theme/apparence'
 import { useInstallation } from '../utils/installation'
 import { cleDeLAppareil, empreinteDisponible, estAbandon } from '../utils/clesAcces'
 import { estInstallee } from '../utils/plateforme'
+import { detailBeneficiaire } from './profil/famille'
 import ChangerMotDePasse from './profil/ChangerMotDePasse'
+import { nomPropre } from '../utils/libelles'
 import { informationsDuParticipant } from './profil/informations'
 import './profil/profil.css'
 
 export default function Profil() {
   const { participant } = useParticipant()
+  const famille = useFamille()
   const { rafraichir, deconnecter } = useSession()
   const sombre = useApparence() === 'sombre'
   const routeur = useIonRouter()
@@ -165,6 +170,35 @@ export default function Profil() {
             ))}
           </dl>
         </section>
+
+        {/* La famille couverte : une carte par ayant droit, sa photo
+            d'identité (ou ses initiales), son nom, son lien et son âge. */}
+        {famille.length > 0 && (
+          <section className="ipm-section">
+            <div className="ipm-entete-section">
+              <h2 className="ipm-titre-section">Ayants droit</h2>
+            </div>
+            <div className="ipm-pile">
+              {famille.map((membre, rang) => (
+                <CarteListe
+                  key={membre.matricule}
+                  rang={rang}
+                  vignette={
+                    <Avatar
+                      nom={membre.nomComplet}
+                      photo={membre.photo}
+                      taille={44}
+                      forme="identite"
+                    />
+                  }
+                  titre={nomPropre(membre.nomComplet)}
+                  details={detailBeneficiaire(membre)}
+                  chevron={false}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section className="ipm-section">
           <div className="ipm-entete-section">
