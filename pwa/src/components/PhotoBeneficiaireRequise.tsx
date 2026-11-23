@@ -72,8 +72,8 @@ export default function PhotoBeneficiaireRequise({ beneficiaire, fige = false }:
         <div className="photo-requise__texte">
           <p className="photo-requise__titre">Photo du bénéficiaire requise</p>
           <p className="photo-requise__note">
-            Ajoutez {pourQui} pour générer le bon. Cette photo figurera sur le bon afin de permettre
-            au prestataire de santé d’identifier le bénéficiaire.
+            Ajoutez {pourQui} pour générer le document. Cette photo figurera sur le document afin de
+            permettre au prestataire de santé d’identifier le bénéficiaire.
           </p>
         </div>
       </div>

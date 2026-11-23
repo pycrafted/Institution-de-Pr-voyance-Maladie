@@ -28,6 +28,7 @@ import type {
 } from '../../types/api'
 import { nomPropre } from '../../utils/libelles'
 import Alerte from '../NouveauBon/Alerte'
+import PhotoBeneficiaireRequise from '../../components/PhotoBeneficiaireRequise'
 import type { Chargement } from '../NouveauBon/chargement'
 import { ARTICLES_MAX, ARTICLES_MIN } from '../NouveauBon/assistant'
 import { bornesDate, type ErreursSaisie, type Saisie } from './assistant'
@@ -145,6 +146,8 @@ export default function FormulaireLettre({
             />
           </>
         )}
+        {/* Pas encore de photo : elle est demandée avant de générer la lettre. */}
+        <PhotoBeneficiaireRequise beneficiaire={saisie.beneficiaire} fige={fige} />
         {erreurs.beneficiaire && <Alerte message={erreurs.beneficiaire} />}
       </Section>
 
