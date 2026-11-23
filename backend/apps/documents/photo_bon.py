@@ -31,6 +31,33 @@ def _octets(photo):
         return None
 
 
+def _poser_recadree(page, cadre, octets):
+    """
+    Pose la photo dans le cadre, recadrée au centre au format du cadre (comme
+    « object-fit: cover »). La photo est d'abord posée entière sur une page
+    intermédiaire à sa taille, puis seule la zone centrale est reportée dans le
+    cadre : sûr pour toutes les proportions (le recadrage par Pixmap rendait
+    une image vide pour une photo très large, prise en paysage sur iPhone).
+    Rend False si l'image ne se lit pas.
+    """
+    image = pymupdf.Pixmap(octets)
+    l, h = image.width, image.height
+    if not l or not h:
+        return False
+    if l / h > RATIO:
+        nl = h * RATIO
+        zone = pymupdf.Rect((l - nl) / 2, 0, (l + nl) / 2, h)
+    else:
+        nh = l / RATIO
+        zone = pymupdf.Rect(0, (h - nh) / 2, l, (h + nh) / 2)
+    intermediaire = pymupdf.open()
+    feuille = intermediaire.new_page(width=l, height=h)
+    feuille.insert_image(feuille.rect, stream=octets, keep_proportion=False)
+    page.show_pdf_page(cadre, intermediaire, 0, clip=zone, keep_proportion=False, overlay=True)
+    intermediaire.close()
+    return True
+
+
 def legende(beneficiaire=None):
     """
     La légende sous la photo : la même pour tous les bons, qu'ils soient émis
@@ -54,25 +81,14 @@ def poser_photo(page, photo, texte_legende, x, haut, largeur):
         -EPAISSEUR_CADRE / 2,
     )
 
-    image = None
+    posee = False
     octets = _octets(photo)
     if octets:
         try:
-            image = pymupdf.Pixmap(octets)
-        except (RuntimeError, ValueError):
-            image = None
-    if image is not None:
-        # Recadrage au centre au format du cadre (comme « object-fit: cover »).
-        l, h = image.width, image.height
-        if l / h > RATIO:
-            nl = round(h * RATIO)
-            zone = pymupdf.IRect((l - nl) // 2, 0, (l - nl) // 2 + nl, h)
-        else:
-            nh = round(l / RATIO)
-            zone = pymupdf.IRect(0, (h - nh) // 2, l, (h - nh) // 2 + nh)
-        recadree = pymupdf.Pixmap(image, zone.width, zone.height, zone)
-        page.insert_image(interieur, pixmap=recadree, keep_proportion=False, overlay=True)
-    else:
+            posee = _poser_recadree(page, interieur, octets)
+        except Exception:  # noqa: BLE001 - une photo illisible ne doit pas empêcher le bon
+            posee = False
+    if not posee:
         milieu = (interieur.y0 + interieur.y1) / 2
         page.insert_textbox(
             pymupdf.Rect(interieur.x0, milieu - 6, interieur.x1, milieu + 10),

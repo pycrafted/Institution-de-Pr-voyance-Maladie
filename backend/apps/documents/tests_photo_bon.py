@@ -16,17 +16,33 @@ def _photo_png(largeur=60, hauteur=40):
 
 
 class PhotoBonTests(SimpleTestCase):
+    def _couleur_au_centre_du_cadre(self, page):
+        # Le cadre : x 43..175, haut 632, largeur 132 -> hauteur 176.
+        pix = page.get_pixmap(clip=pymupdf.Rect(100, 710, 120, 730))
+        return pix.pixel(pix.width // 2, pix.height // 2)
+
     def test_pose_la_photo_recadree_et_la_legende(self):
         doc = pymupdf.open()
         page = doc.new_page()
         poser_photo(page, _photo_png(), legende(None), x=43, haut=632, largeur=132)
-        images = page.get_images(full=True)
-        self.assertEqual(len(images), 1)
-        rect = page.get_image_rects(images[0][0])[0]
-        # Au format photo d'identité (3/4), dans le cadre.
-        self.assertAlmostEqual(rect.width / rect.height, 3 / 4, places=1)
-        self.assertGreaterEqual(rect.x0, 43)
+        # La photo (rouge) remplit le cadre.
+        self.assertEqual(self._couleur_au_centre_du_cadre(page)[:3], (200, 30, 30))
         self.assertIn('PHOTO DU BÉNÉFICIAIRE', page.get_text())
+        self.assertNotIn('Photo non enregistrée', page.get_text())
+
+    def test_photo_tres_large_comme_sur_iphone(self):
+        # 320 x 136 : la photo d'un participant prise en paysage sur iPhone, que
+        # l'ancien recadrage rendait vide (PDF en erreur 500).
+        doc = pymupdf.open()
+        page = doc.new_page()
+        poser_photo(page, _photo_png(320, 136), legende(None), x=43, haut=632, largeur=132)
+        self.assertEqual(self._couleur_au_centre_du_cadre(page)[:3], (200, 30, 30))
+
+    def test_photo_tres_haute(self):
+        doc = pymupdf.open()
+        page = doc.new_page()
+        poser_photo(page, _photo_png(60, 400), legende(None), x=43, haut=632, largeur=132)
+        self.assertEqual(self._couleur_au_centre_du_cadre(page)[:3], (200, 30, 30))
 
     def test_sans_photo_le_cadre_le_dit(self):
         doc = pymupdf.open()
