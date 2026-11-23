@@ -62,7 +62,7 @@ Fichiers : `render.yaml` (Blueprint), `backend/build.sh`,
 
    ```
    JETON=$(curl -s -X POST https://<api>/api/auth/login/ -H 'Content-Type: application/json' \
-     -d '{"username":"<admin>","password":"<mdp>"}' | python -c "import json,sys; print(json.load(sys.stdin)['token'])")
+     -d '{"email":"<admin@ipm.sn>","password":"<mdp>"}' | python -c "import json,sys; print(json.load(sys.stdin)['token'])")
    for n in bon_pharmacie.pdf bon_optique.pdf lettre_garantie.pdf; do
      curl -s -X PUT -H "Authorization: Token $JETON" -F "fichier=@$n" https://<api>/api/modeles-pdf/$n/
    done
