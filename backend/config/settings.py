@@ -228,6 +228,21 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 ]
 
 # ---------------------------------------------------------------------------
+# Empreinte / Face ID de l'application mobile (clés d'accès WebAuthn)
+# ---------------------------------------------------------------------------
+# Les adresses de l'application mobile autorisées à créer et utiliser des clés.
+# Le domaine de chaque clé est celui de l'adresse : une clé créée sur
+# ipm-mobile.vercel.app ne sert que là.
+WEBAUTHN_ORIGINES = [
+    origine.strip().rstrip('/')
+    for origine in os.getenv(
+        'WEBAUTHN_ORIGINES',
+        'http://localhost:5174,https://ipm-mobile.vercel.app',
+    ).split(',')
+    if origine.strip()
+]
+
+# ---------------------------------------------------------------------------
 # Validation des mots de passe
 # ---------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [

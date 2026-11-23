@@ -18,7 +18,7 @@ from donnees_de_base.serializers.fournisseur_de_soins import DateOuVide
 
 from ..models import Beneficiaire, DemandePhoto, Participant
 from ..models.demande_photo import EN_ATTENTE
-from ..models.participant import MOT_DE_PASSE_MOBILE_DEFAUT, SORTIES
+from ..models.participant import SORTIES
 
 # Libellé du type « le participant lui-même » dans le référentiel.
 TYPE_PARTICIPANT = 'PARTICIPANT'
@@ -115,6 +115,29 @@ class ParticipantSerializer(PhotoReinitialisableMixin, ChampsRequisMixin, serial
     # qui sépare les onglets « Participants IPM » et « Retraités ».
     retraite = serializers.BooleanField(read_only=True)
 
+    # Le compte de l'application mobile, en lecture : « actif » (mot de passe
+    # choisi), « code » (code d'activation en cours de validité) ou
+    # « inactif ». Le code lui-même ne se relit jamais.
+    compteMobile = serializers.SerializerMethodField()
+
+    def get_compteMobile(self, participant):
+        from django.utils import timezone
+
+        if participant.mot_de_passe_choisi:
+            statut = 'actif'
+        elif participant.code_activation_expire and participant.code_activation_expire > timezone.now():
+            statut = 'code'
+        else:
+            statut = 'inactif'
+        return {
+            'statut': statut,
+            'codeExpireLe': (
+                participant.code_activation_expire.isoformat()
+                if statut == 'code'
+                else None
+            ),
+        }
+
     typePiece = texte('type_piece')
     numeroPiece = texte('numero_piece')
     situationFamiliale = texte('situation_familiale')
@@ -151,6 +174,7 @@ class ParticipantSerializer(PhotoReinitialisableMixin, ChampsRequisMixin, serial
             'adherent',
             'etat',
             'retraite',
+            'compteMobile',
             'actif',
             # Champs mappés (déclarés ci-dessus).
             'typePiece',
@@ -207,14 +231,8 @@ class ParticipantSerializer(PhotoReinitialisableMixin, ChampsRequisMixin, serial
         self._accorder_la_sortie(attrs)
         return attrs
 
-    def create(self, validated_data):
-        # Toute fiche ouvre son compte mobile : mot de passe « 0000 » posé
-        # d'office, sinon la PWA refuserait le participant faute de mot de
-        # passe. L'employé le changera depuis l'application.
-        participant = super().create(validated_data)
-        participant.definir_mot_de_passe(MOT_DE_PASSE_MOBILE_DEFAUT)
-        participant.save(update_fields=['mot_de_passe'])
-        return participant
+    # Plus de mot de passe posé d'office à la création : l'employé ouvre son
+    # compte mobile avec un code d'activation de l'IPM, et choisit le sien.
 
     def update(self, instance, validated_data):
         # La famille porte la société et le matricule du participant dans son

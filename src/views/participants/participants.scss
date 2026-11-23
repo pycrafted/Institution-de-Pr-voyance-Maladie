@@ -367,3 +367,14 @@ $prt-noir: #11151d;
     background: #eef1f5;
   }
 }
+
+/* Code d'activation mobile (codeActivation.jsx) : en grand, facile à dicter. */
+.prt-code-activation {
+  margin: 0.75rem 0 1rem;
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--cui-danger, #e52621);
+}

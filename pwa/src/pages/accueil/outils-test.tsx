@@ -49,6 +49,8 @@ export function uneSession(surcharge: Partial<Session> = {}): Session {
     beneficiaires: moi.beneficiaires,
     motifDeconnexion: null,
     identifier: vi.fn(() => Promise.resolve()),
+    activer: vi.fn(() => Promise.resolve()),
+    connecterParEmpreinte: vi.fn(() => Promise.resolve()),
     rafraichir: vi.fn(() => Promise.resolve()),
     deconnecter: vi.fn(() => Promise.resolve()),
     ...surcharge,

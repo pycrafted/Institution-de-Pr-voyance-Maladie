@@ -1251,6 +1251,31 @@ ion-modal.ipm-feuille {
   margin-top: var(--e-20);
 }
 
+/* Paragraphes et boutons d'une page (proposition d'empreinte, mot de passe). */
+.ipm-feuille__texte {
+  margin: 0 0 var(--e-12);
+  color: var(--ipm-texte);
+}
+.ipm-feuille__texte--doux {
+  font: var(--t-secondaire);
+  color: var(--ipm-texte-doux);
+}
+.ipm-feuille__texte--erreur {
+  color: var(--ipm-rouge-texte);
+}
+.ipm-feuille__boutons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--e-12);
+  margin-top: var(--e-24);
+}
+.ipm-feuille__boutons > .ipm-bouton {
+  width: 100%;
+}
+.ipm-feuille__corps .ipm-formulaire {
+  padding: 0;
+}
+
 /* Feuille de choix (components/FeuilleChoix) : la question, puis les boutons
    empilés sur toute la largeur. */
 .ipm-feuille-choix__message {

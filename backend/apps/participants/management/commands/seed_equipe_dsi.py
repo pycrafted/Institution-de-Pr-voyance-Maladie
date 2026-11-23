@@ -334,8 +334,8 @@ class Command(BaseCommand):
             )
 
         mobile = Participant.objects.get(matricule=COMPTE_MOBILE)
-        mobile.definir_mot_de_passe(MOT_DE_PASSE_MOBILE)
-        mobile.save(update_fields=['mot_de_passe'])
+        # Compte de démonstration : mot de passe posé comme s'il l'avait choisi.
+        mobile.choisir_mot_de_passe(MOT_DE_PASSE_MOBILE)
 
         self.stdout.write(self.style.SUCCESS(
             f'Équipe DSI : {len(EQUIPE)} participant(s), {familles} ayant(s) droit. '

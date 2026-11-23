@@ -21,6 +21,7 @@ import { Redirect, Route, useLocation } from 'react-router-dom'
 import BarreOngletsFlottante from './components/BarreOngletsFlottante'
 import InstallSheet from './components/InstallSheet'
 import MiseAJour from './components/MiseAJour'
+import PropositionEmpreinte from './components/PropositionEmpreinte'
 import { NouveauBonProvider } from './components/NouveauBonModal'
 import Splash from './components/Splash'
 import { haptique } from './hooks/haptique'
@@ -165,6 +166,8 @@ function Onglets() {
             écrans réservent donc --bas-page en fin de contenu. */}
         <BarreOngletsFlottante />
       </IonTabs>
+      {/* Après une connexion : proposer l'empreinte / Face ID, une fois. */}
+      <PropositionEmpreinte />
     </>
   )
 }

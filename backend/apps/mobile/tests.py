@@ -90,6 +90,7 @@ class Fixture(APITestCase):
             date_naissance=date(1962, 1, 1), adherent=cls.sar, etat='Actif',
             mobile='77 000 00 00', email='moustapha@example.sn', adresse='Point E, Dakar',
             mot_de_passe=make_password('0000'),
+            mot_de_passe_choisi=True,
         )
         cls.epouse = Beneficiaire.objects.create(
             matricule_benef='01-1204-21', participant=cls.moi, type_benef=cls.type_epouse,
@@ -114,6 +115,7 @@ class Fixture(APITestCase):
             matricule='1207', prenoms='Awa', nom='DIOP', sexe='F',
             date_naissance=date(1969, 2, 8), adherent=cls.sar, etat='Actif',
             mot_de_passe=make_password('1111'),
+            mot_de_passe_choisi=True,
         )
         cls.enfant_du_voisin = Beneficiaire.objects.create(
             matricule_benef='01-1207-31', participant=cls.voisin, type_benef=cls.type_enfant,
@@ -128,6 +130,7 @@ class Fixture(APITestCase):
             matricule='1210', prenoms='Ibrahima', nom='FALL',
             date_naissance=date(1976, 3, 15), adherent=cls.autre_societe, etat='Suspendu',
             mot_de_passe=make_password('2222'),
+            mot_de_passe_choisi=True,
         )
 
     def setUp(self):
@@ -195,6 +198,7 @@ class IdentificationTests(Fixture):
             etat='Actif', date_souscription=date(2015, 1, 1),
         )
         ancien.definir_mot_de_passe('0000')
+        ancien.mot_de_passe_choisi = True
         ancien.save()
 
         reponse = self.post('1204', '0000')

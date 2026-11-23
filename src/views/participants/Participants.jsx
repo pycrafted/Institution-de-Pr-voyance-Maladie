@@ -34,6 +34,7 @@ import { toast } from '../../services/toast'
 import { erreursDeChamps, messageErreur } from '../../services/erreurs'
 import { PARTICIPANTS, PARTICIPANTS_IPM, PARTICIPANTS_RETRAITES } from './config'
 import { DEMANDES_PHOTO } from './demandesPhoto'
+import { FenetreCodeActivation } from './codeActivation'
 
 const ONGLETS = [
   { cle: 'ipm', libelle: 'Participants IPM' },
@@ -152,6 +153,8 @@ const Participants = () => {
         />
 
         {modaleConfirmation}
+        {/* Le code d'activation mobile généré sur une ligne, montré une fois. */}
+        <FenetreCodeActivation />
       </CCardBody>
     </CCard>
   )

@@ -18,8 +18,12 @@ Identifiants, comme l'application d'origine (qui fait foi) :
     participant 0949 de la société 02.
 """
 
+import secrets
+from datetime import timedelta
+
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import models
+from django.utils import timezone
 
 from adherents.models import Adherent
 from donnees_de_base.models import TypeBeneficiaire
@@ -32,10 +36,12 @@ ETATS = [(etat, etat) for etat in ('En Attente', 'Actif', 'Suspendu', 'Résilié
 # enregistrée « MSS » dans l'application d'origine (cf. Adherent.TYPES_ADHERENT).
 REGIME_MUTUELLE = 'MSS'
 
-# Mot de passe mobile posé d'office à la création d'un participant : chaque
-# fiche ouvre ainsi son compte sur la PWA, à charge pour l'employé de le
-# changer. Valeur volontairement simple, connue du métier.
-MOT_DE_PASSE_MOBILE_DEFAUT = '0000'
+# (L'ancien « 0000 » posé d'office ne connecte plus personne : seul compte le
+# mot de passe que l'employé a CHOISI, avec le code d'activation de l'IPM.)
+
+# Le code d'activation remis par l'IPM : six chiffres, valable sept jours.
+CHIFFRES_CODE_ACTIVATION = 6
+VALIDITE_CODE_ACTIVATION = timedelta(days=7)
 
 # Sortie d'un dossier : l'état du participant et celui de son contrat ne
 # peuvent pas se contredire, et chacun porte sa date. Le serializer applique
@@ -106,10 +112,19 @@ class Participant(models.Model):
 
     # --- Application mobile --------------------------------------------------
     # Mot de passe de l'application mobile (pwa/), gardé chiffré comme celui
-    # d'un utilisateur IPM : jamais en clair, jamais rendu par l'API. Vide :
-    # le participant ne peut pas se connecter au mobile. Posé à « 0000 » à la
-    # création (cf. ParticipantSerializer.create, MOT_DE_PASSE_MOBILE_DEFAUT).
+    # d'un utilisateur IPM : jamais en clair, jamais rendu par l'API. Il ne
+    # connecte l'employé que s'il l'a choisi lui-même (mot_de_passe_choisi).
     mot_de_passe = models.CharField('Mot de passe mobile', max_length=128, blank=True)
+    # Vrai une fois que l'employé a choisi SON mot de passe (avec un code
+    # d'activation de l'IPM). Avant, aucun mot de passe ne le connecte : ni
+    # l'ancien « 0000 » posé d'office, ni son matricule.
+    mot_de_passe_choisi = models.BooleanField('Mot de passe choisi', default=False)
+    # Le code d'activation remis par l'IPM (première connexion, mot de passe
+    # oublié) : chiffré comme un mot de passe, à usage unique, daté.
+    code_activation = models.CharField('Code d’activation', max_length=128, blank=True)
+    code_activation_expire = models.DateTimeField(
+        'Expiration du code d’activation', null=True, blank=True
+    )
 
     # --- Dossier -------------------------------------------------------------
     # Un dossier qui vient d'être saisi attend son instruction.
@@ -156,7 +171,47 @@ class Participant(models.Model):
         self.mot_de_passe = make_password(mot_de_passe)
 
     def verifier_mot_de_passe(self, mot_de_passe):
-        return bool(self.mot_de_passe) and check_password(mot_de_passe, self.mot_de_passe)
+        """Le mot de passe CHOISI par l'employé, et lui seul, le connecte."""
+        return (
+            self.mot_de_passe_choisi
+            and bool(self.mot_de_passe)
+            and check_password(mot_de_passe, self.mot_de_passe)
+        )
+
+    def generer_code_activation(self):
+        """
+        Un nouveau code d'activation, rendu EN CLAIR une seule fois (à remettre
+        à l'employé) et gardé chiffré. Il remplace le précédent. Enregistre.
+        """
+        code = ''.join(secrets.choice('0123456789') for _ in range(CHIFFRES_CODE_ACTIVATION))
+        self.code_activation = make_password(code)
+        self.code_activation_expire = timezone.now() + VALIDITE_CODE_ACTIVATION
+        self.save(update_fields=['code_activation', 'code_activation_expire', 'modifie_le'])
+        return code
+
+    def verifier_code_activation(self, code):
+        return (
+            bool(self.code_activation)
+            and self.code_activation_expire is not None
+            and timezone.now() < self.code_activation_expire
+            and check_password(code, self.code_activation)
+        )
+
+    def choisir_mot_de_passe(self, mot_de_passe):
+        """Le mot de passe de l'employé : il le connecte désormais, le code est brûlé."""
+        self.definir_mot_de_passe(mot_de_passe)
+        self.mot_de_passe_choisi = True
+        self.code_activation = ''
+        self.code_activation_expire = None
+        self.save(
+            update_fields=[
+                'mot_de_passe',
+                'mot_de_passe_choisi',
+                'code_activation',
+                'code_activation_expire',
+                'modifie_le',
+            ]
+        )
 
 
 class Beneficiaire(models.Model):

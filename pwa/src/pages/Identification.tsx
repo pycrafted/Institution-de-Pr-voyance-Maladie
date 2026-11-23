@@ -1,10 +1,14 @@
 /**
- * Identification (/identification) : le matricule seul.
+ * Identification (/identification).
  *
- * Connexion simplifiée (2026-11-12) : un participant se connecte juste en
- * tapant son matricule, qui sert aussi de mot de passe (cf. le formulaire et
- * mobile.views.IdentificationView). En cas de succès, App.tsx bascule seul
- * sur l'accueil : on ne navigue pas d'ici.
+ * Deux façons d'entrer :
+ *   - matricule + mot de passe (celui que l'employé a choisi), ou, si cet
+ *     appareil en porte une, l'EMPREINTE / FACE ID d'un seul geste ;
+ *   - « J'ai un code de l'IPM » (première connexion, mot de passe oublié) :
+ *     matricule + code d'activation + mot de passe choisi, dans le même écran.
+ * En cas de succès, App.tsx bascule seul sur l'accueil : on ne navigue pas
+ * d'ici. Après une connexion par mot de passe, l'application propose
+ * d'activer l'empreinte (cf. PropositionEmpreinte).
  */
 
 import { IonContent, IonIcon, IonPage } from '@ionic/react'
@@ -12,30 +16,77 @@ import {
   alertCircle,
   eyeOffOutline,
   eyeOutline,
+  fingerPrint,
   idCardOutline,
+  keypadOutline,
   lockClosedOutline,
   timeOutline,
 } from 'ionicons/icons'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
-import { BoutonPrincipal } from '../components/Boutons'
+import { messageErreur } from '../api'
+import { BoutonPrincipal, BoutonSecondaire } from '../components/Boutons'
 import { Saisie } from '../components/ChampsFormulaire'
 import OfflineBanner from '../components/OfflineBanner'
 import { haptique } from '../hooks/haptique'
 import { useSession } from '../session'
+import { cleDeLAppareil, empreinteDisponible, estAbandon, retenirCle } from '../utils/clesAcces'
+import { useFormulaireActivation } from './identification/activation'
 import { useFormulaireIdentification } from './identification/formulaire'
 import './identification/identification.css'
 
+type Mode = 'connexion' | 'activation'
+
+/** Œil pour voir ou masquer un mot de passe. */
+function BoutonVoir({ voir, basculer }: { voir: boolean; basculer: () => void }) {
+  return (
+    <button
+      type="button"
+      className="ipm-formulaire__action"
+      aria-label={voir ? 'Masquer le mot de passe' : 'Voir le mot de passe'}
+      onClick={basculer}
+    >
+      <IonIcon icon={voir ? eyeOffOutline : eyeOutline} aria-hidden="true" />
+    </button>
+  )
+}
+
+/** Message d'erreur ; `cle` change à chaque refus pour rejouer la secousse. */
+function Erreur({ cle, children }: { cle: number; children: ReactNode }) {
+  return (
+    <div key={cle} className="identification__erreur" role="alert">
+      <IonIcon icon={alertCircle} aria-hidden="true" />
+      <span>{children}</span>
+    </div>
+  )
+}
+
 export default function Identification() {
-  const { identifier, motifDeconnexion } = useSession()
+  const { identifier, activer, connecterParEmpreinte, motifDeconnexion } = useSession()
+  const [mode, setMode] = useState<Mode>('connexion')
   const formulaire = useFormulaireIdentification(identifier)
+  const activation = useFormulaireActivation(activer)
   const { erreurs } = formulaire
-  // Change à chaque refus : rejoue la secousse du message d'erreur.
   const [refus, setRefus] = useState(0)
   const champMatricule = useRef<HTMLInputElement>(null)
-  // Côté écran seulement : le mot de passe n'est ni vérifié ni envoyé.
-  const [motDePasse, setMotDePasse] = useState('')
+  const champMotDePasse = useRef<HTMLInputElement>(null)
   const [voirMotDePasse, setVoirMotDePasse] = useState(false)
+
+  // Empreinte / Face ID : seulement si cet appareil porte déjà une clé.
+  const [cle] = useState(cleDeLAppareil)
+  const [empreintePossible, setEmpreintePossible] = useState(false)
+  const [empreinteEnCours, setEmpreinteEnCours] = useState(false)
+  const [erreurEmpreinte, setErreurEmpreinte] = useState<string | null>(null)
+  useEffect(() => {
+    if (!cle) return undefined
+    let vivant = true
+    void empreinteDisponible().then((oui) => {
+      if (vivant) setEmpreintePossible(oui)
+    })
+    return () => {
+      vivant = false
+    }
+  }, [cle])
 
   async function continuer() {
     const issue = await formulaire.envoyer()
@@ -43,12 +94,49 @@ export default function Identification() {
       haptique.succes()
     } else if (issue === 'invalide') {
       haptique.erreur()
-      champMatricule.current?.focus()
+      if (formulaire.controle.matricule) champMatricule.current?.focus()
+      else champMotDePasse.current?.focus()
     } else if (issue === 'refuse') {
       haptique.erreur()
       setRefus((n) => n + 1)
     }
   }
+
+  async function activerCompte() {
+    const issue = await activation.envoyer()
+    if (issue === 'ok') {
+      haptique.succes()
+    } else if (issue === 'invalide' || issue === 'refuse') {
+      haptique.erreur()
+      setRefus((n) => n + 1)
+    }
+  }
+
+  async function parEmpreinte() {
+    if (empreinteEnCours) return
+    setEmpreinteEnCours(true)
+    setErreurEmpreinte(null)
+    try {
+      await connecterParEmpreinte()
+      haptique.succes()
+    } catch (e) {
+      // Fenêtre de l'empreinte refermée : rien à dire.
+      if (estAbandon(e)) return
+      haptique.erreur()
+      const message = messageErreur(e)
+      setErreurEmpreinte(message)
+      setRefus((n) => n + 1)
+      // Clé retirée côté serveur : l'appareil l'oublie, le bouton disparaît.
+      if (/plus reconnue/.test(message)) {
+        retenirCle(null)
+        setEmpreintePossible(false)
+      }
+    } finally {
+      setEmpreinteEnCours(false)
+    }
+  }
+
+  const basculerVoir = () => setVoirMotDePasse((v) => !v)
 
   return (
     <IonPage className="identification">
@@ -90,66 +178,140 @@ export default function Identification() {
                 <span>Votre session a expiré. Identifiez-vous à nouveau pour continuer.</span>
               </div>
             )}
-            {/* Pas d'avis après une déconnexion volontaire : l'employé vient de la
-                demander, l'écran de connexion suffit à la confirmer. */}
 
-            {/* Pas de bouton « submit » : l'envoi passe par « Connexion » ou
-                par la touche OK du clavier, jamais par un envoi implicite. */}
-            <form className="ipm-formulaire" noValidate onSubmit={(e) => e.preventDefault()}>
-              <Saisie
-                libelle="Matricule"
-                placeholder="Ex. 949"
-                icone={idCardOutline}
-                inputMode="numeric"
-                enterKeyHint="go"
-                reference={champMatricule}
-                valeur={formulaire.matricule}
-                erreur={erreurs.matricule}
-                onChanger={formulaire.changerMatricule}
-                onEntree={() => void continuer()}
-              />
+            {mode === 'connexion' ? (
+              <form className="ipm-formulaire" noValidate onSubmit={(e) => e.preventDefault()}>
+                <Saisie
+                  libelle="Matricule"
+                  placeholder="Ex. 949"
+                  icone={idCardOutline}
+                  inputMode="numeric"
+                  enterKeyHint="next"
+                  autoComplete="username"
+                  reference={champMatricule}
+                  valeur={formulaire.matricule}
+                  erreur={erreurs.matricule}
+                  onChanger={formulaire.changerMatricule}
+                  onEntree={() => champMotDePasse.current?.focus()}
+                />
+                <Saisie
+                  libelle="Mot de passe"
+                  type={voirMotDePasse ? 'text' : 'password'}
+                  placeholder="Votre mot de passe"
+                  icone={lockClosedOutline}
+                  autoComplete="current-password"
+                  enterKeyHint="go"
+                  reference={champMotDePasse}
+                  valeur={formulaire.motDePasse}
+                  erreur={erreurs.motDePasse}
+                  onChanger={formulaire.changerMotDePasse}
+                  onEntree={() => void continuer()}
+                  action={<BoutonVoir voir={voirMotDePasse} basculer={basculerVoir} />}
+                />
 
-              {/* Mot de passe : affiché seulement, pas encore vérifié. La
-                  connexion se fait toujours par le seul matricule (cf. le
-                  formulaire) ; ce champ n'est envoyé nulle part. */}
-              <Saisie
-                libelle="Mot de passe"
-                type={voirMotDePasse ? 'text' : 'password'}
-                placeholder="Votre mot de passe"
-                icone={lockClosedOutline}
-                autoComplete="current-password"
-                enterKeyHint="go"
-                valeur={motDePasse}
-                onChanger={setMotDePasse}
-                onEntree={() => void continuer()}
-                action={
-                  <button
-                    type="button"
-                    className="ipm-formulaire__action"
-                    aria-label={voirMotDePasse ? 'Masquer le mot de passe' : 'Voir le mot de passe'}
-                    onClick={() => setVoirMotDePasse((v) => !v)}
-                  >
-                    <IonIcon
-                      icon={voirMotDePasse ? eyeOffOutline : eyeOutline}
-                      aria-hidden="true"
-                    />
-                  </button>
-                }
-              />
+                {formulaire.erreurServeur && (
+                  <Erreur cle={refus}>{formulaire.erreurServeur}</Erreur>
+                )}
+                {erreurEmpreinte && <Erreur cle={refus}>{erreurEmpreinte}</Erreur>}
 
-              {formulaire.erreurServeur && (
-                <div key={refus} className="identification__erreur" role="alert">
-                  <IonIcon icon={alertCircle} aria-hidden="true" />
-                  <span>{formulaire.erreurServeur}</span>
+                <div className="identification__actions">
+                  <BoutonPrincipal occupe={formulaire.envoi} onClick={() => void continuer()}>
+                    {formulaire.envoi ? 'Vérification…' : 'Connexion'}
+                  </BoutonPrincipal>
+                  {empreintePossible && cle && (
+                    <BoutonSecondaire
+                      icone={fingerPrint}
+                      occupe={empreinteEnCours}
+                      onClick={() => void parEmpreinte()}
+                    >
+                      Empreinte / Face ID
+                    </BoutonSecondaire>
+                  )}
                 </div>
-              )}
 
-              <div className="identification__actions">
-                <BoutonPrincipal occupe={formulaire.envoi} onClick={() => void continuer()}>
-                  {formulaire.envoi ? 'Vérification…' : 'Connexion'}
-                </BoutonPrincipal>
-              </div>
-            </form>
+                <button
+                  type="button"
+                  className="identification__lien"
+                  onClick={() => {
+                    setMode('activation')
+                    setErreurEmpreinte(null)
+                  }}
+                >
+                  Première connexion ou mot de passe oublié ? <strong>J’ai un code de l’IPM</strong>
+                </button>
+              </form>
+            ) : (
+              <form className="ipm-formulaire" noValidate onSubmit={(e) => e.preventDefault()}>
+                <p className="identification__explication">
+                  L’IPM vous remet un <strong>code à 6 chiffres</strong>, valable 7 jours. Avec lui,
+                  choisissez votre mot de passe : il vous servira à chaque connexion.
+                </p>
+                <Saisie
+                  libelle="Matricule"
+                  placeholder="Ex. 949"
+                  icone={idCardOutline}
+                  inputMode="numeric"
+                  enterKeyHint="next"
+                  autoComplete="username"
+                  valeur={activation.matricule}
+                  erreur={activation.erreurs.matricule}
+                  onChanger={activation.changerMatricule}
+                />
+                <Saisie
+                  libelle="Code de l’IPM"
+                  placeholder="6 chiffres"
+                  icone={keypadOutline}
+                  inputMode="numeric"
+                  enterKeyHint="next"
+                  autoComplete="one-time-code"
+                  valeur={activation.code}
+                  erreur={activation.erreurs.code}
+                  onChanger={activation.changerCode}
+                />
+                <Saisie
+                  libelle="Nouveau mot de passe"
+                  type={voirMotDePasse ? 'text' : 'password'}
+                  placeholder="8 caractères, lettres et chiffres"
+                  icone={lockClosedOutline}
+                  autoComplete="new-password"
+                  enterKeyHint="next"
+                  valeur={activation.motDePasse}
+                  erreur={activation.erreurs.motDePasse}
+                  onChanger={activation.changerMotDePasse}
+                  action={<BoutonVoir voir={voirMotDePasse} basculer={basculerVoir} />}
+                />
+                <Saisie
+                  libelle="Confirmer le mot de passe"
+                  type={voirMotDePasse ? 'text' : 'password'}
+                  placeholder="Le même, une seconde fois"
+                  icone={lockClosedOutline}
+                  autoComplete="new-password"
+                  enterKeyHint="go"
+                  valeur={activation.confirmation}
+                  erreur={activation.erreurs.confirmation}
+                  onChanger={activation.changerConfirmation}
+                  onEntree={() => void activerCompte()}
+                />
+
+                {activation.erreurServeur && (
+                  <Erreur cle={refus}>{activation.erreurServeur}</Erreur>
+                )}
+
+                <div className="identification__actions">
+                  <BoutonPrincipal occupe={activation.envoi} onClick={() => void activerCompte()}>
+                    {activation.envoi ? 'Vérification…' : 'Choisir mon mot de passe'}
+                  </BoutonPrincipal>
+                </div>
+
+                <button
+                  type="button"
+                  className="identification__lien"
+                  onClick={() => setMode('connexion')}
+                >
+                  J’ai déjà mon mot de passe : <strong>me connecter</strong>
+                </button>
+              </form>
+            )}
           </main>
         </div>
       </IonContent>

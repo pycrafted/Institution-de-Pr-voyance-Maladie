@@ -347,6 +347,7 @@ class IdentificationMobile(TestCase):
             matricule='0949', adherent=societe, etat='Actif', nom='MBAYE', prenoms='Moustapha'
         )
         participant.definir_mot_de_passe('0000')
+        participant.mot_de_passe_choisi = True
         participant.save()
 
     def identifier(self, matricule):

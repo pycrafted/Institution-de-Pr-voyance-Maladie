@@ -60,11 +60,27 @@ describe('useFormulaireIdentification', () => {
     expect(result.current.erreurs.matricule).toBe('Saisissez votre matricule.')
   })
 
-  it('envoie le matricule nettoyé, aussi comme mot de passe', async () => {
+  it('exige le mot de passe', async () => {
+    const identifier = vi.fn(() => Promise.resolve())
+    const { result } = renderHook(() => useFormulaireIdentification(identifier))
+    act(() => {
+      result.current.changerMatricule('1204')
+    })
+    let issue = ''
+    await act(async () => {
+      issue = await result.current.envoyer()
+    })
+    expect(issue).toBe('invalide')
+    expect(identifier).not.toHaveBeenCalled()
+    expect(result.current.erreurs.motDePasse).toBe('Saisissez votre mot de passe.')
+  })
+
+  it('envoie le matricule nettoyé et le mot de passe saisi', async () => {
     const identifier = vi.fn((_matricule: string, _motDePasse: string) => Promise.resolve())
     const { result } = renderHook(() => useFormulaireIdentification(identifier))
     act(() => {
       result.current.changerMatricule('01 1204-')
+      result.current.changerMotDePasse('Raffinerie-2026')
     })
     expect(result.current.matricule).toBe('01-1204-')
 
@@ -74,7 +90,7 @@ describe('useFormulaireIdentification', () => {
     })
     expect(issue).toBe('ok')
     // Le matricule sert aussi de mot de passe : même valeur envoyée deux fois.
-    expect(identifier).toHaveBeenCalledWith('01-1204', '01-1204')
+    expect(identifier).toHaveBeenCalledWith('01-1204', 'Raffinerie-2026')
     expect(result.current.envoi).toBe(false)
   })
 
@@ -90,6 +106,7 @@ describe('useFormulaireIdentification', () => {
     const { result } = renderHook(() => useFormulaireIdentification(identifier))
     act(() => {
       result.current.changerMatricule('1204')
+      result.current.changerMotDePasse('Raffinerie-2026')
     })
 
     let issue = ''
@@ -108,6 +125,7 @@ describe('useFormulaireIdentification', () => {
     const { result } = renderHook(() => useFormulaireIdentification(identifier))
     act(() => {
       result.current.changerMatricule('1204')
+      result.current.changerMotDePasse('Raffinerie-2026')
     })
     let issue = ''
     await act(async () => {
@@ -128,6 +146,7 @@ describe('useFormulaireIdentification', () => {
     const { result } = renderHook(() => useFormulaireIdentification(identifier))
     act(() => {
       result.current.changerMatricule('1204')
+      result.current.changerMotDePasse('Raffinerie-2026')
     })
 
     let premier: Promise<string> = Promise.resolve('')

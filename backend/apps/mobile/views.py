@@ -230,24 +230,15 @@ class IdentificationView(APIView):
             {'jeton': emettre_jeton(participant), 'participant': representer_participant(participant)}
         )
 
-    @staticmethod
-    def _comme_matricule(valeur):
-        """Normalise une saisie comme un matricule : sans préfixe société, sur
-        quatre chiffres. « 01-949 » comme « 949 » donnent « 0949 »."""
-        reste = (valeur or '').rpartition('-')[2]
-        return reste.zfill(4) if reste.isdigit() else reste
-
     @classmethod
     def _mot_de_passe_ok(cls, participant, mot_de_passe):
-        """Le mot de passe mobile habituel, OU le matricule lui-même.
+        """Le mot de passe que l'employé a CHOISI, et lui seul.
 
-        Consigne (2026-11-12) : tout participant se connecte juste en tapant son
-        matricule, qui sert alors de mot de passe. Celui qui a choisi un mot de
-        passe mobile peut toujours s'en servir ; son matricule reste accepté.
+        Consigne (2026-11-22) : fini le matricule qui servait de mot de passe
+        (2026-11-12) et le « 0000 » posé d'office. Un employé choisit son mot
+        de passe avec le code d'activation que lui remet l'IPM (ActivationView).
         """
-        if participant.verifier_mot_de_passe(mot_de_passe):
-            return True
-        return cls._comme_matricule(mot_de_passe) == participant.matricule
+        return participant.verifier_mot_de_passe(mot_de_passe)
 
     @staticmethod
     def _refus():

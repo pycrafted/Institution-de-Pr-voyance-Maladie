@@ -13,7 +13,10 @@
  */
 
 import { listerEntreesSync } from '../../services/referentiels'
+import { cilMobile } from '@coreui/icons'
+
 import AyantsDroitParticipant from './AyantsDroitParticipant'
+import { genererCodeActivation } from './codeActivation'
 
 /** Options d'un référentiel tiers, filtrées et rendues au format attendu. */
 const depuisReferentiel = (cle, predicat = () => true) =>
@@ -578,7 +581,36 @@ const COLONNES_LISTE = [
     aligne: 'droite',
     valeurTableau: (e) => compterBeneficiaires(e.matricule, 'ENFANT'),
   },
+  {
+    // Le compte de l'application mobile : mot de passe choisi, code remis
+    // (encore valable), ou rien.
+    nom: 'compteMobile',
+    libelle: 'Mobile',
+    largeur: '100px',
+    valeurTableau: (e) =>
+      ({ actif: 'Activé', code: 'Code remis' })[e.compteMobile?.statut] || '-',
+  },
 ]
+
+/**
+ * Le code d'activation de l'application mobile (première connexion, mot de
+ * passe oublié) : généré sur la ligne, montré une fois (cf. codeActivation).
+ */
+const ACTION_CODE_ACTIVATION = {
+  cle: 'codeActivation',
+  libelle: 'Code d’activation mobile',
+  icone: cilMobile,
+  visible: (e) => e.etat === 'Actif',
+  confirmer: (e) =>
+    `Générer un code d’activation mobile pour ${`${e.prenoms || ''} ${e.nom || ''}`.trim() || 'ce participant'} ?
+
+` +
+    'Il remplace le code précédent. Le mot de passe actuel reste valable tant que l’employé n’en a pas choisi un nouveau.',
+  executer: async (e) => {
+    await genererCodeActivation(e)
+    return ''
+  },
+}
 
 /** Fabrique une vue liste des participants (mêmes colonnes, source partagée). */
 const listeParticipants = (extra) => ({
@@ -648,7 +680,9 @@ const listeParticipants = (extra) => ({
     'etat',
     'nbEpouses',
     'nbEnfants',
+    'compteMobile',
   ],
+  actionsLigne: [ACTION_CODE_ACTIVATION],
   segments: SEGMENTS_ETAT,
 })
 
