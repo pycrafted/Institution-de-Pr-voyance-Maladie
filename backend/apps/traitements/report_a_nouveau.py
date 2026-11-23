@@ -1,12 +1,18 @@
 # -*- coding: utf-8 -*-
 """
-Report À Nouveau - la vraie « clôture d'exercice » de LAMPS (journal RAN).
+« Nouvel exercice » - la clôture d'exercice de LAMPS (journal RAN).
+
+**Où cela se trouve dans LAMPS** : nulle part dans le menu Comptabilité, qui ne
+porte que Journal Central, Plan Comptable Général et Interrogation de Comptes.
+C'est la seconde entrée du menu **« Gestion »** du Journal Central (capture 72).
+Nous avions construit une page dédiée « Report À Nouveau » : elle a été retirée
+en novembre 2026, l'opération étant revenue à sa place.
 
 LAMPS n'a pas de bouton « clôturer l'exercice » qui verrouille l'année et sort
 un résultat. La clôture s'y fait par le **report à nouveau** : on édite la
 balance, puis on reporte les soldes de l'exercice clos sur le suivant, en
-écritures du journal **RAN** (« R.A.N … », « SOLDE OUVERTURE »). Vérifié sur les
-396 873 écritures réelles (cf. docs/lamps/comptabilite-lamps.md) :
+écritures du journal **RAN**. Vérifié sur les 396 873 écritures réelles
+(cf. docs/lamps/comptabilite-lamps.md) :
 
 - **97 067 écritures RAN** (24,5 % du grand livre) - c'est un journal à part
   entière, pas un sous-produit.
@@ -34,10 +40,33 @@ from rest_framework.response import Response
 from donnees_de_base.models import CompteComptable
 
 from .models import EcritureCompta
-from .saisie_journal import prochain_numero
 
 # Journal du report à nouveau, comme LAMPS.
 JOURNAL_RAN = 'RAN'
+
+
+def numero_piece(jour):
+    """
+    Le numéro de pièce du report, à la forme de LAMPS : « RAN » suivi de la
+    date du 1er janvier en ddmmyyyy, soit `RAN01012026`. Toutes les lignes de
+    l'ouverture le partagent - c'est UNE pièce, pas une par solde. Vérifié
+    capture 74 et retrouvé tel quel dans la base réelle.
+
+    Ce n'est donc pas une séquence : deux reports différents ne peuvent pas
+    porter le même numéro, puisque la date en fait partie.
+    """
+    return f'{JOURNAL_RAN}{jour:%d%m%Y}'
+
+
+def libelle_report(jour, avec_tiers):
+    """
+    Les libellés figés de LAMPS, repris mot pour mot (cf. captures 74 et 78) :
+    « SOLDE D'OUVERTURE AU 01/01/2026 » sur un compte de tiers, « R.A.N AU
+    01/01/2026 » sur un compte général. Ne pas les reformuler : le comptable
+    les reconnaît à l'œil, et ils servent de repère dans le grand livre.
+    """
+    quand = f'{jour:%d/%m/%Y}'
+    return f'SOLDE D’OUVERTURE AU {quand}' if avec_tiers else f'R.A.N AU {quand}'
 
 # Les comptes de bilan, seuls reportés : classes 1 à 5. Les classes 6 et 7
 # (charges et produits) ne se reportent pas - elles repartent de zéro.
@@ -156,8 +185,8 @@ class ReportANouveauViewSet(viewsets.ViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        numero = numero_piece(date_cible)
         with transaction.atomic():
-            numero = prochain_numero(JOURNAL_RAN)
             EcritureCompta.objects.bulk_create([
                 EcritureCompta(
                     rang=rang,
@@ -168,7 +197,7 @@ class ReportANouveauViewSet(viewsets.ViewSet):
                     date_trait=date_cible,
                     comptegen=report['comptegen'],
                     comptetiers=report['comptetiers'],
-                    libelle=f'R.A.N SOLDE OUVERTURE {exercice}'[:120],
+                    libelle=libelle_report(date_cible, bool(report['comptetiers']))[:120],
                     debit=report['debit'],
                     credit=report['credit'],
                     codesoc=report['codesoc'],

@@ -180,13 +180,11 @@ const _nav = [
         name: 'Interrogation Compte',
         to: '/comptabilite/interrogation-compte',
       },
-      // La clôture d'exercice façon LAMPS : le report à nouveau des soldes de
-      // bilan (journal RAN) sur l'exercice suivant.
-      {
-        component: CNavItem,
-        name: 'Report À Nouveau',
-        to: '/comptabilite/report-a-nouveau',
-      },
+      // Pas de quatrième entrée : le menu Comptabilité de l'original n'en a que
+      // trois. La clôture mensuelle et le nouvel exercice ne sont pas des
+      // écrans, ce sont les deux entrées du menu « Gestion » du Journal
+      // Central (capture 72). Nous avions ajouté une page « Report À Nouveau »
+      // qui n'existe nulle part dans LAMPS : elle a été retirée.
     ],
   },
 ]

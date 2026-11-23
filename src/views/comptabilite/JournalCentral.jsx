@@ -26,8 +26,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
-import { cilChevronBottom } from '@coreui/icons'
+
+import GestionJournal from './GestionJournal'
 
 import { request } from '../../services/api'
 import { listerEntrees } from '../../services/referentiels'
@@ -150,6 +150,26 @@ const JournalCentral = () => {
   const [journaux, setJournaux] = useState([])
   const [exercices, setExercices] = useState([annee])
 
+  // Le mois comptable ouvert (table `params` de LAMPS), qui donne le
+  // « (ouvert) » de l'en-tête et ce que clôture le menu Gestion. S'il reste
+  // null - serveur plus ancien, table pas encore migrée -, l'en-tête se tait
+  // au lieu d'affirmer un état qu'il ne connaît pas.
+  const [periode, setPeriode] = useState(null)
+
+  const chargerPeriode = useCallback(async () => {
+    try {
+      setPeriode(await request('/mois-comptable/'))
+    } catch {
+      setPeriode(null)
+    }
+  }, [])
+
+  useEffect(() => {
+    // L'état n'est posé qu'après la réponse du serveur.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    chargerPeriode()
+  }, [chargerPeriode])
+
   useEffect(() => {
     const minuteur = setTimeout(() => {
       setTermeDiffere(recherche)
@@ -236,6 +256,12 @@ const JournalCentral = () => {
   }
 
   const libelleMois = mois ? MOIS_COMPLETS[Number(mois) - 1] : null
+  // « (ouvert) » ne s'affiche que sur le mois que la comptabilité a réellement
+  // ouvert, pas sur n'importe quel mois consulté.
+  const moisOuvert =
+    !!periode?.ouvert &&
+    Number(periode.mois) === Number(mois) &&
+    Number(periode.annee) === Number(exercice)
   const libelleJournal =
     journal === 'ALL'
       ? 'Tous les journaux'
@@ -266,16 +292,17 @@ const JournalCentral = () => {
               <p className="jc-rappel">
                 Exercice {exercice} - {libelleJournal}
               </p>
-              {/* La période regardée. L'original ajoute « (ouvert) », qui dit
-                  si elle accepte encore des écritures - cet état vit dans sa
-                  table `params`, dont nous n'avons pas encore l'équivalent. On
-                  ne l'affiche donc pas : annoncer « ouvert » sans le savoir
-                  serait une invention. La ligne disparaît sur « Tous les
-                  mois » - « Mois Comptable : exercice 2019 » n'aurait aucun
-                  sens. */}
+              {/* La période regardée, et « (ouvert) » quand c'est elle que la
+                  comptabilité a ouverte - l'état vient de `/mois-comptable/`,
+                  l'équivalent de la table `params` de LAMPS. Le mot ne
+                  s'affiche que si le serveur l'a dit : l'annoncer sans le
+                  savoir serait une invention. La ligne disparaît sur « Tous
+                  les mois » - « Mois Comptable : exercice 2019 » n'aurait
+                  aucun sens. */}
               {libelleMois && (
                 <p className="jc-periode">
                   Mois Comptable: {libelleMois} {exercice}
+                  {moisOuvert && <span className="jc-periode-ouvert"> (ouvert)</span>}
                 </p>
               )}
               <label className="ddb-recherche-flottante jc-recherche">
@@ -356,20 +383,14 @@ const JournalCentral = () => {
 
               <div className="jc-boutons">
                 <BoutonExport onClick={exporter} />
-                {/* « Gestion » ouvre, dans LAMPS, « Cloture Mensuelle » et
-                    « Nouvel exercice ». Les deux restent à construire : la
-                    clôture demande un modèle de période, et le nouvel exercice
-                    est un moteur (97 067 écritures de report à nouveau en huit
-                    ans). Le bouton est montré désactivé plutôt que caché -
-                    le métier doit savoir que cela viendra. */}
-                <button
-                  type="button"
-                  className="jc-bouton jc-gestion"
-                  disabled
-                  title="Cloture Mensuelle et Nouvel exercice : à construire"
-                >
-                  <CIcon icon={cilChevronBottom} /> Gestion
-                </button>
+                {/* « Gestion » : les deux opérations de clôture de LAMPS. Elles
+                    n'ont pas d'écran à elles - c'est ici qu'elles vivent, et
+                    nulle part ailleurs (capture 72). */}
+                <GestionJournal
+                  periode={periode}
+                  onPeriode={chargerPeriode}
+                  onReportGenere={charger}
+                />
                 {/* Pas de bouton « Actualiser » : la liste et le bandeau de
                     contrôle se rechargent d'eux-mêmes à chaque changement de
                     filtre, de recherche ou de page. */}

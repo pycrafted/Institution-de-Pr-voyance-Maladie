@@ -617,17 +617,17 @@ const InterrogationComptes = () => {
             <h2 className="jc-titre">{onglet.titre}</h2>
 
             <nav className="ic-onglets" aria-label="Familles de comptes">
-            {ONGLETS.map((o) => (
-              <button
-                key={o.cle}
-                type="button"
-                className={`ic-onglet${o.cle === cleOnglet ? ' ic-onglet-actif' : ''}`}
-                onClick={() => changerOnglet(o.cle)}
-              >
-                {o.libelle}
-              </button>
-            ))}
-          </nav>
+              {ONGLETS.map((o) => (
+                <button
+                  key={o.cle}
+                  type="button"
+                  className={`ic-onglet${o.cle === cleOnglet ? ' ic-onglet-actif' : ''}`}
+                  onClick={() => changerOnglet(o.cle)}
+                >
+                  {o.libelle}
+                </button>
+              ))}
+            </nav>
           </div>
 
           {/* La barre de filtres : la recherche tout à gauche, puis les

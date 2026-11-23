@@ -5,6 +5,7 @@ from rest_framework.routers import DefaultRouter
 from .cotisations import CotisationsViewSet
 from .interrogation_comptes import InterrogationComptesViewSet
 from .journal_central import JournalCentralViewSet
+from .mois_comptable import MoisComptableViewSet
 from .report_a_nouveau import ReportANouveauViewSet
 from .retenues import RetenuesViewSet
 from .saisie_journal import SaisieJournalViewSet
@@ -38,8 +39,12 @@ router.register('journal-central', JournalCentralViewSet, basename='journal-cent
 router.register(
     'interrogation-comptes', InterrogationComptesViewSet, basename='interrogation-comptes',
 )
-# Clôture d'exercice façon LAMPS : le report à nouveau des soldes de bilan
-# (journal RAN) de l'exercice clos sur le suivant.
+# Les deux entrées du menu « Gestion » du Journal Central (capture 72), qui
+# n'ont pas d'écran à elles dans LAMPS :
+#   - « Cloture Mensuelle » : la période ouverte avance d'un mois (`params`) ;
+#   - « Nouvel exercice »   : le report à nouveau des soldes de bilan au
+#     journal RAN, de l'exercice clos sur le suivant.
+router.register('mois-comptable', MoisComptableViewSet, basename='mois-comptable')
 router.register('report-a-nouveau', ReportANouveauViewSet, basename='report-a-nouveau')
 
 urlpatterns = router.urls

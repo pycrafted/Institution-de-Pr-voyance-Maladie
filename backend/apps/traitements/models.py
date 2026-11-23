@@ -12,6 +12,7 @@ comptabilisation et du paiement existent déjà sur le modèle mais ne se
 remplissent qu'aux tranches suivantes (ils restent vides à la réception).
 """
 
+from calendar import monthrange
 from datetime import date, timedelta
 
 from django.conf import settings
@@ -1222,3 +1223,56 @@ class LigneRetenue(models.Model):
     def tiers(self):
         """« 01-0699 » : le compte tiers de l'écriture, société-matricule."""
         return f'{self.campagne.adherent.code}-{self.participant.matricule}'
+
+
+# ---------------------------------------------------------------------------
+# Le mois comptable - la table `params` de LAMPS
+# ---------------------------------------------------------------------------
+# Le Journal Central de LAMPS affiche « Mois Comptable: OCTOBRE 2019 (ouvert) ».
+# Cet état vient de `params`, qui ne tient pas un historique mais **une seule
+# ligne par périmètre** : la période en cours. « Cloture Mensuelle » (menu
+# Gestion, capture 72) fait avancer cette ligne d'un mois. Rien n'est écrit en
+# comptabilité : c'est un curseur, pas une opération comptable.
+
+# Les deux périmètres de LAMPS. L'IPM est le nôtre ; MSS relève de la paie.
+PERIMETRES = (('IPM', 'IPM'), ('MSS', 'MSS'))
+
+MOIS_FR = (
+    'JANVIER', 'FÉVRIER', 'MARS', 'AVRIL', 'MAI', 'JUIN',
+    'JUILLET', 'AOÛT', 'SEPTEMBRE', 'OCTOBRE', 'NOVEMBRE', 'DÉCEMBRE',
+)
+
+
+def fin_de_mois(jour):
+    """Le dernier jour du mois de `jour` - 28, 29, 30 ou 31 selon le mois."""
+    return date(jour.year, jour.month, monthrange(jour.year, jour.month)[1])
+
+
+def mois_suivant(jour):
+    """Le premier jour du mois qui suit celui de `jour`."""
+    return date(jour.year + (jour.month == 12), jour.month % 12 + 1, 1)
+
+
+class MoisComptable(models.Model):
+    """La période comptable en cours, une ligne par périmètre (`params`)."""
+
+    perimetre = models.CharField('Périmètre', max_length=3, choices=PERIMETRES, unique=True)
+    structure = models.CharField('Structure', max_length=60)
+    date_debut = models.DateField('Début de période')
+    date_fin = models.DateField('Fin de période')
+    ouvert = models.BooleanField('Ouvert', default=True)
+    # Présent parce que `params` le porte ; jamais posé dans la base réelle.
+    close_def = models.BooleanField('Clôture définitive', default=False)
+
+    class Meta:
+        verbose_name = 'Mois comptable'
+        verbose_name_plural = 'Mois comptables'
+        ordering = ('perimetre',)
+
+    def __str__(self):
+        return f'{self.perimetre} - {self.libelle}'
+
+    @property
+    def libelle(self):
+        """« OCTOBRE 2019 », comme l'écrit le Journal Central."""
+        return f'{MOIS_FR[self.date_debut.month - 1]} {self.date_debut.year}'
