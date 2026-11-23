@@ -34,7 +34,7 @@ export default function ChangerMotDePasse({ ouverte, onFermer }: Props) {
     nouveau: verifierNouveauMotDePasse(nouveau, participant?.matricule ?? ''),
     confirmation: verifierConfirmation(nouveau, confirmation),
   }
-  const affichees = tente ? erreurs : {}
+  const affichees: Partial<typeof erreurs> = tente ? erreurs : {}
 
   function fermer(change: boolean) {
     setAncien('')
