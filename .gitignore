@@ -25,7 +25,13 @@ yarn-debug.log*
 yarn-error.log*
 
 # Certificats (clés privées) : jamais dans le dépôt.
+# Le dépôt distant est PUBLIC : une clé privée qui y arrive est compromise,
+# et la retirer d'un historique déjà poussé ne la décompromet pas.
 pfx/
+transfert-cert-sar/
+*.pfx
+*.p12
+*.key
 
 # ===========================================================================
 # Backend Django
