@@ -1,0 +1,50 @@
+/*
+ * Le fond des écrans : un mur d'hexagones discret, voilé d'une brume douce.
+ * Dessins dans src/theme/fonds/ (scripts/fond-hexagones.py).
+ *
+ * Les couleurs suivent le mode : rose pâle sur le fond clair, rouge sur le
+ * fond sombre. Le fond reste immobile quand le contenu défile (c'est la partie
+ * « background » d'ion-content), et les cartes restent posées dessus.
+ */
+
+:root {
+  --fond-hexagones: url('./fonds/hexagones-clair.svg');
+  --fond-brume: rgba(229, 38, 33, 0.06);
+  --fond-voile: rgba(248, 241, 240, 0.85);
+}
+
+:root.ion-palette-dark {
+  --fond-hexagones: url('./fonds/hexagones-sombre.svg');
+  --fond-brume: rgba(255, 72, 60, 0.1);
+  --fond-voile: rgba(17, 17, 16, 0.8);
+}
+
+ion-content::part(background) {
+  background-color: var(--ipm-fond);
+  background-image:
+    /* Deux nappes de brume, comme une fumée posée sur le mur. */
+    radial-gradient(60% 30% at 80% 35%, var(--fond-brume) 0%, transparent 70%),
+    radial-gradient(70% 35% at 15% 70%, var(--fond-brume) 0%, transparent 70%),
+    /* Le haut de l'écran plus calme : le mur s'efface sous la barre. */
+    linear-gradient(to bottom, var(--fond-voile) 0%, transparent 28%),
+    /* Le mur d'hexagones, sur tout l'écran. */
+    var(--fond-hexagones);
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+  background-position:
+    center,
+    center,
+    top,
+    center top;
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    auto;
+}
+
+/* La carte des structures et l'itinéraire couvrent tout l'écran : pas de motif
+   dessous. */
+.conventionnes ion-content::part(background),
+.itineraire ion-content::part(background) {
+  background-image: none;
+}

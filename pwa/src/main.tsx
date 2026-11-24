@@ -18,6 +18,7 @@ import '@ionic/react/css/palettes/dark.class.css'
 
 import './theme/variables.css'
 import './theme/global.css'
+import './theme/fond.css'
 import './components/composants.css'
 
 import App from './App'
