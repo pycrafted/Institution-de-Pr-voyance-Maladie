@@ -48,23 +48,27 @@ const FORME_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 /**
  * Côté maximal d'une photo enregistrée, en pixels, et sa qualité JPEG.
  *
- * **480 px depuis le 2026-11-25** (c'était 320). La photo s'imprime sur les
- * bons de pharmacie et d'optique, dans un cadre de 132 points de large, soit
- * 1,83 pouce : à 320 px de côté, le recadrage au format 3/4 n'en laissait que
- * 240, et le bon sortait à **131 points par pouce** - d'où une photo qui
- * paraît compressée sur le papier. À 480 px, elle tire 197 ppp, ce qui passe
- * à l'impression.
+ * **720 px depuis le 2026-11-25** (c'était 320, puis 480 le temps d'une
+ * demi-journée). Le calcul, plutôt qu'un chiffre rond : la photo s'imprime
+ * sur les bons dans un cadre de 132 x 176 points, soit 1,83 x 2,44 pouce. À
+ * 300 points par pouce - la définition d'une impression propre - il y faut
+ * 550 x 733 pixels. Le recadrage au format 3/4 ne garde que les trois quarts
+ * de la largeur de la source, donc une source carrée de 733 px de côté.
  *
- * Ce qui RETIENT d'aller plus haut : la photo voyage dans la fiche du
- * participant, et la liste des participants la renvoie pour chaque ligne.
- * 480 px à 0,85 pèsent une trentaine de kilo-octets ; 960 px en pèseraient
- * cent vingt, et une page de liste passerait de 0,8 à 3 Mo.
+ * À 320 px, le bon n'en recevait que 240 : **131 ppp**, et une photo en
+ * escalier sur le papier. À 720, il en reçoit 540 : **295 ppp**.
+ *
+ * CE QUE ÇA COÛTE, et c'est à surveiller : la photo voyage dans la fiche du
+ * participant, et la liste des participants la renvoie pour CHAQUE ligne
+ * alors qu'aucune colonne ne l'affiche - elle y pèse 99 % d'une fiche. Une
+ * page de vingt-cinq participants tous photographiés passerait de 0,3 à 2 Mo.
+ * Le jour où ça gêne, c'est la liste qu'il faut alléger, pas la photo.
  *
  * Le serveur refuse au-delà de 400 Ko (cf. backend/apps/mobile/views.py,
  * PHOTO_TAILLE_MAX), et l'application mobile applique les mêmes valeurs
  * (pwa/src/utils/photo.ts) : les deux écrans doivent produire la même chose.
  */
-const COTE_PHOTO = 480
+const COTE_PHOTO = 720
 const QUALITE_PHOTO = 0.85
 
 /** Lit un fichier image, le réduit et le rend en URL de données. */

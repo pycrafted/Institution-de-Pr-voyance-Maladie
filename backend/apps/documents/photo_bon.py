@@ -66,9 +66,25 @@ def _poser_recadree(page, cadre, octets):
     intermediaire = pymupdf.open()
     feuille = intermediaire.new_page(width=l, height=h)
     feuille.insert_image(feuille.rect, stream=octets, keep_proportion=False)
+    _lisser(intermediaire, feuille)
     page.show_pdf_page(cadre, intermediaire, 0, clip=zone, keep_proportion=False, overlay=True)
     intermediaire.close()
     return True
+
+
+def _lisser(document, page):
+    """
+    Demande au lecteur de PDF d'INTERPOLER la photo quand il l'agrandit
+    (drapeau ``/Interpolate`` de l'image).
+
+    Sans lui - c'est la valeur par défaut -, plusieurs lecteurs et pilotes
+    d'impression agrandissent au plus proche voisin : la photo sort en
+    carrés. Avec lui, ils lissent. Cela n'invente aucun détail et ne remplace
+    pas une photo de définition suffisante ; cela évite seulement que le
+    manque de définition se voie en escalier.
+    """
+    for image in page.get_images():
+        document.xref_set_key(image[0], 'Interpolate', 'true')
 
 
 def poser_photo(page, photo, x, haut, largeur):

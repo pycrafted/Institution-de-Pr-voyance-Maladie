@@ -453,9 +453,10 @@ class ScanView(VueParticipant):
         return Response(resultat)
 
 
-# Une photo d'identité réduite à 320 px pèse une vingtaine de kilo-octets ;
-# 400 Ko laissent de la marge à un téléphone qui encoderait moins bien, sans
-# permettre d'utiliser la fiche comme un espace de stockage.
+# Une photo d'identité réduite à 720 px (cf. pwa/src/utils/photo.ts) pèse une
+# soixantaine de kilo-octets ; 400 Ko laissent de la marge à un téléphone qui
+# encoderait moins bien, sans permettre d'utiliser la fiche comme un espace de
+# stockage.
 PHOTO_TAILLE_MAX = 400 * 1024
 
 # Signatures des formats acceptés, une fois le base64 décodé, en hexadécimal.

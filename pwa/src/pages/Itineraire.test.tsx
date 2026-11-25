@@ -8,7 +8,7 @@ import { reponseJson, unFournisseur } from '../test/fabriques'
 import type { Conventionne } from '../types/api'
 import { preparerIonic, rendreEcran } from './conventionnes/outils-test'
 import { reinitialiserConventionnes } from './conventionnes/useConventionnes'
-import Itineraire, { type ItineraireProps } from './Itineraire'
+import Itineraire, { SAR_PAR_DEFAUT, type ItineraireProps } from './Itineraire'
 
 // Google Maps ne se dessine pas sous jsdom : la carte est remplacée par un
 // témoin qui dit ce qu'on lui a confié. Le vrai composant est éprouvé dans le
@@ -167,14 +167,19 @@ describe('Itinéraire', () => {
     expect(document.body.classList.contains('ipm-sans-onglets')).toBe(false)
   })
 
-  it('localisation refusée : on dit comment l’autoriser, la structure reste sur la carte', async () => {
+  it('localisation refusée : le trajet part de la SAR, et l’écran le dit', async () => {
+    // L'écran disait « Autorisez la localisation » et s'arrêtait là. Depuis
+    // que le site mobile est servi en HTTP - où le navigateur refuse toute
+    // géolocalisation -, il part de la raffinerie plutôt que de ne rien
+    // montrer, et l'annonce sous le temps de trajet.
     localiser('refus')
     afficher('CL008')
 
-    expect(await screen.findByText(/Autorisez la localisation/)).toBeInTheDocument()
+    expect(await screen.findByText(/Trajet depuis la SAR/)).toBeInTheDocument()
     const carte = await screen.findByTestId('carte')
+    expect(JSON.parse(carte.dataset.position ?? 'null')).toEqual(SAR_PAR_DEFAUT)
+    // La structure reste la destination.
     expect(JSON.parse(carte.dataset.destination ?? 'null')).toEqual(MADELEINE.position)
-    expect(mocks.calculerTrajet).not.toHaveBeenCalled()
   })
 
   it('page non sécurisée (HTTP) : on l’explique au lieu d’attendre en vain', async () => {

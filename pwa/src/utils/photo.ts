@@ -7,21 +7,23 @@
  * l'entreprise n'est pas toujours large, et le serveur refuse au-delà de
  * 400 Ko (cf. backend/apps/mobile/views.py, PhotoView).
  *
- * 480 px de côté et JPEG à 0,85 : ce sont les valeurs de l'application IPM
+ * 720 px de côté et JPEG à 0,85 : ce sont les valeurs de l'application IPM
  * (src/views/donnees-de-base/FormulaireEntree.jsx), pour que les deux écrans
- * produisent la même chose. Une photo d'identité y pèse une trentaine de
- * kilo-octets.
+ * produisent la même chose. Une photo d'identité y pèse une soixantaine de
+ * kilo-octets, loin des 400 Ko que le serveur refuse.
  */
 
 /**
  * Côté maximal d'une photo d'identité enregistrée, en pixels.
  *
- * **480 depuis le 2026-11-25** (c'était 320). La photo s'imprime sur les bons
- * de pharmacie et d'optique, dans un cadre de 1,83 pouce de large : à 320 px,
- * le recadrage au format 3/4 n'en laissait que 240, soit 131 points par pouce
- * sur le papier. À 480, elle tire 197 ppp.
+ * **720 depuis le 2026-11-25** (c'était 320). La photo s'imprime sur les bons
+ * dans un cadre de 1,83 x 2,44 pouce : à 300 points par pouce il y faut 550 x
+ * 733 pixels, et le recadrage au format 3/4 ne garde que les trois quarts de
+ * la largeur - d'où une source carrée de 733 px. À 320 px le bon n'en recevait
+ * que 240, soit 131 ppp : la photo sortait en escalier. À 720, il en reçoit
+ * 540, soit 295 ppp.
  */
-export const COTE_PHOTO = 480
+export const COTE_PHOTO = 720
 
 /** Qualité JPEG : 0,85 plutôt que 0,8, pour ne pas reperdre au réencodage. */
 export const QUALITE_PHOTO = 0.85

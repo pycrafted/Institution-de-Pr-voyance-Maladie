@@ -57,6 +57,21 @@ const Carte = lazy(() => import('./itineraire/Carte'))
 /** Hauteur réservée à la feuille du bas, pour que le cadrage ne passe pas dessous. */
 const HAUTEUR_FEUILLE = 260
 
+/**
+ * Position de repli : la raffinerie, tant que la géolocalisation n'est pas
+ * disponible.
+ *
+ * Le site mobile de test est servi en HTTP (port 8081), et un navigateur
+ * refuse la géolocalisation hors contexte sécurisé. Plutôt que pas
+ * d'itinéraire du tout, on fait partir le trajet de la SAR - et l'écran le
+ * DIT, sous le temps de trajet (cf. `Resume`, « Trajet depuis la SAR »).
+ *
+ * À RETIRER une fois le site mobile servi en HTTPS : `moi` redeviendra
+ * simplement la position relevée. Exportée pour que le test n'en recopie pas
+ * les coordonnées.
+ */
+export const SAR_PAR_DEFAUT = { latitude: 14.740742, longitude: -17.34728 }
+
 export type ItineraireProps = RouteComponentProps<{ code: string }>
 
 export default function Itineraire({ match }: ItineraireProps) {
@@ -64,11 +79,6 @@ export default function Itineraire({ match }: ItineraireProps) {
   const { structures, erreur } = useConventionnes()
   const structure = structures?.find((s) => s.code === code) ?? null
   const localisation = useGeolocalisation()
-  // Position par défaut (la SAR) tant que la géolocalisation n'est pas
-  // disponible - sur le site de test en HTTP, le navigateur la refuse. On fait
-  // alors partir l'itinéraire de la raffinerie plutôt que de rien. À RETIRER
-  // une fois le site servi en HTTPS : `moi` redeviendra simplement la position.
-  const SAR_PAR_DEFAUT = { latitude: 14.740742, longitude: -17.34728 }
   const geoloc = localisation.etat === 'trouvee' ? localisation.position : null
   const positionParDefaut = geoloc === null
   const moi = geoloc ?? SAR_PAR_DEFAUT
