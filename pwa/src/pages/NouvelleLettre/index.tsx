@@ -19,6 +19,7 @@
  * l'animation de succès.
  */
 
+import { photoManquante } from '../../components/PhotoBeneficiaireRequise'
 import { IonContent, IonIcon, useIonToast } from '@ionic/react'
 import { alertCircleOutline, cloudOfflineOutline, trashOutline } from 'ionicons/icons'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -152,6 +153,15 @@ export default function NouvelleLettre({ onFermer, onCree }: NouvelleLettreProps
   const enregistrer = async () => {
     const corps = corpsDepuisSaisie(saisie)
     if (!corps || envoi || !enLigne || lettreCreee) return
+    // La lettre imprime la photo du bénéficiaire : sans elle, pas de lettre.
+    if (photoManquante(saisie.beneficiaire, beneficiaires)) {
+      haptique.erreur()
+      setErreurs((avant) => ({
+        ...avant,
+        beneficiaire: 'Ajoutez la photo du bénéficiaire pour générer la lettre.',
+      }))
+      return
+    }
     // Le formulaire a pu rester ouvert depuis la veille : la date se revérifie.
     const dateRefusee = corps.datePrescription
       ? erreurDate(corps.datePrescription, aujourdhuiISO())

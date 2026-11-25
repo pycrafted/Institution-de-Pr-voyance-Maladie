@@ -25,6 +25,7 @@ from django.utils import timezone
 
 from .modeles import modele, ouvrir_modele
 from .impression import TYPOGRAPHIE, _age, _fr, _nommer, _polices
+from .photo_bon import poser_photo
 
 MODELE = modele('lettre_garantie.pdf')
 
@@ -171,6 +172,17 @@ def lettre_garantie_pdf(lettre, edite_par):
             if alignement == 'centre':
                 x -= mesure.text_length(texte, fontsize=taille) / 2
             page.insert_text((x, y), texte, fontname=nom_police, fontsize=taille, color=(0, 0, 0))
+
+        # 3. La photo du bénéficiaire, sous « Le PARTICIPANT », comme sur les
+        #    bons (un peu plus petite : le pied de page « WebLamps » est proche).
+        titulaire = lettre.beneficiaire or lettre.participant
+        poser_photo(
+            page,
+            titulaire.photo if titulaire else '',
+            x=33.0,
+            haut=633.0,
+            largeur=108.0,
+        )
     _nommer(doc, lettre.code)
     contenu = doc.tobytes(garbage=3, deflate=True)
     doc.close()

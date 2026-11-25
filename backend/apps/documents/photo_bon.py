@@ -1,7 +1,7 @@
 """
 La photo du titulaire du bon, imprimée sous « Le PARTICIPANT » (bon de
-pharmacie et bon d'optique) : le pharmacien ou l'opticien voit qui doit se
-présenter.
+pharmacie, bon d'optique, lettre de garantie) : le pharmacien, l'opticien ou
+le prestataire voit qui doit se présenter.
 
 Le titulaire est la personne soignée : le participant lui-même, ou l'ayant
 droit pour qui le bon est émis. Sa photo d'identité (celle de la carte
@@ -9,13 +9,13 @@ d'adhérent, posée depuis l'application mobile) est recadrée au format photo
 d'identité.
 
 **La photo, et rien d'autre** (2026-11-25, à la demande de l'utilisateur).
-Trois choses ont été retirées ce jour-là, dans cet ordre :
+Trois choses ont été retirées ce jour-là :
 
   - le cadre noir de 2,2 points, qui pesait plus que la photo sur un document
     qui n'encadre rien d'autre ;
   - la légende « PHOTO DU BÉNÉFICIAIRE » en capitales dessous ;
-  - le trait de signature posé à sa droite, et la mention « Photo non
-    enregistrée » affichée à sa place quand il n'y en a pas.
+  - la mention « Photo non enregistrée » affichée à sa place quand il n'y en
+    a pas.
 
 Sans photo, donc, l'emplacement reste VIDE : rien n'est dessiné.
 """
@@ -40,6 +40,37 @@ def _octets(photo):
         return None
 
 
+def _poser_recadree(page, cadre, octets):
+    """
+    Pose la photo dans le cadre, recadrée au centre au format du cadre (comme
+    « object-fit: cover »). La photo est d'abord posée entière sur une page
+    intermédiaire à sa taille, puis seule la zone centrale est reportée dans le
+    cadre : sûr pour toutes les proportions (le recadrage par Pixmap rendait
+    une image vide pour une photo très large, prise en paysage sur iPhone).
+    Rend False si l'image ne se lit pas.
+
+    Au passage, ce chemin-là préserve la définition : ce sont les octets
+    d'origine qui sont posés sur la page intermédiaire, sans décodage ni
+    réencodage.
+    """
+    image = pymupdf.Pixmap(octets)
+    l, h = image.width, image.height
+    if not l or not h:
+        return False
+    if l / h > RATIO:
+        nl = h * RATIO
+        zone = pymupdf.Rect((l - nl) / 2, 0, (l + nl) / 2, h)
+    else:
+        nh = l / RATIO
+        zone = pymupdf.Rect(0, (h - nh) / 2, l, (h + nh) / 2)
+    intermediaire = pymupdf.open()
+    feuille = intermediaire.new_page(width=l, height=h)
+    feuille.insert_image(feuille.rect, stream=octets, keep_proportion=False)
+    page.show_pdf_page(cadre, intermediaire, 0, clip=zone, keep_proportion=False, overlay=True)
+    intermediaire.close()
+    return True
+
+
 def poser_photo(page, photo, x, haut, largeur):
     """
     Dessine sur la page la photo du titulaire (coin haut gauche en x, haut ;
@@ -48,23 +79,8 @@ def poser_photo(page, photo, x, haut, largeur):
     octets = _octets(photo)
     if not octets:
         return
-    try:
-        image = pymupdf.Pixmap(octets)
-    except (RuntimeError, ValueError):
-        return
-
-    # Recadrage au centre au format photo d'identité (comme « object-fit:
-    # cover »). Le découpage se fait à la définition de la source, sans
-    # redimensionner : ce qui est inséré dans le PDF a tous les pixels de la
-    # photo enregistrée, et PyMuPDF les y écrit sans perte.
-    l, h = image.width, image.height
-    if l / h > RATIO:
-        nl = round(h * RATIO)
-        zone = pymupdf.IRect((l - nl) // 2, 0, (l - nl) // 2 + nl, h)
-    else:
-        nh = round(l / RATIO)
-        zone = pymupdf.IRect(0, (h - nh) // 2, l, (h - nh) // 2 + nh)
-    recadree = pymupdf.Pixmap(image, zone.width, zone.height, zone)
-
     cadre = pymupdf.Rect(x, haut, x + largeur, haut + largeur / RATIO)
-    page.insert_image(cadre, pixmap=recadree, keep_proportion=False, overlay=True)
+    try:
+        _poser_recadree(page, cadre, octets)
+    except Exception:  # noqa: BLE001 - une photo illisible ne doit pas empêcher le bon
+        pass
