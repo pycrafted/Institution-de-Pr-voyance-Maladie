@@ -3,11 +3,17 @@ Lettre de garantie imprimée, au modèle de l'application d'origine.
 
 Même principe que le bon de pharmacie (cf. impression.py) : le PDF de l'origine
 (modeles/lettre_garantie.pdf : l'original, puis la copie destinée au
-fournisseur) sert de fond, et seules ses valeurs changent. Mais ce modèle-ci a
-été imprimé par « Microsoft Print To PDF » : il ne contient aucun texte, ses
-lettres sont dessinées. Les valeurs ne peuvent donc pas être effacées comme
-du texte : l'intérieur de chaque cadre est repeint de son propre fond, sans
-toucher à ses bordures, puis la valeur de la lettre y est écrite.
+fournisseur) sert de fond, et seules ses valeurs changent. L'intérieur de
+chaque cadre est repeint de son propre fond, sans toucher à ses bordures, puis
+la valeur de la lettre y est écrite.
+
+**Le modèle est en COULEUR depuis le 2026-11-25.** C'était jusque-là un tirage
+en noir et blanc passé par « Microsoft Print To PDF » - rien que des images,
+pas une lettre de texte. L'IPM a fourni la lettre originale en couleur : le
+logo SAR est rouge, trois cadres sont bleutés, le cachet du gérant est bleu.
+Le modèle en est tiré en EFFAÇANT les valeurs de la lettre d'exemple (vraies
+personnes) plutôt qu'en les recouvrant - un rectangle posé par-dessus laisse
+le texte dans le fichier.
 
 Coordonnées en points PDF, relevées sur les tracés du modèle ; identiques sur
 les deux pages. Le tableau des actes, la remise et le montant total restent
@@ -23,8 +29,14 @@ from .impression import TYPOGRAPHIE, _age, _fr, _nommer, _polices
 MODELE = modele('lettre_garantie.pdf')
 
 BLANC = (1, 1, 1)
-GRIS_CLAIR = (0.96, 0.96, 0.96)
-GRIS = (0.85, 0.85, 0.85)
+# Le fond des trois cadres teintés, relevé sur la lettre originale en couleur
+# fournie par l'IPM le 2026-11-25 : le cadre du numéro est d'un bleu soutenu,
+# ceux de la société et du prestataire d'un bleu pâle.
+#
+# Ils étaient gris (0,85 et 0,96) : le modèle d'avant était un tirage en NOIR
+# ET BLANC, et ces gris en étaient la trace.
+BLEU = (0.749, 0.878, 1.0)
+BLEU_PALE = (0.941, 0.973, 1.0)
 
 # Intérieur des cadres dont la valeur change, et leur fond.
 A_COUVRIR = [
@@ -33,10 +45,10 @@ A_COUVRIR = [
     ((442.0, 43.2, 566.0, 54.0), BLANC),  # créé par
     ((429.0, 63.0, 566.0, 74.5), BLANC),  # édité le
     ((442.0, 82.3, 566.0, 93.5), BLANC),  # édité par
-    ((490.9, 107.4, 563.2, 125.8), GRIS),  # numéro de la lettre
+    ((490.9, 107.4, 563.2, 125.8), BLEU),  # numéro de la lettre
     ((118.3, 173.4, 417.8, 187.9), BLANC),  # participant
     ((118.3, 196.5, 216.5, 210.9), BLANC),  # matricule
-    ((218.3, 196.5, 487.0, 210.9), GRIS_CLAIR),  # société, cadre du matricule
+    ((218.3, 196.5, 487.0, 210.9), BLEU_PALE),  # société, cadre du matricule
     ((118.3, 220.5, 355.8, 234.9), BLANC),  # bénéficiaire
     ((357.6, 220.5, 452.0, 234.9), BLANC),  # type de bénéficiaire
     ((492.8, 220.5, 514.1, 234.9), BLANC),  # âge
@@ -45,10 +57,22 @@ A_COUVRIR = [
     ((298.6, 261.6, 406.9, 276.0), BLANC),  # date de prescription
     ((183.4, 286.6, 471.1, 301.0), BLANC),  # nature de la prestation
     ((68.1, 327.7, 125.4, 342.1), BLANC),  # prestataire, code
-    ((131.2, 327.6, 470.0, 342.0), GRIS_CLAIR),  # prestataire
+    ((131.2, 327.6, 470.0, 342.0), BLEU_PALE),  # prestataire
     ((131.2, 348.7, 471.1, 363.1), BLANC),  # adresse
     ((476.8, 348.7, 568.2, 363.1), BLANC),  # téléphone
 ]
+
+# Les rectangles ci-dessus sont relevés au bord INTÉRIEUR des cadres, bordure
+# comprise - ils l'étaient sur l'ancien modèle, un tirage en noir et blanc où
+# les traits n'étaient que des pixels. Sur le modèle en couleur, ces traits
+# sont de vrais tracés d'un point de large, centrés sur leur chemin : peindre
+# jusqu'au bord en rongeait la moitié, et les cadres des montants ressortaient
+# en filets gris là où l'original a des traits noirs francs.
+#
+# On rentre donc d'un point sur chaque côté. Le fond découvert est de la même
+# couleur que celui qu'on peint - c'est invisible -, et la bordure reste
+# entière.
+RETRAIT = 1.0
 
 # Où écrire : (champ, police, taille, x, ligne de base, alignement, largeur).
 EMPLACEMENTS = [
@@ -126,7 +150,13 @@ def lettre_garantie_pdf(lettre, edite_par):
         # 1. Repeindre l'intérieur des cadres de leur fond : les valeurs du
         #    modèle disparaissent, les bordures restent.
         for rect, fond in A_COUVRIR:
-            page.draw_rect(pymupdf.Rect(rect), color=None, fill=fond, width=0, overlay=True)
+            page.draw_rect(
+                pymupdf.Rect(rect) + (RETRAIT, RETRAIT, -RETRAIT, -RETRAIT),
+                color=None,
+                fill=fond,
+                width=0,
+                overlay=True,
+            )
 
         # 2. Écrire celles de la lettre, à la même place.
         polices = {**_polices(page), 'tnrg': ('tibo', pymupdf.Font('tibo'))}

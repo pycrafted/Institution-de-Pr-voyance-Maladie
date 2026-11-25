@@ -46,15 +46,26 @@ import './actes.scss'
 const FORME_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 /**
- * Côté maximal d'une photo enregistrée, en pixels.
+ * Côté maximal d'une photo enregistrée, en pixels, et sa qualité JPEG.
  *
- * Les fiches vivent dans le stockage du navigateur, dont le quota se compte
- * en mégaoctets : une photo d'appareil moderne le remplirait à elle seule.
- * Redimensionnée à 320 px et réencodée en JPEG, une photo d'identité pèse
- * une vingtaine de kilo-octets, ce qui laisse de la place pour des centaines
- * de participants.
+ * **480 px depuis le 2026-11-25** (c'était 320). La photo s'imprime sur les
+ * bons de pharmacie et d'optique, dans un cadre de 132 points de large, soit
+ * 1,83 pouce : à 320 px de côté, le recadrage au format 3/4 n'en laissait que
+ * 240, et le bon sortait à **131 points par pouce** - d'où une photo qui
+ * paraît compressée sur le papier. À 480 px, elle tire 197 ppp, ce qui passe
+ * à l'impression.
+ *
+ * Ce qui RETIENT d'aller plus haut : la photo voyage dans la fiche du
+ * participant, et la liste des participants la renvoie pour chaque ligne.
+ * 480 px à 0,85 pèsent une trentaine de kilo-octets ; 960 px en pèseraient
+ * cent vingt, et une page de liste passerait de 0,8 à 3 Mo.
+ *
+ * Le serveur refuse au-delà de 400 Ko (cf. backend/apps/mobile/views.py,
+ * PHOTO_TAILLE_MAX), et l'application mobile applique les mêmes valeurs
+ * (pwa/src/utils/photo.ts) : les deux écrans doivent produire la même chose.
  */
-const COTE_PHOTO = 320
+const COTE_PHOTO = 480
+const QUALITE_PHOTO = 0.85
 
 /** Lit un fichier image, le réduit et le rend en URL de données. */
 const reduireImage = (fichier) =>
@@ -70,7 +81,7 @@ const reduireImage = (fichier) =>
         canevas.width = Math.round(image.width * echelle)
         canevas.height = Math.round(image.height * echelle)
         canevas.getContext('2d').drawImage(image, 0, 0, canevas.width, canevas.height)
-        resolve(canevas.toDataURL('image/jpeg', 0.8))
+        resolve(canevas.toDataURL('image/jpeg', QUALITE_PHOTO))
       }
       image.src = lecteur.result
     }

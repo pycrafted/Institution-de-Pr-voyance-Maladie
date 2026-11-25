@@ -22,7 +22,7 @@ import pymupdf
 from django.utils import timezone
 
 from .modeles import modele, ouvrir_modele
-from .photo_bon import legende, poser_photo
+from .photo_bon import poser_photo
 
 MODELE = modele('bon_pharmacie.pdf')
 
@@ -192,7 +192,6 @@ def bon_pharmacie_pdf(bon, edite_par):
         poser_photo(
             page,
             titulaire.photo if titulaire else '',
-            legende(bon.beneficiaire),
             x=43.0,
             haut=632.0,
             largeur=132.0,

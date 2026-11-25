@@ -7,14 +7,24 @@
  * l'entreprise n'est pas toujours large, et le serveur refuse au-delà de
  * 400 Ko (cf. backend/apps/mobile/views.py, PhotoView).
  *
- * 320 px de côté et JPEG à 0,8 : ce sont les valeurs de l'application IPM
+ * 480 px de côté et JPEG à 0,85 : ce sont les valeurs de l'application IPM
  * (src/views/donnees-de-base/FormulaireEntree.jsx), pour que les deux écrans
- * produisent la même chose. Une photo d'identité y pèse une vingtaine de
+ * produisent la même chose. Une photo d'identité y pèse une trentaine de
  * kilo-octets.
  */
 
-/** Côté maximal d'une photo d'identité enregistrée, en pixels. */
-export const COTE_PHOTO = 320
+/**
+ * Côté maximal d'une photo d'identité enregistrée, en pixels.
+ *
+ * **480 depuis le 2026-11-25** (c'était 320). La photo s'imprime sur les bons
+ * de pharmacie et d'optique, dans un cadre de 1,83 pouce de large : à 320 px,
+ * le recadrage au format 3/4 n'en laissait que 240, soit 131 points par pouce
+ * sur le papier. À 480, elle tire 197 ppp.
+ */
+export const COTE_PHOTO = 480
+
+/** Qualité JPEG : 0,85 plutôt que 0,8, pour ne pas reperdre au réencodage. */
+export const QUALITE_PHOTO = 0.85
 
 /** Au-delà, inutile d'ouvrir le fichier. */
 const TAILLE_FICHIER_MAX = 20 * 1024 * 1024
@@ -53,7 +63,7 @@ async function reduire(fichier: File, cote: number, qualite: number): Promise<st
 
 /** Photo d'identité : petit format (cf. COTE_PHOTO). */
 export function reduirePhoto(fichier: File): Promise<string> {
-  return reduire(fichier, COTE_PHOTO, 0.8)
+  return reduire(fichier, COTE_PHOTO, QUALITE_PHOTO)
 }
 
 function lire(fichier: File): Promise<string> {

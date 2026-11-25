@@ -3,10 +3,17 @@ Bon de commande optique imprimé, au modèle de l'application d'origine.
 
 Même principe que la lettre de garantie (cf. impression_lettre.py) : le PDF de
 l'origine (modeles/bon_optique.pdf : l'original, puis la copie destinée au
-fournisseur) sert de fond, et seules ses valeurs changent. Imprimé par
-« Microsoft Print To PDF », il ne contient aucun texte : l'intérieur de chaque
-cadre est repeint de son propre fond, sans toucher à ses bordures, puis la
-valeur du bon y est écrite.
+fournisseur) sert de fond, et seules ses valeurs changent. L'intérieur de
+chaque cadre est repeint de son propre fond, sans toucher à ses bordures, puis
+la valeur du bon y est écrite.
+
+**Le modèle est en COULEUR depuis le 2026-11-25.** C'était jusque-là un tirage
+en noir et blanc passé par « Microsoft Print To PDF » - rien que des images,
+pas une lettre de texte. L'IPM a fourni le bon original en couleur : le logo
+SAR est rouge, deux cadres sont bleutés, le cachet du gérant est bleu. Le
+modèle en est tiré en EFFAÇANT les valeurs du bon d'exemple (vraies personnes)
+plutôt qu'en les recouvrant - un rectangle posé par-dessus laisse le texte
+dans le fichier.
 
 Coordonnées en points PDF, relevées sur les tracés du modèle ; identiques sur
 les deux pages. Polices et tailles étalonnées sur les lettres du modèle :
@@ -17,14 +24,21 @@ import pymupdf
 from django.utils import timezone
 
 from .modeles import modele, ouvrir_modele
-from .photo_bon import legende, poser_photo
+from .photo_bon import poser_photo
 from .impression import TYPOGRAPHIE, _age, _fr, _nommer, _polices
 
 MODELE = modele('bon_optique.pdf')
 
 BLANC = (1, 1, 1)
-GRIS_CLAIR = (0.96, 0.96, 0.96)
-GRIS = (0.85, 0.85, 0.85)
+# Le fond des deux cadres teintés, relevé sur le bon original en couleur
+# fourni par l'IPM le 2026-11-25 : le cadre du numéro est d'un bleu soutenu,
+# celui de la société (à droite du matricule) d'un bleu pâle.
+#
+# Ils étaient gris (0,85 et 0,96) : le modèle d'avant était un tirage en NOIR
+# ET BLANC, et ces gris en étaient la trace. Repeints en gris sur le modèle en
+# couleur, les deux cadres auraient fait une tache.
+BLEU = (0.749, 0.878, 1.0)
+BLEU_PALE = (0.941, 0.973, 1.0)
 
 # Intérieur des cadres dont la valeur change, et leur fond.
 A_COUVRIR = [
@@ -33,10 +47,10 @@ A_COUVRIR = [
     ((443.0, 44.0, 590.0, 54.6), BLANC),  # créé par
     ((430.0, 63.0, 590.0, 74.6), BLANC),  # édité le
     ((443.0, 82.5, 590.0, 94.0), BLANC),  # édité par
-    ((499.7, 107.2, 572.6, 126.1), GRIS),  # numéro du bon
+    ((499.7, 107.2, 572.6, 126.1), BLEU),  # numéro du bon
     ((136.1, 173.4, 436.2, 188.1), BLANC),  # participant
     ((136.1, 196.5, 234.8, 211.1), BLANC),  # matricule
-    ((236.2, 196.3, 505.5, 211.3), GRIS_CLAIR),  # société, cadre du matricule
+    ((236.2, 196.3, 505.5, 211.3), BLEU_PALE),  # société, cadre du matricule
     ((136.1, 220.5, 374.0, 235.1), BLANC),  # bénéficiaire
     ((375.4, 220.5, 470.2, 235.1), BLANC),  # type de bénéficiaire
     ((506.7, 220.5, 528.4, 235.1), BLANC),  # âge
@@ -55,6 +69,18 @@ A_COUVRIR = [
     ((423.5, 468.8, 565.4, 487.5), BLANC),  # montant remise
     ((423.5, 488.9, 565.4, 507.6), BLANC),  # montant net
 ]
+
+# Les rectangles ci-dessus sont relevés au bord INTÉRIEUR des cadres, bordure
+# comprise - ils l'étaient sur l'ancien modèle, un tirage en noir et blanc où
+# les traits n'étaient que des pixels. Sur le modèle en couleur, ces traits
+# sont de vrais tracés d'un point de large, centrés sur leur chemin : peindre
+# jusqu'au bord en rongeait la moitié, et les cadres des montants ressortaient
+# en filets gris là où l'original a des traits noirs francs.
+#
+# On rentre donc d'un point sur chaque côté. Le fond découvert est de la même
+# couleur que celui qu'on peint - c'est invisible -, et la bordure reste
+# entière.
+RETRAIT = 1.0
 
 # Où écrire : (champ, police, taille, x, ligne de base, alignement, largeur).
 # « centre » : x est le milieu du cadre ; « droite » : son bord droit.
@@ -125,7 +151,6 @@ def _valeurs(bon, utilisateur):
         'beneficiaire': beneficiaire.nom_complet.upper() if beneficiaire else 'LUI-MÊME',
         # La photo du titulaire du bon, imprimée sous « Le PARTICIPANT ».
         'photo': personne.photo if personne else '',
-        'legende_photo': legende(beneficiaire),
         # « Participant » : ce bon imprime le type en minuscules.
         'type': bon.type_benef.libelle.capitalize() if bon.type_benef_id else '',
         'age': _age(personne.date_naissance if personne else None, bon.date),
@@ -153,7 +178,13 @@ def rendre(valeurs):
         # 1. Repeindre l'intérieur des cadres de leur fond : les valeurs du
         #    modèle disparaissent, les bordures restent.
         for rect, fond in A_COUVRIR:
-            page.draw_rect(pymupdf.Rect(rect), color=None, fill=fond, width=0, overlay=True)
+            page.draw_rect(
+                pymupdf.Rect(rect) + (RETRAIT, RETRAIT, -RETRAIT, -RETRAIT),
+                color=None,
+                fill=fond,
+                width=0,
+                overlay=True,
+            )
 
         # 2. Écrire celles du bon, à la même place.
         polices = {**_polices(page), 'tnrg': ('tibo', pymupdf.Font('tibo'))}
@@ -173,11 +204,10 @@ def rendre(valeurs):
             page.insert_text((x, y), texte, fontname=nom_police, fontsize=taille, color=(0, 0, 0))
 
         # 3. La photo du titulaire du bon, sous « Le PARTICIPANT ».
-        if 'legende_photo' in valeurs:
+        if 'photo' in valeurs:
             poser_photo(
                 page,
-                valeurs.get('photo', ''),
-                valeurs['legende_photo'],
+                valeurs['photo'],
                 x=40.0,
                 haut=536.0,
                 largeur=132.0,

@@ -49,6 +49,12 @@ __pycache__/
 *.bak
 # Modèles PDF (habillage officiel SAR, cachets) : hors dépôt.
 backend/apps/documents/modeles/
+# Et leurs sauvegardes, à chaque remplacement (modeles-avant-…).
+backend/apps/documents/modeles-*/
+# Les bons ORIGINAUX fournis par l'IPM, dont les modèles ci-dessus sont tirés.
+# Ce sont de vrais documents : en-tête SAR, cachet du gérant, et les nom,
+# matricule et prescription de personnes réelles. Jamais dans un dépôt public.
+bon-original/
 
 # ===========================================================================
 # Données réelles & pièces sensibles - JAMAIS publiées (dépôt public)
@@ -65,6 +71,11 @@ look/
 *.sql
 # PDF à la racine (modèles et sorties de test parasites).
 /*.pdf
+# Le classeur des structures conventionnées et ses sauvegardes : il fait
+# autorité pour les positions GPS, et porte les raisons sociales, adresses et
+# téléphones réels des prestataires. Il reste sur le serveur.
+/structures-conventionnees-coordonnees.xlsx
+/sauvegarde-positions-structures-*.csv
 
 # ===========================================================================
 # PWA (sous-projet ; complété par pwa/.gitignore)
