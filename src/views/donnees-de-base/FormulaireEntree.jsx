@@ -887,14 +887,7 @@ const Champ = ({ col, valeur, valeurs, entrees, erreur, autoFocus, onChanger }) 
  * Monté avec une `key` liée à l'entrée éditée : changer de cible remonte le
  * composant, ce qui réinitialise la saisie sans effet.
  */
-export const CorpsFormulaire = ({
-  referentiel,
-  entree,
-  entrees,
-  valeursDefaut,
-  onConfirmer,
-  onEnregistrer,
-}) => {
+export const CorpsFormulaire = ({ referentiel, entree, entrees, valeursDefaut, onEnregistrer }) => {
   // Un code numéroté par l'application (`genererCode`) et montré dans le
   // formulaire devient une proposition : prérempli à la création, modifiable,
   // et recalculé tant qu'on n'y a pas touché - le code d'une entité suit son
@@ -1056,10 +1049,10 @@ export const CorpsFormulaire = ({
       return
     }
 
-    // Confirmation demandée par la page (fenêtre modale) avant tout envoi.
-    // Renoncer laisse le formulaire ouvert, tel quel.
-    if (onConfirmer && !(await onConfirmer(candidat, entree))) return
-
+    // Rien entre le bouton et l'envoi : « Enregistrer » enregistre. La fenêtre
+    // qui redemandait « Ajouter untel ? » après un formulaire rempli et un
+    // clic sur Enregistrer n'apprenait rien à personne (retirée le
+    // 2026-11-25). Une erreur se corrige en rouvrant la fiche.
     try {
       setEnvoi(true)
       await onEnregistrer(candidat, entree)
@@ -1263,7 +1256,6 @@ const FormulaireEntree = ({
   titreCreation,
   visible,
   onFermer,
-  onConfirmer,
   onEnregistrer,
   enPause = false,
 }) => {
@@ -1300,7 +1292,6 @@ const FormulaireEntree = ({
             entree={entree}
             entrees={entrees}
             valeursDefaut={valeursDefaut}
-            onConfirmer={onConfirmer}
             onEnregistrer={onEnregistrer}
           />
         )}

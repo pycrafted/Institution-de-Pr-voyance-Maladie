@@ -65,6 +65,7 @@ import AppelRetenuesModal from './AppelRetenuesModal'
 import ImporterRetenuesModal from './ImporterRetenuesModal'
 import ComptabiliserRetenuesModal from './ComptabiliserRetenuesModal'
 import { codeCampagne, exporterSoldes, lireRetenuesExcel, rapprocher } from './retenuesExcel'
+import { useConfirmation } from '../donnees-de-base/Confirmation'
 
 const MOIS = [
   'Janvier',
@@ -117,6 +118,7 @@ const FILTRES = [
 const PAR_PAGE = [15, 30, 50, 100]
 
 const Retenues = () => {
+  const [demanderConfirmation, modaleConfirmation] = useConfirmation()
   const [references, setReferences] = useState({ societes: [], plafond: 35000, journal: 'RP' })
   // L'écran s'ouvre sur le mois en cours, comme l'original. `new Date()` est
   // lu dans l'initialiseur paresseux de chaque état, et non dans le corps du
@@ -303,17 +305,17 @@ const Retenues = () => {
    * comptable = une campagne**. Cocher trois lignes ne peut pas comptabiliser
    * trois lignes, et l'écran le dit au lieu de le taire.
    */
-  const ouvrirApercu = () => {
+  const ouvrirApercu = async () => {
     if (!detail?.campagne || !coches.length) return
-    if (
-      coches.length < lignes.length &&
-      !window.confirm(
-        'Une pièce comptable couvre la campagne entière : les ' +
-          `${lignes.length} lignes seront comptabilisées, pas seulement les ` +
-          `${coches.length} cochées. Continuer ?`,
-      )
-    ) {
-      return
+    if (coches.length < lignes.length) {
+      const confirme = await demanderConfirmation({
+        titre: 'La campagne entière sera comptabilisée',
+        message:
+          `Vous avez coché ${coches.length} ligne(s), mais une pièce comptable couvre la ` +
+          `campagne entière : les ${lignes.length} lignes partiront en comptabilité.`,
+        confirmer: 'Continuer',
+      })
+      if (!confirme) return
     }
     setApercuOuvert(true)
   }
@@ -720,6 +722,7 @@ const Retenues = () => {
           charger()
         }}
       />
+      {modaleConfirmation}
     </CCard>
   )
 }

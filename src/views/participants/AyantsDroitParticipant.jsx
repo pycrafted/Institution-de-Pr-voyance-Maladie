@@ -20,7 +20,6 @@ import { cilPencil, cilPlus } from '@coreui/icons'
 import { creerEntree, listerEntreesSync, modifierEntree } from '../../services/referentiels'
 import { toast } from '../../services/toast'
 import { erreursDeChamps, messageErreur } from '../../services/erreurs'
-import { useConfirmation } from '../donnees-de-base/Confirmation'
 import FormulaireEntree from '../donnees-de-base/FormulaireEntree'
 import { FAMILLES } from './config'
 
@@ -63,7 +62,6 @@ export default function AyantsDroitParticipant({ entree: participant }) {
   const [panneauOuvert, setPanneauOuvert] = useState(false)
   // Bénéficiaire en cours d'édition (clic sur une ligne) ; null = ajout.
   const [entreeEditee, setEntreeEditee] = useState(null)
-  const [demanderConfirmation, modaleConfirmation, confirmationOuverte] = useConfirmation()
 
   const membres = useMemo(() => {
     const matricule = participant.matricule
@@ -93,23 +91,6 @@ export default function AyantsDroitParticipant({ entree: participant }) {
     setEntreeEditee(membre)
     setPanneauOuvert(true)
   }
-
-  const confirmerEnregistrement = (valeurs, cible) =>
-    demanderConfirmation(
-      cible
-        ? {
-            titre: 'Confirmer la modification',
-            message: `Enregistrer les modifications de ${
-              nomDe({ ...cible, ...valeurs }) ? `« ${nomDe({ ...cible, ...valeurs })} »` : 'ce membre'
-            } ?`,
-            confirmer: 'Enregistrer',
-          }
-        : {
-            titre: 'Confirmer l’ajout',
-            message: `Ajouter ${nomDe(valeurs) ? `« ${nomDe(valeurs)} »` : 'ce membre'} à la famille de ${nomDe(participant) || 'ce participant'} ?`,
-            confirmer: 'Ajouter',
-          },
-    )
 
   const enregistrer = async (valeurs, cible) => {
     try {
@@ -209,11 +190,8 @@ export default function AyantsDroitParticipant({ entree: participant }) {
         valeursDefaut={{ matriculePart: participant.matricule, etat: 'Actif' }}
         visible={panneauOuvert}
         onFermer={() => setPanneauOuvert(false)}
-        onConfirmer={confirmerEnregistrement}
         onEnregistrer={enregistrer}
-        enPause={confirmationOuverte}
       />
-      {modaleConfirmation}
     </div>
   )
 }

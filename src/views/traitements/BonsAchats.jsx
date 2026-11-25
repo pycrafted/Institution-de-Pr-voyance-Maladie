@@ -63,8 +63,6 @@ const BonsAchats = () => {
           icone: cilBan,
           classe: 'ddb-action-danger',
           visible: (bon) => bon.actif,
-          confirmer: (bon) =>
-            `Annuler le bon ${bon.code} ? Il reste dans la liste, marqué « Annulé ».`,
           danger: true,
           executer: async (bon) => {
             await basculerActivation('bons-achats', bon.id)

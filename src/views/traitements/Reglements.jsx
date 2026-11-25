@@ -136,8 +136,6 @@ const Reglements = () => {
         {
           libelle: 'Annuler Règlement',
           danger: true,
-          confirmer: (n) =>
-            `Annuler le règlement de ${n} facture(s) ? Elles redeviendront « Comptabilisée ».`,
           executer: (entrees) => {
             const ids = entrees.filter(aUnReglement).map((f) => f.id)
             if (!ids.length) {

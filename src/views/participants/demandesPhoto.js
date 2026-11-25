@@ -22,12 +22,6 @@ const formaterDate = (iso) => (iso ? iso.slice(0, 10).split('-').reverse().join(
 
 const enAttente = (d) => d.statut === 'En attente'
 
-/** « Awa DIOP (Epouse) », ou le participant lui-même. */
-const designer = (d) =>
-  d.matriculeBenef
-    ? `la photo de ${d.beneficiaire} (${d.typeBenef})`
-    : `la photo de ${d.participant}`
-
 export const DEMANDES_PHOTO = {
   cle: 'demandes-photo',
   vide: 'Aucune demande de photo',
@@ -120,9 +114,6 @@ export const DEMANDES_PHOTO = {
       icone: cilReload,
       classe: 'ddb-action-succes',
       visible: enAttente,
-      confirmer: (d) =>
-        `Réinitialiser ${designer(d)} ?\n\n` +
-        'La photo sera effacée ; le titulaire pourra en poser une nouvelle depuis l’application mobile.',
       executer: async (d) => {
         await executerAction('demandes-photo', d.id, 'reinitialiser')
         return 'Photo réinitialisée : le titulaire peut la reposer depuis le mobile'
@@ -135,8 +126,6 @@ export const DEMANDES_PHOTO = {
       classe: 'ddb-action-danger',
       danger: true,
       visible: enAttente,
-      confirmer: (d) =>
-        `Refuser la demande de changement de ${designer(d)} ?\n\nLa photo est conservée.`,
       executer: async (d) => {
         await executerAction('demandes-photo', d.id, 'refuser')
         return 'Demande refusée : la photo est conservée'

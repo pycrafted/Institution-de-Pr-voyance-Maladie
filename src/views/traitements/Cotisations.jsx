@@ -51,6 +51,7 @@ import '../donnees-de-base/donnees-de-base.scss'
 import './cotisations.scss'
 import CotisationModal from './CotisationModal'
 import { codeAppel, exporterAppel, lireAppelExcel, rapprocher } from './cotisationsExcel'
+import { useConfirmation } from '../donnees-de-base/Confirmation'
 
 const MOIS = [
   'Janvier',
@@ -129,6 +130,7 @@ const COLONNES_APPEL = [
 ]
 
 const Cotisations = () => {
+  const [demanderConfirmation, modaleConfirmation] = useConfirmation()
   // L'écran ouvre sur **Appels**, et non sur Saisie comme l'original.
   //
   // Le métier l'a dit le 2026-11-03 : à l'IPM, l'onglet Saisie **ne sert
@@ -287,13 +289,17 @@ const Cotisations = () => {
       )
       return
     }
-    if (
-      !window.confirm(
-        `Supprimer ${cibles.length} appel(s) et leurs lignes ? Cette action est définitive.`,
-      )
-    ) {
-      return
-    }
+    // Conservé : une suppression détruit l'appel ET ses lignes, et rien dans
+    // l'application ne les ramène.
+    const confirme = await demanderConfirmation({
+      titre: 'Supprimer les appels',
+      message:
+        `${cibles.length} appel(s) et toutes leurs lignes vont être supprimés. ` +
+        'Cette action est définitive.',
+      confirmer: 'Supprimer',
+      danger: true,
+    })
+    if (!confirme) return
     try {
       await Promise.all(cibles.map((a) => request(`/cotisations/${a.id}/`, { method: 'DELETE' })))
       toast.success(`${cibles.length} appel(s) supprimé(s)`)
@@ -481,15 +487,15 @@ const Cotisations = () => {
    */
   const comptabiliserAppel = async () => {
     if (!detail?.appel || !cochesAppel.length) return
-    if (
-      cochesAppel.length < lignes.length &&
-      !window.confirm(
-        'Une pièce comptable couvre l’appel entier : les ' +
-          `${lignes.length} lignes seront comptabilisées, pas seulement les ` +
-          `${cochesAppel.length} cochées. Continuer ?`,
-      )
-    ) {
-      return
+    if (cochesAppel.length < lignes.length) {
+      const confirme = await demanderConfirmation({
+        titre: 'L’appel entier sera comptabilisé',
+        message:
+          `Vous avez coché ${cochesAppel.length} ligne(s), mais une pièce comptable couvre ` +
+          `l’appel entier : les ${lignes.length} lignes partiront en comptabilité.`,
+        confirmer: 'Continuer',
+      })
+      if (!confirme) return
     }
     try {
       const resultat = await request('/cotisations/comptabiliser/', {
@@ -505,7 +511,13 @@ const Cotisations = () => {
 
   const supprimerAppel = async () => {
     if (!detail?.appel || detail.appel.comptabilise) return
-    if (!window.confirm(`Supprimer l'appel ${detail.appel.code} et ses lignes ?`)) return
+    const confirme = await demanderConfirmation({
+      titre: 'Supprimer l’appel',
+      message: `L’appel ${detail.appel.code} et ses ${lignes.length} ligne(s) vont être supprimés. Cette action est définitive.`,
+      confirmer: 'Supprimer',
+      danger: true,
+    })
+    if (!confirme) return
     try {
       await request(`/cotisations/${detail.appel.id}/`, { method: 'DELETE' })
       toast.success(`Appel ${detail.appel.code} supprimé`)
@@ -961,6 +973,7 @@ const Cotisations = () => {
         onFermer={() => setModalOuvert(false)}
         onCree={chargerSaisie}
       />
+      {modaleConfirmation}
     </CCard>
   )
 }

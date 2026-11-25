@@ -46,6 +46,7 @@ import '../donnees-de-base/donnees-de-base.scss'
 import './cotisations.scss'
 import './saisie-journal.scss'
 import SaisieJournalModal from './SaisieJournalModal'
+import { useConfirmation } from '../donnees-de-base/Confirmation'
 
 const MOIS = [
   'Janvier',
@@ -112,6 +113,7 @@ const COLONNES = [
 ]
 
 const SaisieJournal = () => {
+  const [demanderConfirmation, modaleConfirmation] = useConfirmation()
   const [references, setReferences] = useState({ journaux: [], societes: [], comptes: [] })
   const [exercices, setExercices] = useState(() => [new Date().getFullYear()])
 
@@ -208,15 +210,19 @@ const SaisieJournal = () => {
 
   const comptabiliser = async () => {
     if (!coches.length) return
-    if (
-      portee.lignes > coches.length &&
-      !window.confirm(
-        'La comptabilisation porte sur la pièce entière : ' +
-          `${portee.pieces.length} pièce(s), ${portee.lignes} ligne(s) au total, ` +
-          `et non les ${coches.length} ligne(s) cochée(s). Continuer ?`,
-      )
-    ) {
-      return
+    // Conservé : l'écran ne dit nulle part que la comptabilisation prend la
+    // pièce ENTIÈRE. L'utilisateur qui coche quatre lignes en comptabilise
+    // deux cents sans ce rappel - ce n'est pas une politesse, c'est une
+    // correction de ce qu'il croit faire.
+    if (portee.lignes > coches.length) {
+      const confirme = await demanderConfirmation({
+        titre: 'La pièce entière sera comptabilisée',
+        message:
+          `Vous avez coché ${coches.length} ligne(s), mais la comptabilisation porte sur la ` +
+          `pièce entière : ${portee.pieces.length} pièce(s), ${portee.lignes} ligne(s) au total.`,
+        confirmer: 'Comptabiliser la pièce',
+      })
+      if (!confirme) return
     }
     try {
       const resultat = await request('/saisie-journal/comptabiliser/', {
@@ -552,6 +558,7 @@ const SaisieJournal = () => {
         onFermer={() => setModalOuvert(false)}
         onCree={charger}
       />
+      {modaleConfirmation}
     </CCard>
   )
 }

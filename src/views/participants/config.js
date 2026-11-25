@@ -510,8 +510,10 @@ export const ETATS_PARTICIPANT = ['En Attente', 'Actif', 'Suspendu', 'Résilié'
 
 /**
  * Actions de lot communes aux listes de la page : faire passer d'un geste les
- * lignes cochées à un autre état. Chaque passage se confirme ; résilier et
- * radier, qui mettent fin à la couverture, se disent en rouge.
+ * lignes cochées à un autre état. Le passage part au clic - la barre de
+ * sélection dit déjà combien de lignes sont cochées, et l'état se change
+ * encore. Résilier et radier, qui mettent fin à la couverture, se disent en
+ * rouge.
  */
 const actionsChangementEtat = (quoi) =>
   ETATS_PARTICIPANT.map((etat) => ({
@@ -519,9 +521,6 @@ const actionsChangementEtat = (quoi) =>
     champs: { etat },
     message: `${quoi}(s) passé(s) à l’état « ${etat} »`,
     danger: etat === 'Résilié' || etat === 'Radié',
-    titreConfirmation: 'Changer l’état',
-    boutonConfirmation: `Passer à « ${etat} »`,
-    confirmer: (n) => `Passer ${n} ${quoi}${n > 1 ? 's' : ''} à l’état « ${etat} » ?`,
   }))
 
 /** Filtre d'état, commun aux deux listes de participants. */
@@ -587,8 +586,7 @@ const COLONNES_LISTE = [
     nom: 'compteMobile',
     libelle: 'Mobile',
     largeur: '100px',
-    valeurTableau: (e) =>
-      ({ actif: 'Activé', code: 'Code remis' })[e.compteMobile?.statut] || '-',
+    valeurTableau: (e) => ({ actif: 'Activé', code: 'Code remis' })[e.compteMobile?.statut] || '-',
   },
 ]
 
@@ -601,11 +599,8 @@ const ACTION_CODE_ACTIVATION = {
   libelle: 'Code d’activation mobile',
   icone: cilMobile,
   visible: (e) => e.etat === 'Actif',
-  confirmer: (e) =>
-    `Générer un code d’activation mobile pour ${`${e.prenoms || ''} ${e.nom || ''}`.trim() || 'ce participant'} ?
-
-` +
-    'Il remplace le code précédent. Le mot de passe actuel reste valable tant que l’employé n’en a pas choisi un nouveau.',
+  // Pas de question avant : le code apparaît aussitôt dans sa fenêtre, qui
+  // dit elle-même qu'il remplace le précédent (cf. codeActivation.jsx).
   executer: async (e) => {
     await genererCodeActivation(e)
     return ''

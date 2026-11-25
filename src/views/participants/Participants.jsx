@@ -25,7 +25,6 @@ import CIcon from '@coreui/icons-react'
 import { cilPlus } from '@coreui/icons'
 
 import Referentiel, { PastillesStats } from '../donnees-de-base/Referentiel'
-import { useConfirmation } from '../donnees-de-base/Confirmation'
 import FormulaireEntree from '../donnees-de-base/FormulaireEntree'
 import '../donnees-de-base/donnees-de-base.scss'
 import './participants.scss'
@@ -64,18 +63,7 @@ const Participants = () => {
     setStats(null)
     setOnglet(cle)
   }
-  // L'ajout se confirme dans une fenêtre, comme sur les listes. Le troisième
-  // retour met le panneau « en pause » le temps de la confirmation.
-  const [demanderConfirmation, modaleConfirmation, confirmationOuverte] = useConfirmation()
-
   const nomDe = (valeurs) => `${valeurs.prenoms || ''} ${valeurs.nom || ''}`.trim()
-
-  const confirmerAjout = (valeurs) =>
-    demanderConfirmation({
-      titre: 'Confirmer l’ajout',
-      message: `Ajouter ${nomDe(valeurs) ? `« ${nomDe(valeurs)} »` : 'ce participant'} ?`,
-      confirmer: 'Ajouter',
-    })
 
   const creerParticipant = async (valeurs) => {
     try {
@@ -155,12 +143,9 @@ const Participants = () => {
           entrees={listerEntreesSync('participants')}
           visible={creationOuverte}
           onFermer={() => setCreationOuverte(false)}
-          onConfirmer={confirmerAjout}
           onEnregistrer={creerParticipant}
-          enPause={confirmationOuverte}
         />
 
-        {modaleConfirmation}
         {/* Le code d'activation mobile généré sur une ligne, montré une fois. */}
         <FenetreCodeActivation />
       </CCardBody>

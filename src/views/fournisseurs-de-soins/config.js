@@ -123,9 +123,6 @@ export const FOURNISSEURS_DE_SOINS = {
       champs: { actif: false },
       message: 'suspendus',
       danger: true,
-      // Suspendre coupe le remboursement des prestataires : sur plusieurs à la
-      // fois, on confirme.
-      confirmer: (n) => `Suspendre la convention de ${n} fournisseur${n > 1 ? 's' : ''} ?`,
     },
   ],
 

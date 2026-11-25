@@ -69,9 +69,6 @@ export const ADHERENTS = {
       champs: { actif: false },
       message: 'suspendus',
       danger: true,
-      // Suspendre un adhérent le met hors circuit : sur plusieurs à la fois,
-      // on confirme.
-      confirmer: (n) => `Suspendre ${n} adhérent${n > 1 ? 's' : ''} ?`,
     },
   ],
 

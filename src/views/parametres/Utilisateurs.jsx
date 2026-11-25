@@ -141,21 +141,6 @@ const Utilisateurs = () => {
     // Vide en modification : le mot de passe reste inchangé.
     if (saisie.motDePasse) corps.motDePasse = saisie.motDePasse
 
-    const confirme = await demanderConfirmation(
-      edite
-        ? {
-            titre: 'Confirmer la modification',
-            message: `Enregistrer les modifications de « ${nomComplet(saisie)} » ?`,
-            confirmer: 'Enregistrer',
-          }
-        : {
-            titre: 'Confirmer l’ajout',
-            message: `Créer le compte de « ${nomComplet(saisie)} » ?`,
-            confirmer: 'Créer',
-          },
-    )
-    if (!confirme) return
-
     try {
       setEnvoi(true)
       await request(edite ? `${CHEMIN}${edite.id}/` : CHEMIN, {

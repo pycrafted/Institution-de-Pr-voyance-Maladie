@@ -56,8 +56,11 @@ const Factures = () => {
           icone: cilCalculator,
           // Seule une facture validée (« Traitée ») se comptabilise.
           visible: (facture) => facture.etat === 'Traitée',
-          confirmer: (facture) =>
-            `Comptabiliser la facture n° ${facture.numero} ? Les écritures du journal IF seront générées.`,
+          // Conservé : la comptabilisation écrit au grand livre (journal IF) et
+          // l'application ne sait pas la défaire. C'est la seule question qui
+          // subsiste sur cet écran.
+          avertir: (facture) =>
+            `Les écritures du journal IF de la facture n° ${facture.numero} vont être générées. Elles ne se défont pas depuis l’application.`,
           executer: async (facture) => {
             await request(`/factures/${facture.id}/comptabiliser/`, { method: 'POST' })
             return `Facture n° ${facture.numero} comptabilisée`

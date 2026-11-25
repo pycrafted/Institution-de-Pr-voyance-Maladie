@@ -118,14 +118,9 @@ const FactureDetails = ({ id }) => {
       actes: b.actes,
     })
 
+  // Détacher ne perd rien : le bon repart dans les bons en instance, d'où il
+  // se rattache. Pas de question.
   const detacher = async (liquidationBon) => {
-    const confirme = await demanderConfirmation({
-      titre: 'Détacher le bon',
-      message: `Détacher ${liquidationBon.numero} de la facture ? Il reviendra dans les bons en instance.`,
-      confirmer: 'Détacher',
-      danger: true,
-    })
-    if (!confirme) return
     try {
       setEnvoi(true)
       await request(`/factures/${factureId}/detacher/`, {
@@ -142,12 +137,6 @@ const FactureDetails = ({ id }) => {
   }
 
   const valider = async () => {
-    const confirme = await demanderConfirmation({
-      titre: 'Valider la facture',
-      message: `Valider la facture n° ${facture.numero} ? Elle passera « Traitée ».`,
-      confirmer: 'Valider',
-    })
-    if (!confirme) return
     try {
       setEnvoi(true)
       await request(`/factures/${factureId}/valider/`, { method: 'POST' })
@@ -160,10 +149,14 @@ const FactureDetails = ({ id }) => {
     }
   }
 
+  // La seule question qui subsiste ici : la comptabilisation écrit au grand
+  // livre et l'application ne sait pas la défaire.
   const comptabiliser = async () => {
     const confirme = await demanderConfirmation({
       titre: 'Comptabiliser la facture',
-      message: `Comptabiliser la facture n° ${facture.numero} ? Les écritures du journal IF seront générées.`,
+      message:
+        `Les écritures du journal IF de la facture n° ${facture.numero} vont être générées. ` +
+        'Elles ne se défont pas depuis l’application.',
       confirmer: 'Comptabiliser',
     })
     if (!confirme) return

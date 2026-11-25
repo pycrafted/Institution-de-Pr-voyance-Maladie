@@ -1,10 +1,30 @@
 /**
- * Fenêtre de confirmation, en remplacement de `window.confirm`.
+ * Fenêtre d'avertissement, en remplacement de `window.confirm`.
  *
- * Ajouter, modifier, supprimer, agir sur un lot, importer : tout ce qui écrit
- * se confirme dans une fenêtre aux couleurs de l'application, et non dans la
- * boîte grise du navigateur - qui ne se met pas en forme, et que l'on peut
- * faire taire d'une case à cocher.
+ * **Ce n'est plus une fenêtre de confirmation** (2026-11-25). Elle demandait
+ * « êtes-vous sûr ? » après chaque écriture : enregistrer un formulaire,
+ * désactiver une fiche, changer un état, refuser une demande. Un bouton
+ * nommé qu'on vient de cliquer dit déjà ce qu'il fait ; redemander n'apprend
+ * rien et n'empêche rien - la main clique « Oui » aussi vite que le bouton.
+ *
+ * Elle ne s'ouvre plus que dans trois cas, et il faut pouvoir les nommer :
+ *
+ *   1. **Une suppression réelle.** Les données partent et rien ne les ramène
+ *      (un compte utilisateur, un taux exceptionnel, un appel de cotisation
+ *      et ses lignes).
+ *   2. **Une écriture définitive au grand livre.** Comptabiliser une facture,
+ *      générer le report à nouveau, clôturer le mois.
+ *   3. **Une information que l'écran ne donne nulle part ailleurs.** « Ce
+ *      bénéficiaire a déjà eu un bon d'optique il y a moins de deux ans » ;
+ *      « vous avez coché quatre lignes, mais la pièce entière en compte
+ *      deux cents ». Là, la fenêtre ne freine pas : elle corrige ce que
+ *      l'utilisateur croit faire.
+ *
+ * Elle sert aussi, à un seul bouton (`annuler: null`), à poser un rapport
+ * qu'un toast tronquerait - le détail d'un import refusé.
+ *
+ * Dans les listes (cf. Referentiel.jsx), une action ne l'ouvre que si elle
+ * déclare `avertir` ; sans quoi elle part au clic.
  *
  * Usage :
  *   const [demanderConfirmation, modale, ouverte] = useConfirmation()

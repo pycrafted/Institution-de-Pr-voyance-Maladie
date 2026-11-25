@@ -84,7 +84,8 @@ export function FenetreCodeActivation() {
           <p className="text-body-secondary small mb-0">
             Remettez-le à l’employé : dans l’application mobile, il touche « J’ai un code de l’IPM
             », saisit son matricule et ce code, puis choisit son mot de passe. Ce code ne sera plus
-            affiché ; en cas de perte, générez-en un nouveau (il remplace celui-ci).
+            affiché ; en cas de perte, générez-en un nouveau (il remplace celui-ci). Le mot de passe
+            actuel reste valable tant que l’employé n’en a pas choisi un nouveau.
           </p>
         </CModalBody>
       )}

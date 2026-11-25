@@ -18,7 +18,6 @@ import { cilPencil, cilX } from '@coreui/icons'
 import { request } from '../../services/api'
 import { erreursDeChamps, messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
-import { useConfirmation } from '../donnees-de-base/Confirmation'
 
 const CHEMIN = '/informations-ipm/'
 
@@ -75,7 +74,6 @@ const InformationsIpm = () => {
   const [erreurs, setErreurs] = useState({})
   const [envoi, setEnvoi] = useState(false)
   const champFichier = useRef(null)
-  const [demanderConfirmation, modaleConfirmation, confirmationOuverte] = useConfirmation()
 
   useEffect(() => {
     request(CHEMIN)
@@ -83,13 +81,7 @@ const InformationsIpm = () => {
       .catch((e) => toast.error(`Chargement impossible : ${messageErreur(e)}`))
   }, [])
 
-  const enregistrer = async (valeurs, message) => {
-    const confirme = await demanderConfirmation({
-      titre: 'Confirmer la modification',
-      message,
-      confirmer: 'Enregistrer',
-    })
-    if (!confirme) return false
+  const enregistrer = async (valeurs) => {
     try {
       setEnvoi(true)
       const fiche = await request(CHEMIN, { method: 'PATCH', body: JSON.stringify(valeurs) })
@@ -114,7 +106,7 @@ const InformationsIpm = () => {
     if (!fichier) return
     try {
       const logo = await reduireImage(fichier)
-      await enregistrer({ logo }, 'Remplacer le logo de l’IPM ?')
+      await enregistrer({ logo })
     } catch {
       toast.error('Image illisible : choisissez un fichier PNG ou JPEG.')
     }
@@ -182,7 +174,7 @@ const InformationsIpm = () => {
       .split(',')
       .map((v) => v.trim())
     const { coordonnees, ...reste } = saisie || {}
-    if (await enregistrer({ ...reste, latitude, longitude }, 'Enregistrer les informations ?')) {
+    if (await enregistrer({ ...reste, latitude, longitude })) {
       setSaisie(null)
     }
   }
@@ -192,8 +184,6 @@ const InformationsIpm = () => {
       placement="end"
       visible={Boolean(saisie)}
       onHide={() => setSaisie(null)}
-      backdrop={!confirmationOuverte}
-      keyboard={!confirmationOuverte}
       className="ddb-panneau ddb-panneau-large"
     >
       <div className="ddb-panneau-entete">
@@ -371,7 +361,6 @@ const InformationsIpm = () => {
       </div>
 
       {panneauSaisie}
-      {modaleConfirmation}
     </>
   )
 }

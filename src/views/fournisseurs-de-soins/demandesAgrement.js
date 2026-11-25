@@ -147,13 +147,6 @@ export const DEMANDES_AGREMENT = {
       libelle: 'Valider l’agrément',
       icone: cilCheckCircle,
       classe: 'ddb-action-succes',
-      // Une validation fait naître un fournisseur : elle se confirme, comme une
-      // suppression, car elle ne se défait pas depuis l'écran.
-      // La raison sociale est facultative : à défaut, la demande se désigne
-      // par son numéro.
-      confirmer: (e) =>
-        `Valider l’agrément ${e.libelle ? `de « ${e.libelle} »` : `de la demande n° ${e.code}`} ?\n\n` +
-        'Le prestataire rejoindra la liste des fournisseurs et la demande quittera celle-ci.',
       executer: async (e) => {
         const fournisseur = await executerAction('demandes-agrement', e.id, 'valider')
         return `${e.libelle || `Demande n° ${e.code}`} agréé - fournisseur n° ${fournisseur.code}`

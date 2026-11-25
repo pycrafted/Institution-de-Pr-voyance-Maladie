@@ -266,9 +266,6 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
   // Le libellé étant facultatif, une fiche sans libellé se nomme par son code.
   const nommer = referentiel.nommer || ((e) => e.libelle || e.code || '')
   const nomDe = (e) => String(nommer(e) || '').trim()
-  // Dans une phrase : « CLINIQUE X », ou « cette fiche » si elle n'a ni nom ni
-  // code - aucun champ n'étant obligatoire.
-  const designer = (e) => (nomDe(e) ? `« ${nomDe(e)} »` : 'cette fiche')
 
   /**
    * Vocabulaire de l'activation. Une nomenclature se « désactive », une
@@ -326,8 +323,11 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
   // fermeture : la fenêtre s'efface en fondu sans se vider sous les yeux.
   const [ficheOuverte, setFicheOuverte] = useState(false)
   const [entreeVue, setEntreeVue] = useState(null)
-  // Ajout, modification, suppression, actions de lot, import : tout ce qui
-  // écrit se confirme dans une fenêtre modale (cf. Confirmation.jsx).
+  // La fenêtre modale ne sert plus à redemander « êtes-vous sûr ? » : un bouton
+  // nommé qu'on vient de cliquer dit déjà ce qu'il fait. Elle ne s'ouvre que
+  // pour l'import - le bilan calculé à blanc par le serveur, puis son rapport
+  // d'erreurs - et pour une action qui déclare un AVERTISSEMENT, c'est-à-dire
+  // qui a quelque chose à apprendre (cf. Confirmation.jsx).
   const [demanderConfirmation, modaleConfirmation, confirmationOuverte] = useConfirmation()
   const [selection, setSelection] = useState(() => new Set())
   // Lignes dépliées (opt-in `composantDeplie`) : on y montre un détail en
@@ -631,22 +631,6 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
     setPanneauOuvert(true)
   }
 
-  /** Demandée par le formulaire avant l'envoi : ajout ou modification. */
-  const confirmerEnregistrement = (valeurs, cible) =>
-    demanderConfirmation(
-      cible
-        ? {
-            titre: 'Confirmer la modification',
-            message: `Enregistrer les modifications de ${designer({ ...cible, ...valeurs })} ?`,
-            confirmer: 'Enregistrer',
-          }
-        : {
-            titre: 'Confirmer l’ajout',
-            message: `Ajouter ${designer(valeurs)} ?`,
-            confirmer: 'Ajouter',
-          },
-    )
-
   const enregistrer = async (valeurs, cible) => {
     // Aucun champ n'est obligatoire. Le champ qui partage la table en onglets
     // (le type d'une entité de structure), laissé vide, reprend celui de la
@@ -710,21 +694,11 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
    * la retire des choix à la saisie et la laisse lisible partout ailleurs.
    * Le serveur applique la même règle (cf. ReferentielViewSet.destroy).
    *
-   * La réactivation ne demande rien : elle ne retire rien à personne.
+   * Ni l'une ni l'autre ne se confirme : rien n'est détruit, et le même bouton
+   * refait le chemin inverse.
    */
   const basculerActif = async (entree) => {
     const desactivation = entree.actif !== false
-    if (desactivation) {
-      const confirme = await demanderConfirmation({
-        titre: `Confirmer : ${etat.desactiver.toLowerCase()}`,
-        message:
-          `${etat.desactiver} ${designer(entree)} ? Elle ne sera plus proposée à la saisie ; ` +
-          'les fiches qui la portent déjà restent inchangées.',
-        confirmer: etat.desactiver,
-        danger: true,
-      })
-      if (!confirme) return
-    }
     try {
       await basculerActivation(cle, entree.id)
       toast.info(`${nomDe(entree) || 'Fiche'} ${desactivation ? etat.desactive : etat.reactive}`)
@@ -736,15 +710,21 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
 
   /**
    * Actions propres à un référentiel, déclarées dans sa config
-   * (`actionsLigne`) - valider une demande d'agrément, par exemple. Chacune
-   * peut demander confirmation, puis renvoie le message à afficher. La liste
-   * est rechargée ensuite : l'action a pu faire sortir la ligne de la vue.
+   * (`actionsLigne`) - valider une demande d'agrément, par exemple. L'action
+   * part au clic, puis renvoie le message à afficher. La liste est rechargée
+   * ensuite : l'action a pu faire sortir la ligne de la vue.
+   *
+   * `avertir` : la seule raison d'arrêter la main de l'utilisateur, et elle
+   * n'est pas la politesse. L'action déclare ce texte quand elle a quelque
+   * chose à APPRENDRE que l'écran ne dit nulle part ailleurs - « ce
+   * bénéficiaire a déjà eu un bon d'optique il y a moins de deux ans ». Sans
+   * `avertir`, pas de fenêtre.
    */
   const executerActionLigne = async (action, entree) => {
-    if (action.confirmer) {
+    if (action.avertir) {
       const confirme = await demanderConfirmation({
         titre: action.libelle,
-        message: action.confirmer(entree),
+        message: action.avertir(entree),
         confirmer: action.libelle,
         danger: action.danger,
       })
@@ -996,13 +976,13 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
     const entreesSel = visibles.filter((e) => selection.has(e.id))
     if (entreesSel.length === 0) return
     // Action à exécuteur (`executer`) : la page la prend en main - ouvrir un
-    // modal (règlement), appeler un point d'API (A Payer). Elle se confirme
-    // seulement si elle le demande (`confirmer`).
+    // modal (règlement), appeler un point d'API (A Payer). Elle part au clic,
+    // sauf à déclarer un `avertir` (cf. executerActionLigne).
     if (action.executer) {
-      if (action.confirmer) {
+      if (action.avertir) {
         const confirme = await demanderConfirmation({
           titre: action.titreConfirmation || action.libelle,
-          message: action.confirmer(n),
+          message: action.avertir(n),
           confirmer: action.boutonConfirmation || action.libelle,
           danger: action.danger,
         })
@@ -1023,18 +1003,21 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
       }
       return
     }
-    // Action par champs : modifie des fiches, se confirme toujours.
-    const confirme = await demanderConfirmation({
-      // Titre et bouton propres à l'action s'il en faut plus que son libellé
-      // (« Changer l'état », « Passer à Actif »).
-      titre: action.titreConfirmation || action.libelle,
-      message: action.confirmer
-        ? action.confirmer(n)
-        : `${action.libelle} ${n} ligne${n > 1 ? 's' : ''} sélectionnée${n > 1 ? 's' : ''} ?`,
-      confirmer: action.boutonConfirmation || action.libelle,
-      danger: action.danger,
-    })
-    if (confirme) agirEnLot(action.champs, action.message)
+    // Action par champs : modifie des fiches. Le nombre de lignes concernées
+    // est déjà écrit dans la barre de sélection, juste à côté du bouton ; le
+    // redire dans une fenêtre n'apprend rien.
+    if (action.avertir) {
+      const confirme = await demanderConfirmation({
+        // Titre et bouton propres à l'action s'il en faut plus que son libellé
+        // (« Changer l'état », « Passer à Actif »).
+        titre: action.titreConfirmation || action.libelle,
+        message: action.avertir(n),
+        confirmer: action.boutonConfirmation || action.libelle,
+        danger: action.danger,
+      })
+      if (!confirme) return
+    }
+    agirEnLot(action.champs, action.message)
   }
 
   /**
@@ -1097,7 +1080,6 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
             ...(segments?.champ ? { [segments.champ]: segmentActif } : {}),
             ...(codePropose ? { code: codePropose } : {}),
           }}
-          onConfirmer={confirmerEnregistrement}
           onEnregistrer={enregistrer}
         />
         {modaleConfirmation}
@@ -1372,190 +1354,192 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
               {!chargement &&
                 lignes.map((entree) => (
                   <React.Fragment key={entree.id}>
-                  <CTableRow
-                    className={`ddb-ligne${entree.actif ? '' : ' ddb-ligne-inactive'}${
-                      selection.has(entree.id) ? ' ddb-ligne-selectionnee' : ''
-                    }${depliable && lignesDepliees.has(entree.id) ? ' ddb-ligne-depliee' : ''}${
-                      (creationDockee && entreeDockee?.id === entree.id) ||
-                      (referentiel.modificationParLigne &&
-                        panneauOuvert &&
-                        entreeEditee?.id === entree.id)
-                        ? ' ddb-ligne-active'
-                        : ''
-                    }`}
-                    onClick={() =>
-                      depliable
-                        ? basculerDepli(entree.id)
-                        : creationDockee
-                          ? setEntreeDockee(entree)
-                          : referentiel.onLigne
-                            ? referentiel.onLigne(entree)
-                            : ouvrirModification(entree)
-                    }
-                  >
-                    {depliable && (
-                      <CTableDataCell
-                        className="ddb-cellule-depli"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          basculerDepli(entree.id)
-                        }}
-                      >
-                        <CIcon
-                          icon={lignesDepliees.has(entree.id) ? cilChevronBottom : cilChevronRight}
-                          className="ddb-depli-chevron"
-                          aria-hidden="true"
-                        />
-                      </CTableDataCell>
-                    )}
-                    {casesACocher && (
-                      <CTableDataCell
-                        className="ddb-cellule-case"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={selection.has(entree.id)}
-                          onChange={() => basculerSelection(entree.id)}
-                          aria-label={`Sélectionner ${nommer(entree)}`}
-                        />
-                      </CTableDataCell>
-                    )}
-                    {colonnesTableau.map((col, index) => (
-                      <CTableDataCell
-                        key={col.nom}
-                        className={`${col.mono ? 'ddb-mono' : ''}${
-                          col.aligne === 'droite' ? ' text-end' : ''
-                        }`}
-                      >
-                        {col.type === 'statut' ? (
-                          // État multi-valeurs (participants) : badge dont la
-                          // couleur suit la valeur.
-                          <CBadge
-                            color={COULEUR_STATUT[entree[col.nom]] || 'secondary'}
-                            className="fw-normal"
-                          >
-                            {entree[col.nom]}
-                          </CBadge>
-                        ) : col.type === 'etat' ? (
-                          <CBadge
-                            color={entree[col.nom] ? 'success' : 'secondary'}
-                            className="fw-normal"
-                          >
-                            {entree[col.nom] ? etat.actif : etat.inactif}
-                          </CBadge>
-                        ) : col.type === 'booleen' ? (
-                          // Une colonne de cases vides ne se lit pas : seule la
-                          // ligne concernée porte une marque.
-                          entree[col.nom] && (
-                            <CBadge color="warning" className="fw-normal">
-                              Exclu
+                    <CTableRow
+                      className={`ddb-ligne${entree.actif ? '' : ' ddb-ligne-inactive'}${
+                        selection.has(entree.id) ? ' ddb-ligne-selectionnee' : ''
+                      }${depliable && lignesDepliees.has(entree.id) ? ' ddb-ligne-depliee' : ''}${
+                        (creationDockee && entreeDockee?.id === entree.id) ||
+                        (referentiel.modificationParLigne &&
+                          panneauOuvert &&
+                          entreeEditee?.id === entree.id)
+                          ? ' ddb-ligne-active'
+                          : ''
+                      }`}
+                      onClick={() =>
+                        depliable
+                          ? basculerDepli(entree.id)
+                          : creationDockee
+                            ? setEntreeDockee(entree)
+                            : referentiel.onLigne
+                              ? referentiel.onLigne(entree)
+                              : ouvrirModification(entree)
+                      }
+                    >
+                      {depliable && (
+                        <CTableDataCell
+                          className="ddb-cellule-depli"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            basculerDepli(entree.id)
+                          }}
+                        >
+                          <CIcon
+                            icon={
+                              lignesDepliees.has(entree.id) ? cilChevronBottom : cilChevronRight
+                            }
+                            className="ddb-depli-chevron"
+                            aria-hidden="true"
+                          />
+                        </CTableDataCell>
+                      )}
+                      {casesACocher && (
+                        <CTableDataCell
+                          className="ddb-cellule-case"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selection.has(entree.id)}
+                            onChange={() => basculerSelection(entree.id)}
+                            aria-label={`Sélectionner ${nommer(entree)}`}
+                          />
+                        </CTableDataCell>
+                      )}
+                      {colonnesTableau.map((col, index) => (
+                        <CTableDataCell
+                          key={col.nom}
+                          className={`${col.mono ? 'ddb-mono' : ''}${
+                            col.aligne === 'droite' ? ' text-end' : ''
+                          }`}
+                        >
+                          {col.type === 'statut' ? (
+                            // État multi-valeurs (participants) : badge dont la
+                            // couleur suit la valeur.
+                            <CBadge
+                              color={COULEUR_STATUT[entree[col.nom]] || 'secondary'}
+                              className="fw-normal"
+                            >
+                              {entree[col.nom]}
                             </CBadge>
-                          )
-                        ) : (
-                          <span className={index === 0 ? 'fw-semibold' : undefined}>
-                            {/* Colonne calculée (âge, compteurs…) ; sinon nombre
+                          ) : col.type === 'etat' ? (
+                            <CBadge
+                              color={entree[col.nom] ? 'success' : 'secondary'}
+                              className="fw-normal"
+                            >
+                              {entree[col.nom] ? etat.actif : etat.inactif}
+                            </CBadge>
+                          ) : col.type === 'booleen' ? (
+                            // Une colonne de cases vides ne se lit pas : seule la
+                            // ligne concernée porte une marque.
+                            entree[col.nom] && (
+                              <CBadge color="warning" className="fw-normal">
+                                Exclu
+                              </CBadge>
+                            )
+                          ) : (
+                            <span className={index === 0 ? 'fw-semibold' : undefined}>
+                              {/* Colonne calculée (âge, compteurs…) ; sinon nombre
                               formaté, valeur brute (`afficherCode`), ou code
                               résolu en intitulé. */}
-                            {col.valeurTableau
-                              ? col.valeurTableau(entree, entrees)
-                              : col.type === 'number'
-                                ? formaterNombre(entree[col.nom])
-                                : col.afficherCode
-                                  ? entree[col.nom]
-                                  : libelleValeur(col, entree[col.nom], entree, entrees)}
-                          </span>
-                        )}
-                        {index === 0 && !entree.actif && !etatEnColonne && (
-                          <CBadge color="secondary" className="ms-2 fw-normal">
-                            {etat.inactif}
-                          </CBadge>
-                        )}
-                      </CTableDataCell>
-                    ))}
-                    <CTableDataCell className="text-end" onClick={(e) => e.stopPropagation()}>
-                      {Fiche && (
-                        <CTooltip content="Voir la fiche">
-                          <CButton
-                            color="light"
-                            size="sm"
-                            className="ddb-action"
-                            aria-label={`Voir la fiche : ${nommer(entree)}`}
-                            onClick={() => {
-                              setEntreeVue(entree)
-                              setFicheOuverte(true)
-                            }}
-                          >
-                            <CIcon icon={ICONE_OEIL} />
-                          </CButton>
-                        </CTooltip>
-                      )}
-                      {/* Une action peut ne valoir que pour certaines lignes
-                        (`visible`) : l'impression d'un bon traité, par exemple. */}
-                      {(referentiel.actionsLigne || [])
-                        .filter((action) => !action.visible || action.visible(entree))
-                        .map((action) => (
-                          <CTooltip key={action.cle} content={action.libelle}>
-                            <CButton
-                              color="light"
-                              size="sm"
-                              className={`ddb-action ${action.classe || ''}`}
-                              aria-label={`${action.libelle} : ${nommer(entree)}`}
-                              onClick={() => executerActionLigne(action, entree)}
-                            >
-                              <CIcon icon={action.icone} />
-                            </CButton>
-                          </CTooltip>
-                        ))}
-                      {/* Pas de crayon là où on modifie en cliquant la ligne :
-                          card dockée (`entreeDockee`), ouverture du panneau au
-                          clic (`modificationParLigne`, cf. fournisseurs), ou
-                          clic détourné par la page (`onLigne`, cf. Règlements). */}
-                      {!creationDockee &&
-                        !referentiel.modificationParLigne &&
-                        !referentiel.onLigne && (
-                          <CTooltip content="Modifier">
+                              {col.valeurTableau
+                                ? col.valeurTableau(entree, entrees)
+                                : col.type === 'number'
+                                  ? formaterNombre(entree[col.nom])
+                                  : col.afficherCode
+                                    ? entree[col.nom]
+                                    : libelleValeur(col, entree[col.nom], entree, entrees)}
+                            </span>
+                          )}
+                          {index === 0 && !entree.actif && !etatEnColonne && (
+                            <CBadge color="secondary" className="ms-2 fw-normal">
+                              {etat.inactif}
+                            </CBadge>
+                          )}
+                        </CTableDataCell>
+                      ))}
+                      <CTableDataCell className="text-end" onClick={(e) => e.stopPropagation()}>
+                        {Fiche && (
+                          <CTooltip content="Voir la fiche">
                             <CButton
                               color="light"
                               size="sm"
                               className="ddb-action"
-                              onClick={() => ouvrirModification(entree)}
+                              aria-label={`Voir la fiche : ${nommer(entree)}`}
+                              onClick={() => {
+                                setEntreeVue(entree)
+                                setFicheOuverte(true)
+                              }}
                             >
-                              <CIcon icon={cilPencil} />
+                              <CIcon icon={ICONE_OEIL} />
                             </CButton>
                           </CTooltip>
                         )}
-                      {/* Jamais de suppression : une fiche se désactive, et se
+                        {/* Une action peut ne valoir que pour certaines lignes
+                        (`visible`) : l'impression d'un bon traité, par exemple. */}
+                        {(referentiel.actionsLigne || [])
+                          .filter((action) => !action.visible || action.visible(entree))
+                          .map((action) => (
+                            <CTooltip key={action.cle} content={action.libelle}>
+                              <CButton
+                                color="light"
+                                size="sm"
+                                className={`ddb-action ${action.classe || ''}`}
+                                aria-label={`${action.libelle} : ${nommer(entree)}`}
+                                onClick={() => executerActionLigne(action, entree)}
+                              >
+                                <CIcon icon={action.icone} />
+                              </CButton>
+                            </CTooltip>
+                          ))}
+                        {/* Pas de crayon là où on modifie en cliquant la ligne :
+                          card dockée (`entreeDockee`), ouverture du panneau au
+                          clic (`modificationParLigne`, cf. fournisseurs), ou
+                          clic détourné par la page (`onLigne`, cf. Règlements). */}
+                        {!creationDockee &&
+                          !referentiel.modificationParLigne &&
+                          !referentiel.onLigne && (
+                            <CTooltip content="Modifier">
+                              <CButton
+                                color="light"
+                                size="sm"
+                                className="ddb-action"
+                                onClick={() => ouvrirModification(entree)}
+                              >
+                                <CIcon icon={cilPencil} />
+                              </CButton>
+                            </CTooltip>
+                          )}
+                        {/* Jamais de suppression : une fiche se désactive, et se
                         réactive. Le libellé suit le vocabulaire du référentiel
                         (« Suspendre » une convention, « Annuler » un bon).
                         Sauf là où l'état est en colonne : il est alors la seule
                         sortie, et se change par les cases à cocher. */}
-                      {!statutEnColonne && (
-                        <CTooltip
-                          content={entree.actif === false ? etat.reactiver : etat.desactiver}
-                        >
-                          <CButton
-                            color="light"
-                            size="sm"
-                            className={`ddb-action ${entree.actif === false ? '' : 'ddb-action-danger'}`}
-                            aria-label={`${
-                              entree.actif === false ? etat.reactiver : etat.desactiver
-                            } : ${nommer(entree)}`}
-                            onClick={() => basculerActif(entree)}
+                        {!statutEnColonne && (
+                          <CTooltip
+                            content={entree.actif === false ? etat.reactiver : etat.desactiver}
                           >
-                            <CIcon icon={entree.actif === false ? cilActionUndo : cilBan} />
-                          </CButton>
-                        </CTooltip>
-                      )}
-                    </CTableDataCell>
-                  </CTableRow>
-                  {depliable && lignesDepliees.has(entree.id) && (
-                    <CTableRow className="ddb-ligne-depli">
-                      <CTableDataCell colSpan={nbColonnes} className="ddb-depli-cellule">
-                        <ComposantDeplie entree={entree} entrees={entrees} />
+                            <CButton
+                              color="light"
+                              size="sm"
+                              className={`ddb-action ${entree.actif === false ? '' : 'ddb-action-danger'}`}
+                              aria-label={`${
+                                entree.actif === false ? etat.reactiver : etat.desactiver
+                              } : ${nommer(entree)}`}
+                              onClick={() => basculerActif(entree)}
+                            >
+                              <CIcon icon={entree.actif === false ? cilActionUndo : cilBan} />
+                            </CButton>
+                          </CTooltip>
+                        )}
                       </CTableDataCell>
                     </CTableRow>
-                  )}
+                    {depliable && lignesDepliees.has(entree.id) && (
+                      <CTableRow className="ddb-ligne-depli">
+                        <CTableDataCell colSpan={nbColonnes} className="ddb-depli-cellule">
+                          <ComposantDeplie entree={entree} entrees={entrees} />
+                        </CTableDataCell>
+                      </CTableRow>
+                    )}
                   </React.Fragment>
                 ))}
             </CTableBody>
@@ -1594,7 +1578,6 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
               entree={entreeDockee}
               entrees={entrees}
               valeursDefaut={segments?.champ ? { [segments.champ]: segmentActif } : {}}
-              onConfirmer={confirmerEnregistrement}
               onEnregistrer={enregistrerDockee}
             />
           </aside>
@@ -1625,7 +1608,6 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
           titreCreation={definitionSegment?.nouveau}
           visible={panneauOuvert}
           onFermer={() => setPanneauOuvert(false)}
-          onConfirmer={confirmerEnregistrement}
           onEnregistrer={enregistrer}
           enPause={confirmationOuverte}
         />

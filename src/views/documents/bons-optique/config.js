@@ -127,12 +127,14 @@ export const BONS_OPTIQUE = {
       icone: cilCheckCircle,
       classe: 'ddb-action-succes',
       visible: enAttente,
-      confirmer: (b) =>
-        `Accorder le bon ${b.code} ?
+      // Le SEUL avertissement conservé sur cet écran : la règle des deux ans
+      // ne se lit nulle part ailleurs. Un bon en attente l'est précisément
+      // parce qu'elle est enfreinte ; l'accorder, c'est passer outre, et il
+      // faut le savoir avant, pas après.
+      avertir: (b) =>
+        `${b.beneficiaire || b.participant} a déjà eu un bon d’optique il y a moins de deux ans.
 
-` +
-        `${b.beneficiaire || b.participant} a déjà eu un bon d’optique il y a moins de deux ans. ` +
-        'Accordé, le bon devient imprimable depuis le mobile.',
+` + `Accordé, le bon ${b.code} devient imprimable depuis le mobile.`,
       executer: async (b) => {
         await executerAction('bons-optique', b.id, 'valider')
         return `Bon ${b.code} accordé`
@@ -145,9 +147,6 @@ export const BONS_OPTIQUE = {
       classe: 'ddb-action-danger',
       danger: true,
       visible: enAttente,
-      confirmer: (b) => `Refuser le bon ${b.code} ?
-
-Il sera annulé.`,
       executer: async (b) => {
         await executerAction('bons-optique', b.id, 'refuser')
         return `Bon ${b.code} refusé et annulé`

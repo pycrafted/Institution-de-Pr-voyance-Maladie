@@ -256,21 +256,6 @@ const TauxPriseEnCharge = () => {
       plafond: Number(entier(saisie.plafond) || 0),
       forfait: Number(entier(saisie.forfait) || 0),
     }
-    const confirme = await demanderConfirmation(
-      edite
-        ? {
-            titre: 'Confirmer la modification',
-            message: `Enregistrer les modifications de ce taux pour ${nomSociete} ?`,
-            confirmer: 'Enregistrer',
-          }
-        : {
-            titre: 'Confirmer l’ajout',
-            message: `Ajouter ce taux pour ${nomSociete} ?`,
-            confirmer: 'Ajouter',
-          },
-    )
-    if (!confirme) return
-
     try {
       setEnvoi(true)
       if (edite) {
@@ -298,12 +283,6 @@ const TauxPriseEnCharge = () => {
       setErreursExc(trouvees)
       return
     }
-    const confirme = await demanderConfirmation({
-      titre: 'Confirmer l’ajout',
-      message: 'Ajouter ce taux exceptionnel ?',
-      confirmer: 'Ajouter',
-    })
-    if (!confirme) return
     try {
       setEnvoi(true)
       await creerEntree('taux-exceptionnels', {

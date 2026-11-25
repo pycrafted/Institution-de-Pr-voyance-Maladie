@@ -86,12 +86,13 @@ function NouvelExercice({ visible, onFermer, onGenere }) {
   const ecart = apercu?.ecart ?? 0
 
   const generer = async () => {
+    // Conservé : écrit au journal RAN, une fois l'an, et ne se défait pas.
     const confirme = await demanderConfirmation({
-      titre: 'Confirmer le nouvel exercice',
+      titre: 'Report à nouveau',
       message:
-        `Générer le report à nouveau de l'exercice ${exercice} vers ${cible} ? ` +
-        `${apercu.nombre} solde(s) de bilan seront reportés au journal RAN, ` +
-        `datés du 1er janvier ${cible}. Cette opération fait foi : relisez l'aperçu avant.`,
+        `${apercu.nombre} solde(s) de bilan de l'exercice ${exercice} vont être reportés ` +
+        `au journal RAN, datés du 1er janvier ${cible}. ` +
+        `Cette opération fait foi : relisez l'aperçu avant.`,
       confirmer: 'Générer le report',
     })
     if (!confirme) return
@@ -249,10 +250,12 @@ export default function GestionJournal({ periode, onPeriode, onReportGenere }) {
 
   const cloturerMois = async () => {
     const quoi = periode?.libelle ? `le mois ${periode.libelle}` : 'le mois comptable en cours'
+    // Conservé : la période comptable est commune à tous les postes, et rien
+    // dans l'application ne sait la faire reculer.
     const confirme = await demanderConfirmation({
-      titre: 'Confirmer la clôture mensuelle',
+      titre: 'Clôture mensuelle',
       message:
-        `Clôturer ${quoi} ? La période comptable avancera d'un mois. ` +
+        `Clôturer ${quoi} fait avancer d'un mois la période comptable, pour tout le monde. ` +
         `Aucune écriture n'est produite.`,
       confirmer: 'Clôturer le mois',
     })
