@@ -1,0 +1,40 @@
+// Page « Documents → Bons de Pharmacie ».
+//
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des pages de
+// Comptabilité et des écrans de Traitements. Tout ce qui habille la liste -
+// panneau de filtres, tableau, pagination, bouton de création - vient de
+// `traitements/_liste-compta.scss` ; les valeurs, de
+// `comptabilite/_design-compta.scss`.
+//
+// **Trois pages sœurs attendent le même traitement** : Bons d'Optique,
+// Lettres de Garantie et LG Hospitalisation. Elles partagent le descripteur
+// `BARRE_DOCUMENTS` de `../commun.js` et se montent sur le même
+// `<Referentiel />` : leur refonte tiendra, comme celle-ci, dans un chapeau et
+// un `@include`. Tant qu'elles ne sont pas faites, elles gardent l'ancien
+// habillage - c'est voulu, pas oublié.
+
+@use '../../comptabilite/design-compta' as c;
+@use '../../traitements/liste-compta' as l;
+
+// --- Le chapeau -------------------------------------------------------------
+.bph-chapeau {
+  @include c.cpt-chapeau;
+}
+
+.bph-titre {
+  @include c.cpt-titre;
+}
+
+// --- La liste, dans le langage de la Comptabilité ---------------------------
+// Pas de `$serre` : trois des neuf colonnes portent des noms de personnes et
+// d'officines, qu'il vaut mieux laisser passer à la ligne que couper.
+.bph-page {
+  @include l.liste-compta;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .bph-titre {
+    font-size: 1.45rem;
+  }
+}

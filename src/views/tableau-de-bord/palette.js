@@ -12,8 +12,13 @@
  *     teinte, cinq clartés - les secteurs se distinguent par la valeur, pas
  *     par la couleur ;
  *   · un **graphite plein** pour toute marque à série unique ;
- *   · le **rouge SAR** réservé à la série principale d'une comparaison, aux
- *     dossiers rejetés et aux écarts défavorables. Rien d'autre.
+ *   · l'**accent de l'IPM** réservé à la série principale d'une comparaison.
+ *     Depuis qu'il est une ardoise sombre (2026-11-25), il se distingue du
+ *     graphite par la TEINTE et non plus par la clarté : la seconde série
+ *     d'une comparaison prend donc `secondaire`, un graphite clair, et non
+ *     plus `neutre`, qui avait la même clarté que lui ;
+ *   · le **rouge d'alerte** pour les dossiers rejetés et les écarts
+ *     défavorables. Rien d'autre.
  *
  * Les niveaux ont été vérifiés sur la surface réelle des cartes (#ffffff) :
  * clarté monotone, écart visible entre marches, teinte unique, et extrémité
@@ -49,9 +54,22 @@ const CHROME = {
   encreDouce: '#5b5250',
   encreMuette: '#736968',
   // Marque à série unique : le graphite d'un cran plus foncé que le milieu
-  // de rampe, pour se détacher sans peser.
+  // de rampe, pour se détacher sans peser. Seule, elle ne voisine rien.
   neutre: '#4c4443',
-  accent: '#e52621',
+  // Seconde série d'une comparaison, celle qui voisine l'accent.
+  //
+  // Elle valait `neutre` jusqu'au 2026-11-25. L'accent, devenu une ardoise
+  // SOMBRE, a la même clarté que ce graphite - 1,08:1 entre les deux : les
+  // deux courbes de « Dépenses engagées / Remboursements versés » devenaient
+  // indiscernables, et tout à fait indiscernables en niveaux de gris. Le
+  // milieu de rampe rend 3,28:1 contre l'accent et 3,11:1 sur le blanc des
+  // cartes : au-dessus du plancher de 3:1 des deux côtés.
+  secondaire: '#9a908e',
+  // L'accent de l'IPM, le même que celui des boutons et des rails de
+  // l'application. Écrit en dur ici parce que Chart.js dessine sur un canevas
+  // et ne lit pas les variables CSS : si l'accent change dans style.scss, il
+  // faut changer cette ligne avec lui.
+  accent: '#344256',
   // L'infobulle reprend le noir SAR des en-têtes de tableaux et du bandeau
   // des panneaux : c'est la même surface « inversée » d'un bout à l'autre.
   infobulle: { fond: '#1d1d1b', titre: '#ffffff', corps: 'rgba(255, 255, 255, 0.78)' },
@@ -65,15 +83,17 @@ const CHROME = {
 // sur leur fond, et ne circulent jamais sans l'icône et le libellé qui les
 // accompagnent - la couleur seule ne dit rien.
 //
-// Le rejet reprend le rouge SAR : c'est déjà la couleur du danger partout
-// ailleurs dans l'application.
+// Le rejet et la baisse prennent le rouge d'ALERTE, et non l'accent de la
+// marque : signaler un dossier rejeté ou un écart défavorable n'est pas un
+// geste de marque, et les deux rouges ne doivent pas se confondre. C'est la
+// règle des écrans de Comptabilité.
 const ETATS = {
   valide: '#2f7d32',
   encours: '#a9791b',
   attente: '#b4643c',
-  rejete: '#e52621',
+  rejete: '#c62828',
   hausse: '#2f7d32',
-  baisse: '#e52621',
+  baisse: '#c62828',
 }
 
 /**

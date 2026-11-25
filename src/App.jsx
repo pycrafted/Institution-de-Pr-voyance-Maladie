@@ -22,7 +22,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 
 import './scss/style.scss'
 
-import ChargeurSar from './components/ChargeurSar'
+import Chargeur from './components/Chargeur'
 import { getToken } from './services/api'
 
 // Containers
@@ -63,7 +63,7 @@ const RouteProtegee = ({ children }) => (getToken() ? children : <Navigate to="/
 const App = () => {
   return (
     <BrowserRouter>
-      <Suspense fallback={<ChargeurSar pleinEcran />}>
+      <Suspense fallback={<Chargeur pleinEcran />}>
         <Routes>
           <Route exact path="/login" name="Login Page" element={<Login />} />
           <Route

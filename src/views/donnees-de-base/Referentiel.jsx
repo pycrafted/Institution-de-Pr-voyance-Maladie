@@ -157,7 +157,14 @@ export const PastillesStats = ({ segments, className }) =>
 /** Découpe le texte de stats (« A - B - C ») en segments pour les pastilles. */
 const segmentsStats = (texte) => (texte ? texte.split(' - ') : [])
 
-const Referentiel = ({ referentiel, onStats }) => {
+/**
+ * `actionsBarre` : des boutons que la PAGE pose en TÊTE du groupe de droite de
+ * la barre d'outils, avant les segments et les outils. Le descripteur
+ * ne peut pas les déclarer : ils ont besoin de l'état de la page - « Edition »
+ * des règlements ouvre un modal que la page tient. Sans ce paramètre, rien ne
+ * change pour les huit autres écrans.
+ */
+const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
   const { cle, libelle, colonnes, nouveau } = referentiel
 
   /**
@@ -195,6 +202,28 @@ const Referentiel = ({ referentiel, onStats }) => {
   // participant. Majuscule : monté comme composant React.
   const ComposantDeplie = referentiel.composantDeplie
   const depliable = Boolean(ComposantDeplie)
+
+  /**
+   * Cases à cocher du tableau : déclarées (`selection`) **ou déduites de la
+   * présence d'actions de lot**.
+   *
+   * Déduites depuis le 2026-11-25, et c'est une correction. Une action de lot
+   * s'applique aux lignes cochées : une liste qui en déclare a donc
+   * nécessairement besoin des cases, et le drapeau n'ajoutait rien à
+   * l'information - il ne pouvait que manquer. Il manquait. `selection: true`
+   * avait disparu de QUATRE descripteurs (adhérents, médicaments,
+   * fournisseurs de soins, demandes d'agrément) dans la passe « aucun
+   * cadratin » du 2026-10-09, qui réécrivait le commentaire du dessus et
+   * emportait la ligne d'après ; les deux listes de Participants, elles, ne
+   * l'avaient jamais porté. Vingt-deux actions de lot étaient ainsi
+   * inatteignables - suspendre des adhérents, exclure des médicaments du
+   * remboursement, suspendre une convention, changer l'état de participants -
+   * faute de pouvoir cocher quoi que ce soit. Les commentaires, eux,
+   * annonçaient toujours des cases à cocher : ils étaient le témoin.
+   *
+   * La déduire interdit la panne au lieu de la réparer six fois.
+   */
+  const casesACocher = Boolean(referentiel.selection) || (referentiel.actionsLot || []).length > 0
 
   /**
    * Certains référentiels expriment déjà l'activité dans leurs segments
@@ -814,8 +843,7 @@ const Referentiel = ({ referentiel, onStats }) => {
     }
   }
 
-  const nbColonnes =
-    colonnesTableau.length + 1 + (referentiel.selection ? 1 : 0) + (depliable ? 1 : 0)
+  const nbColonnes = colonnesTableau.length + 1 + (casesACocher ? 1 : 0) + (depliable ? 1 : 0)
 
   /**
    * Barre compacte (`barreCompacte`) : le total et le bouton de création
@@ -955,6 +983,92 @@ const Referentiel = ({ referentiel, onStats }) => {
     </button>
   )
 
+  /**
+   * Lancer une action de lot sur les lignes cochées.
+   *
+   * Écrit une fois et appelé de deux endroits : la barre noire de sélection,
+   * et - pour les écrans qui le demandent (`actionsLotEnBarre`) - la barre
+   * d'outils, où les actions se montrent en permanence et pâlissent tant que
+   * rien n'est coché.
+   */
+  const executerActionLot = async (action) => {
+    const n = nbSelectionnes
+    const entreesSel = visibles.filter((e) => selection.has(e.id))
+    if (entreesSel.length === 0) return
+    // Action à exécuteur (`executer`) : la page la prend en main - ouvrir un
+    // modal (règlement), appeler un point d'API (A Payer). Elle se confirme
+    // seulement si elle le demande (`confirmer`).
+    if (action.executer) {
+      if (action.confirmer) {
+        const confirme = await demanderConfirmation({
+          titre: action.titreConfirmation || action.libelle,
+          message: action.confirmer(n),
+          confirmer: action.boutonConfirmation || action.libelle,
+          danger: action.danger,
+        })
+        if (!confirme) return
+      }
+      try {
+        const message = await action.executer(entreesSel)
+        // Un message rendu = l'action a abouti (point d'API) : on relâche la
+        // sélection et on recharge. Sans message, la page poursuit elle-même
+        // (un modal reste ouvert).
+        if (typeof message === 'string' && message.trim()) {
+          toast.success(message)
+          viderSelection()
+          await recharger()
+        }
+      } catch (e) {
+        toast.error(`${action.libelle} impossible : ${messageErreur(e)}`)
+      }
+      return
+    }
+    // Action par champs : modifie des fiches, se confirme toujours.
+    const confirme = await demanderConfirmation({
+      // Titre et bouton propres à l'action s'il en faut plus que son libellé
+      // (« Changer l'état », « Passer à Actif »).
+      titre: action.titreConfirmation || action.libelle,
+      message: action.confirmer
+        ? action.confirmer(n)
+        : `${action.libelle} ${n} ligne${n > 1 ? 's' : ''} sélectionnée${n > 1 ? 's' : ''} ?`,
+      confirmer: action.boutonConfirmation || action.libelle,
+      danger: action.danger,
+    })
+    if (confirme) agirEnLot(action.champs, action.message)
+  }
+
+  /**
+   * Les actions de lot posées dans la barre d'outils (`actionsLotEnBarre`),
+   * comme l'application d'origine : toujours visibles, pâles tant qu'aucune
+   * ligne n'est cochée. Les écrans qui ne demandent rien gardent la seule
+   * barre noire, qui ne paraît qu'une fois la sélection faite.
+   */
+  const actionsLotEnBarre = Boolean(referentiel.actionsLotEnBarre)
+  const boutonsLotEnBarre =
+    actionsLotEnBarre &&
+    (referentiel.actionsLot || []).map((action) =>
+      action.type === 'export' ? (
+        <BoutonExport
+          key={action.libelle}
+          libelle={action.libelle}
+          onClick={exporterSelection}
+          disabled={nbSelectionnes === 0}
+        />
+      ) : (
+        <button
+          key={action.libelle}
+          type="button"
+          className={`ddb-action-lot${action.danger ? ' ddb-action-lot-danger' : ''}${
+            action.primaire ? ' ddb-action-lot-primaire' : ''
+          }`}
+          disabled={nbSelectionnes === 0}
+          onClick={() => executerActionLot(action)}
+        >
+          {action.libelle}
+        </button>
+      ),
+    )
+
   // Saisie en pleine page (demande d'agrément, cf. `creationPleinePage`) : le
   // formulaire remplace la liste, sans modal. Le bouton « Liste des demandes »
   // y ramène ; l'enregistrement aussi (cf. `enregistrer`, qui ferme le panneau).
@@ -1021,8 +1135,10 @@ const Referentiel = ({ referentiel, onStats }) => {
       )}
 
       {/* Barre contextuelle : elle ne paraît qu'une fois une ligne cochée, et
-          remplace la barre d'outils plutôt que de s'y ajouter. */}
-      {nbSelectionnes > 0 ? (
+          remplace la barre d'outils plutôt que de s'y ajouter. Les écrans qui
+          posent leurs actions dans la barre d'outils (`actionsLotEnBarre`) s'en
+          passent : les boutons y sont déjà, et la barre les redirait. */}
+      {nbSelectionnes > 0 && !actionsLotEnBarre ? (
         <div className="ddb-barre-selection">
           {/* Trois temps : à gauche l'export des lignes cochées (en vert,
               comme le bouton de la barre d'outils), au milieu leur nombre, à
@@ -1060,53 +1176,7 @@ const Referentiel = ({ referentiel, onStats }) => {
                   className={`ddb-action-lot${action.danger ? ' ddb-action-lot-danger' : ''}${
                     action.primaire ? ' ddb-action-lot-primaire' : ''
                   }`}
-                  onClick={async () => {
-                    const n = nbSelectionnes
-                    const entreesSel = visibles.filter((e) => selection.has(e.id))
-                    if (entreesSel.length === 0) return
-                    // Action à exécuteur (`executer`) : la page la prend en main -
-                    // ouvrir un modal (règlement), appeler un point d'API (A Payer).
-                    // Elle se confirme seulement si elle le demande (`confirmer`).
-                    if (action.executer) {
-                      if (action.confirmer) {
-                        const confirme = await demanderConfirmation({
-                          titre: action.titreConfirmation || action.libelle,
-                          message: action.confirmer(n),
-                          confirmer: action.boutonConfirmation || action.libelle,
-                          danger: action.danger,
-                        })
-                        if (!confirme) return
-                      }
-                      try {
-                        const message = await action.executer(entreesSel)
-                        // Un message rendu = l'action a abouti (point d'API) : on
-                        // relâche la sélection et on recharge. Sans message, la
-                        // page poursuit elle-même (un modal reste ouvert).
-                        if (typeof message === 'string' && message.trim()) {
-                          toast.success(message)
-                          viderSelection()
-                          await recharger()
-                        }
-                      } catch (e) {
-                        toast.error(`${action.libelle} impossible : ${messageErreur(e)}`)
-                      }
-                      return
-                    }
-                    // Action par champs : modifie des fiches, se confirme toujours.
-                    const confirme = await demanderConfirmation({
-                      // Titre et bouton propres à l'action s'il en faut plus que
-                      // son libellé (« Changer l'état », « Passer à Actif »).
-                      titre: action.titreConfirmation || action.libelle,
-                      message: action.confirmer
-                        ? action.confirmer(n)
-                        : `${action.libelle} ${n} ligne${n > 1 ? 's' : ''} sélectionnée${
-                            n > 1 ? 's' : ''
-                          } ?`,
-                      confirmer: action.boutonConfirmation || action.libelle,
-                      danger: action.danger,
-                    })
-                    if (confirme) agirEnLot(action.champs, action.message)
-                  }}
+                  onClick={() => executerActionLot(action)}
                 >
                   {action.libelle}
                 </button>
@@ -1186,12 +1256,19 @@ const Referentiel = ({ referentiel, onStats }) => {
               poussés à droite (cf. donnees-de-base.scss). */}
           {((referentiel.outils || []).length > 0 ||
             (barreCompacte && creation) ||
-            segmentsADroite) && (
+            segmentsADroite ||
+            actionsBarre ||
+            actionsLotEnBarre) && (
             <div
               className={`ddb-barre-actions${
                 barreCompacte || segmentsADroite ? ' ddb-barre-actions-droite' : ''
               }`}
             >
+              {/* Boutons de la page (cf. `actionsBarre`) : ils ouvrent le
+                  groupe, avant les segments et les outils. Les actions de lot
+                  les suivent quand l'écran les y demande. */}
+              {actionsBarre}
+              {boutonsLotEnBarre}
               {segmentsADroite && selecteurSegments}
               {/* Bouton de création avant les outils (`creationAvantOutils`),
                   comme la barre des bons de l'application d'origine. */}
@@ -1248,7 +1325,7 @@ const Referentiel = ({ referentiel, onStats }) => {
             <CTableHead>
               <CTableRow>
                 {depliable && <CTableHeaderCell style={{ width: '40px' }} aria-hidden="true" />}
-                {referentiel.selection && (
+                {casesACocher && (
                   <CTableHeaderCell style={{ width: '44px' }} className="ddb-cellule-case">
                     <input
                       type="checkbox"
@@ -1331,7 +1408,7 @@ const Referentiel = ({ referentiel, onStats }) => {
                         />
                       </CTableDataCell>
                     )}
-                    {referentiel.selection && (
+                    {casesACocher && (
                       <CTableDataCell
                         className="ddb-cellule-case"
                         onClick={(e) => e.stopPropagation()}

@@ -43,7 +43,11 @@ const DOCUMENTS = [
     libelle: 'Lettres de garantie',
     court: 'Lettre de garantie',
     chemin: '/documents/lettres-garantie',
-    teinte: p.rampe[4],
+    // Un cran plus clair que le bas de rampe depuis le 2026-11-25 : l'accent,
+    // devenu une ardoise sombre, voisine cette série dans le graphique des
+    // documents émis, et le presque-noir de la rampe n'en était séparé que
+    // par 1,22:1. À 1,75:1, l'écart se voit.
+    teinte: p.rampe[3],
     prestataire: (d) => d.prestataire,
   },
   {

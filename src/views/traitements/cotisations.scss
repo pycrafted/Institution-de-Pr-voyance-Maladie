@@ -1,10 +1,25 @@
 // Page « Cotisations » (captures 81 à 83).
 //
-// Elle reprend la feuille du Journal Central - même titre, mêmes sélecteurs,
-// même tableau à bandeau d'encre - et n'ajoute que ce qui lui est propre :
-// les deux onglets, la ligne des soldes, l'en-tête de l'appel nominatif, et
-// la barre de boutons colorés que l'original porte sur ses deux onglets.
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des pages de
+// Comptabilité - chapeau, onglets en cartes, panneau de filtres, bandeau de
+// totaux, tableau. Il n'emprunte plus la feuille du Journal Central : les
+// valeurs viennent du fichier partagé, et lui seul.
+//
+// **Deux familles de classes cohabitent ici, et il faut les distinguer.**
+//
+//   - `cot-chapeau`, `cot-carte`, `cot-panneau`, `cot-btn`, `cot-liste`… :
+//     la PAGE, refaite. Tout vient de `_design-compta.scss`.
+//   - `cot-modal`, `cot-bouton`, `cot-tableau`, `cot-vide`, `cot-aide`,
+//     `cot-requis` : les MODALS - celui des cotisations et celui de la Saisie
+//     Journal, qui importe cette feuille pour eux. Ils n'ont pas été refaits,
+//     et leurs règles sont inchangées, en bas de ce fichier.
+//
+// D'où `cot-btn` pour la page et `cot-bouton` pour les modals : deux noms
+// proches pour deux choses différentes, le temps que les modals suivent.
 
+@use '../comptabilite/design-compta' as c;
+
+// Gardées pour les modals.
 $cot-rouge: #e52621;
 $cot-encre: #1d1b1b;
 $cot-doux: #736968;
@@ -16,96 +31,231 @@ $cot-bleu: #4a9fd8;
   padding-top: 1.25rem;
 }
 
-// --- Les deux onglets -------------------------------------------------------
-.cot-onglets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem 1.5rem;
-  margin: 0.75rem 0 1.1rem;
-  border-bottom: 1px solid $cot-bordure;
+// ===========================================================================
+// La page
+// ===========================================================================
+
+// --- Le chapeau -------------------------------------------------------------
+.cot-chapeau {
+  @include c.cpt-chapeau;
 }
 
-// L'onglet ouvert porte un **pavé noir**, comme la page ouverte de la barre
-// du bas. Le filet rouge d'avant a été retiré le 2026-11-06 : le métier le
-// trouvait disgracieux, et le rouge de marque sert déjà aux boutons
-// d'action - un trait rouge sous un intitulé se lisait comme un bouton.
-.cot-onglet {
-  border: none;
-  border-radius: 0.5rem;
-  background: none;
-  margin-block: 0.35rem;
-  padding: 0.5rem 0.9rem;
-  color: $cot-doux;
-  font-weight: 500;
-  white-space: nowrap;
-  transition:
-    background-color 0.14s ease,
-    color 0.14s ease;
-
-  &:hover {
-    background-color: rgba(29, 27, 27, 0.05);
-    color: $cot-encre;
-  }
+.cot-titre {
+  @include c.cpt-titre;
 }
 
-.cot-onglet-actif,
-.cot-onglet-actif:hover {
-  background-color: $cot-encre;
-  color: #fff;
-  font-weight: 600;
+// --- Les deux onglets, en cartes --------------------------------------------
+// Saisie et Appels sont deux moments du même travail - on crée l'appel, puis
+// on le déroule nominativement -, et leurs colonnes ne se ressemblent pas.
+// D'où des cartes, comme les sous-onglets des Factures.
+.cot-cartes {
+  @include c.cpt-cartes;
 }
 
-// --- La ligne des soldes ----------------------------------------------------
-//
-// Les deux portent toujours le même nombre : une cotisation est équilibrée.
-// Les montrer tous les deux est ce qui permet de voir qu'aucune pièce ne
-// boite, sans ouvrir le grand livre.
-.cot-soldes {
-  margin: 0 0 0.85rem;
-  color: $cot-encre;
-  font-size: 0.95rem;
-
-  strong {
-    color: $cot-rouge;
-    font-variant-numeric: tabular-nums;
-  }
+.cot-carte {
+  @include c.cpt-carte;
 }
 
-.cot-separateur {
-  color: $cot-doux;
+.cot-carte-libelle {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-// --- La barre de filtres et de boutons --------------------------------------
+.cot-carte-active {
+  @include c.cpt-carte-active;
+}
+
+// --- Le panneau de filtres --------------------------------------------------
+.cot-panneau {
+  @include c.cpt-panneau;
+}
+
+.cot-panneau-tete {
+  @include c.cpt-panneau-tete;
+}
+
+.cot-panneau-titre {
+  @include c.cpt-panneau-titre;
+}
+
 .cot-barre {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.9rem;
+  @include c.cpt-barre;
 }
 
-.cot-barre-boutons {
-  justify-content: flex-end;
+.cot-champ {
+  @include c.cpt-champ;
 }
 
-.cot-boutons {
+.cot-etiquette {
+  @include c.cpt-etiquette;
+}
+
+.cot-saisie {
+  @include c.cpt-controle;
+  @include c.cpt-controle-saisie;
+}
+
+.cot-liste-deroulante {
+  @include c.cpt-controle;
+  @include c.cpt-controle-liste;
+}
+
+.cot-panneau-pied {
+  @include c.cpt-panneau-pied;
+}
+
+.cot-actions-barre {
+  @include c.cpt-actions;
+}
+
+// --- Les boutons de la page -------------------------------------------------
+// Un seul en accent par onglet, comme sur les trois écrans de Comptabilité :
+// « Nouvelle cotisation » sur la Saisie, « Appel Cotisations » sur les Appels.
+// Ce sont les deux gestes qui créent ; les autres consultent, transmettent ou
+// défont.
+.cot-btn {
+  @include c.cpt-btn;
+}
+
+.cot-btn-sec {
+  @include c.cpt-btn-sec;
+}
+
+.cot-btn-primary {
+  @include c.cpt-btn-primary;
+}
+
+// Supprimer défait quelque chose : secondaire au repos, rouge d'ALERTE au
+// survol - jamais celui de la marque.
+.cot-btn-danger {
+  @include c.cpt-btn-sec;
+
+  &:hover:not(:disabled) {
+    border-color: c.$cpt-alerte;
+    background: color-mix(in srgb, #{c.$cpt-alerte} 8%, #fff);
+    color: c.$cpt-alerte;
+  }
+}
+
+.cot-page .bouton-export {
+  @include c.cpt-bouton-export;
+}
+
+// --- Le bandeau ---------------------------------------------------------------
+// Sur la Saisie : les deux soldes, qui portent le même nombre - une cotisation
+// est équilibrée, et les montrer tous les deux donne le moyen de le vérifier.
+// Sur les Appels : l'appel nommé, ses cotisants et son total. Les uns comme
+// les autres étaient en lignes grises ou italiques au-dessus de la barre ; ils
+// prennent la place qu'ils tiennent sur le Journal Central.
+.cot-bandeau {
+  @include c.cpt-bandeau;
+}
+
+.cot-note {
+  @include c.cpt-note;
+
+  margin: 0;
+  color: c.$cpt-encre;
+  font-weight: 600;
+  white-space: normal;
+}
+
+.cot-note-vide {
+  @include c.cpt-note;
+
+  margin: 0;
+  white-space: normal;
+}
+
+.cot-totaux {
+  @include c.cpt-totaux;
+
   margin-left: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
 }
 
-.cot-large {
-  min-width: 250px;
+.cot-total {
+  @include c.cpt-total;
 }
 
-.cot-recherche {
-  min-width: 190px;
+.cot-total-etiquette {
+  @include c.cpt-total-etiquette;
 }
 
-// Un bouton de la barre : gris clair par défaut, et chaque variante reprend
-// la couleur que l'original lui donne.
+.cot-total-valeur {
+  @include c.cpt-total-valeur;
+}
+
+.cot-devise {
+  @include c.cpt-devise;
+}
+
+.cot-filet {
+  @include c.cpt-filet;
+}
+
+// --- Le tableau de la page --------------------------------------------------
+// `cot-liste`, et non `cot-tableau` : ce dernier habille le petit tableau des
+// modals, qui n'a pas été refait.
+//
+// `cpt-tableau-serre` : onze colonnes sur la Saisie, treize sur les Appels.
+// Elles se lisent en lignes d'un seul tenant qui défilent.
+.cot-liste-cadre {
+  @include c.cpt-tableau-conteneur;
+}
+
+.cot-liste {
+  @include c.cpt-tableau;
+  @include c.cpt-tableau-serre;
+
+  .cot-case {
+    width: 38px;
+    text-align: center;
+  }
+}
+
+// Un appel comptabilisé est figé : ses écritures sont parties au grand livre.
+// En retrait, sans disparaître - on le consulte encore.
+.cot-fige td {
+  color: c.$cpt-doux;
+  background: rgba(121, 111, 110, 0.06);
+}
+
+.cot-liste-vide {
+  @include c.cpt-tableau-vide;
+}
+
+.cot-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.12rem 0.5rem;
+  background: rgba(121, 111, 110, 0.14);
+  color: c.$cpt-doux;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.cot-badge-ok {
+  background: rgba(46, 125, 50, 0.14);
+  color: c.$cpt-vert;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .cot-titre {
+    font-size: 1.45rem;
+  }
+}
+
+// ===========================================================================
+// Les modals - inchangés
+// ===========================================================================
+//
+// Celui des cotisations (capture 82) et celui de la Saisie Journal (capture
+// 85), qui importe cette feuille pour ses boutons, ses aides et son petit
+// tableau de lignes. À refaire quand on s'attaquera aux formulaires.
+
+// Un bouton de modal : gris clair par défaut, et chaque variante reprend la
+// couleur que l'original lui donne.
 .cot-bouton {
   display: inline-flex;
   align-items: center;
@@ -123,7 +273,7 @@ $cot-bleu: #4a9fd8;
   }
 
   // Pâli plutôt que caché : l'action existe, elle n'est simplement pas
-  // disponible ici - c'est ce que fait l'original de tous ses boutons de lot.
+  // disponible ici.
   &:disabled {
     opacity: 0.45;
   }
@@ -164,58 +314,7 @@ $cot-bleu: #4a9fd8;
   color: #fff;
 }
 
-// --- L'en-tête de l'appel nominatif -----------------------------------------
-//
-// Trois lignes en italique, comme l'original : la période, l'appel nommé en
-// entier, puis le décompte et le total.
-.cot-entete-appel {
-  margin-bottom: 0.9rem;
-  font-style: italic;
-  line-height: 1.35;
-
-  p {
-    margin: 0;
-  }
-}
-
-.cot-entete-periode {
-  font-weight: 700;
-  color: $cot-encre;
-}
-
-.cot-entete-titre {
-  font-weight: 600;
-  color: $cot-encre;
-  font-size: 0.92rem;
-}
-
-.cot-entete-total {
-  font-weight: 600;
-  color: $cot-rouge;
-  font-size: 0.92rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.cot-entete-vide {
-  color: $cot-doux;
-}
-
-// --- Le tableau -------------------------------------------------------------
-//
-// Onze colonnes sur l'onglet Saisie : on resserre les cellules pour que la
-// dernière reste sous les yeux, et le libellé s'ellipse plutôt que de pousser
-// les montants hors de l'écran.
-//
-// La bordure et l'arrondi viennent de `.tableau-conteneur` : ce cadre ne
-// portait que le défilement, et le tableau tombait à vif dans la page quand
-// tous les autres étaient encadrés.
-.cot-tableau-cadre {
-  overflow-x: auto;
-}
-
-// Une ligne d'appel est une **personne**, pas une écriture : le tableau garde
-// l'aéré commun, comme la liste des participants. L'en-tête noir qu'on lisait
-// ici jusqu'au 2026-11-06 était le dernier des six habillages concurrents.
+// Le petit tableau des lignes posées, dans les deux modals.
 .cot-tableau {
   .cot-case {
     width: 38px;
@@ -229,35 +328,12 @@ $cot-bleu: #4a9fd8;
   }
 }
 
-// Un appel comptabilisé est figé : ses écritures sont parties au grand livre.
-// En retrait, sans disparaître - on le consulte encore.
-.cot-fige td {
-  color: $cot-doux;
-  background: rgba(121, 111, 110, 0.06);
-}
-
 .cot-vide {
   color: $cot-doux;
   padding: 1.4rem 0.6rem;
   text-align: center;
 }
 
-.cot-badge {
-  display: inline-block;
-  border-radius: 0.3rem;
-  padding: 0.12rem 0.45rem;
-  background: rgba(121, 111, 110, 0.14);
-  color: $cot-doux;
-  font-size: 0.78rem;
-  font-weight: 600;
-}
-
-.cot-badge-ok {
-  background: rgba(31, 157, 85, 0.16);
-  color: darken($cot-vert, 8%);
-}
-
-// --- Le modal ---------------------------------------------------------------
 .cot-modal {
   .cot-ligne {
     display: grid;
@@ -285,15 +361,6 @@ $cot-bleu: #4a9fd8;
 }
 
 @media (max-width: 991.98px) {
-  .cot-boutons {
-    margin-left: 0;
-    width: 100%;
-  }
-
-  .cot-large {
-    min-width: 100%;
-  }
-
   .cot-modal .cot-ligne {
     grid-template-columns: 1fr;
   }

@@ -1,0 +1,161 @@
+// LE chargeur des PAGES de l'application - un seul, partout.
+//
+// Posé le 2026-11-25 à la demande de l'utilisateur, sur le modèle de celui
+// d'OpsDigital : une file de points qui parcourt un huit couché, se croisant
+// au centre. Il remplace l'écran d'attente précédent (logo SAR et barre de
+// progression rouge).
+//
+// Il ne sert PAS au chargement des données d'un tableau : ces écrans gardent
+// le leur - le texte « Chargement… », le petit spinner, les squelettes de
+// lignes -, qui se contente de prendre les couleurs de la charte.
+//
+// **Comment le mouvement est fait.** Chaque point est posé sur un chemin
+// (`offset-path`) et avance le long de ce chemin (`offset-distance`), décalé
+// du précédent. Les points ne tournent donc pas en rond : ils SUIVENT la
+// courbe, et c'est ce qui dessine le croisement au centre.
+//
+// Le chemin est une **lemniscate de Gerono** - x = a·cos t, y = (b/2)·sin 2t -
+// échantillonnée en 120 segments dans une boîte de 200 × 72. Elle se croise
+// exactement au centre, contrairement à la lemniscate de Bernoulli, dont les
+// deux lobes se rejoignent en pointe.
+//
+// Les couleurs sont DÉRIVÉES de l'accent (`scss/_accent.scss`) : les points
+// vont de l'accent plein au même bleu éclairci de 47 points de clarté. Le
+// jour où l'accent change, le chargeur suit.
+
+@use 'sass:color';
+@use 'sass:math';
+@use '../scss/accent' as a;
+
+// Vingt-six points : assez pour que la courbe se lise d'un coup, assez peu
+// pour que chacun garde sa taille et sa teinte propres.
+$points: 26;
+// La boîte dans laquelle le chemin est écrit. Tout le reste s'y rapporte.
+$largeur: 200;
+$hauteur: 72;
+$tour: 2.6s;
+
+.chargeur {
+  // Largeur du huit. Les tailles du chargeur ne changent que cette valeur ;
+  // tout le reste en découle.
+  --chargeur-taille: 190px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  // Occupe confortablement la zone de contenu lors d'un changement de page.
+  min-height: 60vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+// Chargement initial de l'application : plein écran, fond blanc.
+.chargeur--plein {
+  position: fixed;
+  inset: 0;
+  min-height: 100vh;
+  background: #fff;
+  z-index: 2000;
+}
+
+// Variante réduite, pour une attente logée dans un bloc.
+.chargeur--ligne {
+  --chargeur-taille: 84px;
+
+  flex-direction: row;
+  gap: 0.7rem;
+  min-height: 0;
+  padding: 0.85rem 0;
+}
+
+// --- Le huit ----------------------------------------------------------------
+// Deux boîtes : celle du dehors tient la place réellement occupée, celle du
+// dedans garde les 200 × 72 dans lesquels le chemin est écrit et se met à
+// l'échelle. Sans cela, réduire le chargeur demanderait de réécrire le chemin.
+.chargeur-huit {
+  position: relative;
+  width: var(--chargeur-taille);
+  height: calc(var(--chargeur-taille) * #{math.div($hauteur, $largeur)});
+}
+
+.chargeur-piste {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: #{$largeur}px;
+  height: #{$hauteur}px;
+  transform: scale(calc(var(--chargeur-taille) / #{$largeur}));
+  transform-origin: top left;
+}
+
+.chargeur-point {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--point);
+  height: var(--point);
+  border-radius: 50%;
+  background: var(--teinte);
+  // Le point se centre tout seul sur le chemin : `offset-anchor` vaut par
+  // défaut son origine de transformation, c'est-à-dire son centre.
+  offset-path: path(
+    'M100.0,36.0 L104.9,32.7 L109.8,29.3 L114.7,26.1 L119.5,23.0 L124.3,20.0 L129.0,17.2 L133.7,14.6 L138.2,12.2 L142.7,10.1 L147.0,8.3 L151.2,6.8 L155.3,5.6 L159.2,4.7 L162.9,4.2 L166.5,4.0 L169.9,4.2 L173.1,4.7 L176.0,5.6 L178.8,6.8 L181.4,8.3 L183.8,10.1 L185.9,12.2 L187.8,14.6 L189.4,17.2 L190.8,20.0 L191.9,23.0 L192.8,26.1 L193.5,29.3 L193.9,32.7 L194.0,36.0 L193.9,39.3 L193.5,42.7 L192.8,45.9 L191.9,49.0 L190.8,52.0 L189.4,54.8 L187.8,57.4 L185.9,59.8 L183.8,61.9 L181.4,63.7 L178.8,65.2 L176.0,66.4 L173.1,67.3 L169.9,67.8 L166.5,68.0 L162.9,67.8 L159.2,67.3 L155.3,66.4 L151.2,65.2 L147.0,63.7 L142.7,61.9 L138.2,59.8 L133.7,57.4 L129.0,54.8 L124.3,52.0 L119.5,49.0 L114.7,45.9 L109.8,42.7 L104.9,39.3 L100.0,36.0 L95.1,32.7 L90.2,29.3 L85.3,26.1 L80.5,23.0 L75.7,20.0 L71.0,17.2 L66.3,14.6 L61.8,12.2 L57.3,10.1 L53.0,8.3 L48.8,6.8 L44.7,5.6 L40.8,4.7 L37.1,4.2 L33.5,4.0 L30.1,4.2 L26.9,4.7 L24.0,5.6 L21.2,6.8 L18.6,8.3 L16.2,10.1 L14.1,12.2 L12.2,14.6 L10.6,17.2 L9.2,20.0 L8.1,23.0 L7.2,26.1 L6.5,29.3 L6.1,32.7 L6.0,36.0 L6.1,39.3 L6.5,42.7 L7.2,45.9 L8.1,49.0 L9.2,52.0 L10.6,54.8 L12.2,57.4 L14.1,59.8 L16.2,61.9 L18.6,63.7 L21.2,65.2 L24.0,66.4 L26.9,67.3 L30.1,67.8 L33.5,68.0 L37.1,67.8 L40.8,67.3 L44.7,66.4 L48.8,65.2 L53.0,63.7 L57.3,61.9 L61.8,59.8 L66.3,57.4 L71.0,54.8 L75.7,52.0 L80.5,49.0 L85.3,45.9 L90.2,42.7 L95.1,39.3 Z'
+  );
+  offset-rotate: 0deg;
+  animation: chargeur-parcours $tour linear infinite;
+}
+
+// Place de départ, taille et teinte de chaque point.
+//
+// La place est écrite DEUX fois : en `offset-distance` (ce qu'on voit si
+// l'animation ne tourne pas) et en retard d'animation (ce qui l'étale pendant
+// qu'elle tourne). Sans la première, un chargeur figé empilerait ses
+// vingt-six points au même endroit.
+//
+// Taille et teinte décroissent le long de la file : c'est ce dégradé qui donne
+// le sens de la marche - une file de points identiques paraît immobile.
+@for $i from 1 through $points {
+  $t: math.div($i - 1, $points);
+
+  .chargeur-point:nth-child(#{$i}) {
+    --point: #{10 - 5.5 * $t}px;
+    --teinte: #{color.adjust(a.$accent-ipm, $lightness: $t * 47%)};
+
+    // `math.percentage()` et non `#{$t * 100}%` : interpolé devant un `%`,
+    // Sass glisse une espace (« 25 % »), et la déclaration est rejetée.
+    offset-distance: math.percentage($t);
+    animation-delay: #{-$t * $tour};
+  }
+}
+
+@keyframes chargeur-parcours {
+  from {
+    offset-distance: 0%;
+  }
+  to {
+    offset-distance: 100%;
+  }
+}
+
+// --- Le libellé -------------------------------------------------------------
+.chargeur-libelle {
+  margin: 0;
+  color: a.$accent-ipm;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.chargeur--ligne .chargeur-libelle {
+  font-size: 0.85rem;
+}
+
+// Mouvement réduit : la file se fige, et le huit reste dessiné - chaque point
+// garde la place que lui donne son `offset-distance`.
+@media (prefers-reduced-motion: reduce) {
+  .chargeur-point {
+    animation: none;
+  }
+}

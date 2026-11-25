@@ -1,382 +1,289 @@
 // Page « Interrogation Compte » (captures 74 à 78).
 //
-// Elle reprend la feuille du Journal Central - mêmes filtres, même tableau,
-// même pagination - et n'ajoute que ce qui lui est propre : les six onglets,
-// les deux sélecteurs en ligne haute avec leurs flèches, le bandeau noir à
-// deux côtés, et la colonne à cocher du lettrage.
+// Refonte du 2026-11-24, sur maquette retenue par le métier. L'écran se lit
+// en trois temps, de haut en bas, dans l'ordre du travail :
+//
+//   1. le chapeau - ce qu'est la page, et l'exercice qu'on regarde ;
+//   2. la famille de comptes, en six cartes ;
+//   3. les filtres, puis le résultat : totaux, tableau, pagination.
+//
+// Le vocabulaire n'a pas bougé : mêmes libellés de colonnes, mêmes intitulés
+// de filtres que l'original. Seule la mise en forme change.
+//
+// **Tout ce qui est commun au Journal Central vit dans `_design-compta.scss`**
+// et n'est donc pas écrit ici : les deux écrans sont le même grand livre vu de
+// deux côtés, et doivent se ressembler au pixel près. Ce fichier ne garde que
+// ce qui est propre à celui-ci - les six cartes de familles de comptes.
 
-$ic-rouge: #e52621;
-$ic-encre: #1d1b1b;
-$ic-doux: #736968;
-$ic-bordure: #ddd4d3;
+@use 'design-compta' as c;
 
 .ic-page {
-  padding-top: 1.25rem;
+  padding-top: 1.5rem;
 }
 
-// --- Les six onglets --------------------------------------------------------
-// Onglets soulignes, comme la page Participants : l'onglet retenu prend un
-// **trait noir** qui se deploie depuis le centre, sur une fine ligne de base.
-// Design demande le 2026-11-09 ; le rouge d'origine remplace par du noir.
-// Titre et onglets sur une meme ligne : le titre a gauche, la barre d'onglets
-// poussee a droite par l'espacement.
-// Titre puis barre d'onglets dessous, pleine largeur a gauche (comme
-// Fournisseurs de Soins). Avant, titre et onglets partageaient la ligne.
-.ic-entete {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  margin-bottom: 2.5rem;
+// --- Le chapeau -------------------------------------------------------------
+.ic-chapeau {
+  @include c.cpt-chapeau;
 }
 
+.ic-titre {
+  @include c.cpt-titre;
+}
+
+.ic-exercice {
+  @include c.cpt-exercice;
+}
+
+.ic-exercice-etiquette {
+  @include c.cpt-exercice-etiquette;
+}
+
+.ic-page .ic-exercice .ddb-filtre {
+  @include c.cpt-exercice-liste;
+}
+
+// --- Les six familles de comptes --------------------------------------------
+// Propre à cet écran. Cartes de même largeur, le libellé seul au centre, et
+// une pointe sous chacune. Forme retenue par le métier (2026-11-24) ; les
+// icônes et la numérotation ont été essayées puis retirées le même jour.
 .ic-onglets {
-  display: flex;
-  flex-wrap: wrap;
-  max-width: 100%;
-  gap: 2.5rem;
-  margin: 0;
-  border-bottom: 1px solid $ic-bordure;
+  @include c.cpt-cartes;
 }
 
 .ic-onglet {
-  position: relative;
-  border: 0;
-  background: transparent;
-  padding: 0.75rem 0.25rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: $ic-doux;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: color 0.2s ease;
+  @include c.cpt-carte;
+}
 
-  &:hover {
-    color: $ic-encre;
-  }
+// Le libellé peut tenir sur deux lignes (« Fournisseurs de soins ») : il passe
+// à la ligne plutôt que d'élargir sa carte, dont la largeur est fixe.
+.ic-onglet-libelle {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .ic-onglet-actif {
-  color: $ic-encre;
-
-  // Le trait rouge de l'onglet retenu, deploye depuis le centre au changement.
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: $ic-rouge;
-    transform-origin: center;
-    animation: ic-soulignement 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
+  @include c.cpt-carte-active;
 }
 
-@keyframes ic-soulignement {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
+// --- Le panneau de filtres --------------------------------------------------
+.ic-panneau {
+  @include c.cpt-panneau;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ic-onglet-actif::after {
-    animation: none;
-  }
+.ic-panneau-tete {
+  @include c.cpt-panneau-tete;
 }
 
-// --- La barre de filtres : une seule rangée -------------------------------
-// Sélecteurs de l'onglet, flèches, filtres communs et recherche s'enchaînent
-// de gauche à droite ; les boutons d'action partent à droite (marge auto sur
-// .ic-boutons). Avant, deux demi-rangées tassées à gauche laissaient un grand
-// vide au centre - ce que le métier trouvait, à raison, peu pro.
+.ic-panneau-titre {
+  @include c.cpt-panneau-titre;
+}
+
+.ic-lien {
+  @include c.cpt-lien;
+}
+
 .ic-barre {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1.25rem;
-  margin-bottom: 0.9rem;
+  @include c.cpt-barre;
 }
 
-.ic-selecteur {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  width: 15rem;
-  max-width: 100%;
-  min-width: 0;
-
-  select {
-    width: 100%;
-  }
+.ic-champ {
+  @include c.cpt-champ;
 }
 
-// Une seule etiquette pour toute la page : petite, grise, en capitales. Les
-// deux rangees de filtres parlaient deux langues (noir 0,95 rem en haut, gris
-// 0,75 rem en bas) ; elles parlent desormais la meme.
-.ic-etiquette,
-.ic-page .jc-filtre-etiquette {
-  color: $ic-doux;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.ic-etiquette {
+  @include c.cpt-etiquette;
 }
 
-// Les deux flèches ‹ › : passer au tiers suivant sans rouvrir la liste.
-// Deux petits boutons carres a filet, a la hauteur des champs - au lieu des
-// deux chevrons rouges geants d'avant, qui juraient avec le reste.
-.ic-fleches {
-  display: flex;
-  gap: 0.4rem;
-
-  button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 1.5px solid $ic-bordure;
-    border-radius: 0.5rem;
-    background: #fff;
-    color: $ic-encre;
-    font-size: 1.25rem;
-    line-height: 1;
-    transition:
-      border-color 0.14s ease,
-      background-color 0.14s ease;
-
-    &:hover:not(:disabled) {
-      border-color: $ic-encre;
-    }
-
-    &:disabled {
-      opacity: 0.4;
-    }
-  }
+.ic-page .ddb-filtre,
+.ic-page .ddb-champ {
+  @include c.cpt-controle;
 }
 
-.ic-recherche {
-  min-width: 190px;
+.ic-page .ddb-filtre {
+  @include c.cpt-controle-liste;
 }
 
-// Les actions utilitaires, au-dessus de la barre, calées à gauche.
-.ic-actions-haut {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.85rem;
+.ic-page .ddb-champ,
+.ic-page input.ddb-filtre {
+  @include c.cpt-controle-saisie;
 }
 
-.ic-boutons {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.ic-page input.ddb-filtre::placeholder {
+  color: c.$cpt-muet;
 }
 
-.ic-lettrage {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+.ic-panneau-pied {
+  @include c.cpt-panneau-pied;
 }
 
-// --- Les boutons : une seule famille, une seule hierarchie ------------------
-// Meme gabarit, meme hauteur que les champs (2,5 rem). Un seul bouton plein,
-// le rouge de marque, pour l'action maitresse - Imprimer Extrait ; des boutons
-// a filet pour Export et Lettrage ; un bouton fantome pour Delettrer. Fini le
-// vert, le rose et le rouge cote a cote.
-.ic-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  height: 2.5rem;
-  padding: 0 1rem;
-  border: 1.5px solid transparent;
-  border-radius: 0.5rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background-color 0.14s ease,
-    border-color 0.14s ease,
-    color 0.14s ease;
-
-  svg {
-    width: 0.95rem;
-    height: 0.95rem;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.ic-panneau-actions {
+  @include c.cpt-actions;
 }
 
-.ic-btn-primary {
-  background: $ic-rouge;
-  color: #fff;
-
-  &:hover:not(:disabled) {
-    background: #c71f1b;
-  }
-}
-
-.ic-btn-sec {
-  background: #fff;
-  border-color: $ic-bordure;
-  color: $ic-encre;
-
-  &:hover:not(:disabled) {
-    border-color: $ic-encre;
-  }
-}
-
-.ic-btn-ghost {
-  background: none;
-  color: $ic-doux;
-
-  &:hover:not(:disabled) {
-    background: rgba(29, 27, 27, 0.05);
-    color: $ic-encre;
-  }
-}
-
-// Largeurs calées dans la nouvelle barre : les règles d'origine visaient
-// `.jc-filtres`, qui n'enveloppe plus ces champs depuis la fusion.
-.ic-barre .jc-etroit {
-  width: 7rem;
-}
-
-.ic-barre .jc-large {
-  width: 16rem;
-}
-
-// Largeur ajustee au contenu : la fourchette de dates tient quelles que
-// soient les dates, sans jamais deborder du champ.
-.ic-barre .ic-periode {
-  width: auto;
-}
-
-// La période : un résumé qu'on déplie au clic.
+// --- La période : un résumé qui se déplie -----------------------------------
 .ic-periode {
   position: relative;
 }
 
-// La periode n'est plus un texte souligne : c'est un champ encadre, de meme
-// hauteur et meme filet que les listes a cote, pour que la rangee soit d'un
-// seul tenant. Le calendrier se deplie toujours au clic.
 .ic-periode-resume {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  width: 100%;
-  height: 2.5rem;
-  border: 1.5px solid $ic-bordure;
-  border-radius: 0.5rem;
-  background: #fff;
-  padding: 0 0.9rem;
-  color: $ic-encre;
-  font-size: 0.875rem;
-  white-space: nowrap;
-  transition: border-color 0.14s ease;
-
-  &:hover {
-    border-color: $ic-encre;
-  }
+  @include c.cpt-periode-resume;
 }
 
 .ic-periode-chevron {
-  width: 0.7rem;
-  height: 0.7rem;
-  color: $ic-doux;
+  flex: none;
+  width: 13px;
+  height: 13px;
+  color: c.$cpt-muet;
 }
 
 .ic-periode-champs {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 0.3rem);
-  left: 0;
-  display: flex;
-  gap: 0.5rem;
-  padding: 0.6rem;
-  border: 1px solid $ic-bordure;
-  border-radius: 0.45rem;
-  background: #fff;
-  box-shadow: 0 8px 24px rgba(29, 27, 27, 0.12);
+  @include c.cpt-periode-champs;
 }
 
-// --- Le bandeau noir --------------------------------------------------------
+// --- Les boutons ------------------------------------------------------------
+.ic-btn {
+  @include c.cpt-btn;
+}
+
+.ic-btn-primary {
+  @include c.cpt-btn-primary;
+}
+
+.ic-btn-sec {
+  @include c.cpt-btn-sec;
+}
+
+// --- Le résultat ------------------------------------------------------------
 .ic-bandeau {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem 1rem;
-  padding: 0.55rem 0.85rem;
-  background: $ic-encre;
-  color: #fff;
-  border-radius: 0.5rem;
-  margin-bottom: 0.75rem;
-  font-size: 0.92rem;
+  @include c.cpt-bandeau;
+}
+
+.ic-totaux {
+  @include c.cpt-totaux;
+}
+
+.ic-total {
+  @include c.cpt-total;
+}
+
+.ic-total-etiquette {
+  @include c.cpt-total-etiquette;
+}
+
+.ic-total-valeur {
+  @include c.cpt-total-valeur;
+}
+
+.ic-devise {
+  @include c.cpt-devise;
+}
+
+.ic-bandeau-filet {
+  @include c.cpt-filet;
+}
+
+.ic-solde {
+  @include c.cpt-solde;
+}
+
+.ic-bandeau-selection {
+  @include c.cpt-note;
 
   strong {
+    color: c.$cpt-encre;
     font-variant-numeric: tabular-nums;
   }
 }
 
-.ic-solde {
-  color: $ic-rouge;
-  font-style: italic;
-  font-variant-numeric: tabular-nums;
-}
-
-// « Solde sélection » : ce que disent les cases cochées. À zéro, le lot est
-// lettrable - c'est la seule chose que le bouton Lettrage vérifie.
-.ic-bandeau-selection {
-  color: $ic-rouge;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
 // --- Le tableau -------------------------------------------------------------
-//
-// Onze colonnes (treize sur les Charges Techniques) : on resserre les cellules
-// pour que la dernière, « Crédit », reste sous les yeux sans faire défiler.
-// Le libellé, seul texte libre de la ligne, s'ellipse plutôt que de pousser
-// les montants hors de l'écran.
+.ic-page .jc-tableau-conteneur,
+.ic-page .ddb-tableau-conteneur {
+  @include c.cpt-tableau-conteneur;
+}
+
 .ic-tableau {
-  .ic-case {
-    width: 38px;
-    text-align: center;
+  @include c.cpt-tableau;
+  @include c.cpt-tableau-serre;
+
+  // Le libellé est ce qu'on lit en premier sur une ligne : il porte le poids.
+  td.jc-libelle,
+  td:not([class]) {
+    font-weight: 500;
   }
 
-  // Le resserrement vient de `.tableau-dense`. L'en-tête noir déclaré ici
-  // n'a jamais été visible : même poids que la règle commune, chargée après.
-  tbody td {
-    max-width: 320px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .ddb-mono {
+    @include c.cpt-mono;
+  }
+
+  .jc-droite {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
   }
 }
 
-// Une écriture lettrée : rapprochée, donc en retrait sans disparaître.
+.ic-badge-journal {
+  @include c.cpt-badge-journal;
+}
+
+.ic-vide {
+  @include c.cpt-vide-cellule;
+}
+
+.ic-case {
+  width: 42px;
+  text-align: center;
+}
+
+// Une écriture lettrée est appariée : elle s'efface un peu, le travail restant
+// étant ailleurs. Propre à cet écran - le Journal Central ne lettre pas.
 .ic-lettree td {
-  color: $ic-doux;
-  background: rgba(121, 111, 110, 0.06);
+  color: c.$cpt-doux;
+  background: #fbfbfa;
 }
 
-@media (max-width: 991.98px) {
-  .ic-boutons {
-    margin-left: 0;
-    width: 100%;
+// --- La pagination ----------------------------------------------------------
+.ic-pagination {
+  @include c.cpt-pagination;
+}
+
+.ic-pagination-outils {
+  @include c.cpt-pagination-outils;
+}
+
+.ic-pagination-taille {
+  @include c.cpt-pagination-taille;
+
+  .ddb-filtre {
+    @include c.cpt-pagination-taille-liste;
+  }
+}
+
+.ic-pages {
+  @include c.cpt-pages;
+}
+
+.ic-page-active {
+  @include c.cpt-page-active;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .ic-titre {
+    font-size: 1.45rem;
   }
 
-  .ic-selecteur {
-    width: 100%;
+  .ic-bandeau,
+  .ic-panneau-pied {
+    flex-direction: column;
+    align-items: flex-start;
   }
+
+  .ic-pagination {
+    justify-content: flex-start;
+  }
+}
+
+// Le bouton Export partagé, accordé au gabarit des boutons de cet écran.
+.ic-page .bouton-export {
+  @include c.cpt-bouton-export;
 }

@@ -93,7 +93,14 @@ const MOIS_COMPLETS = [
 ]
 
 const COLONNES = [
-  { cle: 'cJl', libelle: 'C.JL', largeur: '70px' },
+  // Le code journal en pastille : deux ou trois lettres noyées dans une
+  // colonne de chiffres se cherchent ; encadrées, elles se trouvent.
+  {
+    cle: 'cJl',
+    libelle: 'C.JL',
+    largeur: '72px',
+    rendu: (e) => (e.cJl ? <span className="jc-badge-journal">{e.cJl}</span> : ''),
+  },
   { cle: 'dCompta', libelle: 'D. Compta', largeur: '95px', rendu: (e) => dateCourte(e.dCompta) },
   {
     cle: 'moisTrait',
@@ -255,6 +262,32 @@ const JournalCentral = () => {
     setPage(1)
   }
 
+  /**
+   * Remet les filtres à leur état d'ouverture : l'exercice en cours, tous les
+   * mois, tous les journaux, toutes les sociétés. L'exercice n'est pas touché -
+   * c'est lui qu'on est venu consulter, pas un filtre comme les autres.
+   */
+  const reinitialiser = () => {
+    setSociete('')
+    setMois('')
+    setJournal('ALL')
+    setRecherche('')
+    setPage(1)
+  }
+
+  /**
+   * Les numéros de page à montrer : une fenêtre de cinq centrée sur la page
+   * courante, recalée aux bords. Les afficher tous est impossible ici - une
+   * année de grand livre fait des milliers de pages (janvier 2022 en compte
+   * 37 140 écritures à lui seul).
+   */
+  const pagesVisibles = useMemo(() => {
+    const largeur = Math.min(5, pages)
+    let premier = Math.max(1, page - Math.floor(largeur / 2))
+    premier = Math.min(premier, Math.max(1, pages - largeur + 1))
+    return Array.from({ length: largeur }, (_, i) => premier + i)
+  }, [page, pages])
+
   const libelleMois = mois ? MOIS_COMPLETS[Number(mois) - 1] : null
   // « (ouvert) » ne s'affiche que sur le mois que la comptabilité a réellement
   // ouvert, pas sur n'importe quel mois consulté.
@@ -262,11 +295,6 @@ const JournalCentral = () => {
     !!periode?.ouvert &&
     Number(periode.mois) === Number(mois) &&
     Number(periode.annee) === Number(exercice)
-  const libelleJournal =
-    journal === 'ALL'
-      ? 'Tous les journaux'
-      : `${journal} - ${journaux.find((j) => j.code === journal)?.libelle || ''}`
-
   const exporter = () => {
     const entetes = COLONNES.map((c) => c.libelle).join(';')
     const lignes = ecritures.map((e) =>
@@ -286,12 +314,13 @@ const JournalCentral = () => {
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
         <section className="ddb-contenu jc-page">
-          <header className="jc-entete">
-            <div className="jc-titre-bloc">
+          {/* Le chapeau : la page, le mois comptable, et l'exercice qu'on
+              regarde. L'exercice est sorti des filtres - il commande tout le
+              reste et ne se change pas aussi souvent qu'une société ou un
+              journal. */}
+          <header className="jc-chapeau">
+            <div className="jc-chapeau-texte">
               <h2 className="jc-titre">Journal Central</h2>
-              <p className="jc-rappel">
-                Exercice {exercice} - {libelleJournal}
-              </p>
               {/* La période regardée, et « (ouvert) » quand c'est elle que la
                   comptabilité a ouverte - l'état vient de `/mois-comptable/`,
                   l'équivalent de la table `params` de LAMPS. Le mot ne
@@ -305,83 +334,102 @@ const JournalCentral = () => {
                   {moisOuvert && <span className="jc-periode-ouvert"> (ouvert)</span>}
                 </p>
               )}
-              <label className="ddb-recherche-flottante jc-recherche">
-                <span className="ddb-recherche-libelle">Rechercher…</span>
+            </div>
+
+            <label className="jc-exercice">
+              <span className="jc-exercice-etiquette">Exercice</span>
+              <select
+                className="ddb-filtre"
+                value={exercice}
+                onChange={(e) => changerFiltre(setExercice)(e.target.value)}
+              >
+                {exercices.map((an) => (
+                  <option key={an} value={an}>
+                    {an}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </header>
+
+          {/* Les filtres, dans leur panneau. Du plus large au plus fin : la
+              société, le mois, le journal, puis la recherche libre. */}
+          <div className="jc-panneau">
+            <div className="jc-panneau-tete">
+              <p className="jc-panneau-titre">Filtres</p>
+              {/* Un lien, pas un bouton : remettre les filtres à zéro ne vaut
+                  pas le poids visuel d'Exporter ou de Gestion. */}
+              <button type="button" className="jc-lien" onClick={reinitialiser}>
+                Réinitialiser
+              </button>
+            </div>
+
+            <div className="jc-barre">
+              <label className="jc-champ">
+                <span className="jc-etiquette">Société</span>
+                <select
+                  className="ddb-filtre"
+                  value={societe}
+                  onChange={(e) => changerFiltre(setSociete)(e.target.value)}
+                >
+                  <option value="">Toutes les sociétés</option>
+                  {adherents.map((a) => (
+                    <option key={a.code} value={a.code}>
+                      {a.code} - {a.libelle}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="jc-champ">
+                <span className="jc-etiquette">Mois</span>
+                <select
+                  className="ddb-filtre"
+                  value={mois}
+                  onChange={(e) => changerFiltre(setMois)(e.target.value)}
+                >
+                  <option value="">Tous les mois</option>
+                  {MOIS_COMPLETS.map((m, i) => (
+                    <option key={m} value={i + 1}>
+                      {m.charAt(0) + m.slice(1).toLowerCase()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="jc-champ">
+                <span className="jc-etiquette">Journal</span>
+                <select
+                  className="ddb-filtre"
+                  value={journal}
+                  onChange={(e) => changerFiltre(setJournal)(e.target.value)}
+                >
+                  <option value="ALL">ALL - Tous les journaux</option>
+                  {journaux.map((j) => (
+                    <option key={j.code} value={j.code}>
+                      {j.code} - {j.libelle}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="jc-champ">
+                <span className="jc-etiquette">Recherche</span>
                 <input
-                  className="ddb-recherche-champ"
+                  className="ddb-filtre"
+                  placeholder="N° de pièce, libellé, compte…"
                   value={recherche}
                   onChange={(e) => setRecherche(e.target.value)}
                 />
               </label>
             </div>
 
-            <div className="jc-outils">
-              <div className="jc-filtres">
-                <label className="jc-filtre-groupe">
-                  <span className="jc-filtre-etiquette">Société</span>
-                  <select
-                    className="ddb-filtre"
-                    value={societe}
-                    onChange={(e) => changerFiltre(setSociete)(e.target.value)}
-                  >
-                    <option value="">Toutes les sociétés</option>
-                    {adherents.map((a) => (
-                      <option key={a.code} value={a.code}>
-                        {a.code} - {a.libelle}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="jc-filtre-groupe jc-etroit">
-                  <span className="jc-filtre-etiquette">Exercice</span>
-                  <select
-                    className="ddb-filtre"
-                    value={exercice}
-                    onChange={(e) => changerFiltre(setExercice)(e.target.value)}
-                  >
-                    {exercices.map((an) => (
-                      <option key={an} value={an}>
-                        {an}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="jc-filtre-groupe">
-                  <span className="jc-filtre-etiquette">Mois</span>
-                  <select
-                    className="ddb-filtre"
-                    value={mois}
-                    onChange={(e) => changerFiltre(setMois)(e.target.value)}
-                  >
-                    <option value="">Tous les mois</option>
-                    {MOIS_COMPLETS.map((m, i) => (
-                      <option key={m} value={i + 1}>
-                        {m.charAt(0) + m.slice(1).toLowerCase()}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="jc-filtre-groupe jc-large">
-                  <span className="jc-filtre-etiquette">Journal</span>
-                  <select
-                    className="ddb-filtre"
-                    value={journal}
-                    onChange={(e) => changerFiltre(setJournal)(e.target.value)}
-                  >
-                    <option value="ALL">ALL - Tous les journaux</option>
-                    {journaux.map((j) => (
-                      <option key={j.code} value={j.code}>
-                        {j.code} - {j.libelle}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              <div className="jc-boutons">
+            {/* Le pied du panneau : les actions, poussées à droite. La
+                recherche part toute seule à chaque frappe, aucun bouton ne la
+                déclenche. Le compte des écritures trouvées a été retiré - la
+                pagination le dit déjà, en bas. */}
+            <div className="jc-panneau-pied">
+              <div className="jc-panneau-actions">
                 <BoutonExport onClick={exporter} />
                 {/* « Gestion » : les deux opérations de clôture de LAMPS. Elles
                     n'ont pas d'écran à elles - c'est ici qu'elles vivent, et
@@ -396,24 +444,41 @@ const JournalCentral = () => {
                     filtre, de recherche ou de page. */}
               </div>
             </div>
-          </header>
+          </div>
 
-          {/* Le bandeau de contrôle : la première chose que lit un comptable. */}
+          {/* Le bandeau de contrôle : la première chose que lit un comptable.
+              Les totaux portent sur TOUTE la période filtrée, jamais sur les
+              seules lignes affichées. */}
           <div className={`jc-bandeau${totaux && totaux.solde === 0 ? ' jc-equilibre' : ''}`}>
-            <span>
-              Débit: <strong>{montant(totaux?.debit ?? 0)}</strong>
-            </span>
-            <span className="jc-separateur">-</span>
-            <span>
-              Crédit <strong>{montant(totaux?.credit ?? 0)}</strong>
-            </span>
-            <span className="jc-separateur">-</span>
-            <span className="jc-solde">
-              Solde: <strong>{montant(totaux?.solde ?? 0)}</strong>
-            </span>
-            <span className="jc-compte-lignes">
-              {nombre.toLocaleString('fr-FR')} écriture{nombre > 1 ? 's' : ''}
-            </span>
+            <div className="jc-totaux">
+              <div className="jc-total">
+                <span className="jc-total-etiquette">Total débit</span>
+                <span className="jc-total-valeur">
+                  {montant(totaux?.debit ?? 0)} <span className="jc-devise">FCFA</span>
+                </span>
+              </div>
+              <span className="jc-bandeau-filet" aria-hidden="true" />
+              <div className="jc-total">
+                <span className="jc-total-etiquette">Total crédit</span>
+                <span className="jc-total-valeur">
+                  {montant(totaux?.credit ?? 0)} <span className="jc-devise">FCFA</span>
+                </span>
+              </div>
+              <span className="jc-bandeau-filet" aria-hidden="true" />
+              <div className="jc-total">
+                <span className="jc-total-etiquette">Solde</span>
+                <span className="jc-total-valeur jc-solde">
+                  {montant(totaux?.solde ?? 0)} <span className="jc-devise">FCFA</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Un solde nul veut dire que le grand livre est équilibré sur la
+                période : c'est le contrôle que le comptable vient faire, et il
+                mérite d'être dit, pas seulement montré par une couleur. */}
+            {totaux && totaux.solde === 0 && (
+              <span className="jc-equilibre-mention">Grand livre équilibré</span>
+            )}
           </div>
 
           <div className="ddb-tableau-conteneur jc-tableau-conteneur">
@@ -463,7 +528,16 @@ const JournalCentral = () => {
                               .filter(Boolean)
                               .join(' ')}
                           >
-                            {valeur || ''}
+                            {/* Le tiret ne va QUE sur les colonnes de
+                                montants. Là, une case vide est un vrai
+                                renseignement - l'écriture porte un débit OU un
+                                crédit - et le blanc se lirait comme une
+                                colonne sautée. Ailleurs (n° de chèque, compte
+                                tiers, matricule), l'absence est le cas normal :
+                                la remplir d'un tiret ajoutait jusqu'à quatre
+                                marques par ligne pour ne rien dire. Tiret
+                                simple, jamais le cadratin. */}
+                            {valeur || (c.aligne ? <span className="jc-vide-cellule">-</span> : '')}
                           </td>
                         )
                       })}
@@ -473,63 +547,72 @@ const JournalCentral = () => {
             </table>
           </div>
 
-          <footer className="ddb-pagination jc-pagination">
-            <label className="jc-taille">
-              Nombre par page
-              <select
-                className="ddb-filtre"
-                value={taille}
-                onChange={(e) => {
-                  setTaille(Number(e.target.value))
-                  setPage(1)
-                }}
-              >
-                {TAILLES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
+          <footer className="jc-pagination">
+            <div className="jc-pagination-outils">
+              <label className="jc-pagination-taille">
+                Nombre par page :
+                <select
+                  className="ddb-filtre"
+                  value={taille}
+                  onChange={(e) => {
+                    setTaille(Number(e.target.value))
+                    setPage(1)
+                  }}
+                >
+                  {TAILLES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <nav className="jc-pages" aria-label="Pagination">
+                <button
+                  type="button"
+                  onClick={() => setPage(1)}
+                  disabled={page <= 1}
+                  aria-label="Première page"
+                >
+                  «
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page <= 1}
+                  aria-label="Page précédente"
+                >
+                  ‹
+                </button>
+                {pagesVisibles.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={p === page ? 'jc-page-active' : undefined}
+                    onClick={() => setPage(p)}
+                    aria-current={p === page ? 'page' : undefined}
+                  >
+                    {p}
+                  </button>
                 ))}
-              </select>
-            </label>
-            <span className="jc-position">
-              {nombre === 0
-                ? '0 - 0 / 0'
-                : `${(page - 1) * taille + 1} - ${Math.min(page * taille, nombre)} / ${nombre.toLocaleString('fr-FR')}`}
-            </span>
-            <span className="jc-fleches">
-              <button
-                type="button"
-                onClick={() => setPage(1)}
-                disabled={page <= 1}
-                aria-label="Première page"
-              >
-                |&lt;
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-                aria-label="Page précédente"
-              >
-                &lt;
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(page + 1)}
-                disabled={page >= pages}
-                aria-label="Page suivante"
-              >
-                &gt;
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(pages)}
-                disabled={page >= pages}
-                aria-label="Dernière page"
-              >
-                &gt;|
-              </button>
-            </span>
+                <button
+                  type="button"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= pages}
+                  aria-label="Page suivante"
+                >
+                  ›
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage(pages)}
+                  disabled={page >= pages}
+                  aria-label="Dernière page"
+                >
+                  »
+                </button>
+              </nav>
+            </div>
           </footer>
         </section>
       </CCardBody>

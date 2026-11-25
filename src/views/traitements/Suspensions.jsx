@@ -33,8 +33,8 @@ import { exporterExcel } from '../donnees-de-base/excel'
 import { messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../participants/participants.scss'
 import './traitements.scss'
+import './suspensions.scss'
 
 const montantFr = (n) => Number(n || 0).toLocaleString('fr-FR')
 const societeNom = (code) => actifs('adherents').find((a) => a.code === code)?.libelle || code
@@ -74,9 +74,9 @@ const afficher = (col, ligne) => {
   return v ?? ''
 }
 
-const Tableau = ({ colonnes, lignes, pied, chargement }) => (
-  <div className="ddb-tableau-conteneur sus-tableau">
-    <CTable responsive className="ddb-tableau align-middle mb-0">
+const Tableau = ({ colonnes, lignes, chargement }) => (
+  <div className="sus-tableau-cadre">
+    <CTable responsive className="sus-tableau align-middle mb-0">
       <CTableHead>
         <CTableRow>
           {colonnes.map((col) => (
@@ -101,7 +101,7 @@ const Tableau = ({ colonnes, lignes, pied, chargement }) => (
 
         {!chargement && lignes.length === 0 && (
           <CTableRow>
-            <CTableDataCell colSpan={colonnes.length} className="ddb-etat-vide">
+            <CTableDataCell colSpan={colonnes.length} className="sus-vide">
               Aucune suspension.
             </CTableDataCell>
           </CTableRow>
@@ -116,7 +116,7 @@ const Tableau = ({ colonnes, lignes, pied, chargement }) => (
                   <CTableDataCell
                     key={col.nom}
                     className={`${col.aligne === 'droite' ? 'text-end' : ''}${
-                      negatif ? ' text-danger fw-semibold' : ''
+                      negatif ? ' sus-negatif' : ''
                     }`}
                   >
                     {afficher(col, ligne)}
@@ -127,7 +127,6 @@ const Tableau = ({ colonnes, lignes, pied, chargement }) => (
           ))}
       </CTableBody>
     </CTable>
-    {!chargement && pied}
   </div>
 )
 
@@ -199,24 +198,18 @@ const Suspensions = () => {
     )
   }, [toutes, recherche, colonnes])
 
-  // Totaux de pied, selon l'onglet.
-  const pied = useMemo(() => {
-    if (onglet === 'optique') {
-      const frais = lignes.reduce((s, l) => s + Number(l.fraisReel || 0), 0)
-      const qp = lignes.reduce((s, l) => s + Number(l.qpPart || 0), 0)
-      return (
-        <div className="sus-total">
-          Frais réels : <strong>{montantFr(frais)}</strong> - QP Part. :{' '}
-          <strong>{montantFr(qp)}</strong>
-        </div>
-      )
-    }
-    const total = lignes.reduce((s, l) => s + Number(l.consommation || 0), 0)
-    return (
-      <div className="sus-total">
-        Total : <strong>{montantFr(total)}</strong>
-      </div>
-    )
+  // Les totaux de la vue, posés dans le bandeau au-dessus du tableau. Ils
+  // portent sur les lignes AFFICHÉES, recherche comprise : c'est ce que faisait
+  // le pied qu'ils remplacent, et c'est ce qu'on attend d'un total qu'on lit
+  // au-dessus de la liste qu'il résume.
+  const totaux = useMemo(() => {
+    const somme = (champ) => lignes.reduce((s, l) => s + Number(l[champ] || 0), 0)
+    return onglet === 'optique'
+      ? [
+          { cle: 'frais', etiquette: 'Frais réels', valeur: somme('fraisReel') },
+          { cle: 'qp', etiquette: 'QP Part.', valeur: somme('qpPart') },
+        ]
+      : [{ cle: 'total', etiquette: 'Total consommation', valeur: somme('consommation') }]
   }, [onglet, lignes])
 
   const exporter = async () => {
@@ -238,13 +231,15 @@ const Suspensions = () => {
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
-        <div className="prt-entete">
-          <div className="prt-titre-ligne">
-            <div className="prt-titre-groupe">
-              <h1 className="prt-titre">Suspensions</h1>
-            </div>
-          </div>
-          <nav className="prt-onglets" aria-label="Onglets des suspensions">
+        <section className="ddb-contenu sus-page">
+          <header className="sus-chapeau">
+            <h2 className="sus-titre">Suspensions</h2>
+          </header>
+
+          {/* Les deux vues en cartes : ce sont deux lectures différentes du
+              même sujet - les limites de droits -, pas deux filtres d'une même
+              liste. Leurs colonnes ne se ressemblent même pas. */}
+          <nav className="sus-cartes" aria-label="Onglets des suspensions">
             {[
               { cle: 'consommation', libelle: 'Consommation totale' },
               { cle: 'optique', libelle: 'Optique' },
@@ -252,57 +247,86 @@ const Suspensions = () => {
               <button
                 key={o.cle}
                 type="button"
-                className={`prt-onglet${onglet === o.cle ? ' prt-onglet-actif' : ''}`}
+                className={`sus-carte${onglet === o.cle ? ' sus-carte-active' : ''}`}
+                aria-current={onglet === o.cle ? 'page' : undefined}
                 onClick={() => {
                   setOnglet(o.cle)
                   setRecherche('')
                 }}
               >
-                {o.libelle}
+                <span className="sus-carte-libelle">{o.libelle}</span>
               </button>
             ))}
           </nav>
-        </div>
 
-        <section className="ddb-contenu">
-          <div className="ddb-barre-outils ddb-barre-soulignee sus-barre">
-            {onglet === 'consommation' && (
-              <label className="ddb-filtre-groupe">
-                <span className="ddb-filtre-etiquette">Exercice</span>
-                <select
-                  className="ddb-filtre"
-                  value={exercice}
-                  onChange={(e) => setExercice(e.target.value)}
-                >
-                  {EXERCICES.map((ex) => (
-                    <option key={ex.valeur} value={ex.valeur}>
-                      {ex.libelle}
-                    </option>
-                  ))}
-                </select>
+          <div className="sus-panneau">
+            <div className="sus-panneau-tete">
+              <p className="sus-panneau-titre">Filtres</p>
+            </div>
+
+            <div className="sus-barre">
+              {/* L'optique ne dépend pas d'un exercice : sa périodicité est
+                  biennale, elle court d'un bon au suivant. */}
+              {onglet === 'consommation' && (
+                <label className="sus-champ">
+                  <span className="sus-etiquette">Exercice</span>
+                  <select
+                    className="sus-liste"
+                    value={exercice}
+                    onChange={(e) => setExercice(e.target.value)}
+                  >
+                    {EXERCICES.map((ex) => (
+                      <option key={ex.valeur} value={ex.valeur}>
+                        {ex.libelle}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <label className="sus-champ">
+                <span className="sus-etiquette">Recherche</span>
+                <input
+                  className="sus-saisie"
+                  placeholder="Matricule, participant, société…"
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                  autoComplete="off"
+                />
               </label>
-            )}
-            <label
-              className={`ddb-recherche-flottante sus-recherche${
-                recherche ? ' ddb-recherche-remplie' : ''
-              }`}
-            >
-              <span className="ddb-recherche-libelle">Rechercher…</span>
-              <input
-                className="ddb-recherche-champ"
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-                autoComplete="off"
-              />
-            </label>
-            <div className="sus-barre-actions">
-              {/* Pas de bouton « Actualiser » : la liste se rafraîchit toute seule
-                  (cf. l'écoute de fond des autres écrans). */}
-              <BoutonExport onClick={exporter} />
+            </div>
+
+            <div className="sus-panneau-pied">
+              <div className="sus-actions">
+                {/* Pas de bouton « Actualiser » : la liste se rafraîchit toute
+                    seule (cf. l'écoute de fond des autres écrans). */}
+                <BoutonExport onClick={exporter} />
+              </div>
             </div>
           </div>
 
-          <Tableau colonnes={colonnes} lignes={lignes} pied={pied} chargement={chargement} />
+          {/* Le bandeau de totaux, collé au tableau comme sur les écrans de
+              Comptabilité. Il porte sur les lignes affichées, recherche
+              comprise. */}
+          <div className="sus-bandeau">
+            <p className="sus-note">
+              {lignes.length} ligne{lignes.length > 1 ? 's' : ''}
+            </p>
+            <div className="sus-totaux">
+              {totaux.map((t, i) => (
+                <React.Fragment key={t.cle}>
+                  {i > 0 && <span className="sus-filet" aria-hidden="true" />}
+                  <div className="sus-total">
+                    <span className="sus-total-etiquette">{t.etiquette}</span>
+                    <span className="sus-total-valeur">
+                      {montantFr(t.valeur)} <span className="sus-devise">FCFA</span>
+                    </span>
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+
+          <Tableau colonnes={colonnes} lignes={lignes} chargement={chargement} />
         </section>
       </CCardBody>
     </CCard>

@@ -17,6 +17,7 @@ import CIcon from '@coreui/icons-react'
 import { FAMILLES, REFERENTIELS } from './config'
 import Referentiel from './Referentiel'
 import './donnees-de-base.scss'
+import './nomenclatures.scss'
 
 /**
  * Combien de lignes un référentiel montre, sur les `total` qu'il possède.
@@ -42,12 +43,9 @@ const DonneesDeBase = () => {
 
   /**
    * Toutes les nomenclatures de la page partagent la même barre compacte :
-   * total, recherche et outils sur une ligne, le bouton de création poussé à
-   * droite - comme les demandes d'agrément. Posé ici plutôt que dans chacune
-   * des configs : c'est un choix de la page, pas de tel ou tel référentiel.
-   *
-   * Le total est celui de la vue - segment et recherche compris. Il ne se
-   * nomme pas : le titre juste au-dessus dit déjà de quoi il est le compte.
+   * recherche et outils sur une ligne, le bouton de création poussé à droite.
+   * Posé ici plutôt que dans chacune des configs : c'est un choix de la page,
+   * pas de tel ou tel référentiel.
    *
    * Dans le `useMemo` et non à l'appel : un objet neuf à chaque rendu ferait
    * croire au composant que son référentiel a changé.
@@ -63,7 +61,16 @@ const DonneesDeBase = () => {
       // segments (Structure, Médicaments) envoient leur sélecteur à droite,
       // contre le bouton de création.
       segmentsADroite: true,
-      stats: (entrees) => `Total : ${entrees.length}`,
+      // Les actions de lot (Exclure, Réintégrer, Désactiver, pour les
+      // médicaments) se montrent EN PERMANENCE dans le pied du panneau,
+      // pâles tant qu'aucune ligne n'est cochée - comme sur les Règlements et
+      // les Remboursements. Sans cela elles n'apparaîtraient qu'une fois une
+      // ligne cochée, derrière une barre noire qui n'est plus la langue de
+      // cette page depuis la refonte.
+      actionsLotEnBarre: true,
+      // Pas de pastille « Total : N » accolée au titre : la pagination, au
+      // pied du tableau, dit déjà le compte de la vue - segment et recherche
+      // compris. C'est la règle des autres écrans depuis la refonte.
       // Ce que la page accepte de montrer (cf. lignesVisibles ci-dessus).
       limiteAffichage: lignesVisibles,
       // On modifie en cliquant la ligne (le panneau s'ouvre) : pas de crayon,
@@ -108,7 +115,7 @@ const DonneesDeBase = () => {
           </aside>
 
           {/* ---- Colonne droite : le référentiel sélectionné ---- */}
-          <section className="ddb-contenu">
+          <section className="ddb-contenu ndb-page">
             <Referentiel key={referentielActif.cle} referentiel={referentielActif} />
           </section>
         </div>

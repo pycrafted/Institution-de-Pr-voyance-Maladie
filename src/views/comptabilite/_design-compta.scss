@@ -1,0 +1,672 @@
+// Le langage de design des écrans de Comptabilité.
+//
+// Posé le 2026-11-24 avec la refonte de l'Interrogation de Comptes, puis
+// étendu au Journal Central. Les deux écrans sont la même chose vue de deux
+// côtés - un grand livre filtré - et doivent se ressembler au pixel près.
+//
+// Ce fichier ne contient que des **variables et des mixins**, jamais de
+// sélecteur : chaque page garde ses propres noms de classes (`ic-`, `jc-`) et
+// vient puiser ici les valeurs. Une couleur ou une graisse ne se décide donc
+// qu'à un seul endroit, et les deux écrans bougent ensemble.
+//
+// Les mixins qui imbriquent des règles ne le font que sur des **sélecteurs
+// d'élément** (`thead th`, `button`) ou des pseudo-classes : jamais sur une
+// classe, qui ne serait pas portable d'une page à l'autre.
+
+// --- La palette -------------------------------------------------------------
+// Le rouge est celui de la SAR : il ne se change pas, il se réserve. Sur ces
+// écrans il ne sert qu'à quatre choses - la sélection en cours, l'action
+// principale, le solde, et le cerclage de focus.
+$cpt-rouge: #e52621;
+$cpt-rouge-sombre: #c21f1b;
+
+// L'accent des deux écrans de Comptabilité est celui de l'IPM, déclaré une
+// seule fois dans `scss/style.scss` (`$accent-ipm`, repris en `--accent-ipm`).
+// On le lit ici en variable CSS plutôt qu'en variable Sass : cette feuille ne
+// peut pas importer la feuille principale, et recopier la valeur l'exposerait
+// à diverger le jour où elle changera.
+//
+// Le repli reste le rouge SAR : si la variable venait à manquer, l'écran
+// retombe sur la charte plutôt que sur du noir.
+$cpt-accent: var(--accent-ipm, #{$cpt-rouge});
+$cpt-accent-sombre: var(--accent-ipm-sombre, #{$cpt-rouge-sombre});
+$cpt-encre: #1d1b1b;
+$cpt-doux: #736968;
+$cpt-muet: #9a908e;
+$cpt-bordure: #ece4e3;
+$cpt-bordure-forte: #ddd4d3;
+// Les deux surfaces de l'écran : le ground des panneaux de filtres, des
+// cartes d'onglets et des rails, et celui des en-têtes de tableau.
+//
+// FROIDES depuis le 2026-11-25, et c'est la suite du changement d'accent.
+// Elles étaient deux gris CHAUDS dérivés du rouge SAR (#faf7f7 et #f7f2f1,
+// teintes 0° et 10°) ; l'accent est devenu une ardoise bleutée et le fond de
+// page un gris neutre-froid (#e5e7eb). Ces deux tons-là sont les plus
+// étendus de l'écran : laissés chauds, c'est eux qu'on aurait vus jurer.
+//
+// La TEINTE seule a changé - 220° et 210°, la famille de l'accent (215°) et du
+// fond de page (220°). La clarté est reprise au dixième de point près, de
+// sorte qu'aucun contraste ne bouge : le gris doux rend toujours 5,00:1 sur le
+// panneau et 4,77:1 sur l'en-tête, l'encre 16,1:1 et 15,4:1.
+$cpt-fond-panneau: #f7f8fa;
+$cpt-fond-entete: #f0f3f6;
+$cpt-vert: #2e7d32;
+// Le rouge d'ALERTE, distinct de l'accent de marque : une annulation, une
+// erreur de saisie, une suppression. Il ne bouge pas quand l'accent change -
+// c'est tout l'intérêt de l'avoir à part.
+$cpt-alerte: #c62828;
+
+// --- Le chapeau -------------------------------------------------------------
+@mixin cpt-chapeau {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+@mixin cpt-titre {
+  margin: 0;
+  color: $cpt-encre;
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+// L'exercice est sorti des filtres : il commande tout le reste et se change
+// rarement. Étiquette et liste dans un même cadre, comme un seul objet.
+@mixin cpt-exercice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.45rem 0.6rem 0.45rem 0.85rem;
+  border: 1px solid $cpt-bordure-forte;
+  border-radius: 10px;
+  background: #fff;
+  white-space: nowrap;
+}
+
+@mixin cpt-exercice-etiquette {
+  color: $cpt-encre;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+// La liste logée dans ce cadre n'en porte pas un second.
+@mixin cpt-exercice-liste {
+  width: auto;
+  min-width: 5.5rem;
+  border: 0;
+  padding: 0 1.6rem 0 0;
+  background-position: right 0.1rem center;
+  font-weight: 600;
+}
+
+// --- Les cartes de famille --------------------------------------------------
+// Les familles de comptes de l'Interrogation, les types du Plan Comptable :
+// même objet, même forme.
+//
+// **La largeur est FIXE**, et c'est le point (2026-11-24). En grille de
+// colonnes égales, six cartes se partageaient toute la largeur de l'écran et
+// « Banques » occupait autant de place que « Fournisseurs de soins », avec du
+// vide autour. Pire : la taille changeait d'un écran à l'autre selon le
+// nombre de cartes. En rangée souple à largeur fixe, une carte fait toujours
+// la même taille - six ou trois, ici ou ailleurs - et la rangée passe à la
+// ligne quand elle ne tient plus.
+@mixin cpt-cartes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  margin: 0 0 1.75rem;
+}
+
+@mixin cpt-carte {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  // Largeur fixe, et `max-width` pour qu'une carte ne déborde pas d'un écran
+  // plus étroit qu'elle.
+  flex: 0 0 11.5rem;
+  max-width: 100%;
+  // Même hauteur pour toutes, qu'une étiquette tienne sur une ligne ou deux.
+  min-height: 2.9rem;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: 14px;
+  background: $cpt-fond-panneau;
+  color: $cpt-encre;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background: darken($cpt-fond-panneau, 3%);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $cpt-accent;
+    outline-offset: 2px;
+  }
+
+  // La pointe sous la carte, sur TOUTES : c'est la forme du bouton, pas une
+  // marque de sélection. `background: inherit` la fait suivre sa carte.
+  &::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    transform: translate(-50%, -50%) rotate(45deg);
+    border-radius: 2px;
+    background: inherit;
+  }
+}
+
+// Seule la couleur distingue la carte choisie : même forme, même pointe.
+@mixin cpt-carte-active {
+  background: $cpt-accent;
+  color: #fff;
+
+  &:hover {
+    background: $cpt-accent-sombre;
+  }
+}
+
+// --- Le panneau de filtres --------------------------------------------------
+@mixin cpt-panneau {
+  margin-bottom: 1.75rem;
+  border: 1px solid $cpt-bordure;
+  border-radius: 12px;
+  background: $cpt-fond-panneau;
+  overflow: hidden;
+}
+
+@mixin cpt-panneau-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem 0.85rem;
+}
+
+@mixin cpt-panneau-titre {
+  margin: 0;
+  color: $cpt-encre;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+// Un lien, pas un bouton : l'action est secondaire et réversible. En gris et
+// non en rouge, pour la même raison.
+@mixin cpt-lien {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $cpt-doux;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    color: $cpt-encre;
+    text-decoration: underline;
+  }
+}
+
+// Une grille à colonnes égales, pas une rangée flex : les cadres font tous la
+// même largeur et les écarts sont rigoureusement égaux. `auto-fit` règle le
+// nombre de colonnes tout seul - les écrans n'ont pas tous le même nombre de
+// filtres.
+@mixin cpt-barre {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  align-items: end;
+  gap: 1rem;
+  padding: 0 1.15rem 1.15rem;
+}
+
+@mixin cpt-champ {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  margin: 0;
+}
+
+@mixin cpt-etiquette {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: $cpt-doux;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+// Le style partagé des filtres (`donnees-de-base.scss`) plafonne à
+// `max-width: 14rem` et refuse de grandir (`flex: 0 0 auto`), ce qui laisse un
+// vide à droite de chaque champ et fait croire à un espacement irrégulier.
+// Ici, le contrôle remplit sa colonne.
+@mixin cpt-controle {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  height: auto;
+  border: 1px solid $cpt-bordure-forte;
+  border-radius: 8px;
+  background-color: #fff;
+  color: $cpt-encre;
+  font-size: 0.88rem;
+  box-shadow: none;
+
+  &:focus {
+    border-color: $cpt-accent;
+    outline: none;
+  }
+}
+
+// Le <select> garde de la place à droite : son chevron est une image de fond.
+@mixin cpt-controle-liste {
+  padding: 0.55rem 2.1rem 0.55rem 0.8rem;
+}
+
+@mixin cpt-controle-saisie {
+  padding: 0.55rem 0.8rem;
+  background-image: none;
+}
+
+// Le pied du panneau : ce que les filtres ont donné, et ce qu'on en fait.
+@mixin cpt-panneau-pied {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  padding: 0.85rem 1.15rem;
+  border-top: 1px solid $cpt-bordure;
+}
+
+// `margin-left: auto` plutôt qu'un `justify-content: flex-end` sur le pied :
+// le pied est en `space-between`, et avec un seul enfant celui-ci se colle à
+// GAUCHE, pas à droite. La marge automatique pousse les actions à droite
+// qu'il y ait ou non quelque chose à leur gauche - c'est la seule des deux
+// écritures qui tienne dans les deux cas.
+@mixin cpt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  margin-left: auto;
+}
+
+// --- La période, résumée et dépliable ---------------------------------------
+@mixin cpt-periode-resume {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid $cpt-bordure-forte;
+  border-radius: 8px;
+  background: #fff;
+  color: $cpt-encre;
+  font-size: 0.88rem;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@mixin cpt-periode-champs {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid $cpt-bordure-forte;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(29, 27, 27, 0.12);
+}
+
+// --- Les boutons ------------------------------------------------------------
+@mixin cpt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+@mixin cpt-btn-primary {
+  background: $cpt-accent;
+  border-color: $cpt-accent;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: $cpt-accent-sombre;
+    border-color: $cpt-accent-sombre;
+  }
+}
+
+// Le bouton Export partagé (`components/BoutonExport.jsx`) porte un gabarit
+// fixé pour toute l'application : 2,5 rem de haut, 0,82 rem de texte. Les
+// boutons de ces écrans sont un peu plus bas. On l'accorde ici, et ici
+// seulement - les six autres écrans qui s'en servent gardent le leur.
+@mixin cpt-bouton-export {
+  height: auto;
+  padding: 0.5rem 0.9rem;
+  border-width: 1px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+// Survoler n'est pas choisir : le liseré reste gris.
+@mixin cpt-btn-sec {
+  background: #fff;
+  border-color: $cpt-bordure-forte;
+  color: $cpt-encre;
+
+  &:hover:not(:disabled) {
+    background: $cpt-fond-panneau;
+    border-color: $cpt-doux;
+  }
+}
+
+// --- Le bandeau de totaux ---------------------------------------------------
+// Étiquette au-dessus, chiffre dessous. Les totaux portent sur TOUTE la
+// période filtrée, jamais sur les seules lignes affichées. Le bandeau est
+// collé au tableau : ils forment une seule carte.
+@mixin cpt-bandeau {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.15rem;
+  border: 1px solid $cpt-bordure;
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: #fff;
+}
+
+@mixin cpt-totaux {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+@mixin cpt-total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+@mixin cpt-total-etiquette {
+  color: $cpt-doux;
+  font-size: 0.76rem;
+}
+
+@mixin cpt-total-valeur {
+  color: $cpt-encre;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// La devise, en retrait : la même sur toute la page, elle n'a pas à peser
+// autant que le nombre.
+@mixin cpt-devise {
+  color: $cpt-muet;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+@mixin cpt-filet {
+  width: 1px;
+  align-self: stretch;
+  min-height: 2.2rem;
+  background: $cpt-bordure;
+}
+
+@mixin cpt-solde {
+  color: $cpt-accent;
+  font-style: normal;
+}
+
+@mixin cpt-note {
+  color: $cpt-doux;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+// --- Le tableau -------------------------------------------------------------
+// Le conteneur est borné en hauteur, et ce n'est pas un détail esthétique :
+// `position: sticky` se fixe par rapport au conteneur de défilement le plus
+// proche. Sans hauteur bornée, ce conteneur ne défile jamais - c'est la page
+// qui défile - et l'en-tête collant ci-dessous reste inerte, il s'en va avec
+// le reste. Avec la borne, le tableau défile à l'intérieur, l'en-tête tient,
+// et le bandeau de totaux comme la pagination restent à l'écran.
+//
+// `overflow: auto` reste nécessaire pour les treize colonnes du grand livre
+// sur les écrans étroits ; on ne peut pas borner un seul axe, poser `auto`
+// sur l'un rend l'autre défilant de toute façon.
+@mixin cpt-tableau-conteneur {
+  max-height: 70vh;
+  border: 1px solid $cpt-bordure;
+  border-radius: 0 0 12px 12px;
+  overflow: auto;
+}
+
+@mixin cpt-tableau {
+  margin: 0;
+  width: 100%;
+  // Les chiffres s'alignent colonne par colonne sur TOUT le tableau, pas
+  // seulement sur les montants : les numéros de pièce et de compte se
+  // comparent aussi à la verticale.
+  font-variant-numeric: tabular-nums;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0.7rem 0.8rem;
+    // Pas de `border` : en `border-collapse: collapse`, les bordures
+    // appartiennent au tableau et non à la cellule - elles défilent donc avec
+    // lui et abandonnent l'en-tête collant. L'ombre interne, elle, suit la
+    // cellule.
+    box-shadow:
+      inset 0 1px 0 $cpt-bordure,
+      inset 0 -1px 0 $cpt-bordure;
+    background: $cpt-fond-entete;
+    color: $cpt-doux;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 0.8rem;
+    border-bottom: 1px solid $cpt-bordure;
+    color: $cpt-encre;
+    font-size: 0.88rem;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  tbody tr:hover td {
+    background: $cpt-fond-panneau;
+  }
+}
+
+// Un grand livre se lit en série : on y suit des colonnes de chiffres, pas
+// des fiches. Rien n'y passe à la ligne, quitte à faire défiler de côté -
+// c'est ce qui permet d'embrasser une vingtaine d'écritures d'un coup d'œil.
+//
+// Réservé aux deux grands livres (Journal Central, Interrogation de Comptes).
+// Le Plan Comptable ne le prend pas : son intitulé est la colonne libre, et
+// la couper le rendrait illisible dans une liste déjà étroite.
+@mixin cpt-tableau-serre {
+  white-space: nowrap;
+}
+
+// Le code journal, encadré : deux lettres noyées dans des chiffres se
+// cherchent, encadrées elles se trouvent.
+@mixin cpt-badge-journal {
+  display: inline-block;
+  min-width: 2.2rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid $cpt-bordure;
+  border-radius: 6px;
+  background: $cpt-fond-entete;
+  color: $cpt-doux;
+  font-family: ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+// La ligne chargée dans un formulaire. `color-mix` plutôt qu'un `rgba()` en
+// dur : l'accent est une variable CSS, et un rgba figé ne la suivrait pas le
+// jour où elle change. Le `background` qui précède sert de repli.
+@mixin cpt-ligne-choisie {
+  background: rgba(29, 27, 27, 0.06);
+  background: color-mix(in srgb, #{$cpt-accent} 14%, transparent);
+}
+
+// Numéros de pièce et comptes : chasse fixe, ils s'alignent et se comparent.
+@mixin cpt-mono {
+  font-family: ui-monospace, 'SFMono-Regular', 'Consolas', monospace;
+  font-size: 0.82rem;
+}
+
+// Un montant négatif est une ANNULATION (LAMPS contre-passe en négatif du
+// même côté). Il doit se voir : l'original se contente du signe moins.
+@mixin cpt-negatif {
+  color: $cpt-alerte;
+  font-weight: 600;
+}
+
+// Le tiret d'une case vide : le blanc se lirait comme une colonne sautée.
+@mixin cpt-vide-cellule {
+  color: $cpt-muet;
+}
+
+// L'état vide du tableau - « Chargement… », « Aucune écriture ».
+@mixin cpt-tableau-vide {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: $cpt-doux;
+}
+
+// --- La pagination ----------------------------------------------------------
+// Tout à droite : on y va après avoir lu le tableau.
+@mixin cpt-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1.25rem;
+  padding: 0.9rem 0.25rem 0;
+  color: $cpt-doux;
+  font-size: 0.82rem;
+}
+
+@mixin cpt-pagination-outils {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+@mixin cpt-pagination-taille {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  white-space: nowrap;
+}
+
+@mixin cpt-pagination-taille-liste {
+  width: auto;
+  min-width: 4.2rem;
+  padding: 0.3rem 1.8rem 0.3rem 0.6rem;
+}
+
+@mixin cpt-pages {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+
+  button {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 0.4rem;
+    border: 1px solid $cpt-bordure-forte;
+    border-radius: 8px;
+    background: #fff;
+    color: $cpt-encre;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: $cpt-fond-panneau;
+      border-color: $cpt-doux;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+}
+
+@mixin cpt-page-active {
+  background: $cpt-accent !important;
+  border-color: $cpt-accent !important;
+  color: #fff !important;
+}

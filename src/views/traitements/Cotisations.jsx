@@ -46,7 +46,8 @@ import { messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
 import { ouvrirApercu } from '../../services/apercu'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../comptabilite/journal-central.scss'
+// Plus d'emprunt à la feuille du Journal Central depuis le 2026-11-24 : la
+// page porte son propre habillage, bâti sur le fichier de design partagé.
 import './cotisations.scss'
 import CotisationModal from './CotisationModal'
 import { codeAppel, exporterAppel, lireAppelExcel, rapprocher } from './cotisationsExcel'
@@ -519,33 +520,55 @@ const Cotisations = () => {
   const rienDeCoche = coches.length === 0
   const appelComptabilise = detail?.appel?.comptabilise
 
+  // Les deux sélecteurs de période, étiquetés comme les champs des écrans de
+  // Comptabilité : sans son titre, une liste d'années ne dit pas de quoi elle
+  // parle.
   const selecteurAnnee = (valeur, poser) => (
-    <select className="ddb-filtre" value={valeur} onChange={(e) => poser(e.target.value)}>
-      {annees.map((an) => (
-        <option key={an} value={an}>
-          {an}
-        </option>
-      ))}
-    </select>
+    <label className="cot-champ">
+      <span className="cot-etiquette">Exercice</span>
+      <select
+        className="cot-liste-deroulante"
+        value={valeur}
+        onChange={(e) => poser(e.target.value)}
+      >
+        {annees.map((an) => (
+          <option key={an} value={an}>
+            {an}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 
   const selecteurMois = (valeur, poser) => (
-    <select className="ddb-filtre" value={valeur} onChange={(e) => poser(e.target.value)}>
-      {MOIS.map((nom, index) => (
-        <option key={nom} value={index + 1}>
-          {nom}
-        </option>
-      ))}
-    </select>
+    <label className="cot-champ">
+      <span className="cot-etiquette">Mois</span>
+      <select
+        className="cot-liste-deroulante"
+        value={valeur}
+        onChange={(e) => poser(e.target.value)}
+      >
+        {MOIS.map((nom, index) => (
+          <option key={nom} value={index + 1}>
+            {nom}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
         <section className="ddb-contenu cot-page">
-          <h2 className="jc-titre">Cotisations</h2>
+          <header className="cot-chapeau">
+            <h2 className="cot-titre">Cotisations</h2>
+          </header>
 
-          <nav className="cot-onglets" aria-label="Onglets des cotisations">
+          {/* Les deux onglets en cartes : ce sont deux moments du même travail
+              - on crée l'appel, puis on le déroule nominativement - et leurs
+              colonnes ne se ressemblent pas. */}
+          <nav className="cot-cartes" aria-label="Onglets des cotisations">
             {[
               ['saisie', 'Saisie cotisations'],
               ['appels', 'Appels cotisations'],
@@ -553,67 +576,92 @@ const Cotisations = () => {
               <button
                 key={cle}
                 type="button"
-                className={`cot-onglet${cle === onglet ? ' cot-onglet-actif' : ''}`}
+                className={`cot-carte${cle === onglet ? ' cot-carte-active' : ''}`}
+                aria-current={cle === onglet ? 'page' : undefined}
                 onClick={() => setOnglet(cle)}
               >
-                {libelle}
+                <span className="cot-carte-libelle">{libelle}</span>
               </button>
             ))}
           </nav>
 
           {onglet === 'saisie' ? (
             <>
-              {/* Les deux soldes portent le même nombre : une cotisation est
-                  équilibrée. Les montrer tous les deux donne le moyen de le
-                  vérifier d'un coup d'oeil. */}
-              <p className="cot-soldes">
-                Solde débit : <strong>{montant(totaux.debit)}</strong>
-                <span className="cot-separateur"> - </span>
-                Solde crédit : <strong>{montant(totaux.credit)}</strong>
-              </p>
+              <div className="cot-panneau">
+                <div className="cot-panneau-tete">
+                  <p className="cot-panneau-titre">Période</p>
+                </div>
 
-              <div className="cot-barre">
-                {selecteurAnnee(annee, setAnnee)}
-                {selecteurMois(mois, setMois)}
+                <div className="cot-barre">
+                  {selecteurAnnee(annee, setAnnee)}
+                  {selecteurMois(mois, setMois)}
+                </div>
 
-                <div className="cot-boutons">
-                  <button
-                    type="button"
-                    className="cot-bouton cot-bouton-danger"
-                    onClick={supprimer}
-                    disabled={rienDeCoche}
-                  >
-                    <CIcon icon={cilTrash} className="cot-icone" />
-                    Supprimer
-                  </button>
-                  <button
-                    type="button"
-                    className="cot-bouton cot-bouton-rouge"
-                    onClick={() => setModalOuvert(true)}
-                  >
-                    Nouvelle cotisation
-                  </button>
-                  <button
-                    type="button"
-                    className="cot-bouton cot-bouton-encre"
-                    onClick={comptabiliser}
-                    disabled={rienDeCoche}
-                  >
-                    <CIcon icon={cilCalculator} className="cot-icone" />
-                    Comptabiliser
-                  </button>
-                  <button type="button" className="cot-bouton cot-bouton-encre" onClick={imprimer}>
-                    <CIcon icon={cilPrint} className="cot-icone" />
-                    Imprimer
-                  </button>
-                  {/* Pas de bouton « Actualiser » : la liste se recharge
-                      d'elle-même à l'ouverture de l'onglet, et après chaque
-                      action (saisie d'un appel, comptabilisation). */}
+                <div className="cot-panneau-pied">
+                  <div className="cot-actions-barre">
+                    <button
+                      type="button"
+                      className="cot-btn cot-btn-danger"
+                      onClick={supprimer}
+                      disabled={rienDeCoche}
+                    >
+                      <CIcon icon={cilTrash} />
+                      Supprimer
+                    </button>
+                    <button
+                      type="button"
+                      className="cot-btn cot-btn-sec"
+                      onClick={comptabiliser}
+                      disabled={rienDeCoche}
+                    >
+                      <CIcon icon={cilCalculator} />
+                      Comptabiliser
+                    </button>
+                    <button type="button" className="cot-btn cot-btn-sec" onClick={imprimer}>
+                      <CIcon icon={cilPrint} />
+                      Imprimer
+                    </button>
+                    {/* L'acte qui crée : seul bouton en accent de l'onglet. */}
+                    <button
+                      type="button"
+                      className="cot-btn cot-btn-primary"
+                      onClick={() => setModalOuvert(true)}
+                    >
+                      Nouvelle cotisation
+                    </button>
+                    {/* Pas de bouton « Actualiser » : la liste se recharge
+                        d'elle-même à l'ouverture de l'onglet, et après chaque
+                        action (saisie d'un appel, comptabilisation). */}
+                  </div>
                 </div>
               </div>
 
-              <div className="tableau-conteneur cot-tableau-cadre">
-                <table className="table ddb-tableau cot-tableau">
+              {/* Les deux soldes portent le même nombre : une cotisation est
+                  équilibrée. Les montrer tous les deux donne le moyen de le
+                  vérifier d'un coup d'oeil. */}
+              <div className="cot-bandeau">
+                <p className="cot-note">
+                  {MOIS[Number(mois) - 1]} {annee}
+                </p>
+                <div className="cot-totaux">
+                  <div className="cot-total">
+                    <span className="cot-total-etiquette">Solde débit</span>
+                    <span className="cot-total-valeur">
+                      {montant(totaux.debit)} <span className="cot-devise">FCFA</span>
+                    </span>
+                  </div>
+                  <span className="cot-filet" aria-hidden="true" />
+                  <div className="cot-total">
+                    <span className="cot-total-etiquette">Solde crédit</span>
+                    <span className="cot-total-valeur">
+                      {montant(totaux.credit)} <span className="cot-devise">FCFA</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="cot-liste-cadre">
+                <table className="table cot-liste">
                   <thead>
                     <tr>
                       <th className="cot-case">
@@ -642,7 +690,7 @@ const Cotisations = () => {
                     )}
                     {!chargement && !appels.length && (
                       <tr>
-                        <td colSpan={COLONNES_SAISIE.length + 2} className="cot-vide">
+                        <td colSpan={COLONNES_SAISIE.length + 2} className="cot-liste-vide">
                           Aucune cotisation pour {MOIS[Number(mois) - 1]} {annee}.
                         </td>
                       </tr>
@@ -678,22 +726,151 @@ const Cotisations = () => {
             </>
           ) : (
             <>
-              {/* L'en-tête de l'original : la période, l'appel nommé en
-                  entier, puis « 219 Cotisants - Total Cotisé: 394 200 ». */}
-              <div className="cot-entete-appel">
+              <div className="cot-panneau">
+                <div className="cot-panneau-tete">
+                  <p className="cot-panneau-titre">Appel</p>
+                </div>
+
+                <div className="cot-barre">
+                  <label className="cot-champ">
+                    <span className="cot-etiquette">Recherche</span>
+                    <input
+                      className="cot-saisie"
+                      placeholder="Matricule, cotisant…"
+                      value={recherche}
+                      onChange={(e) => setRecherche(e.target.value)}
+                      autoComplete="off"
+                    />
+                  </label>
+                  {selecteurAnnee(anneeAppel, setAnneeAppel)}
+                  {selecteurMois(moisAppel, setMoisAppel)}
+                  <label className="cot-champ">
+                    <span className="cot-etiquette">Société</span>
+                    <select
+                      className="cot-liste-deroulante"
+                      value={societeAppel}
+                      onChange={(e) => setSocieteAppel(e.target.value)}
+                    >
+                      <option value="">Société…</option>
+                      {references.societes.map((s) => (
+                        <option key={s.code} value={s.code}>
+                          {s.intitule}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="cot-champ">
+                    <span className="cot-etiquette">Type de cotisation</span>
+                    <select
+                      className="cot-liste-deroulante"
+                      value={typeAppel}
+                      onChange={(e) => setTypeAppel(e.target.value)}
+                    >
+                      <option value="">Type de cotisation…</option>
+                      {references.types.map((t) => (
+                        <option key={t.code} value={t.code}>
+                          {t.intitule}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <div className="cot-panneau-pied">
+                  <div className="cot-actions-barre">
+                    <button
+                      type="button"
+                      className="cot-btn cot-btn-danger"
+                      onClick={supprimerAppel}
+                      disabled={!detail || appelComptabilise}
+                    >
+                      <CIcon icon={cilTrash} />
+                      Supprimer
+                    </button>
+                    <button
+                      type="button"
+                      className="cot-btn cot-btn-sec"
+                      onClick={comptabiliserAppel}
+                      disabled={!detail || appelComptabilise || !cochesAppel.length}
+                      title={
+                        appelComptabilise
+                          ? 'Appel déjà comptabilisé.'
+                          : cochesAppel.length
+                            ? 'Comptabiliser cet appel : deux écritures, Dr société / Cr produit.'
+                            : 'Cochez au moins une ligne.'
+                      }
+                    >
+                      <CIcon icon={cilCalculator} />
+                      Comptabiliser
+                    </button>
+                    <BoutonExport onClick={exporter} disabled={!lignes.length} />
+                    {/* Pâli sur un appel comptabilisé : on peut encore
+                        l'exporter pour contrôle, mais plus y réinjecter de
+                        montants. Hors ce cas, il suffit d'une société et d'un
+                        type : si l'appel n'existe pas, le fichier l'ouvre. */}
+                    <button
+                      type="button"
+                      className="cot-btn cot-btn-sec"
+                      onClick={() => fichier.current?.click()}
+                      disabled={!societeAppel || !typeAppel || appelComptabilise}
+                      title={
+                        appelComptabilise
+                          ? 'Appel comptabilisé : ses montants sont figés.'
+                          : 'Charger le fichier de la paie (il ouvre l’appel au besoin).'
+                      }
+                    >
+                      <CIcon icon={cilCloudDownload} />
+                      Importer Cotisations
+                    </button>
+                    <input
+                      ref={fichier}
+                      type="file"
+                      accept=".xlsx,.xls,.csv"
+                      className="d-none"
+                      onChange={importer}
+                    />
+                    {/* L'acte qui crée : il déroule la liste des cotisants.
+                        Seul bouton en accent de l'onglet. */}
+                    <button
+                      type="button"
+                      className="cot-btn cot-btn-primary"
+                      onClick={appelerCotisations}
+                      disabled={!societeAppel || !typeAppel || appelComptabilise}
+                    >
+                      <CIcon icon={cilCloudUpload} />
+                      Appel Cotisations
+                    </button>
+                    {/* Pas de bouton « Actualiser » : les lignes se rechargent
+                        d'elles-mêmes à l'ouverture de l'onglet, et après chaque
+                        action (appel, import, comptabilisation, suppression). */}
+                  </div>
+                </div>
+              </div>
+
+              {/* Le bandeau de l'original : l'appel nommé en entier, puis
+                  « 219 Cotisants - Total Cotisé: 394 200 ». */}
+              <div className="cot-bandeau">
                 {detail ? (
                   <>
-                    <p className="cot-entete-periode">
-                      {MOIS[Number(moisAppel) - 1]} {anneeAppel}
+                    <p className="cot-note">
+                      {MOIS[Number(moisAppel) - 1]} {anneeAppel} - {detail.entete.titre}
                     </p>
-                    <p className="cot-entete-titre">{detail.entete.titre}</p>
-                    <p className="cot-entete-total">
-                      {detail.entete.cotisants} Cotisants - Total Cotisé:{' '}
-                      {montant(detail.entete.total)}
-                    </p>
+                    <div className="cot-totaux">
+                      <div className="cot-total">
+                        <span className="cot-total-etiquette">Cotisants</span>
+                        <span className="cot-total-valeur">{detail.entete.cotisants}</span>
+                      </div>
+                      <span className="cot-filet" aria-hidden="true" />
+                      <div className="cot-total">
+                        <span className="cot-total-etiquette">Total cotisé</span>
+                        <span className="cot-total-valeur">
+                          {montant(detail.entete.total)} <span className="cot-devise">FCFA</span>
+                        </span>
+                      </div>
+                    </div>
                   </>
                 ) : (
-                  <p className="cot-entete-vide">
+                  <p className="cot-note-vide">
                     {societeAppel && typeAppel
                       ? `Aucun appel ${typeAppel} pour cette société en ` +
                         `${MOIS[Number(moisAppel) - 1]} ${anneeAppel}. ` +
@@ -703,111 +880,8 @@ const Cotisations = () => {
                 )}
               </div>
 
-              <div className="cot-barre">
-                <label className="ddb-recherche-flottante cot-recherche">
-                  <span className="ddb-recherche-libelle">Rechercher…</span>
-                  <input
-                    className="ddb-recherche-champ"
-                    value={recherche}
-                    onChange={(e) => setRecherche(e.target.value)}
-                  />
-                </label>
-                {selecteurAnnee(anneeAppel, setAnneeAppel)}
-                {selecteurMois(moisAppel, setMoisAppel)}
-                <select
-                  className="ddb-filtre cot-large"
-                  value={societeAppel}
-                  onChange={(e) => setSocieteAppel(e.target.value)}
-                >
-                  <option value="">Société…</option>
-                  {references.societes.map((s) => (
-                    <option key={s.code} value={s.code}>
-                      {s.intitule}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  className="ddb-filtre cot-large"
-                  value={typeAppel}
-                  onChange={(e) => setTypeAppel(e.target.value)}
-                >
-                  <option value="">Type de cotisation…</option>
-                  {references.types.map((t) => (
-                    <option key={t.code} value={t.code}>
-                      {t.intitule}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="cot-barre cot-barre-boutons">
-                <button
-                  type="button"
-                  className="cot-bouton"
-                  onClick={appelerCotisations}
-                  disabled={!societeAppel || !typeAppel || appelComptabilise}
-                >
-                  <CIcon icon={cilCloudUpload} className="cot-icone" />
-                  Appel Cotisations
-                </button>
-                <button
-                  type="button"
-                  className="cot-bouton cot-bouton-danger"
-                  onClick={supprimerAppel}
-                  disabled={!detail || appelComptabilise}
-                >
-                  <CIcon icon={cilTrash} className="cot-icone" />
-                  Supprimer
-                </button>
-                <button
-                  type="button"
-                  className="cot-bouton"
-                  onClick={comptabiliserAppel}
-                  disabled={!detail || appelComptabilise || !cochesAppel.length}
-                  title={
-                    appelComptabilise
-                      ? 'Appel déjà comptabilisé.'
-                      : cochesAppel.length
-                        ? 'Comptabiliser cet appel : deux écritures, Dr société / Cr produit.'
-                        : 'Cochez au moins une ligne.'
-                  }
-                >
-                  <CIcon icon={cilCalculator} className="cot-icone" />
-                  Comptabiliser
-                </button>
-                <BoutonExport onClick={exporter} disabled={!lignes.length} />
-                {/* Pâli sur un appel comptabilisé : on peut encore l'exporter
-                    pour contrôle, mais plus y réinjecter de montants. Hors ce
-                    cas, il suffit d'une société et d'un type : si l'appel
-                    n'existe pas, le fichier l'ouvre. */}
-                <button
-                  type="button"
-                  className="cot-bouton cot-bouton-bleu"
-                  onClick={() => fichier.current?.click()}
-                  disabled={!societeAppel || !typeAppel || appelComptabilise}
-                  title={
-                    appelComptabilise
-                      ? 'Appel comptabilisé : ses montants sont figés.'
-                      : 'Charger le fichier de la paie (il ouvre l’appel au besoin).'
-                  }
-                >
-                  <CIcon icon={cilCloudDownload} className="cot-icone" />
-                  Importer Cotisations
-                </button>
-                <input
-                  ref={fichier}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  className="d-none"
-                  onChange={importer}
-                />
-                {/* Pas de bouton « Actualiser » : les lignes se rechargent
-                    d'elles-mêmes à l'ouverture de l'onglet, et après chaque
-                    action (appel, import, comptabilisation, suppression). */}
-              </div>
-
-              <div className="tableau-conteneur cot-tableau-cadre">
-                <table className="table ddb-tableau cot-tableau">
+              <div className="cot-liste-cadre">
+                <table className="table cot-liste">
                   <thead>
                     <tr>
                       <th className="cot-case">
@@ -836,7 +910,7 @@ const Cotisations = () => {
                     )}
                     {!chargementAppel && !lignes.length && (
                       <tr>
-                        <td colSpan={COLONNES_APPEL.length + 2} className="cot-vide">
+                        <td colSpan={COLONNES_APPEL.length + 2} className="cot-liste-vide">
                           {detail
                             ? 'Aucun cotisant sur cet appel.'
                             : societeAppel && typeAppel

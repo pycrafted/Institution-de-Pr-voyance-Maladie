@@ -1,7 +1,15 @@
+// L'accent, chargé AVANT CoreUI : sa configuration le lit (cf. `_accent.scss`,
+// qui explique pourquoi il a son propre module).
+@use 'accent' as a;
+
 @use '@coreui/coreui/scss/coreui' as * with (
   $enable-deprecation-messages: false,
-  // Charte SAR : rouge officiel comme couleur primaire (#E52621 - RVB 229/38/33)
-  $primary: #e52621,
+  // La couleur primaire de CoreUI est celle de ses états d'interaction -
+  // anneau de focus, élément retenu d'un menu, interrupteur enclenché, case
+  // cochée, bouton principal, liens. Elle porte donc l'ACCENT de l'IPM, et
+  // non plus le rouge SAR (2026-11-25) : sur une application devenue ardoise,
+  // chaque clic rougeoyait.
+  $primary: a.$accent-ipm,
   // Police Satoshi, celle d'OpsDigital (cf. @font-face ci-dessous).
   $font-family-sans-serif: (
       'Satoshi',
@@ -21,9 +29,9 @@
 // =============================================================================
 // IPM - thème inspiré d'OpsDigital (TailAdmin), aux couleurs SAR
 // =============================================================================
-// Menu latéral sombre, barre supérieure blanche légèrement ombrée, fond très
-// clair, cartes blanches arrondies à ombre douce. Les couleurs restent celles
-// de la charte : rouge et noir SAR.
+// Menu latéral sombre, barre supérieure blanche légèrement ombrée, fond de
+// page gris, cartes blanches arrondies à ombre douce. Les couleurs restent
+// celles de la charte : rouge et noir SAR.
 
 // Satoshi (Indian Type Foundry, licence Fontshare), en police variable : un
 // seul fichier porte toutes les graisses, de 300 à 900.
@@ -58,24 +66,56 @@ $sar-graphite: #333330;
 //
 // Chaque gris a gardé SA clarté - la hiérarchie du front lui appartient, et
 // elle compte bien plus de paliers que la PWA ; seules la teinte (27°) et la
-// saturation (très retenue : 0,008 dans les tons clairs) ont changé. Cinq
-// valeurs sont reprises au hexadécimal près de la charte mobile : le fond de
-// page (--ipm-fond), le filet (--ipm-surface-2), la ligne active
-// (--ipm-rouge-doux), l'encre (--ipm-texte) et le noir du menu (--ipm-noir).
+// saturation (très retenue : 0,008 dans les tons clairs) ont changé. Quatre
+// valeurs sont reprises au hexadécimal près de la charte mobile : le filet
+// (--ipm-surface-2), la ligne active (--ipm-rouge-doux), l'encre
+// (--ipm-texte) et le noir du menu (--ipm-noir).
 //
 // Une seule exception à la clarté conservée : `$texte-doux`, descendu de deux
 // crans. Le fond de page de la PWA est un cran plus sombre que l'ancien, et
 // l'ardoise d'avant n'y tenait plus que 4,30:1 - sous le plancher de 4,5:1 où
 // elle était déjà, de justesse, avant le rechauffement. À #736968 elle rend
-// 4,77:1 sur le fond et 5,32:1 sur une carte.
+// 5,32:1 sur une carte blanche.
 $openkm-navbar-bg: $sar-black;
 $openkm-navbar-border: $sar-graphite;
-$openkm-thead-bg: #fef8f7;
-$openkm-content-bg: #f8f1f0;
-$openkm-card-border: #f1eae9;
-$openkm-row-active-bg: #fdecec;
-$openkm-row-hover-bg: #fef7f6;
+// En-tête de tableau : la MÊME valeur que `$cpt-fond-entete` des écrans
+// refaits. Les deux coexistent - celui-ci sert aux écrans qui n'ont pas
+// encore leur feuille -, et rien ne justifiait qu'ils diffèrent.
+$openkm-thead-bg: #f0f3f6;
+// Fond de page, demandé le 2026-11-25 : un gris NEUTRE, et franchement plus
+// sombre que l'ancien rose très clair (#f8f1f0). C'est la seule surface de
+// l'application qui ne soit pas dans les gris chauds décrits ci-dessus - et
+// c'est voulu : les cartes blanches s'en détachent nettement, au lieu de
+// flotter sur un fond qui leur ressemblait.
+//
+// Il ne sert QUE de fond de page (`body`). Le gris chaud très clair qu'il
+// portait avant a gardé son autre emploi, juste en dessous.
+$openkm-content-bg: #e5e7eb;
+// (Le survol des ronds de la barre supérieure avait son propre gris chaud
+// jusqu'au 2026-11-25. Il prend celui des lignes de tableau, `$openkm-row-
+// hover-bg` : un survol est un survol, et l'application n'a pas besoin de
+// deux lavis pour le dire.)
+// Filet des cartes et de la barre supérieure. Teinte seule changée
+// (2026-11-25) : même clarté, famille froide.
+$openkm-card-border: #e9ecf1;
+// La ligne retenue et la ligne survolée d'un tableau. Elles étaient deux
+// lavis ROSES, dernier endroit où l'on voyait du rouge SAR en passant la
+// souris ; ce sont maintenant deux lavis de la famille de l'accent, la
+// retenue d'un cran plus marquée que la survolée.
+$openkm-row-active-bg: #e7edf7;
+$openkm-row-hover-bg: #f4f7fb;
 $texte-doux: #736968;
+// Le gris des quatre icônes de bout de barre, au repos.
+//
+// Froid, et nettement plus SOUTENU que le gris des textes doux : ces quatre
+// pictogrammes sont seuls sur une barre blanche, sans libellé pour les aider,
+// et ils étaient trop pâles pour se voir. 7,62:1 sur blanc contre 5,27 avant
+// - et il reste de la marge jusqu'à l'encre du survol, à 16,88:1.
+$texte-icone: #4e545f;
+// Le rouge d'ALERTE, distinct de l'accent de marque et du rouge SAR : une
+// annulation, une suppression, une sortie. Même valeur que `$cpt-alerte` des
+// écrans de Comptabilité et que `$ddb-alerte` des listes.
+$alerte: #c62828;
 // L'ombre des cartes d'OpsDigital (« shadow-default »).
 $ombre-carte: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
 
@@ -105,12 +145,13 @@ $pages-hauteur: 2.9rem;
   padding-top: 0.75rem !important;
 }
 
-// La barre des pages est fixe au bas de l'écran : le contenu lui laisse sa
-// hauteur, et seulement quand elle est là. Le tableau de bord n'a pas de
-// pages, et n'a donc aucune raison de garder une marge basse (le drapeau est
-// posé par <AppNavPages />).
+// La barre des pages est une SECONDE barre de navigation, sous la principale
+// (2026-11-24 ; elle était auparavant fixée au bas de l'écran). Le contenu lui
+// laisse sa hauteur en plus de celle du haut, et seulement quand elle est là :
+// le tableau de bord n'a pas de pages, et n'a donc aucune raison de descendre
+// (le drapeau est posé par <AppNavPages />).
 body.app-a-barre-pages .wrapper {
-  padding-bottom: $pages-hauteur;
+  padding-top: $navbar-hauteur + $pages-hauteur;
 }
 
 // -----------------------------------------------------------------------------
@@ -160,6 +201,23 @@ body.app-a-barre-pages .wrapper {
   margin-left: auto;
 }
 
+// Les quatre cibles de bout de barre : profil, notifications, paramètres,
+// sortie.
+//
+// REPRISES le 2026-11-25. Elles étaient le dernier détail de la barre à ne
+// pas parler la langue du reste de l'application, sur trois points :
+//
+//   · des DISQUES, là où tout le reste de l'écran est fait de rectangles
+//     arrondis - les pastilles de section juste en dessous (0,45 rem), celles
+//     des pages (0,5 rem), les boutons (8 px), les cartes (14 px). Quatre
+//     ronds au milieu de ça se lisaient comme un emprunt ;
+//   · un gris CHAUD au repos (#736968, teinte 10°), seule couleur tiède d'une
+//     barre devenue froide ;
+//   · aucune taille donnée au glyphe, qui prenait celle de CoreUI par défaut.
+//     Les quatre dessins n'ont pas la même emprise naturelle : la cloche et
+//     l'engrenage paraissaient plus gros que la silhouette, et le pictogramme
+//     de sortie plus large que haut. Une taille écrite les met au même
+//     gabarit, et ils redeviennent une série.
 .app-navbar-icone {
   display: inline-flex;
   align-items: center;
@@ -167,44 +225,93 @@ body.app-a-barre-pages .wrapper {
   width: 2.35rem;
   height: 2.35rem;
   border: 0;
-  border-radius: 50%;
+  border-radius: 10px;
   background: transparent;
-  color: $texte-doux;
+  color: $texte-icone;
   transition:
     color 0.12s ease,
     background-color 0.12s ease;
 
+  // Plus grandes et plus GRASSES (2026-11-25) : seules sur une barre blanche,
+  // sans libellé, elles manquaient de présence.
+  //
+  // Les icônes de CoreUI sont des formes PLEINES, pas des tracés : il n'y a
+  // pas d'épaisseur de trait à augmenter. On cerne donc la forme de son
+  // propre contour, posé SOUS le remplissage (`paint-order`) : le dessin
+  // grossit de la moitié du trait sur chaque bord, ce qui l'épaissit sans en
+  // déformer le dessin. L'unité est celle du dessin (boîte de 512) : 16 y
+  // valent un peu plus d'un demi-pixel à l'écran - assez pour se voir, assez
+  // peu pour que les dents de l'engrenage ne se referment pas.
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke: currentcolor;
+    stroke-width: 16;
+    paint-order: stroke fill;
+  }
+
   &:hover {
-    background-color: $openkm-content-bg;
+    background-color: $openkm-row-hover-bg;
     color: $sar-black;
   }
 
+  // L'anneau de focus clavier porte l'accent, comme partout ailleurs : il
+  // était au rouge SAR, seul rouge restant sur une barre devenue ardoise.
   &:focus-visible {
-    outline: 2px solid $sar-red;
+    outline: 2px solid a.$accent-ipm;
     outline-offset: 1px;
+  }
+
+  // Enfoncé : un cran plus marqué que le survol, pour que le clic se sente -
+  // le même cran que la ligne retenue d'un tableau.
+  &:active {
+    background-color: $openkm-row-active-bg;
   }
 }
 
-// L'écran ouvert : même pavé noir que la page ouverte en bas, en rond cette
-// fois puisque la cible l'est. Profil et Paramètres n'appartiennent à aucune
-// section : sans cette marque, rien ne dirait qu'on y est.
+// L'infobulle des icônes de la barre supérieure (`CTooltip` : l'adresse de
+// l'utilisateur, « Paramètres », « Déconnexion »). Elle sortait en noir
+// presque pur, celui que CoreUI donne par défaut. Elle prend l'accent, la
+// même ardoise que la barre des pages juste en dessous - la flèche de la
+// bulle suit, CoreUI la peignant avec la même variable.
+.tooltip {
+  --cui-tooltip-bg: #{a.$accent-ipm};
+  --cui-tooltip-color: #fff;
+}
+
+// L'écran ouvert. Profil et Paramètres n'appartiennent à aucune section :
+// sans cette marque, rien ne dirait qu'on y est.
+//
+// En ACCENT depuis le 2026-11-25, et non plus en pavé noir : « ici » se dit à
+// l'accent partout ailleurs - la section ouverte, la page ouverte, l'état
+// retenu d'une liste, la nomenclature ouverte. C'était le dernier marqueur
+// d'état noir de l'application.
 .app-navbar-icone-actif,
 .app-navbar-icone-actif:hover {
-  background-color: $sar-black;
+  background-color: a.$accent-ipm;
   color: #fff;
 }
 
-// Le rouge est réservé à la sortie.
-.app-navbar-icone-sortie:hover {
-  color: $sar-red;
-}
+// LA SORTIE NE SE PEINT PLUS EN ROUGE AU SURVOL (2026-11-25, sur décision de
+// l'utilisateur).
+//
+// Elle le faisait depuis la toute première version, et le commentaire disait
+// pourquoi : « sans ça, les deux icônes voisines se ressembleraient et la
+// différence de gravité disparaîtrait ». Il n'y avait alors que DEUX icônes,
+// Paramètres et Déconnexion côte à côte, et rien d'autre ne disait que l'une
+// ferme la session. Elles sont quatre aujourd'hui, et la rupture de couleur
+// se lisait comme une anomalie plutôt que comme un avertissement.
+//
+// Les quatre se comportent donc pareil : gris soutenu au repos, encre au
+// survol. Ce qui distingue encore la sortie, c'est sa place - la dernière.
+//
+// (Si l'avertissement revient à manquer, la ligne à rétablir est
+// `.app-navbar-icone-sortie:hover { color: $alerte; }`, et non le rouge SAR
+// d'origine : une sortie est une alerte, pas une marque.)
 
-.app-navbar-filet {
-  width: 1px;
-  height: 1.6rem;
-  margin-inline: 0.5rem;
-  background-color: $openkm-card-border;
-}
+// (La règle `.app-navbar-filet` - le trait vertical qui séparait l'identité
+// des actions - vivait ici. Plus aucun composant ne pose cette classe depuis
+// que l'adresse de l'agent a quitté la barre : retirée le 2026-11-25.)
 
 // -----------------------------------------------------------------------------
 // LES SECTIONS - le premier niveau, au centre de la barre supérieure
@@ -274,14 +381,53 @@ body.app-a-barre-pages .wrapper {
     background-color: rgba(29, 27, 27, 0.05);
     color: $sar-black;
   }
+
+  // Enfoncée : le geste se voit pendant le clic. Un gris plus marqué que le
+  // survol, et non l'accent - l'accent dit « c'est ici qu'on est », et une
+  // section enfoncée n'est pas encore la section ouverte.
+  &:active {
+    background-color: rgba(29, 27, 27, 0.11);
+  }
+
+  &:focus-visible {
+    outline: 2px solid a.$accent-ipm;
+    outline-offset: -2px;
+  }
 }
 
-// La section ouverte se peint en rouge de marque, comme l'onglet actif
-// d'OpsDigital : c'est le seul endroit de l'écran où l'on doit savoir d'un
-// coup d'œil où l'on se trouve.
-.app-section-active,
+// La section ouverte se peint en plein, comme l'onglet actif d'OpsDigital :
+// c'est le seul endroit de l'écran où l'on doit savoir d'un coup d'œil où
+// l'on se trouve.
+//
+// **Accent IPM et non rouge SAR, sur décision de l'utilisateur du
+// 2026-11-24.** J'avais objecté que `$sar-red` (ligne 47) est la charte
+// officielle et qu'elle ne se change pas sur un avis de forme ; la demande a
+// été maintenue. Elle s'est ensuite éclairée : l'IPM s'est dotée de son
+// propre logo - anthracite et cuivre, sans aucun rouge -, et l'institution
+// dont cette application est l'outil a le droit d'avoir son accent à elle.
+// Le rouge SAR reste la charte de la SAR, et sert encore ailleurs dans
+// l'application.
+//
+// La VALEUR, elle, vit dans `_accent.scss` : la configuration de CoreUI, tout
+// en haut de ce fichier, doit la lire avant que la feuille ne commence. Son
+// en-tête porte l'historique de la couleur et dit ce qu'elle commande.
+//
+// Et la même valeur en variable CSS, pour les feuilles qui ne peuvent pas lire
+// celle de Sass : les écrans de Comptabilité l'emploient dans leurs mixins
+// partagés (`views/comptabilite/_design-compta.scss`). Déclarée ici et ici
+// seulement, elle ne peut pas diverger du module.
+:root {
+  --accent-ipm: #{a.$accent-ipm};
+  --accent-ipm-sombre: #{a.$accent-ipm-survol};
+}
+
+.app-section-active {
+  background-color: a.$accent-ipm;
+  color: #fff;
+}
+
 .app-section-active:hover {
-  background-color: $sar-red;
+  background-color: a.$accent-ipm-survol;
   color: #fff;
 }
 
@@ -307,16 +453,30 @@ body.app-a-barre-pages .wrapper {
 // La section se choisit rarement et vit en haut ; la page se change souvent
 // et vit sous la main, au bord de l'écran. « Traitements » porte neuf pages :
 // la piste défile plutôt que de se replier sur deux lignes.
+// Seconde barre de navigation : les pages de la section ouverte, juste sous la
+// barre principale. Elle était au bas de l'écran jusqu'au 2026-11-24 ; la
+// remonter met les deux niveaux de navigation au même endroit, l'un sous
+// l'autre, au lieu de les séparer par toute la hauteur de la page.
 .app-pages {
   position: fixed;
-  inset: auto 0 0 0;
+  inset: $navbar-hauteur 0 auto 0;
   z-index: 1031;
   height: $pages-hauteur;
   display: flex;
   align-items: stretch;
-  background-color: #fff;
-  border-top: 1px solid $openkm-card-border;
-  box-shadow: 0 -1px 3px rgba(26, 24, 23, 0.05);
+  // Couleurs inversées par rapport à la barre principale (2026-11-24) : celle
+  // du haut est claire à pastille pleine, celle-ci est pleine à pastille
+  // claire. Les deux niveaux de navigation sont voisins depuis que cette
+  // barre est remontée ; sans ce contraste, on les lisait comme une seule
+  // rangée à deux étages.
+  //
+  // Le fond prend l'accent IPM lui-même, pas une couleur à lui : la barre
+  // suivra donc le jour où l'accent changera (`_accent.scss`).
+  // (Elle a eu sa propre couleur pendant quelques heures le 2026-11-25, le
+  // temps que l'ardoise soit étendue à tout l'accent.)
+  background-color: a.$accent-ipm;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 3px rgba(26, 24, 23, 0.18);
 }
 
 .app-pages-piste {
@@ -325,6 +485,13 @@ body.app-a-barre-pages .wrapper {
   gap: 0.15rem;
   width: 100%;
   padding-inline: 1rem;
+  // Centrées, et `safe` n'est pas un détail : avec un simple `center`, une
+  // liste de pages plus large que l'écran déborde des DEUX côtés et la
+  // première page devient inatteignable au défilement. `safe center` centre
+  // tant que ça tient, et repart du bord dès que ça déborde. Le `center` qui
+  // précède sert de repli aux navigateurs qui ignorent `safe`.
+  justify-content: center;
+  justify-content: safe center;
   overflow-x: auto;
   scrollbar-width: thin;
   // Même dégradé qu'en haut : sur un écran étroit, la pastille de la page
@@ -346,7 +513,7 @@ body.app-a-barre-pages .wrapper {
   margin-block: 0.42rem;
   border-radius: 0.5rem;
   padding: 0 0.9rem;
-  color: $texte-doux;
+  color: rgba(255, 255, 255, 0.72);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -358,22 +525,47 @@ body.app-a-barre-pages .wrapper {
     color 0.14s ease;
 
   &:hover {
-    background-color: rgba(29, 27, 27, 0.05);
-    color: $sar-black;
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+
+  // Enfoncée : un voile blanc plus franc. Sur une barre sombre, c'est le
+  // blanc qui marque l'appui, pas une couleur.
+  &:active {
+    background-color: rgba(255, 255, 255, 0.24);
+    color: #fff;
+  }
+
+  // Anneau clavier en BLANC, et non à l'accent : l'accent est la couleur du
+  // fond de cette barre, l'anneau y serait invisible.
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.85);
+    outline-offset: -2px;
   }
 }
 
-// La page ouverte : un pavé noir à texte blanc, choisi par le métier sur
-// modèle (2026-11-06). Deux états précédents ont été écartés : le filet
-// rouge sous l'intitulé, qui courait au ras du bord bas de l'écran où il se
-// mêlait à la bordure de la barre, puis une pastille rouge pâle, trop proche
-// du rouge de la section ouverte en haut. Le noir tranche sur le blanc de la
-// barre sans rivaliser avec le rouge de marque, qui reste au seul étage des
-// sections.
+// La page ouverte : un pavé clair à texte sombre.
+//
+// HISTORIQUE, à lire avant de retoucher. Le métier avait choisi le NOIR le
+// 2026-11-06, après avoir écarté deux états rouges : un filet sous
+// l'intitulé, qui courait au ras du bord bas de l'écran où il se mêlait à la
+// bordure de la barre, puis une pastille rouge pâle, jugée trop proche du
+// rouge de la section ouverte en haut. Le noir tranchait sur le blanc sans
+// rivaliser avec l'accent, qui restait au seul étage des sections.
+//
+// Passé à l'accent IPM le 2026-11-24, puis INVERSÉ le même jour : la barre
+// étant devenue sombre, la pastille passe au clair. C'est l'exact miroir de
+// la barre du haut - claire à pastille pleine - et c'est ce qui distingue les
+// deux niveaux maintenant qu'ils sont l'un sous l'autre.
+//
+// Le texte de la pastille est à la couleur DU FOND de la barre, et non à
+// l'encre (2026-11-24) : la pastille est un morceau de barre retourné. Les
+// autres libellés restent blancs : à la couleur du fond, ils seraient
+// invisibles.
 .app-page-active,
 .app-page-active:hover {
-  background-color: $sar-black;
-  color: #fff;
+  background-color: #fff;
+  color: a.$accent-ipm;
 }
 
 .app-page-inerte {
@@ -381,7 +573,7 @@ body.app-a-barre-pages .wrapper {
   align-items: center;
   flex: 0 0 auto;
   padding: 0 0.85rem;
-  color: rgba(122, 112, 111, 0.45);
+  color: rgba(255, 255, 255, 0.32);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -517,7 +709,7 @@ body.app-a-barre-pages .wrapper {
 
   &:focus {
     background: transparent;
-    box-shadow: inset 0 -2px 0 $sar-red;
+    box-shadow: inset 0 -2px 0 a.$accent-ipm;
   }
 }
 
@@ -637,14 +829,14 @@ body.app-a-barre-pages .wrapper {
 // vingtaine d'endroits et renommer n'aurait rien changé à l'écran. Le
 // nouveau code écrit `.tableau`.
 
-$tableau-entete-fond: #fef7f6;
+$tableau-entete-fond: #f0f3f6;
 // L'intitulé de colonne est en **noir** depuis le 2026-11-06, sur demande du
 // métier. L'ardoise `#475569` d'avant le posait à mi-chemin entre le fond et
 // la donnée, et sur un tableau à treize colonnes on cherchait sa colonne.
 $tableau-entete-encre: #1d1d1b;
 $tableau-filet: #ece4e3;
-$tableau-bordure: #dad1d0; // Cadre + ligne sous l'en-tete, plus fonce que le filet.
-$tableau-survol: #fef8f7;
+$tableau-bordure: #d2d7de; // Cadre + ligne sous l'en-tete, plus fonce que le filet.
+$tableau-survol: #f4f7fb;
 
 .tableau-conteneur,
 .ddb-tableau-conteneur {
@@ -794,7 +986,7 @@ $tableau-survol: #fef8f7;
 .ddb-action:focus-visible,
 .ddb-outil:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(229, 38, 33, 0.22);
+  box-shadow: 0 0 0 3px rgba(52, 66, 86, 0.3);
   border-radius: 8px;
 }
 
@@ -802,24 +994,39 @@ $tableau-survol: #fef8f7;
 // Vert « Excel », convention retenue le 2026-11-09. Le style de TOUS les
 // exports de l'application tient ici, chargé une fois. Hauteur alignée sur les
 // champs (2,5 rem).
+// Bouton SECONDAIRE depuis le 2026-11-24, et plus un bouton plein vert.
+//
+// Le vert « Excel » venait d'un autre système graphique que le reste de
+// l'application : il n'avait aucun parent dans la charte SAR, dont même les
+// gris sont dérivés du rouge (teinte 27°). Surtout, il mettait DEUX boutons
+// pleins côte à côte - Exporter et Imprimer -, donc deux actions se
+// disputant le rang de principale, là où une seule l'est.
+//
+// Exporter est une commodité, pas le geste que la page sert. Il prend donc
+// l'habit secondaire : fond blanc, filet chaud. Le rouge SAR reste à l'action
+// principale de chaque écran, et seul le pictogramme tableur dit encore
+// Excel - ce qu'il faisait déjà mieux que la couleur.
 .bouton-export {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
   height: 2.5rem;
   padding: 0 1rem;
-  border: 1.5px solid transparent;
+  border: 1.5px solid $tableau-bordure;
   border-radius: 0.5rem;
-  background: #1f8a4c;
-  color: #fff;
+  background: #fff;
+  color: $sar-black;
   font-size: 0.82rem;
   font-weight: 600;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.14s ease;
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease;
 
   &:hover:not(:disabled) {
-    background: #1a7540;
+    background: $openkm-row-hover-bg;
+    border-color: $texte-doux;
   }
 
   &:disabled {
@@ -828,9 +1035,12 @@ $tableau-survol: #fef8f7;
   }
 }
 
+// Le pictogramme garde la couleur du tableur : c'est le seul rappel d'Excel
+// qui subsiste, et il suffit - une icône dit le format mieux qu'un aplat.
 .bouton-export-icone {
   width: 0.95rem;
   height: 0.95rem;
+  color: #1f8a4c;
 }
 
 // --- Cloche des notifications (components/header/Notifications.jsx) --------
@@ -848,7 +1058,9 @@ $tableau-survol: #fef8f7;
   height: 1.1rem;
   padding: 0 0.3rem;
   border-radius: 999px;
-  background: $sar-red;
+  // Le rouge d'alerte, comme la sortie : la pastille réclame l'attention, ce
+  // n'est pas une marque. Elle était au rouge SAR.
+  background: $alerte;
   color: #fff;
   font-size: 0.68rem;
   font-weight: 700;
@@ -890,15 +1102,20 @@ $tableau-survol: #fef8f7;
   cursor: pointer;
 }
 .app-notifs-element:hover {
-  background: rgba($sar-red, 0.06);
+  background: rgba(a.$accent-ipm, 0.06);
+}
+
+// Enfoncée : le double du survol, pour que le clic se sente dans la liste.
+.app-notifs-element:active {
+  background: rgba(a.$accent-ipm, 0.12);
 }
 .app-notifs-nombre {
   flex: none;
   min-width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: rgba($sar-red, 0.1);
-  color: $sar-red;
+  background: rgba(a.$accent-ipm, 0.1);
+  color: a.$accent-ipm;
   font-weight: 700;
   line-height: 2rem;
   text-align: center;

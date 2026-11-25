@@ -17,11 +17,11 @@
  *   d'où chaque numéro est cité.
  */
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCloudDownload, cilTrash } from '@coreui/icons'
+import { cilTrash } from '@coreui/icons'
 
 import { request } from '../../services/api'
 import { erreursDeChamps, messageErreur } from '../../services/erreurs'
@@ -48,8 +48,8 @@ const usagesDistincts = (usages) => [...new Set(usages || [])]
 
 const PlanComptable = () => {
   const [segment, setSegment] = useState('tous')
-  // Les segments (types de compte) et leur nombre réel, lus au serveur.
-  const [segments, setSegments] = useState([{ valeur: 'tous', libelle: 'Tous', nombre: null }])
+  // Les segments (types de compte), lus au serveur.
+  const [segments, setSegments] = useState([{ valeur: 'tous', libelle: 'Tous' }])
   const [recherche, setRecherche] = useState('')
   const [termeDiffere, setTermeDiffere] = useState('')
   const [taille, setTaille] = useState(15)
@@ -75,9 +75,19 @@ const PlanComptable = () => {
   }, [recherche])
 
   // Les segments et leurs compteurs (par type + « Tous »), une fois.
+  //
+  // « Tous » passe EN TÊTE, alors que le serveur le rend en dernier et que
+  // l'original le place aussi au bout (capture 73). C'est le segment ouvert
+  // par défaut et celui sur lequel on revient : le chercher en fin de rangée
+  // à chaque fois n'avait pas de sens. L'ordre des autres ne bouge pas.
   useEffect(() => {
     request('/donnees-de-base/plan-comptable/repartition/')
-      .then((liste) => setSegments(liste))
+      .then((liste) =>
+        setSegments([
+          ...liste.filter((s) => s.valeur === 'tous'),
+          ...liste.filter((s) => s.valeur !== 'tous'),
+        ]),
+      )
       .catch(() => {})
   }, [])
 
@@ -187,45 +197,86 @@ const PlanComptable = () => {
     URL.revokeObjectURL(lien.href)
   }
 
+  /** Remet la recherche à zéro ; le segment regardé ne bouge pas. */
+  const reinitialiser = () => {
+    setRecherche('')
+    setPage(1)
+  }
+
+  /**
+   * Les numéros de page à montrer : une fenêtre de cinq centrée sur la page
+   * courante, recalée aux bords. Le plan comptable compte 462 comptes, soit
+   * une trentaine de pages à quinze par écran.
+   */
+  const pagesVisibles = useMemo(() => {
+    const largeur = Math.min(5, pages)
+    let premier = Math.max(1, page - Math.floor(largeur / 2))
+    premier = Math.min(premier, Math.max(1, pages - largeur + 1))
+    return Array.from({ length: largeur }, (_, i) => premier + i)
+  }, [page, pages])
+
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
         <section className="ddb-contenu pc-page">
-          <header className="pc-entete">
+          <header className="pc-chapeau">
             <h2 className="pc-titre">Plan Comptable</h2>
+          </header>
+
+          {/* Les familles de comptes, en cartes - même forme que les six
+              familles de l'Interrogation de Comptes. Sans effectif : le
+              nombre de comptes de la famille ouverte est déjà au pied du
+              tableau, et le porter sur chaque carte chargeait la rangée d'une
+              dizaine de chiffres qu'on ne lit pas. */}
+          <nav className="pc-segments" role="tablist" aria-label="Types de compte">
+            {segments.map((s) => (
+              <button
+                key={s.valeur}
+                type="button"
+                role="tab"
+                aria-selected={segment === s.valeur}
+                className={`pc-segment${segment === s.valeur ? ' pc-segment-actif' : ''}`}
+                onClick={() => {
+                  setSegment(s.valeur)
+                  setPage(1)
+                }}
+              >
+                <span className="pc-segment-libelle">{s.libelle}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Le panneau de filtres, dans la forme des deux autres écrans de
+              Comptabilité. Il ne porte qu'un champ - le plan comptable se
+              cherche par numéro ou par intitulé, le type étant déjà choisi
+              par les cartes ci-dessus -, mais garder le même contenant évite
+              que les trois pages se ressemblent à peu près. */}
+          <div className="pc-panneau">
+            <div className="pc-panneau-tete">
+              <p className="pc-panneau-titre">Filtres</p>
+              <button type="button" className="pc-lien" onClick={reinitialiser}>
+                Réinitialiser
+              </button>
+            </div>
 
             <div className="pc-barre">
-              <div className="pc-segments" role="tablist">
-                {segments.map((s) => (
-                  <button
-                    key={s.valeur}
-                    type="button"
-                    role="tab"
-                    aria-selected={segment === s.valeur}
-                    className={`pc-segment${segment === s.valeur ? ' pc-segment--actif' : ''}`}
-                    onClick={() => {
-                      setSegment(s.valeur)
-                      setPage(1)
-                    }}
-                  >
-                    {s.libelle}
-                    {s.nombre != null && <span className="pc-segment-nombre">{s.nombre}</span>}
-                  </button>
-                ))}
-              </div>
-
-              <BoutonExport onClick={exporter} />
-
-              <label className="ddb-recherche-flottante pc-recherche">
-                <span className="ddb-recherche-libelle">Rechercher…</span>
+              <label className="pc-champ">
+                <span className="pc-libelle">Recherche</span>
                 <input
-                  className="ddb-recherche-champ"
+                  className="ddb-filtre"
+                  placeholder="N° de compte, intitulé…"
                   value={recherche}
                   onChange={(e) => setRecherche(e.target.value)}
                 />
               </label>
             </div>
-          </header>
+
+            <div className="pc-panneau-pied">
+              <div className="pc-panneau-actions">
+                <BoutonExport onClick={exporter} />
+              </div>
+            </div>
+          </div>
 
           <div className="pc-corps">
             {/* --- La liste ------------------------------------------------ */}
@@ -312,47 +363,84 @@ const PlanComptable = () => {
               </div>
 
               <footer className="pc-pagination">
-                <label className="pc-taille">
-                  Nombre par page
-                  <select
-                    className="ddb-filtre"
-                    value={taille}
-                    onChange={(e) => {
-                      setTaille(Number(e.target.value))
-                      setPage(1)
-                    }}
-                  >
-                    {TAILLES.map((t) => (
-                      <option key={t} value={t}>
-                        {t}
-                      </option>
+                <div className="pc-pagination-outils">
+                  <label className="pc-pagination-taille">
+                    Nombre par page :
+                    <select
+                      className="ddb-filtre"
+                      value={taille}
+                      onChange={(e) => {
+                        setTaille(Number(e.target.value))
+                        setPage(1)
+                      }}
+                    >
+                      {TAILLES.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <nav className="pc-pages" aria-label="Pagination">
+                    <button
+                      type="button"
+                      onClick={() => setPage(1)}
+                      disabled={page <= 1}
+                      aria-label="Première page"
+                    >
+                      «
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPage(page - 1)}
+                      disabled={page <= 1}
+                      aria-label="Page précédente"
+                    >
+                      ‹
+                    </button>
+                    {pagesVisibles.map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        className={p === page ? 'pc-page-active' : undefined}
+                        onClick={() => setPage(p)}
+                        aria-current={p === page ? 'page' : undefined}
+                      >
+                        {p}
+                      </button>
                     ))}
-                  </select>
-                </label>
-                <span className="pc-position">
-                  {nombre === 0
-                    ? '0 - 0 / 0'
-                    : `${(page - 1) * taille + 1} - ${Math.min(page * taille, nombre)} / ${nombre}`}
-                </span>
-                <span className="pc-fleches">
-                  <button type="button" onClick={() => setPage(1)} disabled={page <= 1}>
-                    |&lt;
-                  </button>
-                  <button type="button" onClick={() => setPage(page - 1)} disabled={page <= 1}>
-                    &lt;
-                  </button>
-                  <button type="button" onClick={() => setPage(page + 1)} disabled={page >= pages}>
-                    &gt;
-                  </button>
-                  <button type="button" onClick={() => setPage(pages)} disabled={page >= pages}>
-                    &gt;|
-                  </button>
-                </span>
+                    <button
+                      type="button"
+                      onClick={() => setPage(page + 1)}
+                      disabled={page >= pages}
+                      aria-label="Page suivante"
+                    >
+                      ›
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPage(pages)}
+                      disabled={page >= pages}
+                      aria-label="Dernière page"
+                    >
+                      »
+                    </button>
+                  </nav>
+                </div>
               </footer>
             </div>
 
             {/* --- Le formulaire ------------------------------------------ */}
             <aside className="pc-formulaire">
+              {/* Le formulaire porte un titre, comme le panneau de filtres :
+                  sans lui, cette colonne était la seule zone de l'écran dont
+                  on ne savait pas en la regardant si elle montrait le compte
+                  choisi ou en créait un. */}
+              <p className="pc-formulaire-titre">
+                {choisi ? `Compte ${choisi.code}` : 'Nouveau compte'}
+              </p>
+
               <label className="pc-champ">
                 <span className="pc-libelle">
                   Compte Général <em>(minimum 6 caractères)</em>
@@ -417,13 +505,15 @@ const PlanComptable = () => {
                 </p>
               )}
 
+              {/* Un seul bouton plein : celui qui écrit. « Nouveau Compte »
+                  ne fait que vider le formulaire, il reste secondaire. */}
               <div className="pc-boutons">
-                <button type="button" className="pc-nouveau" onClick={nouveau}>
+                <button type="button" className="pc-btn pc-btn-sec" onClick={nouveau}>
                   Nouveau Compte
                 </button>
                 <button
                   type="button"
-                  className="pc-modifier"
+                  className="pc-btn pc-btn-primary"
                   onClick={enregistrer}
                   disabled={envoi || (!choisi && !saisie.code)}
                 >

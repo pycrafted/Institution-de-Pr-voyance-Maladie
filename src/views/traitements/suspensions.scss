@@ -1,0 +1,164 @@
+// Page « Traitements → Suspensions » (§19, captures 63-64).
+//
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des pages de
+// Comptabilité - chapeau, onglets en cartes, panneau de filtres, bandeau de
+// totaux, tableau. Les valeurs viennent du fichier partagé, et lui seul.
+//
+// Comme les Retenues, cette page n'est pas montée sur `<Referentiel />` : ses
+// deux vues sont calculées par le serveur et ne se saisissent pas. Elle prend
+// donc les mixins d'origine, pas `_liste-compta.scss`.
+
+@use '../comptabilite/design-compta' as c;
+
+.sus-page {
+  padding-top: 1.25rem;
+}
+
+// --- Le chapeau -------------------------------------------------------------
+.sus-chapeau {
+  @include c.cpt-chapeau;
+}
+
+.sus-titre {
+  @include c.cpt-titre;
+}
+
+// --- Les deux vues, en cartes -----------------------------------------------
+// Consommation totale et Optique sont deux lectures différentes du même sujet -
+// les limites de droits -, pas deux filtres d'une même liste : leurs colonnes
+// ne se ressemblent même pas. D'où des cartes, comme les sous-onglets des
+// Factures, et non un rail de pastilles.
+.sus-cartes {
+  @include c.cpt-cartes;
+}
+
+.sus-carte {
+  @include c.cpt-carte;
+}
+
+.sus-carte-libelle {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.sus-carte-active {
+  @include c.cpt-carte-active;
+}
+
+// --- Le panneau de filtres --------------------------------------------------
+.sus-panneau {
+  @include c.cpt-panneau;
+}
+
+.sus-panneau-tete {
+  @include c.cpt-panneau-tete;
+}
+
+.sus-panneau-titre {
+  @include c.cpt-panneau-titre;
+}
+
+.sus-barre {
+  @include c.cpt-barre;
+}
+
+.sus-champ {
+  @include c.cpt-champ;
+}
+
+.sus-etiquette {
+  @include c.cpt-etiquette;
+}
+
+.sus-saisie {
+  @include c.cpt-controle;
+  @include c.cpt-controle-saisie;
+}
+
+.sus-liste {
+  @include c.cpt-controle;
+  @include c.cpt-controle-liste;
+}
+
+.sus-panneau-pied {
+  @include c.cpt-panneau-pied;
+}
+
+.sus-actions {
+  @include c.cpt-actions;
+}
+
+.sus-page .bouton-export {
+  @include c.cpt-bouton-export;
+}
+
+// --- Le bandeau de totaux ---------------------------------------------------
+// Ils étaient sous le tableau, en rouge, hors de toute structure. Ils passent
+// au-dessus, collés au tableau comme sur les écrans de Comptabilité : ce sont
+// eux qu'on vient lire, pas les lignes une à une.
+.sus-bandeau {
+  @include c.cpt-bandeau;
+}
+
+.sus-totaux {
+  @include c.cpt-totaux;
+
+  margin-left: auto;
+}
+
+.sus-total {
+  @include c.cpt-total;
+}
+
+.sus-total-etiquette {
+  @include c.cpt-total-etiquette;
+}
+
+.sus-total-valeur {
+  @include c.cpt-total-valeur;
+}
+
+.sus-devise {
+  @include c.cpt-devise;
+}
+
+.sus-filet {
+  @include c.cpt-filet;
+}
+
+.sus-note {
+  @include c.cpt-note;
+
+  margin: 0;
+  white-space: normal;
+}
+
+// --- Le tableau -------------------------------------------------------------
+// `cpt-tableau-serre` : treize colonnes sur l'optique (bon, dates, frais, QP,
+// jours restants, fournisseur). Elles se lisent en lignes d'un seul tenant qui
+// défilent, pas en cellules qui passent à la ligne.
+.sus-tableau-cadre {
+  @include c.cpt-tableau-conteneur;
+}
+
+.sus-tableau {
+  @include c.cpt-tableau;
+  @include c.cpt-tableau-serre;
+}
+
+// « J. restants » négatif : le bénéficiaire est encore suspendu, son prochain
+// bon optique n'est pas dû. C'est le seul chiffre de l'écran qui dise un refus.
+.sus-negatif {
+  @include c.cpt-negatif;
+}
+
+.sus-vide {
+  @include c.cpt-tableau-vide;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .sus-titre {
+    font-size: 1.45rem;
+  }
+}

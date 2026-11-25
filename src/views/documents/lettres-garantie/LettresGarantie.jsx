@@ -14,12 +14,20 @@ import { CCard, CCardBody } from '@coreui/react'
 
 import Referentiel from '../../donnees-de-base/Referentiel'
 import '../../donnees-de-base/donnees-de-base.scss'
+import './lettres-garantie.scss'
 import { LETTRES_GARANTIE } from './config'
 
 const LettresGarantie = () => (
   <CCard className="ddb-carte">
     <CCardBody className="p-0">
-      <section className="ddb-contenu">
+      <section className="ddb-contenu lgt-page">
+        {/* Même chapeau que les écrans de Comptabilité et de Traitements. Le
+            titre était rendu par <Referentiel /> lui-même, en petit, au-dessus
+            de la liste ; il devient celui de la page. */}
+        <header className="lgt-chapeau">
+          <h2 className="lgt-titre">Lettres de Garantie</h2>
+        </header>
+
         <Referentiel referentiel={LETTRES_GARANTIE} />
       </section>
     </CCardBody>

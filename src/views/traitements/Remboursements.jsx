@@ -1,5 +1,5 @@
 /**
- * Page « Traitements → Remboursement » — Remboursement Frais Médicaux
+ * Page « Traitements → Remboursement » - Remboursement Frais Médicaux
  * (captures 66-68).
  *
  * Rembourse les participants qui ont avancé des frais (facture reçue sur le
@@ -16,10 +16,10 @@ import { CCard, CCardBody, CModal, CModalBody, CModalHeader, CModalTitle, CSpinn
 import { request } from '../../services/api'
 import { messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
-import Referentiel, { PastillesStats } from '../donnees-de-base/Referentiel'
+import Referentiel from '../donnees-de-base/Referentiel'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../participants/participants.scss'
 import './traitements.scss'
+import './remboursements.scss'
 import { REMBOURSEMENTS, METHODES_REMBOURSEMENT, optionsBanques } from './config'
 
 const entier = (v) => {
@@ -38,7 +38,6 @@ const premierDuMois = () => {
 const estReglable = (l) => !l.rembourse
 
 const Remboursements = () => {
-  const [stats, setStats] = useState(null)
   const [aRegler, setARegler] = useState(null) // lignes sélectionnées à régler
   const [rafraichir, setRafraichir] = useState(0)
   const rafraichirListe = () => setRafraichir((n) => n + 1)
@@ -72,17 +71,17 @@ const Remboursements = () => {
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
-        <div className="prt-entete">
-          <div className="prt-titre-ligne">
-            <div className="prt-titre-groupe">
-              <h1 className="prt-titre">Remboursement Frais Médicaux</h1>
-              <PastillesStats segments={stats?.segments} />
-            </div>
-          </div>
-        </div>
+        <section className="ddb-contenu rbt-page">
+          {/* Même chapeau que les écrans de Comptabilité, titre seul : cet
+              écran n'a ni sous-onglets ni action de page. « Régler » vit dans
+              le pied du panneau, avec le rail Tous / Réglé / Non réglé. */}
+          <header className="rbt-chapeau">
+            <h2 className="rbt-titre">Remboursement Frais Médicaux</h2>
+          </header>
 
-        <section className="ddb-contenu">
-          <Referentiel key={`remboursements-${rafraichir}`} referentiel={referentiel} onStats={setStats} />
+          {/* `key` : régler en lot remonte le composant, qui relit la base et
+              relâche la sélection. */}
+          <Referentiel key={`remboursements-${rafraichir}`} referentiel={referentiel} />
         </section>
       </CCardBody>
 

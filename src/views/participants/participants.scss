@@ -1,101 +1,99 @@
-// Page Participants - barre d'onglets, formulaire de création dans le panneau
-// glissant, et champs radio. Reprend le rouge SAR et les tons de « Données de base ».
-$prt-rouge: #e52621;
-$prt-bordure: #ddd4d3;
-$prt-texte-doux: #736968;
-$prt-noir: #1d1b1b;
+// Page Participants - chapeau, onglets en cartes, formulaire de création dans
+// le panneau glissant, champs radio, et le panneau des ayants droit déplié
+// sous la ligne d'un participant.
+//
+// Refonte du 2026-11-25 : l'écran rejoint le langage de design des pages de
+// Comptabilité, des écrans de Traitements, des quatre pages de Documents, des
+// Données de base, des Fournisseurs de Soins et des Adhérents. C'était le
+// dernier des treize écrans montant `<Referentiel />` à ne pas l'avoir pris.
+//
+// Les valeurs viennent de `comptabilite/_design-compta.scss` ; l'habillage de
+// la liste, de `traitements/_liste-compta.scss`.
+//
+// Cette feuille est aussi chargée par la page des Fournisseurs de Soins, pour
+// les seules règles `.ddb-*` du bas (champs obligatoires des formulaires) :
+// tout ce qui est préfixé `prt-` n'appartient qu'à cette page.
 
-// --- En-tête : titre + onglets ---------------------------------------------
-.prt-entete {
-  padding: 1.5rem 1.75rem 0;
-}
+@use '../comptabilite/design-compta' as c;
+@use '../traitements/liste-compta' as l;
 
-// Ligne du titre : « Participants » à gauche, bouton rouge tout à droite.
+// Les jetons de la page lisent désormais ceux du langage commun. L'encre était
+// la même ; la bordure et le gris doux, non.
+$prt-bordure: c.$cpt-bordure-forte;
+$prt-texte-doux: c.$cpt-doux;
+$prt-noir: c.$cpt-encre;
+
+// --- Le chapeau -------------------------------------------------------------
+// Il vivait hors de la zone de contenu, avec son propre rembourrage ; il est
+// entré dedans (cf. Participants.jsx), comme sur les autres écrans refaits.
 .prt-titre-ligne {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  @include c.cpt-chapeau;
 }
 
 .prt-titre {
-  margin: 0;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: $prt-noir;
+  @include c.cpt-titre;
 }
 
-// Titre + pastille du total côte à côte, comme « Structure - Total : 13 » sur
-// Données de base. Le groupe reste à gauche ; le bouton éventuel va à droite.
+// Titre et pastilles de la vue côte à côte : le total et sa ventilation
+// (« Epoux: 12 - Epouses: 118 - Enfants: 402… »), que `<Referentiel />`
+// remonte. Elles se tiennent CONTRE le titre, dont elles sont le compte ; le
+// bouton de création part à l'autre bout de la ligne.
 .prt-titre-groupe {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
 }
 
-.prt-onglets {
-  display: flex;
-  gap: 2.5rem;
-  border-bottom: 1px solid $prt-bordure;
+// La société filtrée, à la suite du titre : « IPM SAR PERSONNEL MOO ».
+.prt-legende {
+  color: $prt-texte-doux;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .prt-bouton-nouveau {
   flex: 0 0 auto;
 }
 
-.prt-onglet {
-  position: relative;
-  border: 0;
-  background: transparent;
-  padding: 0.75rem 0.25rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: $prt-texte-doux;
-  cursor: pointer;
-  white-space: nowrap;
-
-  &:hover {
-    color: $prt-noir;
-  }
+// --- Les deux onglets, en cartes --------------------------------------------
+// « Participants IPM » et « Participants Retraités » sont deux populations du
+// même dossier, et le régime commande tout le reste de l'écran. D'où des
+// cartes, comme les sous-onglets des Cotisations, les deux onglets des
+// Fournisseurs de Soins et les familles de comptes de l'Interrogation : la
+// carte est le niveau de la PAGE, le rail de pastilles n'étant qu'un filtre de
+// la liste.
+//
+// Ils étaient deux onglets soulignés d'un filet rouge animé.
+.prt-cartes {
+  @include c.cpt-cartes;
 }
 
-.prt-onglet-actif {
-  color: $prt-noir;
+.prt-carte {
+  @include c.cpt-carte;
 
-  // Le filet rouge de l'onglet retenu : il se déploie depuis le centre quand on
-  // change d'onglet.
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: $prt-rouge;
-    transform-origin: center;
-    animation: prt-soulignement 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
-  }
+  // Deux cartes seulement, mais des libellés longs (« Participants
+  // Retraités ») : elles s'élargissent à leur contenu plutôt que de le couper.
+  flex: 0 0 auto;
+  min-width: 11.5rem;
+  padding: 0.5rem 1.1rem;
 }
 
-@keyframes prt-soulignement {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
+.prt-carte-libelle {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-// Transition de couleur douce entre onglets, et léger survol.
-.prt-onglet {
-  transition: color 0.2s ease;
+.prt-carte-active {
+  @include c.cpt-carte-active;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .prt-onglet-actif::after {
-    animation: none;
-  }
+// --- La liste, dans le langage de la Comptabilité ---------------------------
+// Pas de `$serre` : les noms et prénoms des participants sont longs - mieux
+// vaut les laisser passer à la ligne que les faire défiler.
+.prt-page {
+  @include l.liste-compta;
 }
 
 // --- Champs radio (sexe, type de contrat) ----------------------------------
@@ -124,7 +122,7 @@ $prt-noir: #1d1b1b;
   cursor: pointer;
 
   input {
-    accent-color: $prt-rouge;
+    accent-color: c.$cpt-accent;
     width: 1.05rem;
     height: 1.05rem;
   }
@@ -150,9 +148,10 @@ $prt-noir: #1d1b1b;
   }
 }
 
-// Astérisque rouge des champs obligatoires, comme la maquette.
+// Astérisque des champs obligatoires, comme la maquette. Le rouge d'ALERTE,
+// et non l'accent de marque : c'est une contrainte de saisie, pas un geste.
 .ddb-requis {
-  color: $prt-rouge;
+  color: c.$cpt-alerte;
 }
 
 // Champ obligatoire encore vide : trait rouge, comme l'application d'origine
@@ -167,7 +166,7 @@ $prt-noir: #1d1b1b;
   // Le cadre entier, depuis que les champs sont encadrés.
   .ddb-champ,
   .ddb-champ-enveloppe.ddb-champ-prefixe {
-    border-color: rgba(229, 38, 33, 0.55);
+    border-color: color-mix(in srgb, #{c.$cpt-alerte} 55%, transparent);
   }
 }
 
@@ -192,12 +191,9 @@ $prt-noir: #1d1b1b;
   }
 }
 
-// Bandeau de synthèse au-dessus de la barre d'outils (totaux).
-.ddb-bandeau-stats {
-  padding: 0.25rem 0 0.75rem;
-  color: $prt-texte-doux;
-  font-size: 0.95rem;
-}
+// (La règle `.ddb-bandeau-stats` vivait ici : plus un seul composant ne pose
+// cette classe - les totaux sont passés en pastilles à côté du titre. Retirée
+// le 2026-11-25.)
 
 // Vignette de la photo visée par une demande de réinitialisation.
 .prt-vignette-photo {
@@ -227,8 +223,9 @@ $prt-noir: #1d1b1b;
 }
 
 // Ligne parente dépliée : légèrement teintée pour la relier à son panneau.
+// Le ground des panneaux, et non plus un rose un peu différent.
 .ddb-ligne-depliee > * {
-  background: #faf3f2;
+  background: c.$cpt-fond-panneau;
   font-weight: 600;
 }
 
@@ -241,14 +238,15 @@ $prt-noir: #1d1b1b;
 
 .ddb-depli-cellule {
   padding: 0 !important;
-  background: #fdf6f5;
+  background: color-mix(in srgb, #{c.$cpt-fond-panneau} 55%, #fff);
   border-top: 0;
 }
 
 // --- Panneau « Ayants droit » ----------------------------------------------
+// Le filet qui relie la famille à son participant : il prend l'accent.
 .prt-famille {
   padding: 0.85rem 1.1rem 1.1rem 2.6rem; // décalé à droite, sous le chevron
-  border-left: 3px solid $prt-rouge;
+  border-left: 3px solid c.$cpt-accent;
 }
 
 .prt-famille-entete {
@@ -277,29 +275,35 @@ $prt-noir: #1d1b1b;
   min-width: 1.4rem;
   height: 1.4rem;
   padding: 0 0.4rem;
+  border: 1px solid c.$cpt-bordure;
   border-radius: 999px;
-  background: #f0e9e8;
+  background: c.$cpt-fond-panneau;
   color: $prt-noir;
   font-size: 0.75rem;
   font-weight: 700;
 }
 
+// « Ajouter un ayant droit » : l'action du panneau déplié, en accent plein -
+// elle est à ce niveau ce que « Nouveau participant » est à la page.
 .prt-famille-ajouter {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.3rem 0.75rem;
-  border: 1px solid $prt-rouge;
-  border-radius: 999px;
-  background: #fff;
-  color: $prt-rouge;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid c.$cpt-accent;
+  border-radius: 8px;
+  background: c.$cpt-accent;
+  color: #fff;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover {
-    background: $prt-rouge;
-    color: #fff;
+    background: c.$cpt-accent-sombre;
+    border-color: c.$cpt-accent-sombre;
   }
 }
 
@@ -347,6 +351,11 @@ $prt-noir: #1d1b1b;
   }
 }
 
+// En-tête du tableau des ayants droit : le ground des en-têtes de l'écran.
+.prt-famille-table thead th {
+  background: c.$cpt-fond-entete;
+}
+
 .prt-famille-num {
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -364,7 +373,7 @@ $prt-noir: #1d1b1b;
   cursor: pointer;
 
   &:hover td {
-    background: #f6efee;
+    background: c.$cpt-fond-panneau;
   }
 }
 
@@ -376,5 +385,5 @@ $prt-noir: #1d1b1b;
   letter-spacing: 0.18em;
   text-align: center;
   font-variant-numeric: tabular-nums;
-  color: var(--cui-danger, #e52621);
+  color: c.$cpt-accent;
 }

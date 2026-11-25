@@ -12,7 +12,11 @@ $ddb-noir: #1d1d1b;
 $ddb-encre: #1d1b1b;
 $ddb-bordure: #f1eae9;
 $ddb-bordure-forte: #e1d8d7;
-$ddb-rail-bg: #fef8f7;
+// Le lavis des SURVOLS de cette feuille - entrée de liste, bouton d'outil,
+// numéro de page - et le fond d'un champ désactivé. Froid depuis le
+// 2026-11-25, et à la même valeur que le survol des lignes de tableau
+// (`$openkm-row-hover-bg`, scss/style.scss) : un survol est un survol.
+$ddb-rail-bg: #f4f7fb;
 $ddb-texte-doux: #736968;
 $ddb-texte-pale: #a99f9e;
 // Le bleu de l'import et le vert de l'export et de l'enregistrement.
@@ -25,7 +29,23 @@ $ddb-rayon: 0.5rem;
 $ddb-hauteur: 2.5rem;
 // Hauteur d'un champ de formulaire.
 $ddb-hauteur-champ: 2.75rem;
-$ddb-anneau: 0 0 0 3px rgba(229, 38, 33, 0.12);
+// Anneau de focus : il porte l'accent de l'IPM depuis le 2026-11-25 (il était
+// au rouge SAR). C'est la couleur des états d'interaction partout ailleurs -
+// cf. `scss/_accent.scss`. Écrit au rgba() plutôt qu'en `var(--accent-ipm)` :
+// une variable CSS ne se passe pas dans `rgba()`.
+$ddb-anneau: 0 0 0 3px rgba(52, 66, 86, 0.22);
+// La couleur des états d'INTERACTION : champ au focus, anneau clavier, ligne
+// qu'on vient de cliquer. Elle porte l'accent de l'IPM, comme partout ailleurs
+// dans l'application depuis le 2026-11-25 ; elle était au rouge SAR, et chaque
+// clic rougeoyait sur une application devenue ardoise.
+//
+// Lue en variable CSS parce que cette feuille ne peut pas importer la
+// principale ; le repli reste le rouge SAR, la charte d'avant.
+$ddb-focus: var(--accent-ipm, #{$ddb-rouge});
+// Le rouge d'ALERTE, distinct de l'accent : une erreur de saisie, un champ
+// obligatoire resté vide. Il ne bouge pas quand l'accent change - c'est tout
+// l'intérêt de l'avoir à part. Même valeur que `$cpt-alerte`.
+$ddb-alerte: #c62828;
 $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 
 .ddb-carte {
@@ -33,100 +53,10 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   overflow: hidden;
 }
 
-.ddb-grille {
-  display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
-  // La grille (rail + contenu) remplit la carte jusqu'en bas.
-  min-height: calc(100vh - 7rem);
-}
-
-// -----------------------------------------------------------------------------
-// Colonne gauche - les référentiels
-// -----------------------------------------------------------------------------
-.ddb-rail {
-  background-color: $ddb-rail-bg;
-  border-right: 1px solid $ddb-bordure;
-  padding: 1.75rem 1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.ddb-rail-liste {
-  display: flex;
-  flex-direction: column;
-  gap: 1.4rem;
-  overflow-y: auto;
-}
-
-.ddb-rail-famille-titre {
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: $ddb-texte-pale;
-  padding: 0 0.75rem;
-  margin-bottom: 0.45rem;
-}
-
-.ddb-rail-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.58rem 0.75rem;
-  border: 0;
-  border-radius: $ddb-rayon;
-  background: transparent;
-  color: #453e3d;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: left;
-  transition:
-    background-color 0.12s ease,
-    color 0.12s ease;
-
-  &:hover {
-    background-color: #f7f0ef;
-    color: $ddb-noir;
-  }
-
-  &:focus-visible {
-    outline: 2px solid $ddb-rouge;
-    outline-offset: 1px;
-  }
-}
-
-.ddb-rail-item-actif {
-  background-color: $ddb-noir;
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 4px 10px -4px rgba(29, 29, 27, 0.45);
-
-  &:hover {
-    background-color: $ddb-noir;
-    color: #fff;
-  }
-
-  .ddb-rail-item-icone {
-    color: $ddb-rouge;
-  }
-}
-
-.ddb-rail-item-icone {
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 auto;
-  color: $ddb-texte-pale;
-}
-
-.ddb-rail-item-libelle {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+// La grille de la page « Données de base » (le rail des nomenclatures et la
+// colonne de droite) vivait ici par simple voisinage : elle n’existe que sur
+// cet écran, quand cette feuille est importée par treize. Elle est passée dans
+// `nomenclatures.scss`, avec le reste de ce que cette page a en propre.
 
 // -----------------------------------------------------------------------------
 // Colonne droite - le référentiel sélectionné
@@ -169,20 +99,24 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   height: $ddb-hauteur;
   border: 0;
   border-radius: $ddb-rayon;
-  background-color: $ddb-rouge;
+  background-color: $ddb-focus;
   padding: 0 1.15rem;
   font-size: 0.875rem;
   font-weight: 600;
   color: #fff;
   white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(229, 38, 33, 0.3);
+  // Ombres NEUTRES, et non plus teintées de rouge (2026-11-25). Les treize
+  // écrans refaits repeignent ce bouton à l'accent (`_liste-compta.scss`)
+  // mais pas son ombre, qui n'est pas déclarée là-bas : une lueur rouge
+  // restait donc sous un bouton devenu ardoise.
+  box-shadow: 0 1px 2px rgba(26, 24, 23, 0.14);
   transition:
     background-color 0.12s ease,
     box-shadow 0.12s ease;
 
   &:hover {
-    background-color: $ddb-rouge-fonce;
-    box-shadow: 0 4px 12px -2px rgba(229, 38, 33, 0.4);
+    background-color: var(--accent-ipm-sombre, #{$ddb-rouge-fonce});
+    box-shadow: 0 4px 12px -2px rgba(26, 24, 23, 0.22);
   }
 
   &:focus-visible {
@@ -288,7 +222,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   }
 
   &:focus {
-    border-color: $ddb-rouge;
+    border-color: $ddb-focus;
     box-shadow: $ddb-anneau;
   }
 }
@@ -302,7 +236,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 }
 
 .ddb-recherche-flottante:focus-within .ddb-recherche-libelle {
-  color: $ddb-rouge;
+  color: $ddb-focus;
 }
 
 // Bouton d'une étape à venir (`type: 'bouton'`) : « Saisir les médicaments »,
@@ -405,7 +339,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   }
 
   &:focus-visible {
-    outline: 2px solid $ddb-rouge;
+    outline: 2px solid $ddb-focus;
     outline-offset: -2px;
   }
 }
@@ -460,11 +394,11 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 
     .form-control,
     .input-group-text {
-      border-color: $ddb-rouge;
+      border-color: $ddb-focus;
     }
 
     .input-group-text {
-      color: $ddb-rouge;
+      color: $ddb-focus;
     }
   }
 }
@@ -497,7 +431,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 
   &:focus-visible {
     outline: none;
-    border-color: $ddb-rouge;
+    border-color: $ddb-focus;
     box-shadow: $ddb-anneau;
   }
 }
@@ -810,18 +744,19 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 
 // Une ligne cochée reste repérable après défilement ou changement de page.
 .ddb-ligne-selectionnee > td {
-  background-color: rgba(229, 38, 33, 0.04) !important;
+  background-color: color-mix(in srgb, #{$ddb-focus} 6%, transparent) !important;
 }
 
 // Ligne en cours de modification (clic sur la ligne, panneau ouvert) : un fond
-// rouge nettement visible et un filet rouge à gauche, pour la repérer d'un coup
-// d'oeil tant que le panneau est ouvert.
+// nettement visible et un filet à gauche, pour la repérer d'un coup d'oeil tant
+// que le panneau est ouvert. À l'accent depuis le 2026-11-25 : c'est ce qu'on
+// voit après avoir cliqué une ligne, et c'était rouge.
 .ddb-ligne-active > td {
-  background-color: rgba(229, 38, 33, 0.16) !important;
+  background-color: color-mix(in srgb, #{$ddb-focus} 15%, transparent) !important;
 }
 
 .ddb-ligne-active > td:first-child {
-  box-shadow: inset 3px 0 0 0 #e52621;
+  box-shadow: inset 3px 0 0 0 #{$ddb-focus};
 }
 
 .ddb-cellule-case {
@@ -952,7 +887,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   }
 
   &:focus-visible {
-    outline: 2px solid $ddb-rouge;
+    outline: 2px solid $ddb-focus;
     outline-offset: 1px;
   }
 }
@@ -1082,7 +1017,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   }
 
   &:focus-visible {
-    outline: 2px solid $ddb-rouge;
+    outline: 2px solid $ddb-focus;
     outline-offset: -2px;
   }
 }
@@ -1158,7 +1093,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   }
 
   &:focus-visible {
-    outline: 2px solid $ddb-rouge;
+    outline: 2px solid $ddb-focus;
     outline-offset: -2px;
   }
 }
@@ -1352,7 +1287,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   }
 
   &:focus-visible {
-    outline: 2px solid $ddb-rouge;
+    outline: 2px solid $ddb-focus;
     outline-offset: 1px;
   }
 }
@@ -1377,11 +1312,11 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   transition: color 0.14s ease;
 
   &:hover {
-    color: $ddb-rouge;
+    color: $ddb-focus;
   }
 
   &:focus-visible {
-    outline: 2px solid $ddb-rouge;
+    outline: 2px solid $ddb-focus;
     outline-offset: 2px;
     border-radius: 6px;
   }
@@ -1392,7 +1327,6 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   height: 0.82rem;
   flex: 0 0 auto;
 }
-
 
 // --- Case à cocher du formulaire : elle porte son propre libellé ---
 .ddb-case {
@@ -1405,7 +1339,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   cursor: pointer;
 
   input[type='checkbox'] {
-    accent-color: $ddb-rouge;
+    accent-color: $ddb-focus;
     width: 1.05rem;
     height: 1.05rem;
     flex: 0 0 auto;
@@ -1475,7 +1409,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 
 // Un champ obligatoire resté vide et signalé garde son libellé en rouge.
 .ddb-groupe-flottant.ddb-groupe-erreur.ddb-groupe-vide:not(:focus-within) > label {
-  color: $ddb-rouge;
+  color: $ddb-alerte;
 }
 
 // Le libellé flottant occupe l'intérieur d'un champ vide : une aide (« ex.
@@ -1510,7 +1444,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   }
 
   &:focus {
-    border-color: $ddb-rouge;
+    border-color: $ddb-focus;
     box-shadow: $ddb-anneau;
   }
 
@@ -1536,7 +1470,7 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
     box-shadow 0.15s ease;
 
   &:focus-within {
-    border-color: $ddb-rouge;
+    border-color: $ddb-focus;
     box-shadow: $ddb-anneau;
   }
 
@@ -1647,8 +1581,9 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   text-overflow: ellipsis;
 }
 
+// L'option sous le curseur ou le clavier : état d'interaction, donc accent.
 .ddb-combo-surligne {
-  background: rgba(229, 38, 33, 0.08);
+  background: color-mix(in srgb, #{$ddb-focus} 9%, transparent);
 }
 
 .ddb-combo-coche {
@@ -1683,17 +1618,17 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 }
 
 .ddb-groupe:focus-within label {
-  color: $ddb-rouge;
+  color: $ddb-focus;
 }
 
 .ddb-groupe-erreur {
   .ddb-champ,
   .ddb-champ-enveloppe.ddb-champ-prefixe {
-    border-color: $ddb-rouge;
+    border-color: $ddb-alerte;
   }
 
   label {
-    color: $ddb-rouge;
+    color: $ddb-alerte;
   }
 }
 
@@ -1747,25 +1682,11 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 }
 
 // -----------------------------------------------------------------------------
-// Écrans étroits - le rail passe au-dessus du tableau
+// Écrans étroits
 // -----------------------------------------------------------------------------
+// (Le repli du rail des nomenclatures au-dessus du tableau est passé dans
+// `nomenclatures.scss`, avec le rail lui-même.)
 @media (max-width: 991.98px) {
-  .ddb-grille {
-    grid-template-columns: minmax(0, 1fr);
-    min-height: 0;
-  }
-
-  .ddb-rail {
-    border-right: 0;
-    border-bottom: 1px solid $ddb-bordure;
-  }
-
-  .ddb-rail-liste {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.75rem 1.5rem;
-  }
-
   .ddb-contenu {
     padding: 1.1rem;
   }
@@ -1858,12 +1779,12 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   padding: 0.2rem 0.45rem;
   font-size: 0.82rem;
   font-weight: 600;
-  color: $ddb-rouge;
+  color: $ddb-focus;
   cursor: pointer;
   border-radius: 0.3rem;
 
   &:hover {
-    background-color: rgba(229, 38, 33, 0.08);
+    background-color: color-mix(in srgb, #{$ddb-focus} 9%, transparent);
   }
 }
 
@@ -2072,7 +1993,11 @@ $ddb-ease: cubic-bezier(0.22, 1, 0.36, 1);
   height: 0.8rem;
   width: 70%;
   border-radius: 6px;
-  background: linear-gradient(90deg, #f6efee 25%, #ece4e3 37%, #f6efee 63%);
+  // Gris FROIDS depuis le 2026-11-25, à la clarté exacte des deux gris chauds
+  // d'avant (#f6efee et #ece4e3) : seule la teinte change, l'onde de lumière
+  // qui parcourt le squelette garde son intensité. C'est le chargeur des
+  // listes, et il appartient maintenant à la même famille que le reste.
+  background: linear-gradient(90deg, #eef1f6 25%, #e3e7ec 37%, #eef1f6 63%);
   background-size: 400% 100%;
   animation: ddb-shimmer 1.3s ease infinite;
 }

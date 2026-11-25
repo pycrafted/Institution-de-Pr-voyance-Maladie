@@ -1,0 +1,73 @@
+// Page « Fournisseurs de Soins ».
+//
+// Refonte du 2026-11-25 : l'écran rejoint le langage de design des pages de
+// Comptabilité, des écrans de Traitements, des quatre pages de Documents et
+// des Données de base.
+//
+// **Pourquoi un fichier à part.** Cette page n'avait pas de feuille : elle
+// empruntait l'en-tête et les onglets de `participants/participants.scss`
+// (`prt-entete`, `prt-onglet`…). Les refaire là-bas aurait refait la page
+// Participants du même coup, sans l'avoir regardée - exactement le piège des
+// trois écrans qui empruntaient `journal-central.scss`. La page prend donc ses
+// propres noms (`fds-`), et Participants ne bouge pas.
+//
+// Les valeurs viennent de `comptabilite/_design-compta.scss` ; l'habillage de
+// la liste, de `traitements/_liste-compta.scss`.
+
+@use '../comptabilite/design-compta' as c;
+@use '../traitements/liste-compta' as l;
+
+// --- Le chapeau -------------------------------------------------------------
+// Le titre et la pastille du total de la vue - « Total Fournisseurs: 411 »,
+// le libellé de l'application d'origine - côte à côte.
+.fds-chapeau {
+  @include c.cpt-chapeau;
+
+  justify-content: flex-start;
+  gap: 0.9rem;
+}
+
+.fds-titre {
+  @include c.cpt-titre;
+}
+
+// --- Les deux onglets, en cartes --------------------------------------------
+// « Tous les Fournisseurs » et « Demandes d'agrément » sont deux états du même
+// dossier - une demande agréée devient un fournisseur -, et leurs colonnes ne
+// se ressemblent pas. D'où des cartes, comme les sous-onglets des Cotisations
+// et les familles de comptes de l'Interrogation : les cartes sont le niveau de
+// la PAGE, le rail de pastilles n'étant qu'un filtre de la liste.
+//
+// Ils étaient deux onglets soulignés d'un filet rouge animé, emprunté à
+// Participants.
+.fds-cartes {
+  @include c.cpt-cartes;
+}
+
+.fds-carte {
+  @include c.cpt-carte;
+}
+
+.fds-carte-libelle {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fds-carte-active {
+  @include c.cpt-carte-active;
+}
+
+// --- La liste, dans le langage de la Comptabilité ---------------------------
+// Pas de `$serre` : la raison sociale et l'adresse d'un prestataire sont
+// longues et peu nombreuses en colonnes - mieux vaut les laisser passer à la
+// ligne que les faire défiler.
+.fds-page {
+  @include l.liste-compta;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .fds-titre {
+    font-size: 1.45rem;
+  }
+}

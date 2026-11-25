@@ -35,7 +35,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import BoutonExport from '../../components/BoutonExport'
 import { CCard, CCardBody } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilCloudDownload, cilPrint, cilChevronBottom } from '@coreui/icons'
+import { cilChevronBottom, cilLink, cilPrint } from '@coreui/icons'
 
 import { request, telecharger } from '../../services/api'
 import { listerEntrees } from '../../services/referentiels'
@@ -113,7 +113,7 @@ const ONGLETS = [
   },
   {
     cle: 'fournisseurs',
-    libelle: 'Fournisseurs de Soins',
+    libelle: 'Fournisseurs de soins',
     titre: 'Intérrogation Comptes Fournisseurs de Soins',
     selecteur: 'specialite',
     etiquetteSelecteur: 'Spécialité',
@@ -134,7 +134,7 @@ const ONGLETS = [
   },
   {
     cle: 'charges',
-    libelle: 'Charges Techniques',
+    libelle: 'Charges techniques',
     titre: 'Intérrogation Comptes Charges Techniques',
     selecteur: 'compte',
     etiquetteSelecteur: 'Compte',
@@ -170,7 +170,14 @@ const ONGLETS = [
 /** Les colonnes, dans l'ordre de l'original. */
 const COLONNES_BASE = [
   { cle: 'codeSoc', libelle: 'Code Soc.', largeur: '70px' },
-  { cle: 'cJl', libelle: 'C.JL', largeur: '62px' },
+  // Le code journal en pastille : deux ou trois lettres noyées dans une
+  // colonne de chiffres se cherchent ; encadrées, elles se trouvent.
+  {
+    cle: 'cJl',
+    libelle: 'C.JL',
+    largeur: '72px',
+    rendu: (e) => (e.cJl ? <span className="ic-badge-journal">{e.cJl}</span> : ''),
+  },
   { cle: 'dCompta', libelle: 'Date Compta', largeur: '100px', rendu: (e) => dateLongue(e.dCompta) },
   {
     cle: 'moisTrait',
@@ -427,6 +434,25 @@ const InterrogationComptes = () => {
     setPage(1)
   }
 
+  /**
+   * Remet les filtres à leur état d'ouverture : l'exercice en cours, toute
+   * l'année, toutes les écritures, aucun tiers choisi. L'onglet, lui, ne
+   * bouge pas - on réinitialise une recherche, pas la famille de comptes
+   * qu'on est venu consulter.
+   */
+  const reinitialiser = () => {
+    setExercice(String(annee))
+    setDu(debutExercice(annee))
+    setAu(finExercice(annee))
+    setJournal('ALL')
+    setSociete('')
+    setCompte('')
+    setTiers('')
+    setRecherche('')
+    setCoches([])
+    setPage(1)
+  }
+
   // --- Les sélecteurs de l'onglet -----------------------------------------
 
   /** Intitulé d'un compte : le plan comptable, et le référentiel qui le porte. */
@@ -608,37 +634,30 @@ const InterrogationComptes = () => {
 
   const nbColonnes = colonnes.length + (onglet.tiers ? 1 : 0)
 
+  /**
+   * Les numéros de page à montrer : une fenêtre de cinq centrée sur la page
+   * courante, recalée aux bords. Les afficher tous est impossible ici - une
+   * année de grand livre fait des milliers de pages.
+   */
+  const pagesVisibles = useMemo(() => {
+    const largeur = Math.min(5, pages)
+    let premier = Math.max(1, page - Math.floor(largeur / 2))
+    premier = Math.min(premier, Math.max(1, pages - largeur + 1))
+    return Array.from({ length: largeur }, (_, i) => premier + i)
+  }, [page, pages])
+
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
         <section className="ddb-contenu jc-page ic-page">
-          {/* Titre a gauche, barre d'onglets a droite, sur la meme ligne. */}
-          <div className="ic-entete">
-            <h2 className="jc-titre">{onglet.titre}</h2>
+          {/* Le chapeau : ce qu'est la page, et l'exercice qu'on regarde.
+              L'exercice est sorti des filtres - il commande tout le reste et
+              ne se change pas aussi souvent qu'une société ou un tiers. */}
+          <header className="ic-chapeau">
+            <h2 className="ic-titre">{onglet.titre}</h2>
 
-            <nav className="ic-onglets" aria-label="Familles de comptes">
-              {ONGLETS.map((o) => (
-                <button
-                  key={o.cle}
-                  type="button"
-                  className={`ic-onglet${o.cle === cleOnglet ? ' ic-onglet-actif' : ''}`}
-                  onClick={() => changerOnglet(o.cle)}
-                >
-                  {o.libelle}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* La barre de filtres : la recherche tout à gauche, puis les
-              sélecteurs et les filtres communs ; les boutons d'action regroupés
-              à droite. Les flèches de navigation ont été retirées le 2026-11-09. */}
-          <div className="ic-barre">
-            {/* Ordre logique, du plus large au plus fin : l'exercice
-                d'abord, puis la periode, le journal, la societe, le
-                selecteur de l'onglet, et la recherche libre en dernier. */}
-            <label className="jc-filtre-groupe jc-etroit">
-              <span className="jc-filtre-etiquette">Exercice</span>
+            <label className="ic-exercice">
+              <span className="ic-exercice-etiquette">Exercice</span>
               <select
                 className="ddb-filtre"
                 value={exercice}
@@ -652,156 +671,230 @@ const InterrogationComptes = () => {
                 <option value="tous">Tous</option>
               </select>
             </label>
+          </header>
 
-            {/* La période : résumée comme dans l'original, dépliée au clic. */}
-            <div className="jc-filtre-groupe ic-periode">
-              <span className="jc-filtre-etiquette">Période</span>
+          {/* Les six familles de comptes, en cartes. Le libellé seul : les
+              icônes ont été retirées le 2026-11-24, aucune n'étant assez
+              parlante pour mériter sa place au-dessus du mot. */}
+          <nav className="ic-onglets" aria-label="Familles de comptes">
+            {ONGLETS.map((o) => (
               <button
+                key={o.cle}
                 type="button"
-                className="ic-periode-resume"
-                onClick={() => setPeriodeOuverte((ouverte) => !ouverte)}
+                className={`ic-onglet${o.cle === cleOnglet ? ' ic-onglet-actif' : ''}`}
+                onClick={() => changerOnglet(o.cle)}
+                aria-current={o.cle === cleOnglet ? 'page' : undefined}
               >
-                {resumePeriode(du, au)}
-                <CIcon icon={cilChevronBottom} className="ic-periode-chevron" />
+                <span className="ic-onglet-libelle">{o.libelle}</span>
               </button>
-              {periodeOuverte && (
-                <div className="ic-periode-champs">
-                  <input
-                    type="date"
-                    className="ddb-champ"
-                    value={du}
-                    onChange={(e) => changerFiltre(setDu)(e.target.value)}
-                    aria-label="Du"
-                  />
-                  <input
-                    type="date"
-                    className="ddb-champ"
-                    value={au}
-                    onChange={(e) => changerFiltre(setAu)(e.target.value)}
-                    aria-label="Au"
-                  />
-                </div>
-              )}
+            ))}
+          </nav>
+
+          {/* Les filtres. L'ordre va du plus large au plus fin : la période,
+              le journal, la société, le sélecteur de l'onglet, et la recherche
+              libre en dernier. Les flèches de navigation ont été retirées le
+              2026-11-09. */}
+          <div className="ic-panneau">
+            <div className="ic-panneau-tete">
+              <p className="ic-panneau-titre">Filtres</p>
+              {/* Un lien, pas un bouton : remettre les filtres à zéro ne vaut
+                  pas le poids visuel d'Exporter ou d'Imprimer. */}
+              <button type="button" className="ic-lien" onClick={reinitialiser}>
+                Réinitialiser
+              </button>
             </div>
 
-            {/* « Type d'Ecriture » garde l'orthographe de l'original, sans
-                accent sur le E. */}
-            <label className="jc-filtre-groupe jc-large">
-              <span className="jc-filtre-etiquette">Type d&apos;Ecriture</span>
-              <select
-                className="ddb-filtre"
-                value={journal}
-                onChange={(e) => changerFiltre(setJournal)(e.target.value)}
-              >
-                <option value="ALL">Toutes les Ecritures</option>
-                {journaux.map((j) => (
-                  <option key={j.code} value={j.code}>
-                    {j.code} - {j.libelle}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {onglet.societeEnFiltre && (
-              <label className="jc-filtre-groupe">
-                <span className="jc-filtre-etiquette">Société</span>
-                <select
-                  className="ddb-filtre"
-                  value={societe}
-                  onChange={(e) => changerFiltre(setSociete)(e.target.value)}
-                >
-                  <option value="">Toutes les sociétés</option>
-                  {adherents.map((a) => (
-                    <option key={a.code} value={a.code}>
-                      {a.code} - {a.libelle}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-
-            <label className="ic-selecteur">
-              <span className="ic-etiquette">{onglet.etiquetteSelecteur}</span>
-              <select
-                className="ddb-filtre"
-                value={valeurSelecteur}
-                onChange={(e) => changerFiltre(poserSelecteur)(e.target.value)}
-              >
-                <option value="">{onglet.videSelecteur}</option>
-                {optionsSelecteur().map((o) => (
-                  <option key={o.valeur} value={o.valeur}>
-                    {o.libelle}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {onglet.tiers && (
-              <label className="ic-selecteur">
-                <span className="ic-etiquette">{onglet.etiquetteTiers || 'Tiers'}</span>
-                <select
-                  className="ddb-filtre"
-                  value={tiers}
-                  onChange={(e) => changerFiltre(setTiers)(e.target.value)}
-                >
-                  <option value="">Tous</option>
-                  {listeTiers.map((t) => (
-                    <option key={t.tiers} value={t.tiers}>
-                      {nommerTiers(t.tiers)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-
-            <label className="ddb-recherche-flottante ic-recherche">
-              <span className="ddb-recherche-libelle">Rechercher…</span>
-              <input
-                className="ddb-recherche-champ"
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-              />
-            </label>
-
-            <div className="ic-boutons">
-              <BoutonExport onClick={exporter} disabled={!riche} />
-              {/* Un seul bouton pour le lettrage : il s'oriente d'après les
-                  lignes cochées - déjà lettrées, il délettre ; sinon, il lettre.
-                  Il n'existe que là où il y a un tiers : sur une charge ou une
-                  banque, il n'y a rien à apparier. */}
-              {onglet.tiers && (
+            <div className="ic-barre">
+              {/* La période : résumée comme dans l'original, dépliée au clic. */}
+              <div className="ic-champ ic-periode">
+                <span className="ic-etiquette">Période</span>
                 <button
                   type="button"
-                  className="ic-btn ic-btn-sec"
-                  onClick={() => lettrer(cochesLettrees)}
-                  title={
-                    cochesLettrees
-                      ? 'Retirer le lettrage des écritures cochées'
-                      : 'Apparier les écritures cochées'
-                  }
+                  className="ic-periode-resume"
+                  onClick={() => setPeriodeOuverte((ouverte) => !ouverte)}
                 >
-                  <CIcon icon={cilChevronBottom} /> {cochesLettrees ? 'Délettrer' : 'Lettrage'}
+                  {resumePeriode(du, au)}
+                  <CIcon icon={cilChevronBottom} className="ic-periode-chevron" />
                 </button>
+                {periodeOuverte && (
+                  <div className="ic-periode-champs">
+                    <input
+                      type="date"
+                      className="ddb-champ"
+                      value={du}
+                      onChange={(e) => changerFiltre(setDu)(e.target.value)}
+                      aria-label="Du"
+                    />
+                    <input
+                      type="date"
+                      className="ddb-champ"
+                      value={au}
+                      onChange={(e) => changerFiltre(setAu)(e.target.value)}
+                      aria-label="Au"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* « Type d'Ecriture » garde l'orthographe de l'original, sans
+                  accent sur le E. */}
+              <label className="ic-champ">
+                <span className="ic-etiquette">Type d&apos;Ecriture</span>
+                <select
+                  className="ddb-filtre"
+                  value={journal}
+                  onChange={(e) => changerFiltre(setJournal)(e.target.value)}
+                >
+                  <option value="ALL">Toutes les Ecritures</option>
+                  {journaux.map((j) => (
+                    <option key={j.code} value={j.code}>
+                      {j.code} - {j.libelle}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {onglet.societeEnFiltre && (
+                <label className="ic-champ">
+                  <span className="ic-etiquette">Société</span>
+                  <select
+                    className="ddb-filtre"
+                    value={societe}
+                    onChange={(e) => changerFiltre(setSociete)(e.target.value)}
+                  >
+                    <option value="">Toutes les sociétés</option>
+                    {adherents.map((a) => (
+                      <option key={a.code} value={a.code}>
+                        {a.code} - {a.libelle}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               )}
-              <button
-                type="button"
-                className="ic-btn ic-btn-primary"
-                onClick={imprimerExtrait}
-                disabled={!riche}
-              >
-                <CIcon icon={cilPrint} /> Imprimer
-              </button>
+
+              <label className="ic-champ">
+                <span className="ic-etiquette">{onglet.etiquetteSelecteur}</span>
+                <select
+                  className="ddb-filtre"
+                  value={valeurSelecteur}
+                  onChange={(e) => changerFiltre(poserSelecteur)(e.target.value)}
+                >
+                  <option value="">{onglet.videSelecteur}</option>
+                  {optionsSelecteur().map((o) => (
+                    <option key={o.valeur} value={o.valeur}>
+                      {o.libelle}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {onglet.tiers && (
+                <label className="ic-champ">
+                  <span className="ic-etiquette">{onglet.etiquetteTiers || 'Tiers'}</span>
+                  <select
+                    className="ddb-filtre"
+                    value={tiers}
+                    onChange={(e) => changerFiltre(setTiers)(e.target.value)}
+                  >
+                    <option value="">Tous</option>
+                    {listeTiers.map((t) => (
+                      <option key={t.tiers} value={t.tiers}>
+                        {nommerTiers(t.tiers)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              <label className="ic-champ">
+                <span className="ic-etiquette">Recherche</span>
+                <input
+                  className="ddb-filtre"
+                  placeholder="N° de pièce, libellé, compte…"
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                />
+              </label>
+            </div>
+
+            {/* Le pied du panneau : les actions, poussées à droite. La
+                recherche part toute seule à chaque frappe, aucun bouton ne la
+                déclenche. Le compte des écritures trouvées a été retiré - la
+                pagination le dit déjà, en bas. */}
+            <div className="ic-panneau-pied">
+              <div className="ic-panneau-actions">
+                {/* Un seul bouton pour le lettrage : il s'oriente d'après les
+                    lignes cochées - déjà lettrées, il délettre ; sinon, il
+                    lettre. Il n'existe que là où il y a un tiers : sur une
+                    charge ou une banque, il n'y a rien à apparier. */}
+                {onglet.tiers && (
+                  <button
+                    type="button"
+                    className="ic-btn ic-btn-sec"
+                    onClick={() => lettrer(cochesLettrees)}
+                    /* Pas de `disabled` : l'original laisse Lettrage actif même
+                       sans ligne cochée, pendant qu'Export et Imprimer
+                       pâlissent (capture 75). C'est de la logique, pas du
+                       design : on garde celle de LAMPS. */
+                    title={
+                      cochesLettrees
+                        ? 'Retirer le lettrage des écritures cochées'
+                        : 'Apparier les écritures cochées'
+                    }
+                  >
+                    <CIcon icon={cilLink} /> {cochesLettrees ? 'Délettrer' : 'Lettrage'}
+                  </button>
+                )}
+                <BoutonExport onClick={exporter} disabled={!riche} />
+                <button
+                  type="button"
+                  className="ic-btn ic-btn-primary"
+                  onClick={imprimerExtrait}
+                  disabled={!riche}
+                >
+                  <CIcon icon={cilPrint} /> Imprimer
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Le bandeau noir : le contrôle à gauche, la sélection à droite. */}
+          {/* Le bandeau de contrôle. Les totaux portent sur TOUTE la période
+              filtrée, jamais sur les seules lignes affichées. */}
           <div className="ic-bandeau">
-            <span className="ic-bandeau-controle">
-              Total débit: <strong>{montant(totaux?.debit ?? 0)}</strong> - Total crédit{' '}
-              <strong>{montant(totaux?.credit ?? 0)}</strong> -{' '}
-              <em className="ic-solde">(Solde: {montant(totaux?.solde ?? 0)})</em>
-            </span>
-            <span className="ic-bandeau-selection">Solde sélection: {montant(soldeSelection)}</span>
+            <div className="ic-totaux">
+              <div className="ic-total">
+                <span className="ic-total-etiquette">Total débit</span>
+                <span className="ic-total-valeur">
+                  {montant(totaux?.debit ?? 0)} <span className="ic-devise">FCFA</span>
+                </span>
+              </div>
+              <span className="ic-bandeau-filet" aria-hidden="true" />
+              <div className="ic-total">
+                <span className="ic-total-etiquette">Total crédit</span>
+                <span className="ic-total-valeur">
+                  {montant(totaux?.credit ?? 0)} <span className="ic-devise">FCFA</span>
+                </span>
+              </div>
+              <span className="ic-bandeau-filet" aria-hidden="true" />
+              <div className="ic-total">
+                <span className="ic-total-etiquette">Solde général</span>
+                <span className="ic-total-valeur ic-solde">
+                  {montant(totaux?.solde ?? 0)} <span className="ic-devise">FCFA</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Le solde de la sélection, cœur du lettrage : il tombe à zéro
+                quand la facture et son règlement sont cochés ensemble. Il
+                n'existe que là où le lettrage existe. */}
+            {onglet.tiers && (
+              <span className="ic-bandeau-selection">
+                Solde sélectionné{' '}
+                <strong>
+                  {montant(soldeSelection)} <span className="ic-devise">FCFA</span>
+                </strong>
+              </span>
+            )}
           </div>
 
           <div className="ddb-tableau-conteneur jc-tableau-conteneur">
@@ -872,7 +965,16 @@ const InterrogationComptes = () => {
                               .filter(Boolean)
                               .join(' ')}
                           >
-                            {valeur || ''}
+                            {/* Le tiret ne va QUE sur les colonnes de
+                                montants. Là, une case vide est un vrai
+                                renseignement - l'écriture porte un débit OU un
+                                crédit - et le blanc se lirait comme une
+                                colonne sautée. Ailleurs (n° de chèque, compte
+                                tiers, matricule), l'absence est le cas normal :
+                                la remplir d'un tiret ajoutait jusqu'à quatre
+                                marques par ligne pour ne rien dire. Tiret
+                                simple, jamais le cadratin. */}
+                            {valeur || (c.aligne ? <span className="ic-vide">-</span> : '')}
                           </td>
                         )
                       })}
@@ -882,63 +984,75 @@ const InterrogationComptes = () => {
             </table>
           </div>
 
-          <footer className="ddb-pagination jc-pagination">
-            <label className="jc-taille">
-              Nombre par page
-              <select
-                className="ddb-filtre"
-                value={taille}
-                onChange={(e) => {
-                  setTaille(Number(e.target.value))
-                  setPage(1)
-                }}
-              >
-                {TAILLES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
+          <footer className="ic-pagination">
+            <div className="ic-pagination-outils">
+              <label className="ic-pagination-taille">
+                Nombre par page :
+                <select
+                  className="ddb-filtre"
+                  value={taille}
+                  onChange={(e) => {
+                    setTaille(Number(e.target.value))
+                    setPage(1)
+                  }}
+                >
+                  {TAILLES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <nav className="ic-pages" aria-label="Pagination">
+                <button
+                  type="button"
+                  onClick={() => setPage(1)}
+                  disabled={page <= 1}
+                  aria-label="Première page"
+                >
+                  «
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page <= 1}
+                  aria-label="Page précédente"
+                >
+                  ‹
+                </button>
+                {/* Une fenêtre de cinq numéros autour de la page courante :
+                    au-delà, la liste des pages serait plus longue que le
+                    tableau (243 000 écritures font 4 860 pages). */}
+                {pagesVisibles.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    className={p === page ? 'ic-page-active' : undefined}
+                    onClick={() => setPage(p)}
+                    aria-current={p === page ? 'page' : undefined}
+                  >
+                    {p}
+                  </button>
                 ))}
-              </select>
-            </label>
-            <span className="jc-position">
-              {nombre === 0
-                ? '0 - 0 / 0'
-                : `${(page - 1) * taille + 1} - ${Math.min(page * taille, nombre)} / ${nombre.toLocaleString('fr-FR')}`}
-            </span>
-            <span className="jc-fleches">
-              <button
-                type="button"
-                onClick={() => setPage(1)}
-                disabled={page <= 1}
-                aria-label="Première page"
-              >
-                |&lt;
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(page - 1)}
-                disabled={page <= 1}
-                aria-label="Page précédente"
-              >
-                &lt;
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(page + 1)}
-                disabled={page >= pages}
-                aria-label="Page suivante"
-              >
-                &gt;
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage(pages)}
-                disabled={page >= pages}
-                aria-label="Dernière page"
-              >
-                &gt;|
-              </button>
-            </span>
+                <button
+                  type="button"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= pages}
+                  aria-label="Page suivante"
+                >
+                  ›
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage(pages)}
+                  disabled={page >= pages}
+                  aria-label="Dernière page"
+                >
+                  »
+                </button>
+              </nav>
+            </div>
           </footer>
         </section>
       </CCardBody>

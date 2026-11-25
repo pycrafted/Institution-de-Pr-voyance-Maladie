@@ -15,10 +15,15 @@
 // Les teintes de marques, elles, vivent dans palette.js : ce sont des
 // données, pas de la décoration, et le JavaScript en a besoin pour Chart.js.
 
-$tdb-rouge: #e52621;
-$tdb-noir: #1d1d1b;
-$tdb-bordure: #ece4e3;
-$tdb-doux: #736968;
+@use '../comptabilite/design-compta' as c;
+
+// Les quatre teintes de la page viennent désormais du fichier partagé : ce
+// sont les mêmes que celles des écrans de Comptabilité, de Traitements et de
+// Documents. Le rouge SAR a laissé la place à l'accent de l'IPM.
+$tdb-rouge: c.$cpt-accent;
+$tdb-noir: c.$cpt-encre;
+$tdb-bordure: c.$cpt-bordure;
+$tdb-doux: c.$cpt-doux;
 $tdb-surface-douce: #fef8f7;
 $tdb-rayon: 0.375rem;
 $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
@@ -35,48 +40,45 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 // Le titre est seul sur sa ligne, comme « Structure » : ni sous-titre, ni
 // rappel de la période, que le sélecteur juste à côté annonce déjà.
 .tdb-entete {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.25rem;
+  @include c.cpt-chapeau;
+
+  // Le chapeau partagé pose sa propre marge basse ; la grille de la page y
+  // ajoute son interligne, et deux marges valent une fois et demie celle
+  // qu'il faut.
+  margin-bottom: 0;
 }
 
 .tdb-titre {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: $tdb-noir;
-  margin: 0;
-  line-height: 1.2;
+  @include c.cpt-titre;
 }
 
 // --- Sélecteur segmenté : identique à celui de « Données de base » ---
 // Un rail gris, le segment retenu en noir SAR.
 .tdb-segments {
   display: inline-flex;
-  flex: 0 0 auto;
+  flex: none;
+  flex-wrap: wrap;
   gap: 0.2rem;
-  padding: 0.2rem;
-  border: 1px solid $tdb-bordure;
-  border-radius: 0.5rem;
-  background-color: #faf3f2;
+  padding: 0.25rem;
+  border: 1px solid c.$cpt-bordure-forte;
+  border-radius: 10px;
+  background: #fff;
 }
 
 .tdb-segment {
   border: 0;
   border-radius: 0.35rem;
   background: transparent;
-  padding: 0.4rem 0.9rem;
-  font-size: 0.84rem;
-  font-weight: 500;
-  color: #5b5150;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: c.$cpt-doux;
   white-space: nowrap;
   transition: background-color 0.12s ease, color 0.12s ease;
 
   &:hover:not(.tdb-segment-actif) {
-    background-color: rgba(255, 255, 255, 0.7);
-    color: $tdb-noir;
+    background-color: c.$cpt-fond-panneau;
+    color: c.$cpt-encre;
   }
 
   &:focus-visible {
@@ -86,10 +88,9 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 .tdb-segment-actif {
-  background-color: $tdb-noir;
+  background-color: c.$cpt-accent;
   color: #fff;
   font-weight: 600;
-  box-shadow: 0 2px 6px -2px rgba(29, 29, 27, 0.5);
 }
 
 // Variante d'en-tête de carte : le sélecteur y est secondaire, il s'efface.
@@ -117,7 +118,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   gap: 0.7rem;
   background-color: #fff;
   border: 1px solid $tdb-bordure;
-  border-radius: $tdb-rayon;
+  border-radius: 12px;
   padding: 1.15rem 1.3rem;
   transition: box-shadow 0.15s ease, border-color 0.15s ease;
 
@@ -209,8 +210,11 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 // -----------------------------------------------------------------------------
 // Cartes
 // -----------------------------------------------------------------------------
+// Même rayon que les panneaux et les tableaux des autres écrans : 12 px.
+// CoreUI pose le sien, plus serré, qu'il faut donc reprendre.
 .tdb-carte {
   border-color: $tdb-bordure;
+  border-radius: 12px;
 }
 
 // En colonne : quand deux cartes voisines n'ont pas le même contenu, la plus
@@ -591,8 +595,10 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
     border-top: 0;
   }
 
+  // Même lavis de survol que les lignes de tableau de toute l'application
+  // (`$openkm-row-hover-bg`) : il était rose.
   tbody tr:hover th {
-    background-color: #fef8f7;
+    background-color: #f4f7fb;
   }
 }
 
@@ -936,7 +942,11 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 .tdb-squelette {
   width: 100%;
   border-radius: 12px;
-  background: linear-gradient(100deg, rgba(0, 0, 0, 0.04) 30%, rgba(0, 0, 0, 0.07) 50%, rgba(0, 0, 0, 0.04) 70%);
+  // Les deux mêmes gris froids que les squelettes de liste
+  // (`donnees-de-base.scss`), au lieu d'un noir transparent : les deux
+  // squelettes de l'application se ressemblent, et ils appartiennent à la
+  // famille de l'accent.
+  background: linear-gradient(100deg, #eef1f6 30%, #e3e7ec 50%, #eef1f6 70%);
   background-size: 200% 100%;
   animation: tdb-respire 1.4s ease-in-out infinite;
 }

@@ -24,7 +24,7 @@ import { CContainer } from '@coreui/react'
 
 // routes config
 import { routes } from '../routes'
-import ChargeurSar from './ChargeurSar'
+import Chargeur from './Chargeur'
 
 /**
  * AppContent functional component
@@ -44,7 +44,7 @@ const AppContent = () => {
     // écran, le plafond laissait deux bandes grises vides de part et d'autre de
     // la carte, pendant que les tableaux se tassaient à l'intérieur.
     <CContainer className="px-4 py-3" fluid>
-      <Suspense fallback={<ChargeurSar />}>
+      <Suspense fallback={<Chargeur />}>
         <Routes>
           {routes.map((route, idx) => {
             return (

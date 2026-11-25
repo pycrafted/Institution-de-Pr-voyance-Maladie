@@ -1,0 +1,41 @@
+// Page « Traitements → Remboursement » - Remboursement Frais Médicaux
+// (captures 66-68).
+//
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des pages de
+// Comptabilité, des Factures et des Règlements. Tout ce qui habille la liste -
+// panneau de filtres, rail des états, actions de lot, tableau, pagination -
+// vient de `_liste-compta.scss` ; les valeurs, de
+// `comptabilite/_design-compta.scss`.
+//
+// Rien ne lui est propre que son chapeau : l'écran n'a ni sous-onglets ni
+// bouton de page. D'où un fichier de quelques lignes - c'est tout l'intérêt
+// d'avoir sorti le langage dans un partagé.
+
+@use '../comptabilite/design-compta' as c;
+@use 'liste-compta' as l;
+
+// --- Le chapeau -------------------------------------------------------------
+// Le titre seul, comme le Plan Comptable : pas de sélecteur d'exercice à sa
+// droite (l'exercice est un filtre du panneau), et plus de pastille de total.
+.rbt-chapeau {
+  @include c.cpt-chapeau;
+}
+
+.rbt-titre {
+  @include c.cpt-titre;
+}
+
+// --- La liste, dans le langage de la Comptabilité ---------------------------
+// `$serre` : treize colonnes (journal, pièce, mois de traitement, ticket,
+// facture IPM, participant, matricule…). Elles se lisent en lignes d'un seul
+// tenant qui défilent, pas en cellules qui passent à la ligne.
+.rbt-page {
+  @include l.liste-compta($serre: true);
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .rbt-titre {
+    font-size: 1.45rem;
+  }
+}

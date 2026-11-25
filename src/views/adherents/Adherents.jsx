@@ -9,9 +9,9 @@
  * « Données de base », qui sait déjà lister, chercher, paginer, créer,
  * modifier et désactiver à partir d'un simple descripteur. C'est ce qui fait
  * qu'un adhérent se consulte et se saisit exactement comme un fournisseur ou
- * une spécialité - même tableau à en-tête noir, même panneau latéral, mêmes
- * gestes. Réécrire un écran équivalent aurait garanti l'inverse : deux pages
- * qui se ressemblent de loin et diffèrent de près.
+ * une spécialité - même tableau, même panneau latéral, mêmes gestes. Réécrire
+ * un écran équivalent aurait garanti l'inverse : deux pages qui se ressemblent
+ * de loin et diffèrent de près.
  *
  * La feuille de styles de « Données de base » est importée ici parce que les
  * deux vues sont chargées à la demande : arriver directement sur /adherents ne
@@ -23,12 +23,15 @@ import { CCard, CCardBody } from '@coreui/react'
 
 import Referentiel from '../donnees-de-base/Referentiel'
 import '../donnees-de-base/donnees-de-base.scss'
+import './adherents.scss'
 import { ADHERENTS } from './config'
 
 const Adherents = () => (
   <CCard className="ddb-carte">
     <CCardBody className="p-0">
-      <section className="ddb-contenu">
+      <section className="ddb-contenu adh-page">
+        {/* Le titre et la pastille du total sont rendus par <Referentiel />
+            lui-même (barre compacte) : la page n'a pas de chapeau à elle. */}
         <Referentiel referentiel={ADHERENTS} />
       </section>
     </CCardBody>

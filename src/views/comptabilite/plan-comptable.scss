@@ -1,116 +1,149 @@
-/**
- * Plan Comptable Général - ce que la page ajoute à l'habillage commun.
- *
- * Deux colonnes : la liste à gauche, le formulaire à droite, comme
- * l'original. Le formulaire ne flotte pas dans une fenêtre : on clique une
- * ligne, elle s'y charge. C'est ce qui rend la consultation du plan si
- * rapide - on parcourt, on corrige, on passe au suivant.
- */
+// Page « Plan Comptable Général » (capture 73).
+//
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des deux
+// autres pages de Comptabilité - Journal Central et Interrogation de Comptes.
+// Les trois se lisent désormais dans le même ordre : le titre, les familles
+// de comptes en cartes, le panneau de filtres, puis le résultat.
+//
+// **Tout ce qui est commun vit dans `_design-compta.scss`** : palette,
+// panneau, champs, boutons, tableau, pagination. Ce fichier ne garde que ce
+// qui est propre à celui-ci - les deux colonnes liste/formulaire, et le
+// formulaire lui-même, qui n'existe sur aucun des deux autres écrans.
+
+@use 'design-compta' as c;
 
 .pc-page {
-  display: flex;
-  flex-direction: column;
+  padding-top: 1.5rem;
 }
 
-/* --- En-tête : titre, segments, export, recherche ----------------------- */
-
-.pc-entete {
-  padding: 1.25rem 1.25rem 0.75rem;
+// --- Le chapeau -------------------------------------------------------------
+// Pas de sélecteur d'exercice ici : le plan comptable ne dépend pas d'une
+// année. Le titre est donc seul sur sa ligne.
+.pc-chapeau {
+  @include c.cpt-chapeau;
 }
 
 .pc-titre {
-  margin: 0 0 0.9rem;
-  font-size: 1.65rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  @include c.cpt-titre;
 }
 
-.pc-barre {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-/* Les six segments, collés comme dans l'original. */
+// --- Les familles de comptes, en cartes -------------------------------------
+// Même forme que les six familles de l'Interrogation de Comptes. Leur nombre
+// varie (six types plus « Tous »), d'où `auto-fit` plutôt qu'un compte fixe.
 .pc-segments {
-  display: inline-flex;
-  border-radius: 0.3rem;
-  overflow: hidden;
-  border: 1px solid #d8d2d2;
+  @include c.cpt-cartes;
 }
 
 .pc-segment {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  border: 0;
-  border-right: 1px solid #d8d2d2;
-  background: #fff;
-  padding: 0.42rem 0.9rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #3a3535;
-  cursor: pointer;
+  @include c.cpt-carte;
+}
 
-  &:last-child {
-    border-right: 0;
+.pc-segment-libelle {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.pc-segment-actif {
+  @include c.cpt-carte-active;
+}
+
+// --- Le panneau de filtres --------------------------------------------------
+.pc-panneau {
+  @include c.cpt-panneau;
+}
+
+.pc-panneau-tete {
+  @include c.cpt-panneau-tete;
+}
+
+.pc-panneau-titre {
+  @include c.cpt-panneau-titre;
+}
+
+.pc-lien {
+  @include c.cpt-lien;
+}
+
+.pc-barre {
+  @include c.cpt-barre;
+}
+
+.pc-panneau-pied {
+  @include c.cpt-panneau-pied;
+}
+
+.pc-panneau-actions {
+  @include c.cpt-actions;
+}
+
+.pc-page .bouton-export {
+  @include c.cpt-bouton-export;
+}
+
+// --- Les champs : filtres ET formulaire, même forme -------------------------
+// `.pc-champ` sert aux deux. C'est volontaire : un champ de recherche et un
+// champ de saisie se ressemblent, et les distinguer n'apprendrait rien.
+.pc-champ {
+  @include c.cpt-champ;
+}
+
+.pc-libelle {
+  @include c.cpt-etiquette;
+
+  // La mention entre parenthèses - « (minimum 6 caractères) », le solde -
+  // reste en retrait de l'intitulé qu'elle précise.
+  em {
+    font-style: normal;
+    font-weight: 500;
+    color: c.$cpt-muet;
   }
-
-  &:hover:not(.pc-segment--actif) {
-    background: #f6f2f2;
-  }
 }
 
-.pc-segment--actif {
-  background: #1d1b1b;
-  color: #fff;
+.pc-page .ddb-filtre,
+.pc-saisie {
+  @include c.cpt-controle;
 }
 
-/* Le compte de chaque segment : l'original ne le donne pas, mais il évite
-   d'ouvrir un onglet pour découvrir qu'il est vide. */
-.pc-segment-nombre {
-  font-weight: 500;
-  font-size: 0.72rem;
-  opacity: 0.6;
+.pc-page .ddb-filtre {
+  @include c.cpt-controle-liste;
 }
 
-.pc-segment--actif .pc-segment-nombre {
-  opacity: 0.75;
+.pc-saisie,
+.pc-page input.ddb-filtre {
+  @include c.cpt-controle-saisie;
 }
 
-.pc-export {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  border: 0;
-  border-radius: 0.3rem;
-  background: #2e7d32;
-  color: #fff;
-  padding: 0.42rem 0.8rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-
-  svg {
-    width: 0.95rem;
-    height: 0.95rem;
-  }
+.pc-page input.ddb-filtre::placeholder {
+  color: c.$cpt-muet;
 }
 
-.pc-recherche {
-  margin-left: auto;
-  width: 18rem;
-  max-width: 100%;
+// Le solde n'est jamais saisi : il se calcule sur les écritures. Le champ le
+// dit en se grisant.
+.pc-saisie--calculee,
+.pc-saisie:disabled {
+  background-color: c.$cpt-fond-panneau;
+  color: c.$cpt-doux;
+  cursor: not-allowed;
 }
 
-/* --- Le corps : liste + formulaire -------------------------------------- */
+// --- Les boutons ------------------------------------------------------------
+.pc-btn {
+  @include c.cpt-btn;
+}
 
+.pc-btn-primary {
+  @include c.cpt-btn-primary;
+}
+
+.pc-btn-sec {
+  @include c.cpt-btn-sec;
+}
+
+// --- Le corps : la liste et le formulaire, côte à côte ----------------------
 .pc-corps {
   display: flex;
   align-items: flex-start;
-  gap: 1.25rem;
-  padding: 0 1.25rem 1.25rem;
+  gap: 1.5rem;
 }
 
 .pc-liste {
@@ -118,42 +151,51 @@
   min-width: 0;
 }
 
-/**
- * Le plan se parcourt : des lignes serrées, comme le grand livre. Le
- * resserrement vient de `.tableau-dense` (cf. `scss/style.scss`) ; écrit ici,
- * il ne s'appliquait pas - la règle commune pesait le même poids et arrivait
- * après, si bien que le plan restait aéré malgré ces lignes.
- *
- * `width: 100%` : le tableau est un `<table>` nu, sans la classe `.table` de
- * CoreUI qui porte cette largeur. Sans elle il se dimensionne sur son
- * contenu, et laisse une bande vide entre lui et le formulaire.
- */
-.pc-tableau {
-  width: 100%;
+// --- Le tableau -------------------------------------------------------------
+.pc-page .ddb-tableau-conteneur {
+  @include c.cpt-tableau-conteneur;
+
+  // Pas de bandeau de totaux au-dessus, contrairement aux deux autres écrans :
+  // le cadre se referme donc en haut aussi.
+  border-radius: 12px;
 }
 
+// Pas de `cpt-tableau-serre` ici : l'intitulé est la colonne libre, et le
+// couper le rendrait illisible dans une liste que le formulaire rétrécit déjà.
+.pc-tableau {
+  @include c.cpt-tableau;
+}
+
+// Chaque ligne charge son compte dans le formulaire : elle se clique.
 .pc-ligne {
   cursor: pointer;
+}
 
-  &:hover {
-    background: #faf6f6;
+// La ligne chargée dans le formulaire. L'original la peignait en rose vif ;
+// ici elle prend l'accent en voile léger, assez pour la suivre des yeux sans
+// rendre son texte difficile à lire.
+.pc-ligne--choisie,
+.pc-ligne--choisie:hover {
+  td {
+    @include c.cpt-ligne-choisie;
+  }
+
+  td:first-child {
+    box-shadow: inset 3px 0 0 c.$cpt-accent;
   }
 }
 
-/* La ligne chargée dans le formulaire, au rose de l'original. */
-.pc-ligne--choisie,
-.pc-ligne--choisie:hover {
-  background: #f6b6bd;
-}
-
+// Un compte désactivé garde sa place - le voir disparaître laisserait croire
+// à une suppression - mais s'efface et se barre.
 .pc-ligne--inactive td {
   opacity: 0.55;
   text-decoration: line-through;
 }
 
 .pc-numero {
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  @include c.cpt-mono;
+
+  font-weight: 700;
 }
 
 .pc-droite {
@@ -162,19 +204,24 @@
 }
 
 .pc-negatif {
-  color: #c62828;
+  @include c.cpt-negatif;
 }
 
 .pc-action {
+  width: 48px;
   text-align: center;
 }
 
+// La corbeille désactive un compte : une action destructrice, qui garde donc
+// le rouge d'alerte plutôt que l'accent de la marque.
 .pc-corbeille {
   border: 0;
   background: transparent;
-  color: #d7263d;
+  color: c.$cpt-muet;
   cursor: pointer;
   padding: 0.2rem;
+  border-radius: 6px;
+  transition: color 0.15s ease;
 
   svg {
     width: 0.95rem;
@@ -182,159 +229,84 @@
   }
 
   &:hover {
-    color: #a0172b;
+    color: c.$cpt-alerte;
+    background: color-mix(in srgb, c.$cpt-alerte 8%, transparent);
   }
 }
 
 .pc-vide {
-  padding: 2.5rem 1rem;
-  text-align: center;
-  color: #6b6b6b;
+  @include c.cpt-tableau-vide;
 }
 
-/* --- Le formulaire ------------------------------------------------------- */
-
+// --- Le formulaire ----------------------------------------------------------
+// Propre à cet écran : ni le Journal Central ni l'Interrogation de Comptes ne
+// créent quoi que ce soit, ils consultent.
 .pc-formulaire {
   flex: 0 0 22rem;
   max-width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  border: 1px solid #e6e0e0;
-  border-radius: 0.5rem;
-  padding: 1.25rem;
-  background: #fff;
+  padding: 1.15rem;
+  border: 1px solid c.$cpt-bordure;
+  border-radius: 12px;
+  background: c.$cpt-fond-panneau;
 }
 
-.pc-champ {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.pc-libelle {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #3a3535;
-
-  em {
-    font-style: normal;
-    font-weight: 600;
-    color: #d7263d;
-    font-size: 0.75rem;
-  }
-}
-
-.pc-saisie {
-  height: 2.35rem;
-  width: 100%;
-  border: 1.5px solid #d8d2d2;
-  border-radius: 0.3rem;
-  padding: 0 0.75rem;
-  font-size: 0.875rem;
-
-  &:disabled {
-    background: #f1ecec;
-    color: #6b6b6b;
-  }
-}
-
-/* Le solde n'est pas une saisie : il se lit, calculé sur les écritures. */
-.pc-saisie--calculee {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
+.pc-formulaire-titre {
+  @include c.cpt-panneau-titre;
 }
 
 .pc-erreur {
-  font-size: 0.75rem;
-  color: #c62828;
+  color: c.$cpt-alerte;
+  font-size: 0.78rem;
 }
 
+// Ce compte est désigné par un référentiel : c'est ce qui explique le refus
+// de la corbeille.
 .pc-note {
   margin: 0;
-  font-size: 0.78rem;
-  color: #5b5250;
-  background: #f7f0ef;
-  border-radius: 0.35rem;
-  padding: 0.5rem 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: #fff;
+  color: c.$cpt-doux;
+  font-size: 0.8rem;
 }
 
 .pc-boutons {
   display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
+  justify-content: flex-end;
+  gap: 0.55rem;
 }
 
-.pc-nouveau,
-.pc-modifier {
-  border: 0;
-  border-radius: 0.3rem;
-  padding: 0.5rem 1.1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.pc-nouveau {
-  background: #1d1b1b;
-}
-
-.pc-modifier {
-  background: #d7263d;
-}
-
-/* --- Pagination ---------------------------------------------------------- */
-
+// --- La pagination ----------------------------------------------------------
 .pc-pagination {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.85rem 0.25rem 0;
-  font-size: 0.85rem;
+  @include c.cpt-pagination;
 }
 
-.pc-taille {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+.pc-pagination-outils {
+  @include c.cpt-pagination-outils;
+}
+
+.pc-pagination-taille {
+  @include c.cpt-pagination-taille;
 
   .ddb-filtre {
-    width: 5rem;
+    @include c.cpt-pagination-taille-liste;
   }
 }
 
-.pc-position {
-  margin-left: auto;
-  font-variant-numeric: tabular-nums;
+.pc-pages {
+  @include c.cpt-pages;
 }
 
-.pc-fleches {
-  display: inline-flex;
-  gap: 0.25rem;
-
-  button {
-    border: 1px solid #d8d2d2;
-    background: #fff;
-    border-radius: 0.25rem;
-    min-width: 2.1rem;
-    padding: 0.25rem 0.4rem;
-    font-size: 0.8rem;
-    cursor: pointer;
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-  }
+.pc-page-active {
+  @include c.cpt-page-active;
 }
 
-@media (max-width: 1200px) {
+// --- Écrans étroits ---------------------------------------------------------
+// Sous 1100 px, le formulaire passe sous la liste plutôt que de l'étrangler.
+@media (max-width: 1100px) {
   .pc-corps {
     flex-direction: column;
   }
@@ -342,5 +314,17 @@
   .pc-formulaire {
     flex: 1 1 auto;
     width: 100%;
+  }
+}
+
+@media (max-width: 680px) {
+  .pc-titre {
+    font-size: 1.45rem;
+  }
+
+  .pc-panneau-pied,
+  .pc-pagination {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

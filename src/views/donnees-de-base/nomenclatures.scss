@@ -1,0 +1,163 @@
+// Page « Données de base » - le rail des nomenclatures et la liste ouverte.
+//
+// Refonte du 2026-11-25 : l'écran rejoint le langage de design des pages de
+// Comptabilité, des neuf écrans de Traitements et des quatre pages de
+// Documents.
+//
+// **Pourquoi un fichier à part.** `donnees-de-base.scss` n'est pas la feuille
+// de CETTE page : c'est la feuille du composant partagé `<Referentiel />`, que
+// treize écrans importent. Le rail de gauche et sa grille, eux, n'existent
+// qu'ici - ils y étaient par simple voisinage. Les sortir rend la refonte
+// lisible (tout ce qui change est dans ce fichier) et allège d'autant les
+// douze autres écrans, qui portaient des règles qu'ils n'emploient jamais.
+//
+// Les valeurs viennent toutes de `comptabilite/_design-compta.scss` ;
+// l'habillage de la liste, de `traitements/_liste-compta.scss`.
+
+@use '../comptabilite/design-compta' as c;
+@use '../traitements/liste-compta' as l;
+
+// --- La grille : le rail, puis la nomenclature ouverte ----------------------
+.ddb-grille {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  // La grille (rail + contenu) remplit la carte jusqu'en bas.
+  min-height: calc(100vh - 7rem);
+}
+
+// --- Le rail des nomenclatures ----------------------------------------------
+// Même ground que les panneaux de filtres des autres écrans, et même liseré :
+// le rail est de la famille du panneau, pas une colonne d'une autre couleur.
+.ddb-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  border-right: 1px solid c.$cpt-bordure;
+  padding: 1.75rem 1rem;
+  background-color: c.$cpt-fond-panneau;
+}
+
+.ddb-rail-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+  overflow-y: auto;
+}
+
+.ddb-rail-famille-titre {
+  margin-bottom: 0.45rem;
+  padding: 0 0.75rem;
+  color: c.$cpt-muet;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ddb-rail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.58rem 0.75rem;
+  background: transparent;
+  color: c.$cpt-doux;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+
+  // Le blanc du rail des segments : au survol, l'entrée se détache du panneau
+  // comme une pastille d'état.
+  &:hover:not(.ddb-rail-item-actif) {
+    background-color: #fff;
+    color: c.$cpt-encre;
+  }
+
+  &:focus-visible {
+    outline: 2px solid c.$cpt-accent;
+    outline-offset: 1px;
+  }
+}
+
+// L'entrée ouverte prend l'accent, comme le segment retenu d'une liste. Elle
+// était en NOIR plein, avec son icône en rouge et une ombre portée : le
+// dernier endroit de la section où un élément actif se peignait en noir.
+.ddb-rail-item-actif {
+  background-color: c.$cpt-accent;
+  color: #fff;
+  font-weight: 600;
+
+  // L'icône ne peut plus être rouge - elle disparaîtrait dans le fond. Un
+  // blanc légèrement retenu la met au second plan, derrière le libellé.
+  .ddb-rail-item-icone {
+    color: rgba(255, 255, 255, 0.75);
+  }
+}
+
+.ddb-rail-item-icone {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  color: c.$cpt-muet;
+}
+
+.ddb-rail-item-libelle {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// --- La nomenclature ouverte ------------------------------------------------
+// La liste est rendue par `<Referentiel />` : on l'habille sous la classe de
+// la page, donc sans toucher aux douze autres écrans qui le montent.
+.ndb-page {
+  // Le titre de la nomenclature ouverte EST le titre de la page : c'est lui
+  // qui dit ce qu'on regarde. Il prend donc la taille des autres écrans.
+  // (`.ddb-referentiel-titre` sert aussi aux Participants, aux Adhérents et
+  // aux Fournisseurs de Soins : d'où la portée.)
+  .ddb-referentiel-entete {
+    @include c.cpt-chapeau;
+  }
+
+  .ddb-referentiel-titre {
+    @include c.cpt-titre;
+  }
+
+  // Pas de `$serre` : les libellés des nomenclatures (« CONSULTATION CHEZ UN
+  // SPECIALISTE ») sont longs et peu nombreux en colonnes - mieux vaut les
+  // laisser passer à la ligne que les faire défiler.
+  @include l.liste-compta;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+// Le rail passe au-dessus de la liste, et ses entrées se rangent en lignes.
+@media (max-width: 991.98px) {
+  .ddb-grille {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .ddb-rail {
+    border-right: 0;
+    border-bottom: 1px solid c.$cpt-bordure;
+  }
+
+  .ddb-rail-liste {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .ndb-page .ddb-referentiel-titre {
+    font-size: 1.45rem;
+  }
+}

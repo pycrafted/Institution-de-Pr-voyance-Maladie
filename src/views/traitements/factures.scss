@@ -1,0 +1,55 @@
+// Page « Traitements → Factures » (capture 36).
+//
+// Refonte du 2026-11-24 : l'écran reprend le langage de design des trois pages
+// de Comptabilité - chapeau, familles en cartes, panneau de filtres, tableau,
+// pagination. Les valeurs viennent du même fichier partagé, il n'y a donc
+// aucune couleur ni graisse décidée ici.
+//
+// Ce qui habille la liste elle-même - rendue par le composant partagé
+// `<Referentiel />` - vit dans `_liste-compta.scss` et ne s'applique qu'ici,
+// sous `.fct-page`. Lire l'en-tête de ce fichier avant d'y toucher : il dit
+// pourquoi ce réhabillage est page par page, et ce qu'il faudra en faire.
+
+@use '../comptabilite/design-compta' as c;
+@use 'liste-compta' as l;
+
+// --- Le chapeau -------------------------------------------------------------
+.fct-chapeau {
+  @include c.cpt-chapeau;
+}
+
+.fct-titre {
+  @include c.cpt-titre;
+}
+
+// --- Les familles de fournisseurs, en cartes --------------------------------
+.fct-cartes {
+  @include c.cpt-cartes;
+}
+
+.fct-carte {
+  @include c.cpt-carte;
+}
+
+.fct-carte-libelle {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.fct-carte-active {
+  @include c.cpt-carte-active;
+}
+
+// --- La liste, dans le langage de la Comptabilité ---------------------------
+// Pas de `$serre` : une facture porte un libellé de prestataire qu'il vaut
+// mieux laisser passer à la ligne que couper.
+.fct-page {
+  @include l.liste-compta;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .fct-titre {
+    font-size: 1.45rem;
+  }
+}

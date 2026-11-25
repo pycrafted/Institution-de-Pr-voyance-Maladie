@@ -1,310 +1,256 @@
-/**
- * Journal Central - ce que la page ajoute à l'habillage de « Données de base ».
- *
- * La page reprend le tableau à en-tête noir et les filtres communs ; seuls
- * son bandeau de contrôle, sa pagination et le traitement des montants lui
- * sont propres.
- */
+// Page « Journal Central » (captures 70 à 72).
+//
+// Refonte du 2026-11-24 : l'écran passe au langage de design posé sur
+// l'Interrogation de Comptes. Les deux sont le même grand livre vu de deux
+// côtés - l'un par journal, l'autre par compte - et n'avaient aucune raison
+// de se ressembler si peu.
+//
+// **Tout ce qui est commun vit dans `_design-compta.scss`** : palette,
+// panneau de filtres, bandeau de totaux, tableau, pagination. Ce fichier ne
+// garde que ce qui est propre au Journal Central, plus les quelques classes
+// que l'Interrogation de Comptes lui emprunte (elle importe cette feuille) :
+// `.jc-tableau`, `.jc-droite`, `.jc-negatif`, `.jc-compte`, `.jc-matricule`,
+// `.jc-vide`.
+
+@use 'design-compta' as c;
 
 .jc-page {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
+  padding-top: 1.5rem;
 }
 
-/* --- En-tête : titre et états à gauche, filtres et boutons à droite ------ */
-
-.jc-entete {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1.25rem 1.25rem 1rem;
+// --- Le chapeau -------------------------------------------------------------
+.jc-chapeau {
+  @include c.cpt-chapeau;
 }
 
-.jc-titre-bloc {
+.jc-chapeau-texte {
   min-width: 0;
-  flex: 1 1 22rem;
 }
 
 .jc-titre {
-  margin: 0;
-  font-size: 1.65rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  @include c.cpt-titre;
 }
 
-/* Le rappel du filtre courant, puis la période - comme dans l'original. */
-.jc-rappel {
-  margin: 0.4rem 0 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
+// Le mois comptable, sous le titre. « (ouvert) » en vert : c'est un état, pas
+// une alerte, et le rouge est réservé ailleurs sur ces écrans.
 .jc-periode {
-  margin: 0.1rem 0 0;
+  margin: 0.4rem 0 0;
+  color: c.$cpt-doux;
   font-size: 0.85rem;
+}
+
+.jc-periode-ouvert {
+  color: c.$cpt-vert;
   font-weight: 600;
-  /* Le vert de l'original : il dit que la période accepte encore des
-     écritures. C'est une information d'état, pas une décoration. */
-  color: #2e7d32;
 }
 
-.jc-recherche {
-  margin-top: 0.9rem;
-  max-width: 20rem;
+.jc-exercice {
+  @include c.cpt-exercice;
 }
 
-/* --- Filtres et boutons -------------------------------------------------- */
-
-.jc-outils {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.85rem;
+.jc-exercice-etiquette {
+  @include c.cpt-exercice-etiquette;
 }
 
-.jc-filtres {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1rem;
+.jc-page .jc-exercice .ddb-filtre {
+  @include c.cpt-exercice-liste;
 }
 
-/**
- * Étiquette au-dessus de sa liste.
- *
- * « Données de base » a les mêmes, mais ses règles vivent **à l'intérieur**
- * de `.ddb-barre-outils`, que cette page n'utilise pas : reprises telles
- * quelles, elles ne s'appliquaient pas du tout, et l'étiquette se posait à
- * côté de la liste au lieu d'être au-dessus. D'où ces règles propres.
- */
-.jc-filtre-groupe {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  width: 11rem;
-  max-width: 100%;
+// --- Le panneau de filtres --------------------------------------------------
+.jc-panneau {
+  @include c.cpt-panneau;
 }
 
-.jc-filtre-etiquette {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #6b6b6b;
+.jc-panneau-tete {
+  @include c.cpt-panneau-tete;
 }
 
-/* La liste occupe toute la largeur de son groupe : sans cela, le
-   `max-width` de `.ddb-filtre` laisse les quatre listes de largeurs
-   différentes, alignées n'importe comment. */
-.jc-filtre-groupe .ddb-filtre {
-  width: 100%;
-  max-width: none;
+.jc-panneau-titre {
+  @include c.cpt-panneau-titre;
 }
 
-.jc-filtres .jc-etroit {
-  width: 7rem;
+.jc-lien {
+  @include c.cpt-lien;
 }
 
-.jc-filtres .jc-large {
-  width: 16rem;
+.jc-barre {
+  @include c.cpt-barre;
 }
 
-.jc-boutons {
-  display: flex;
-  gap: 0.5rem;
+.jc-champ {
+  @include c.cpt-champ;
 }
 
+.jc-etiquette {
+  @include c.cpt-etiquette;
+}
+
+// Le style partagé des filtres plafonne la largeur : ici le contrôle remplit
+// sa colonne, sinon l'espacement paraît irrégulier alors qu'il est constant.
+.jc-page .ddb-filtre,
+.jc-page .ddb-champ {
+  @include c.cpt-controle;
+}
+
+.jc-page .ddb-filtre {
+  @include c.cpt-controle-liste;
+}
+
+.jc-page .ddb-champ,
+.jc-page input.ddb-filtre {
+  @include c.cpt-controle-saisie;
+}
+
+.jc-page input.ddb-filtre::placeholder {
+  color: c.$cpt-muet;
+}
+
+.jc-panneau-pied {
+  @include c.cpt-panneau-pied;
+}
+
+.jc-panneau-actions {
+  @include c.cpt-actions;
+}
+
+// --- Les boutons ------------------------------------------------------------
+// `.jc-bouton` sert aussi au déclencheur du menu « Gestion »
+// (GestionJournal.jsx) : il garde donc son nom.
 .jc-bouton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  border: 0;
-  border-radius: 0.3rem;
-  padding: 0.42rem 0.8rem;
+  @include c.cpt-btn;
+}
+
+.jc-gestion {
+  @include c.cpt-btn-sec;
+}
+
+// --- Le bandeau de contrôle -------------------------------------------------
+// Il porte le total de TOUTE la période filtrée, pas celui des lignes
+// affichées (cf. l'action `totaux` du backend). C'est la première chose que
+// lit un comptable : tant que le solde est à zéro, la période tient.
+.jc-bandeau {
+  @include c.cpt-bandeau;
+}
+
+.jc-totaux {
+  @include c.cpt-totaux;
+}
+
+.jc-total {
+  @include c.cpt-total;
+}
+
+.jc-total-etiquette {
+  @include c.cpt-total-etiquette;
+}
+
+.jc-total-valeur {
+  @include c.cpt-total-valeur;
+}
+
+.jc-devise {
+  @include c.cpt-devise;
+}
+
+.jc-bandeau-filet {
+  @include c.cpt-filet;
+}
+
+.jc-solde {
+  @include c.cpt-solde;
+}
+
+// Un solde nul : le grand livre est équilibré sur la période. C'est le
+// contrôle que le comptable vient faire, et il passe au vert.
+.jc-equilibre .jc-solde {
+  color: c.$cpt-vert;
+}
+
+.jc-equilibre-mention {
+  color: c.$cpt-vert;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-
-  svg {
-    width: 0.95rem;
-    height: 0.95rem;
-  }
-
-  &:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-  }
+  white-space: nowrap;
 }
 
-.jc-export {
-  background: #2e7d32;
-}
-.jc-gestion {
-  background: #d7263d;
-}
-
-/* --- Le bandeau de contrôle ---------------------------------------------- */
-
-/**
- * Il porte le total de TOUTE la période filtrée, pas celui des lignes
- * affichées (cf. l'action `totaux` du backend). C'est la première chose que
- * lit un comptable : tant que le solde est à zéro, la période tient.
- */
-.jc-bandeau {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  background: #1d1b1b;
-  border-radius: 0.5rem;
-  margin-bottom: 0.75rem;
-  color: #fff;
-  padding: 0.7rem 1.1rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.jc-separateur {
-  opacity: 0.55;
-}
-
-/**
- * LAMPS affiche le solde en rouge qu'il soit juste ou faux, ce qui lui ôte
- * toute valeur d'alerte. Ici le rouge ne sert qu'à l'écart ; un solde à zéro
- * passe au vert.
- */
-.jc-solde {
-  color: #ff6b6b;
-}
-
-.jc-equilibre .jc-solde {
-  color: #6ee7a8;
-}
-
-.jc-compte-lignes {
-  margin-left: auto;
-  font-weight: 500;
-  opacity: 0.75;
-}
-
-/* --- Le tableau ---------------------------------------------------------- */
-
+// --- Le tableau -------------------------------------------------------------
 .jc-tableau-conteneur {
-  overflow-x: auto;
+  @include c.cpt-tableau-conteneur;
 }
 
 /**
  * Un grand livre se lit en série : on y suit des colonnes de chiffres, pas
- * des fiches. Les lignes y sont donc nettement plus serrées qu'ailleurs dans
- * l'application - c'est ce qui permet d'en embrasser une vingtaine d'un coup
- * d'oeil, comme dans l'original.
- *
- * Ce resserrement ne s'écrit plus ici : il vient de `.tableau-dense`, posée
- * sur le tableau à côté de `.ddb-tableau` (cf. `scss/style.scss`). Les
- * règles locales d'avant pesaient le même poids que la règle commune, et
- * c'est l'ordre de chargement qui décidait laquelle l'emportait.
+ * des fiches. Le resserrement des lignes vient de `.tableau-dense`, posée sur
+ * le tableau à côté de `.ddb-tableau` (cf. `scss/style.scss`).
  */
 .jc-tableau {
-  width: 100%;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  @include c.cpt-tableau;
+  @include c.cpt-tableau-serre;
 }
 
 .jc-droite {
   text-align: right;
 }
 
-/* Un montant négatif est une ANNULATION (LAMPS contre-passe en négatif du
-   même côté). Il doit se voir : l'original se contente du signe moins. */
 .jc-negatif {
-  color: #c62828;
-  font-weight: 600;
+  @include c.cpt-negatif;
 }
 
 /* Le compte et le matricule désignent des fiches : ils en portent la couleur,
    comme dans l'original (compte en rouge, matricule en bleu). */
 .jc-compte {
-  color: #c62828;
+  @include c.cpt-mono;
+
+  color: c.$cpt-alerte;
 }
 
 .jc-matricule {
   color: #1565c0;
 }
 
+.jc-badge-journal {
+  @include c.cpt-badge-journal;
+}
+
+.jc-vide-cellule {
+  @include c.cpt-vide-cellule;
+}
+
+// L'état vide du tableau - « Chargement… », « Aucune écriture ». Emprunté par
+// l'Interrogation de Comptes.
 .jc-vide {
-  padding: 2.5rem 1rem;
-  text-align: center;
-  color: #6b6b6b;
+  @include c.cpt-tableau-vide;
 }
 
-/* --- Pagination ---------------------------------------------------------- */
-
+// --- La pagination ----------------------------------------------------------
 .jc-pagination {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 0.85rem 1.25rem;
-  font-size: 0.85rem;
+  @include c.cpt-pagination;
 }
 
-.jc-taille {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
+.jc-pagination-outils {
+  @include c.cpt-pagination-outils;
+}
+
+.jc-pagination-taille {
+  @include c.cpt-pagination-taille;
 
   .ddb-filtre {
-    width: 5rem;
+    @include c.cpt-pagination-taille-liste;
   }
 }
 
-.jc-position {
-  margin-left: auto;
-  font-variant-numeric: tabular-nums;
+.jc-pages {
+  @include c.cpt-pages;
 }
 
-.jc-fleches {
-  display: inline-flex;
-  gap: 0.25rem;
-
-  button {
-    border: 1px solid #d8d2d2;
-    background: #fff;
-    border-radius: 0.25rem;
-    min-width: 2.1rem;
-    padding: 0.25rem 0.4rem;
-    font-size: 0.8rem;
-    cursor: pointer;
-
-    &:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-  }
+.jc-page-active {
+  @include c.cpt-page-active;
 }
 
-@media (max-width: 992px) {
-  .jc-entete {
-    flex-direction: column;
-  }
-
-  .jc-outils {
-    align-items: stretch;
-    width: 100%;
-  }
-}
-
-/* --- Le menu « Gestion » et ses deux fenêtres ---------------------------- */
-/* « (ouvert) » : l'état de la période, discret à côté du mois. */
-.jc-periode-ouvert {
-  color: #2e7d32;
-  font-weight: 600;
-}
-
+// --- La fenêtre « Nouvel exercice » du menu Gestion --------------------------
 .jc-gestion-rappel {
   margin-bottom: 1rem;
-  color: #5b5250;
+  color: c.$cpt-doux;
 }
 
 .jc-gestion-barre {
@@ -315,30 +261,37 @@
   margin-bottom: 0.75rem;
 }
 
-.jc-gestion-cible {
-  padding-bottom: 0.35rem;
-  color: #5b5250;
+.jc-filtre-groupe {
+  @include c.cpt-champ;
 }
 
-/* Les totaux du report, en bandeau, comme le solde du Journal Central. */
+.jc-filtre-etiquette {
+  @include c.cpt-etiquette;
+}
+
+.jc-gestion-cible {
+  padding-bottom: 0.35rem;
+  color: c.$cpt-doux;
+}
+
 .jc-gestion-totaux {
   display: flex;
   flex-wrap: wrap;
   gap: 1.5rem;
   padding: 0.6rem 0.9rem;
   margin-bottom: 0.75rem;
-  border-radius: 6px;
-  background: #1d1b1b;
-  color: #fff;
+  border-radius: 8px;
+  background: c.$cpt-fond-entete;
+  color: c.$cpt-encre;
   font-variant-numeric: tabular-nums;
 }
 
-/* L'écart n'est pas une erreur : c'est le résultat non encore affecté. */
+// L'écart n'est pas une erreur : c'est le résultat non encore affecté.
 .jc-gestion-ecart {
-  color: #ffb4a9;
+  color: c.$cpt-accent;
 }
 
-/* La pièce peut porter des milliers de lignes : on borne la hauteur. */
+// La pièce peut porter des milliers de lignes : on borne la hauteur.
 .jc-gestion-tableau {
   max-height: 45vh;
   overflow-y: auto;
@@ -347,6 +300,28 @@
 .jc-gestion-fait {
   display: inline-flex;
   align-items: center;
-  color: #2e7d32;
+  color: c.$cpt-vert;
   font-weight: 600;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .jc-titre {
+    font-size: 1.45rem;
+  }
+
+  .jc-bandeau,
+  .jc-panneau-pied {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .jc-pagination {
+    justify-content: flex-start;
+  }
+}
+
+// Le bouton Export partagé, accordé au gabarit des boutons de cet écran.
+.jc-page .bouton-export {
+  @include c.cpt-bouton-export;
 }

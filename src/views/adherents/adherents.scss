@@ -1,0 +1,49 @@
+// Page « Adhérents ».
+//
+// Refonte du 2026-11-25 : l'écran rejoint le langage de design des pages de
+// Comptabilité, des écrans de Traitements, des quatre pages de Documents, des
+// Données de base et des Fournisseurs de Soins.
+//
+// La page ne dessinait rien par elle-même : elle montait `<Referentiel />`
+// dans la feuille partagée, sans feuille à elle. Elle en a une maintenant,
+// pour habiller SA liste sans toucher aux écrans qui montent le même
+// composant - Participants reste à faire.
+//
+// Les valeurs viennent de `comptabilite/_design-compta.scss` ; l'habillage de
+// la liste, de `traitements/_liste-compta.scss`.
+
+@use '../comptabilite/design-compta' as c;
+@use '../traitements/liste-compta' as l;
+
+.adh-page {
+  // Le titre « Adhérents » et la pastille du total de la vue sont rendus par
+  // `<Referentiel />` lui-même (barre compacte) : c'est son en-tête qui fait
+  // le chapeau de la page. `flex-start`, et non l'écartement du chapeau
+  // commun : la pastille se tient CONTRE le titre, dont elle est le compte -
+  // renvoyée à l'autre bout de la ligne, elle n'aurait plus dit de quoi.
+  //
+  // (`.ddb-referentiel-titre` sert aussi aux Participants et aux listes de
+  // Fournisseurs de Soins : d'où la portée.)
+  .ddb-referentiel-entete {
+    @include c.cpt-chapeau;
+
+    justify-content: flex-start;
+    gap: 0.9rem;
+  }
+
+  .ddb-referentiel-titre {
+    @include c.cpt-titre;
+  }
+
+  // Pas de `$serre` : six colonnes, dont la raison sociale de la collectivité
+  // et son point focal - mieux vaut les laisser passer à la ligne que les
+  // faire défiler.
+  @include l.liste-compta;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .adh-page .ddb-referentiel-titre {
+    font-size: 1.45rem;
+  }
+}

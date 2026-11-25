@@ -1,0 +1,39 @@
+// Page « Traitements → Ordre de Paiement » - Edition Lettres Chèques/Ordre de
+// Virement (§18, captures 61-62).
+//
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des pages de
+// Comptabilité, des Factures, des Règlements et des Remboursements. Tout ce qui
+// habille la liste - panneau de filtres, tableau, pagination, bouton de
+// création - vient de `_liste-compta.scss` ; les valeurs, de
+// `comptabilite/_design-compta.scss`.
+//
+// Rien ne lui est propre que son chapeau.
+
+@use '../comptabilite/design-compta' as c;
+@use 'liste-compta' as l;
+
+// --- Le chapeau -------------------------------------------------------------
+// Le titre seul : l'écran n'a ni sous-onglets ni action de page. « Etablir »,
+// qui crée un ordre, est l'action principale et vit dans le pied du panneau,
+// en accent - comme le bouton de création des Factures.
+.ord-chapeau {
+  @include c.cpt-chapeau;
+}
+
+.ord-titre {
+  @include c.cpt-titre;
+}
+
+// --- La liste, dans le langage de la Comptabilité ---------------------------
+// Pas de `$serre` : « A l'ordre de » et « Motif » sont du texte libre, qu'il
+// vaut mieux laisser passer à la ligne que couper.
+.ord-page {
+  @include l.liste-compta;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .ord-titre {
+    font-size: 1.45rem;
+  }
+}

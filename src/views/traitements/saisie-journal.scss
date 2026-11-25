@@ -1,11 +1,19 @@
 // Page « Saisie Journal » (captures 84 et 85).
 //
-// Elle emprunte presque tout : la feuille du Journal Central pour les filtres
-// étiquetés et la pagination, celle des Cotisations pour le tableau à bandeau
-// d'encre et les boutons. Ne reste ici que ce qui lui est propre - les deux
-// soldes empilés de la capture 84, et la mise en page du modal de saisie, qui
-// est le seul formulaire de l'application à porter un tableau en son milieu.
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des pages de
+// Comptabilité - chapeau, panneau de filtres, bandeau de soldes, tableau,
+// pagination. Il n'emprunte plus rien au Journal Central ni aux Cotisations
+// pour sa mise en page : les valeurs viennent du fichier partagé, et lui seul.
+//
+// La feuille des Cotisations reste importée par la page, mais pour le MODAL de
+// saisie seulement (capture 85), qui lui emprunte encore ses boutons, ses
+// aides et son petit tableau de lignes. Ce modal est le seul formulaire de
+// l'application à porter un tableau en son milieu ; sa mise en page est en bas
+// de ce fichier, inchangée.
 
+@use '../comptabilite/design-compta' as c;
+
+// Gardés pour le modal, plus bas.
 $sj-rouge: #e52621;
 $sj-encre: #1d1b1b;
 $sj-doux: #736968;
@@ -16,38 +24,188 @@ $sj-vert: #1f9d55;
   padding-top: 1.25rem;
 }
 
-// --- Les deux soldes, l'un sous l'autre -------------------------------------
-//
-// L'écran Cotisations les met côte à côte, celui-ci les empile : c'est ce que
-// montre la capture, et ça se lit mieux quand les deux nombres sont longs.
-.sj-soldes {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  margin: 0.35rem 0 0.9rem;
-  font-size: 0.85rem;
-  color: $sj-doux;
-
-  strong {
-    color: $sj-rouge;
-    font-variant-numeric: tabular-nums;
-  }
+// --- Le chapeau -------------------------------------------------------------
+.sj-chapeau {
+  @include c.cpt-chapeau;
 }
 
-// --- La barre de filtres ----------------------------------------------------
-//
-// Les étiquettes au-dessus des listes alignent mal avec la recherche
-// flottante, qui porte la sienne à l'intérieur : on les recale par le bas.
+.sj-titre {
+  @include c.cpt-titre;
+}
+
+// --- Le panneau de filtres --------------------------------------------------
+.sj-panneau {
+  @include c.cpt-panneau;
+}
+
+.sj-panneau-tete {
+  @include c.cpt-panneau-tete;
+}
+
+.sj-panneau-titre {
+  @include c.cpt-panneau-titre;
+}
+
 .sj-barre {
-  align-items: flex-end;
+  @include c.cpt-barre;
+}
 
-  .cot-recherche {
-    margin-bottom: 0;
+.sj-champ {
+  @include c.cpt-champ;
+}
+
+.sj-etiquette {
+  @include c.cpt-etiquette;
+}
+
+.sj-saisie {
+  @include c.cpt-controle;
+  @include c.cpt-controle-saisie;
+}
+
+.sj-liste {
+  @include c.cpt-controle;
+  @include c.cpt-controle-liste;
+}
+
+.sj-panneau-pied {
+  @include c.cpt-panneau-pied;
+}
+
+.sj-actions {
+  @include c.cpt-actions;
+}
+
+// --- Les boutons ------------------------------------------------------------
+// Un seul en accent, comme sur les trois écrans de Comptabilité : « Saisir + ».
+// C'est pour ça que l'écran existe - poser un débit et un crédit à la main,
+// sans document derrière.
+.sj-btn {
+  @include c.cpt-btn;
+}
+
+.sj-btn-sec {
+  @include c.cpt-btn-sec;
+}
+
+.sj-btn-primary {
+  @include c.cpt-btn-primary;
+}
+
+.sj-page .bouton-export {
+  @include c.cpt-bouton-export;
+}
+
+// --- Le bandeau des deux soldes ---------------------------------------------
+// Ils étaient en deux lignes grises sous le titre ; ils passent dans le bandeau
+// collé au tableau, la place qu'ils tiennent sur le Journal Central. Tant
+// qu'ils sont égaux, la période tient - et c'est ce qu'on vient vérifier.
+.sj-bandeau {
+  @include c.cpt-bandeau;
+}
+
+.sj-note {
+  @include c.cpt-note;
+
+  margin: 0;
+  color: c.$cpt-encre;
+  font-weight: 600;
+}
+
+.sj-soldes {
+  @include c.cpt-totaux;
+
+  margin-left: auto;
+}
+
+.sj-solde {
+  @include c.cpt-total;
+}
+
+.sj-solde-etiquette {
+  @include c.cpt-total-etiquette;
+}
+
+.sj-solde-valeur {
+  @include c.cpt-total-valeur;
+}
+
+.sj-devise {
+  @include c.cpt-devise;
+}
+
+.sj-filet {
+  @include c.cpt-filet;
+}
+
+// --- Le tableau -------------------------------------------------------------
+// `cpt-tableau-serre` : c'est un grand livre, douze colonnes de codes, de
+// dates et de montants. Les lignes se lisent d'un seul tenant et défilent.
+.sj-tableau-cadre {
+  @include c.cpt-tableau-conteneur;
+}
+
+.sj-tableau {
+  @include c.cpt-tableau;
+  @include c.cpt-tableau-serre;
+
+  .sj-case {
+    width: 38px;
+    text-align: center;
   }
 }
 
-.sj-boutons {
-  margin-left: auto;
+// Une écriture comptabilisée est partie au grand livre : elle ne se modifie
+// plus. En retrait, sans disparaître - on la consulte encore.
+.sj-fige td {
+  color: c.$cpt-doux;
+  background: rgba(121, 111, 110, 0.06);
+}
+
+.sj-negatif {
+  @include c.cpt-negatif;
+}
+
+.sj-vide {
+  @include c.cpt-tableau-vide;
+}
+
+.sj-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.12rem 0.5rem;
+  background: rgba(121, 111, 110, 0.14);
+  color: c.$cpt-doux;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.sj-badge-ok {
+  background: rgba(46, 125, 50, 0.14);
+  color: c.$cpt-vert;
+}
+
+// --- Le pied du tableau -----------------------------------------------------
+// « Nombre par page », la position, et les quatre flèches de l'original -
+// première, précédente, suivante, dernière.
+.sj-pagination {
+  @include c.cpt-pagination;
+}
+
+.sj-taille {
+  @include c.cpt-pagination-taille;
+
+  .sj-liste {
+    @include c.cpt-pagination-taille-liste;
+  }
+}
+
+.sj-position {
+  font-variant-numeric: tabular-nums;
+}
+
+.sj-pages {
+  @include c.cpt-pages;
 }
 
 // ===========================================================================

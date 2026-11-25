@@ -270,7 +270,11 @@ const barreFactures = (champsSupplementaires = []) => ({
       // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
       serveur: true,
       defaut: () => String(new Date().getFullYear()),
-      largeur: '7rem',
+      // Pas de `largeur` ici, contrairement aux autres barres : elle serait
+      // posée en style EN LIGNE, que rien en feuille de styles ne peut
+      // reprendre. Sur cet écran les champs se partagent toute la largeur de
+      // la barre (cf. factures.scss) - un exercice figé à 7 rem y laisserait
+      // un trou.
     },
     { champ: 'codeSoc', etiquette: 'Société', libelle: '- Toutes -', options: optionsAdherents },
     {
@@ -297,6 +301,9 @@ const baseFactures = {
   nommer: (f) => `la facture n° ${f.numero}`,
   // Pas de titre au-dessus de la liste : le sous-onglet le dit déjà.
   sansTitre: true,
+  // Pas de pastille « Total : N » : la pagination, au pied du tableau, dit
+  // déjà combien de factures porte la vue.
+  sansStats: true,
   // Le bouton « Réceptionner » de la barre suffit : le tableau vide n'en répète
   // pas un second.
   sansCreationTableauVide: true,
@@ -497,6 +504,10 @@ const barreReglements = (champsSupplementaires = []) => ({
   barreCompacte: true,
   rechercheEnDernier: true,
   rechercheFlottante: true,
+  // Le rail des états de règlement (Toutes · Non Echue · Echue · Reglée ·
+  // Comptabilisée · Annulée) va avec le groupe de droite : sur cet écran, ce
+  // groupe forme le pied du panneau de filtres, où le rail se tient À DROITE
+  // (cf. reglements.scss).
   segmentsADroite: true,
   filtres: [
     {
@@ -515,11 +526,12 @@ const barreReglements = (champsSupplementaires = []) => ({
   ],
 })
 
-/** Stats du titre : « N Factures - total » (montant net cumulé de la vue). */
-const statsReglement = (factures) => {
-  const total = factures.reduce((s, f) => s + entier(f.montantNet), 0)
-  return `${factures.length} Factures - ${montantFr(total)}`
-}
+// La pastille du titre disait « N Factures - montant net cumulé ». Elle a été
+// retirée le 2026-11-24 : depuis le passage à la pagination serveur, le
+// composant ne l'appelait plus - il n'a qu'une page sous la main, pas la vue
+// entière, et affichait donc un simple « Total : N » que la pagination répète
+// déjà au pied du tableau. Le montant cumulé, lui, serait une vraie
+// information : il demande que le serveur le renvoie avec le compte.
 
 /** Base commune aux deux sous-onglets de règlement. */
 const baseReglements = {
@@ -531,7 +543,14 @@ const baseReglements = {
   sansCreation: true,
   // Cases à cocher : on règle / marque en lot (comme l'application d'origine).
   selection: true,
-  stats: statsReglement,
+  // Les actions se montrent EN PERMANENCE dans la barre, pâles tant qu'aucune
+  // ligne n'est cochée - comme l'application d'origine (capture 51). Les
+  // masquer jusqu'à la sélection laissait croire que l'écran ne savait pas
+  // régler : une commande qu'on ne voit pas n'existe pas.
+  actionsLotEnBarre: true,
+  // Pas de pastille « Total : N » : la pagination, au pied du tableau, le dit
+  // déjà (cf. la note au-dessus de ce descripteur).
+  sansStats: true,
   nommer: (f) => `la facture n° ${f.numero}`,
   // Reprend le vocabulaire « Valide / Annulée » des factures (badge d'état).
   etat: baseFactures.etat,
@@ -660,8 +679,21 @@ export const ORDRES_PAIEMENT = {
   paginationServeur: true,
   // Pas de titre au-dessus de la liste : la page le porte déjà.
   sansTitre: true,
-  // Cases à cocher (action de lot), comme l'application d'origine.
-  selection: true,
+  // Pas de pastille « Total : N » : la pagination, au pied du tableau, le dit
+  // déjà - comme sur les factures, les règlements et les remboursements.
+  sansStats: true,
+  // PAS de cases à cocher, et c'est le défaut inverse de celui des autres
+  // listes (cf. `casesACocher` dans donnees-de-base/Referentiel.jsx) : ici
+  // elles étaient là sans qu'aucune action de lot ne les attende. Cocher
+  // n'ouvrait qu'une barre noire offrant un compte et « Annuler ».
+  //
+  // Dans l'application d'origine (docs/lamps/ordre-de-paiement.md, §2), la
+  // case de tête sert à **éditer l'instrument en lot** - lettre chèque ou
+  // ordre de virement (drapeau `to_print`, porté côté serveur par
+  // `OrdrePaiement.a_imprimer`). Cette impression n'est pas construite : la
+  // mise en page de l'instrument manque encore (§8). Les cases reviendront
+  // avec elle, et pas avant : un contrôle qui ne fait rien se lit comme une
+  // panne.
   nommer: (o) => `l'ordre n° ${o.numeroEnreg}`,
   champsSoulignes: true,
   barreCompacte: true,
@@ -777,14 +809,13 @@ const MOIS_OPTIONS = [
   { valeur: '12', libelle: 'Décembre' },
 ]
 
-/** Stats du titre : « N Participants - Total Solde - Total à rembourser ». */
-const statsRemboursement = (lignes) => {
-  const solde = lignes.reduce((s, l) => s + entier(l.montantDu), 0)
-  const aRembourser = lignes
-    .filter((l) => !l.rembourse)
-    .reduce((s, l) => s + entier(l.montantDu), 0)
-  return `${lignes.length} Participants - Total Solde: ${montantFr(solde)} - Total à rembourser: ${montantFr(aRembourser)}`
-}
+// La pastille du titre disait « N Participants - Total Solde - Total à
+// rembourser ». Retirée le 2026-11-24, pour la même raison que celle des
+// règlements : depuis la pagination serveur, le composant ne l'appelait plus -
+// il n'a qu'une page sous la main, pas la vue entière - et affichait un simple
+// « Total : N » que la pagination répète déjà au pied du tableau. Les deux
+// totaux, eux, seraient une vraie information : ils demandent que le serveur
+// les renvoie avec le compte.
 
 /** Segments d'état : Tous / Réglé / Non réglé. */
 const segmentsRemboursement = {
@@ -810,7 +841,13 @@ export const REMBOURSEMENTS = {
     seg === 'regle' ? { rembourse: 'true' } : seg === 'non-regle' ? { rembourse: 'false' } : {},
   // Cases à cocher : on règle en lot (comme l'application d'origine).
   selection: true,
-  stats: statsRemboursement,
+  // « Régler » se montre EN PERMANENCE dans la barre, pâle tant qu'aucune
+  // ligne n'est cochée - comme pour les règlements. L'écran n'a qu'une seule
+  // action : la cacher jusqu'à la sélection revenait à n'en montrer aucune.
+  actionsLotEnBarre: true,
+  // Pas de pastille « Total : N » : la pagination, au pied du tableau, le dit
+  // déjà (cf. la note au-dessus de ce descripteur).
+  sansStats: true,
   nommer: (l) => `le remboursement de ${l.participant}`,
   segments: segmentsRemboursement,
   champsSoulignes: true,
@@ -945,11 +982,12 @@ export const articleDuCatalogue = (code) => actifs('articles-achat').find((a) =>
 export const fournisseurDivers = (code) =>
   actifs('fournisseurs-divers').find((f) => f.code === code)
 
-/** Stats du titre : « N bons - total TTC » (ce que la vue affiche). */
-const statsBonsAchats = (bons) => {
-  const total = bons.reduce((s, b) => s + entier(b.montant), 0)
-  return `${bons.length} bon(s) - ${montantFr(total)}`
-}
+// La pastille du titre disait « N bons - total TTC ». Retirée le 2026-11-24,
+// pour la raison des règlements et des remboursements : depuis la pagination
+// serveur, le composant ne l'appelait plus - il n'a qu'une page sous la main,
+// pas la vue entière - et affichait un simple « Total : N » que la pagination
+// répète déjà au pied du tableau. Le total TTC, lui, serait une vraie
+// information : il demande que le serveur le renvoie avec le compte.
 
 export const BONS_ACHATS = {
   cle: 'bons-achats',
@@ -966,10 +1004,15 @@ export const BONS_ACHATS = {
   // Pas de titre au-dessus de la liste : la page le porte déjà.
   sansTitre: true,
   nommer: (b) => `le bon ${b.code}`,
-  stats: statsBonsAchats,
+  // Pas de pastille « Total : N » : la pagination, au pied du tableau, le dit
+  // déjà - comme sur les autres écrans de Traitements.
+  sansStats: true,
   champsSoulignes: true,
   barreCompacte: true,
-  creationAvantOutils: true,
+  // Plus de `creationAvantOutils` depuis le 2026-11-24 : « Créer un bon
+  // d'Achat » porte l'accent, et un bouton d'accent se tient en BOUT de
+  // groupe, comme sur tous les écrans refaits - pas au milieu, entre deux
+  // boutons blancs.
   rechercheEnDernier: true,
   rechercheFlottante: true,
   segmentsEnListe: true,

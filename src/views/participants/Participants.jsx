@@ -9,8 +9,8 @@
  * ligne de chaque participant (cf. AyantsDroitParticipant). Les demandes de
  * photo, elles, restent atteignables sans onglet visible : la cloche des
  * notifications ouvre cette vue via « ?onglet=photos ».
- * La création se fait par un bouton rouge « Nouveau participant » à droite de la
- * barre d'onglets, comme les autres pages (fournisseurs, factures…).
+ * La création se fait par un bouton « Nouveau participant » à droite du titre,
+ * comme les autres pages (fournisseurs, factures…).
  *
  * Les listes réutilisent le composant <Referentiel /> ; la saisie d'un nouveau
  * participant ouvre le même panneau que les autres pages (fournisseurs de
@@ -98,16 +98,22 @@ const Participants = () => {
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
-        <div className="prt-entete">
-          <div className="prt-titre-ligne">
+        <section className="ddb-contenu prt-page">
+          <header className="prt-titre-ligne">
             <div className="prt-titre-groupe">
               <h1 className="prt-titre">Participants</h1>
+              {/* Légende de la vue : la société filtrée, comme l'application
+                  d'origine (« IPM SAR PERSONNEL MOO »). Elle était calculée
+                  par le descripteur (`legendeStats`) et jetée - la liste ne la
+                  pose elle-même que lorsqu'elle garde ses stats, et ici elle
+                  les remonte à la page. */}
+              {stats?.legende && <span className="prt-legende">{stats.legende}</span>}
               {/* Total et ventilation de la vue, en pastilles distinctes à côté
                   du titre, comme Données de base. */}
               <PastillesStats segments={stats?.segments} />
             </div>
-            {/* Bouton rouge aligné au titre, tout à droite : création dans le
-                panneau glissant, comme les autres pages. */}
+            {/* Bouton d'accent aligné au titre, tout à droite : création dans
+                le panneau glissant, comme les autres pages. */}
             <button
               type="button"
               className="ddb-bouton-nouveau prt-bouton-nouveau"
@@ -116,22 +122,24 @@ const Participants = () => {
               <CIcon icon={cilPlus} className="ddb-bouton-nouveau-icone" />
               Nouveau participant
             </button>
-          </div>
-          <nav className="prt-onglets" aria-label="Sections des participants">
+          </header>
+
+          {/* Les deux onglets en cartes : deux populations du même dossier, et
+              le régime commande tout le reste de l'écran. */}
+          <nav className="prt-cartes" aria-label="Sections des participants">
             {ONGLETS.map((o) => (
               <button
                 key={o.cle}
                 type="button"
-                className={`prt-onglet${onglet === o.cle ? ' prt-onglet-actif' : ''}`}
+                className={`prt-carte${onglet === o.cle ? ' prt-carte-active' : ''}`}
+                aria-current={onglet === o.cle ? 'page' : undefined}
                 onClick={() => changerOnglet(o.cle)}
               >
-                {o.libelle}
+                <span className="prt-carte-libelle">{o.libelle}</span>
               </button>
             ))}
           </nav>
-        </div>
 
-        <section className="ddb-contenu">
           {onglet === 'ipm' && <Referentiel referentiel={PARTICIPANTS_IPM} onStats={setStats} />}
           {onglet === 'retraites' && (
             <Referentiel referentiel={PARTICIPANTS_RETRAITES} onStats={setStats} />

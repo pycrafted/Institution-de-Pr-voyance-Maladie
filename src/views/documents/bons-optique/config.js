@@ -91,6 +91,21 @@ export const BONS_OPTIQUE = {
     ],
   },
 
+  // --- Ce que la refonte du 2026-11-24 change, APRÈS la barre commune -------
+  // L'ordre compte : ces trois clés défont ce que `BARRE_DOCUMENTS` pose, et
+  // ne le peuvent qu'écrites après lui. Les quatre pages de Documents les
+  // portent désormais toutes - le jour où on les voudra par défaut, c'est
+  // dans `../commun.js` qu'il faudra les déplacer.
+  //
+  // Pas de titre au-dessus de la liste : la page porte le sien, en chapeau.
+  sansTitre: true,
+  // Pas de pastille « Total : N » : la pagination, au pied du tableau, le dit
+  // déjà.
+  sansStats: true,
+  // « Nouveau bon » porte l'accent, et un bouton d'accent se tient en BOUT de
+  // groupe, pas au milieu entre deux boutons blancs.
+  creationAvantOutils: false,
+
   // 1 337 bons : pagination serveur. Le segment « À valider » s'ajoute au
   // Non Traités / Traités de BARRE_DOCUMENTS ; tous partent en filtre serveur.
   paginationServeur: true,

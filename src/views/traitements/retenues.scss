@@ -1,194 +1,235 @@
 // Page « Retenues Frais Médicaux » (captures 86 à 91).
 //
-// Elle reprend la feuille du Journal Central - même titre, mêmes sélecteurs,
-// même tableau à bandeau d'encre - et la grammaire de boutons des
-// Cotisations, dont elle est le pendant : la cotisation appelle la recette,
-// la retenue récupère l'avance.
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des pages de
+// Comptabilité - chapeau, panneau de filtres, bandeau de totaux, tableau,
+// pagination. Il n'emprunte plus la feuille du Journal Central pour son seul
+// titre : les valeurs viennent du fichier partagé, et lui seul.
+//
+// Cette page n'est pas montée sur `<Referentiel />` - une campagne n'est pas
+// une fiche -, elle n'utilise donc pas `_liste-compta.scss` mais les mixins
+// d'origine, comme les trois écrans de Comptabilité.
 //
 // Ce qui lui est propre tient en une idée : **le dépassement se voit**. La
 // ligne où la paie a prélevé plus que la dette porte un fond ambré et son
 // écart en clair à côté du montant qui le cause. LAMPS n'en disait rien, et
 // sa production porte 310 cas pour 8 563 422 F.
 
+@use '../comptabilite/design-compta' as c;
+
+// L'ambre du dépassement : il n'est ni dans la palette de marque ni dans celle
+// des alertes, et c'est voulu - ce n'est pas une erreur à corriger, c'est un
+// fait à connaître.
+$rfm-ambre: #b45309;
+
+// Gardées pour les modals, plus bas dans ce fichier.
 $rfm-rouge: #e52621;
 $rfm-encre: #1d1b1b;
 $rfm-doux: #736968;
 $rfm-bordure: #ddd4d3;
-$rfm-vert: #1f9d55;
-$rfm-bleu: #4a9fd8;
-$rfm-ambre: #b45309;
 
 .rfm-page {
   padding-top: 1.25rem;
 }
 
-// --- L'en-tête de la campagne ------------------------------------------------
-//
-// Trois lignes en italique, comme l'original : la période, la campagne nommée
-// en entier, puis le décompte et les totaux.
-.rfm-entete {
-  margin: 0.75rem 0 0.9rem;
-  font-style: italic;
-  line-height: 1.35;
+// --- Le chapeau -------------------------------------------------------------
+.rfm-chapeau {
+  @include c.cpt-chapeau;
+}
 
-  p {
-    margin: 0;
+.rfm-titre {
+  @include c.cpt-titre;
+}
+
+// --- Le panneau de la campagne ----------------------------------------------
+// Année, mois et société forment la clé de la campagne : ce ne sont pas des
+// filtres d'affichage mais ce qui désigne ce qu'on regarde. D'où le titre
+// « Campagne » plutôt que « Filtres ».
+.rfm-panneau {
+  @include c.cpt-panneau;
+}
+
+.rfm-panneau-tete {
+  @include c.cpt-panneau-tete;
+}
+
+.rfm-panneau-titre {
+  @include c.cpt-panneau-titre;
+}
+
+.rfm-barre {
+  @include c.cpt-barre;
+}
+
+.rfm-champ {
+  @include c.cpt-champ;
+}
+
+.rfm-etiquette {
+  @include c.cpt-etiquette;
+}
+
+.rfm-saisie {
+  @include c.cpt-controle;
+  @include c.cpt-controle-liste;
+}
+
+.rfm-panneau-pied {
+  @include c.cpt-panneau-pied;
+}
+
+.rfm-actions {
+  @include c.cpt-actions;
+}
+
+// --- Les quatre gestes du circuit -------------------------------------------
+// Appel · Importer · Exporter · Comptabiliser. Un seul en accent, comme sur les
+// trois écrans de Comptabilité : celui qui engage - il pose la pièce au
+// journal RP et ne se défait pas.
+//
+// Les quatre pâlissent quand leur tour n'est pas venu. C'est la pâleur qui
+// montre l'ordre du circuit, et l'infobulle qui dit pourquoi : l'appel d'abord,
+// l'import ensuite, la comptabilisation en dernier.
+.rfm-btn {
+  @include c.cpt-btn;
+}
+
+.rfm-btn-sec {
+  @include c.cpt-btn-sec;
+}
+
+.rfm-btn-primary {
+  @include c.cpt-btn-primary;
+}
+
+.rfm-page .bouton-export {
+  @include c.cpt-bouton-export;
+}
+
+// --- Les trois filtres d'affichage ------------------------------------------
+// Voir tout · Anomalies · Normales, en rail de pastilles - même forme que les
+// états des Règlements, et pour la même raison : ce sont trois états d'une
+// même liste, pas trois actions.
+.rfm-segments {
+  display: inline-flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  padding: 0.25rem;
+  border: 1px solid c.$cpt-bordure-forte;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.rfm-segment {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  padding: 0.4rem 0.8rem;
+  color: c.$cpt-doux;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &:hover:not(.rfm-segment-actif) {
+    background: c.$cpt-fond-panneau;
+    color: c.$cpt-encre;
   }
 }
 
-.rfm-entete-periode {
-  font-weight: 700;
-  color: $rfm-encre;
+.rfm-segment-actif {
+  background: c.$cpt-accent;
+  color: #fff;
 }
 
-.rfm-entete-titre {
-  font-weight: 600;
-  color: $rfm-encre;
-  font-size: 0.92rem;
-}
-
-.rfm-entete-total {
-  font-weight: 600;
-  color: $rfm-rouge;
-  font-size: 0.92rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.rfm-entete-vide {
-  color: $rfm-doux;
-}
-
-// --- Le signalement des dépassements ------------------------------------------
-//
-// Ambre et non rouge : ce n'est pas une erreur à corriger, c'est un fait à
-// connaître. L'argent est déjà prélevé sur le bulletin, et la comptabilité
-// doit suivre la paie. On informe, on n'interdit pas.
+// --- Le signalement des dépassements ----------------------------------------
+// Ambre et non rouge : l'argent est déjà prélevé sur le bulletin, et la
+// comptabilité doit suivre la paie. On informe, on n'interdit pas.
 .rfm-alerte {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
-  margin: 0 0 0.9rem;
+  margin: 0 0 1.25rem;
   border: 1px solid rgba(180, 83, 9, 0.3);
   border-left: 3px solid $rfm-ambre;
-  border-radius: 0.35rem;
+  border-radius: 10px;
   background: rgba(180, 83, 9, 0.07);
-  padding: 0.55rem 0.75rem;
-  color: darken($rfm-ambre, 6%);
-  font-size: 0.88rem;
-  line-height: 1.4;
+  padding: 0.7rem 0.9rem;
+  color: #9a4708;
+  font-size: 0.86rem;
+  line-height: 1.45;
 }
 
 .rfm-lien {
-  border: none;
-  background: none;
-  padding: 0;
+  @include c.cpt-lien;
+
   color: $rfm-ambre;
-  font-size: 0.88rem;
-  font-weight: 600;
   text-decoration: underline;
 
   &:hover {
-    color: darken($rfm-ambre, 12%);
+    color: #8a3f07;
   }
 }
 
-// --- La barre de filtres et de boutons ------------------------------------------
-.rfm-barre {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.9rem;
+// --- Le bandeau de la campagne ----------------------------------------------
+// Collé au tableau, comme sur les écrans de Comptabilité : ils forment une
+// seule carte. À gauche ce qu'on regarde, à droite ses deux totaux.
+.rfm-bandeau {
+  @include c.cpt-bandeau;
 }
 
-.rfm-barre-boutons {
-  justify-content: flex-end;
+.rfm-campagne {
+  @include c.cpt-note;
+
+  margin: 0;
+  color: c.$cpt-encre;
+  font-weight: 600;
+  white-space: normal;
 }
 
-.rfm-large {
-  min-width: 250px;
+.rfm-campagne-vide {
+  @include c.cpt-note;
+
+  margin: 0;
+  white-space: normal;
 }
 
-.rfm-recherche {
-  min-width: 190px;
+.rfm-totaux {
+  @include c.cpt-totaux;
+
+  margin-left: auto;
 }
 
-// Le filtre « Anomalies » de l'original, en case plutôt qu'en bouton : c'est
-// un état de la liste, pas une action.
-.rfm-bascule {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid $rfm-bordure;
-  border-radius: 0.35rem;
-  background: #fff;
-  padding: 0.38rem 0.7rem;
-  color: $rfm-encre;
-  font-size: 0.9rem;
-  white-space: nowrap;
+.rfm-total {
+  @include c.cpt-total;
 }
 
-.rfm-bouton {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid $rfm-bordure;
-  border-radius: 0.35rem;
-  background: #fff;
-  padding: 0.38rem 0.75rem;
-  color: $rfm-encre;
-  font-size: 0.9rem;
-  white-space: nowrap;
-
-  &:hover:not(:disabled) {
-    border-color: darken($rfm-bordure, 10%);
-  }
-
-  // Pâli plutôt que caché : l'action existe, elle n'est simplement pas
-  // disponible ici. Le circuit étant contraignant - appel, puis import, puis
-  // comptabilisation -, c'est la pâleur qui en montre l'ordre, et l'infobulle
-  // qui dit pourquoi.
-  &:disabled {
-    opacity: 0.45;
-  }
+.rfm-total-etiquette {
+  @include c.cpt-total-etiquette;
 }
 
-.rfm-icone {
-  width: 0.95rem;
-  height: 0.95rem;
-  flex: none;
+.rfm-total-valeur {
+  @include c.cpt-total-valeur;
 }
 
-.rfm-bouton-encre {
-  background: $rfm-encre;
-  border-color: $rfm-encre;
-  color: #fff;
+.rfm-devise {
+  @include c.cpt-devise;
 }
 
-.rfm-bouton-vert {
-  background: $rfm-vert;
-  border-color: $rfm-vert;
-  color: #fff;
-}
-
-.rfm-bouton-bleu {
-  background: $rfm-bleu;
-  border-color: $rfm-bleu;
-  color: #fff;
+.rfm-filet {
+  @include c.cpt-filet;
 }
 
 // --- Le tableau -------------------------------------------------------------
-// Bordure et arrondi viennent de `.tableau-conteneur` ; ce cadre ne porte que
-// le défilement.
 .rfm-tableau-cadre {
-  overflow-x: auto;
+  @include c.cpt-tableau-conteneur;
 }
 
 // Une ligne est un **agent**, pas une écriture : aéré commun, comme la liste
-// des participants. L'en-tête noir déclaré ici n'a jamais été visible à
-// l'écran - même poids que la règle commune, chargée après lui.
+// des participants.
 .rfm-tableau {
+  @include c.cpt-tableau;
+
   .rfm-case {
     width: 38px;
     text-align: center;
@@ -210,7 +251,7 @@ $rfm-ambre: #b45309;
 // Une campagne comptabilisée est figée : ses écritures sont parties au grand
 // livre. En retrait, sans disparaître - on la consulte encore.
 .rfm-fige td {
-  color: $rfm-doux;
+  color: c.$cpt-doux;
   background: rgba(121, 111, 110, 0.06);
 }
 
@@ -224,30 +265,56 @@ $rfm-ambre: #b45309;
   border-radius: 0.3rem;
   background: rgba(180, 83, 9, 0.16);
   padding: 0.08rem 0.35rem;
-  color: darken($rfm-ambre, 6%);
+  color: #9a4708;
   font-size: 0.76rem;
   font-weight: 600;
 }
 
 .rfm-vide {
-  color: $rfm-doux;
-  padding: 1.4rem 0.6rem;
-  text-align: center;
+  @include c.cpt-tableau-vide;
 }
 
 .rfm-badge {
   display: inline-block;
-  border-radius: 0.3rem;
-  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  padding: 0.12rem 0.5rem;
   background: rgba(121, 111, 110, 0.14);
-  color: $rfm-doux;
-  font-size: 0.78rem;
-  font-weight: 600;
+  color: c.$cpt-doux;
+  font-size: 0.74rem;
+  font-weight: 700;
 }
 
 .rfm-badge-ok {
-  background: rgba(31, 157, 85, 0.16);
-  color: darken($rfm-vert, 8%);
+  background: rgba(46, 125, 50, 0.14);
+  color: c.$cpt-vert;
+}
+
+// --- Le pied du tableau -----------------------------------------------------
+// « Nombre par page » et « 1 - 15 / 179 », les deux mentions de l'original.
+.rfm-pagination {
+  @include c.cpt-pagination;
+}
+
+.rfm-par-page {
+  @include c.cpt-pagination-taille;
+
+  .rfm-saisie {
+    @include c.cpt-pagination-taille-liste;
+  }
+}
+
+.rfm-compteur {
+  font-variant-numeric: tabular-nums;
+}
+
+.rfm-pages {
+  @include c.cpt-pages;
+}
+
+.rfm-icone {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: none;
 }
 
 // --- L'aperçu des écritures ---------------------------------------------------
@@ -288,76 +355,6 @@ $rfm-ambre: #b45309;
   font-weight: 600;
 }
 
-// --- Les trois filtres d'affichage ------------------------------------------
-//
-// Voir tout / Anomalies / Normales, en segments colles comme dans l'original :
-// ce sont trois etats d'une meme liste, pas trois actions.
-.rfm-segments {
-  display: inline-flex;
-  border: 1px solid $rfm-bordure;
-  border-radius: 0.35rem;
-  overflow: hidden;
-}
-
-.rfm-segment {
-  border: none;
-  border-left: 1px solid $rfm-bordure;
-  background: #fff;
-  padding: 0.38rem 0.8rem;
-  color: $rfm-encre;
-  font-size: 0.9rem;
-  white-space: nowrap;
-
-  &:first-child {
-    border-left: none;
-  }
-
-  &:hover:not(.rfm-segment-actif) {
-    background: rgba(29, 27, 27, 0.05);
-  }
-}
-
-.rfm-segment-actif {
-  background: $rfm-encre;
-  color: #fff;
-}
-
-// --- Le pied du tableau -----------------------------------------------------
-.rfm-pagination {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 0.6rem;
-  margin-top: 0.75rem;
-  color: $rfm-doux;
-  font-size: 0.88rem;
-}
-
-.rfm-par-page {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin: 0;
-}
-
-.rfm-compteur {
-  font-variant-numeric: tabular-nums;
-}
-
-.rfm-page-bouton {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid $rfm-bordure;
-  border-radius: 0.35rem;
-  background: #fff;
-  padding: 0.3rem 0.5rem;
-  color: $rfm-encre;
-
-  &:disabled {
-    opacity: 0.4;
-  }
-}
 
 // --- Les modals --------------------------------------------------------------
 .rfm-modal {

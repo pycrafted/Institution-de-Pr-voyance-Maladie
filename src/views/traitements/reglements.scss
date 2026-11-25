@@ -1,0 +1,75 @@
+// Page « Traitements → Règlements » (§17, captures 51-59).
+//
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des trois pages
+// de Comptabilité et de la page Factures - chapeau, familles en cartes,
+// panneau de filtres, tableau, pagination. Ce qui habille la liste vient de
+// `_liste-compta.scss` ; les valeurs, de `comptabilite/_design-compta.scss`.
+// Rien n'est décidé ici qui ne soit propre à cet écran.
+//
+// Une seule chose lui est propre, et elle est ci-dessous : le bouton
+// « Edition ». Le reste - rail des états, actions de lot, panneau, tableau -
+// est commun aux écrans refaits et vit dans `_liste-compta.scss`.
+
+@use '../comptabilite/design-compta' as c;
+@use 'liste-compta' as l;
+
+// --- Le chapeau -------------------------------------------------------------
+// Le titre à gauche, « Edition » à droite : l'impression des états (Factures à
+// Payer / non Payées) appartient à la page entière, pas à un filtre.
+.rgl-chapeau {
+  @include c.cpt-chapeau;
+}
+
+.rgl-titre {
+  @include c.cpt-titre;
+}
+
+// --- « Edition » ------------------------------------------------------------
+// Les états imprimés (Factures à Payer / non Payées). Il ouvre le pied du
+// panneau, le rail des états venant après lui - la place qu'« Exporter » occupe
+// sur le Journal Central, et la même allure : blanc, liseré fin, texte sombre.
+//
+// Secondaire, et non en accent : l'action principale de cet écran est de
+// régler, et elle vit dans la barre de sélection.
+// `cpt-btn` dimensionne déjà le pictogramme (15 px, soit la taille de celui du
+// bouton Export au pixel près) : rien à régler ici.
+.rgl-edition {
+  @include c.cpt-btn;
+  @include c.cpt-btn-sec;
+}
+
+// --- Les familles de fournisseurs, en cartes --------------------------------
+.rgl-cartes {
+  @include c.cpt-cartes;
+}
+
+.rgl-carte {
+  @include c.cpt-carte;
+}
+
+.rgl-carte-libelle {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.rgl-carte-active {
+  @include c.cpt-carte-active;
+}
+
+// --- La liste, dans le langage de la Comptabilité ---------------------------
+// Le rail des états (Toutes · Non Echue · Echue…) et les cinq actions de lot
+// viennent de là : leur habillage est commun à tous les écrans refaits.
+//
+// `$serre` : quatorze colonnes (échéance, jours de retard, mode et date de
+// règlement…). Elles se lisent en lignes d'un seul tenant qui défilent, pas en
+// cellules qui passent à la ligne.
+.rgl-page {
+  @include l.liste-compta($serre: true);
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .rgl-titre {
+    font-size: 1.45rem;
+  }
+}

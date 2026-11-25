@@ -39,7 +39,10 @@ import { messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
 import { ouvrirApercu } from '../../services/apercu'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../comptabilite/journal-central.scss'
+// La feuille des Cotisations reste nécessaire au MODAL de saisie, qui lui
+// emprunte encore ses boutons, ses aides et son petit tableau de lignes. La
+// page, elle, ne lui doit plus rien - ni au Journal Central, dont l'import a
+// disparu le 2026-11-24.
 import './cotisations.scss'
 import './saisie-journal.scss'
 import SaisieJournalModal from './SaisieJournalModal'
@@ -276,113 +279,143 @@ const SaisieJournal = () => {
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
-        <section className="ddb-contenu cot-page sj-page">
-          <h2 className="jc-titre">Saisie Journal</h2>
+        <section className="ddb-contenu sj-page">
+          <header className="sj-chapeau">
+            <h2 className="sj-titre">Saisie Journal</h2>
+          </header>
 
-          {/* Les deux soldes, l'un sous l'autre comme dans l'original. Tant
-              qu'ils sont égaux, la période tient. */}
-          <p className="sj-soldes">
-            <span>
-              Solde débit: <strong>{Number(totaux.debit || 0).toLocaleString('fr-FR')}</strong>
-            </span>
-            <span>
-              Solde crédit: <strong>{Number(totaux.credit || 0).toLocaleString('fr-FR')}</strong>
-            </span>
-          </p>
-
-          <div className="cot-barre sj-barre">
-            <label className="ddb-recherche-flottante cot-recherche">
-              <span className="ddb-recherche-libelle">Rechercher…</span>
-              <input
-                className="ddb-recherche-champ"
-                value={recherche}
-                onChange={(e) => setRecherche(e.target.value)}
-              />
-            </label>
+          <div className="sj-panneau">
+            <div className="sj-panneau-tete">
+              <p className="sj-panneau-titre">Filtres</p>
+            </div>
 
             {/* Les trois listes sont surmontées de leur étiquette, comme dans
-                l'original : sans son titre, « - - - Tous - - - » ne dirait
-                pas de quoi il parle. */}
-            <label className="jc-filtre-groupe jc-etroit">
-              <span className="jc-filtre-etiquette">Exercice</span>
-              <select
-                className="ddb-filtre"
-                value={exercice}
-                onChange={(e) => setExercice(e.target.value)}
-              >
-                {exercices.map((an) => (
-                  <option key={an} value={an}>
-                    {an}
-                  </option>
-                ))}
-              </select>
-            </label>
+                l'original : sans son titre, « - - - Tous - - - » ne dirait pas
+                de quoi il parle. */}
+            <div className="sj-barre">
+              <label className="sj-champ">
+                <span className="sj-etiquette">Recherche</span>
+                <input
+                  className="sj-saisie"
+                  placeholder="Pièce, compte, libellé…"
+                  value={recherche}
+                  onChange={(e) => setRecherche(e.target.value)}
+                  autoComplete="off"
+                />
+              </label>
 
-            <label className="jc-filtre-groupe">
-              <span className="jc-filtre-etiquette">Mois</span>
-              <select className="ddb-filtre" value={mois} onChange={(e) => setMois(e.target.value)}>
-                {MOIS.map((nom, index) => (
-                  <option key={nom} value={index + 1}>
-                    {nom}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label className="sj-champ">
+                <span className="sj-etiquette">Exercice</span>
+                <select
+                  className="sj-liste"
+                  value={exercice}
+                  onChange={(e) => setExercice(e.target.value)}
+                >
+                  {exercices.map((an) => (
+                    <option key={an} value={an}>
+                      {an}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <label className="jc-filtre-groupe jc-large">
-              <span className="jc-filtre-etiquette">Journal</span>
-              <select
-                className="ddb-filtre"
-                value={journal}
-                onChange={(e) => setJournal(e.target.value)}
-              >
-                <option value="TOUS">- - - Tous - - -</option>
-                {references.journaux.map((j) => (
-                  <option key={j.code} value={j.code}>
-                    {j.intitule}
-                  </option>
-                ))}
-              </select>
-            </label>
+              <label className="sj-champ">
+                <span className="sj-etiquette">Mois</span>
+                <select className="sj-liste" value={mois} onChange={(e) => setMois(e.target.value)}>
+                  {MOIS.map((nom, index) => (
+                    <option key={nom} value={index + 1}>
+                      {nom}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-            <div className="cot-boutons sj-boutons">
-              <button
-                type="button"
-                className="cot-bouton cot-bouton-rouge"
-                onClick={() => setModalOuvert(true)}
-              >
-                Saisir +
-              </button>
-              <BoutonExport onClick={exporter} />
-              <button
-                type="button"
-                className="cot-bouton cot-bouton-encre"
-                onClick={comptabiliser}
-                disabled={rienDeCoche}
-                title={
-                  rienDeCoche
-                    ? 'Cochez au moins une ligne.'
-                    : `Comptabiliser ${portee.pieces.length} pièce(s), ${portee.lignes} ligne(s).`
-                }
-              >
-                <CIcon icon={cilCalculator} className="cot-icone" />
-                Comptabiliser
-              </button>
-              <button type="button" className="cot-bouton cot-bouton-encre" onClick={imprimer}>
-                <CIcon icon={cilPrint} className="cot-icone" />
-                Imprimer
-              </button>
-              {/* Pas de bouton « Actualiser » : la liste se recharge d'elle-même
-                  au changement de filtre ou de page, et après chaque action
-                  (saisie d'une pièce, comptabilisation). */}
+              <label className="sj-champ">
+                <span className="sj-etiquette">Journal</span>
+                <select
+                  className="sj-liste"
+                  value={journal}
+                  onChange={(e) => setJournal(e.target.value)}
+                >
+                  <option value="TOUS">- - - Tous - - -</option>
+                  {references.journaux.map((j) => (
+                    <option key={j.code} value={j.code}>
+                      {j.intitule}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="sj-panneau-pied">
+              <div className="sj-actions">
+                <BoutonExport onClick={exporter} />
+                <button
+                  type="button"
+                  className="sj-btn sj-btn-sec"
+                  onClick={comptabiliser}
+                  disabled={rienDeCoche}
+                  title={
+                    rienDeCoche
+                      ? 'Cochez au moins une ligne.'
+                      : `Comptabiliser ${portee.pieces.length} pièce(s), ${portee.lignes} ligne(s).`
+                  }
+                >
+                  <CIcon icon={cilCalculator} />
+                  Comptabiliser
+                </button>
+                <button type="button" className="sj-btn sj-btn-sec" onClick={imprimer}>
+                  <CIcon icon={cilPrint} />
+                  Imprimer
+                </button>
+                {/* L'écran existe pour ça : poser une écriture à la main. Seul
+                    bouton en accent, comme « Imprimer » sur l'Interrogation de
+                    Comptes. */}
+                <button
+                  type="button"
+                  className="sj-btn sj-btn-primary"
+                  onClick={() => setModalOuvert(true)}
+                >
+                  Saisir +
+                </button>
+                {/* Pas de bouton « Actualiser » : la liste se recharge
+                    d'elle-même au changement de filtre ou de page, et après
+                    chaque action (saisie d'une pièce, comptabilisation). */}
+              </div>
             </div>
           </div>
 
-          <div className="tableau-conteneur cot-tableau-cadre">
-            <table className="table ddb-tableau tableau-dense cot-tableau">
+          {/* Les deux soldes, dans le bandeau collé au tableau - la place
+              qu'ils tiennent sur le Journal Central. Tant qu'ils sont égaux,
+              la période tient. */}
+          <div className="sj-bandeau">
+            <p className="sj-note">
+              {MOIS[Number(mois) - 1]} {exercice}
+            </p>
+            <div className="sj-soldes">
+              <div className="sj-solde">
+                <span className="sj-solde-etiquette">Solde débit</span>
+                <span className="sj-solde-valeur">
+                  {Number(totaux.debit || 0).toLocaleString('fr-FR')}{' '}
+                  <span className="sj-devise">FCFA</span>
+                </span>
+              </div>
+              <span className="sj-filet" aria-hidden="true" />
+              <div className="sj-solde">
+                <span className="sj-solde-etiquette">Solde crédit</span>
+                <span className="sj-solde-valeur">
+                  {Number(totaux.credit || 0).toLocaleString('fr-FR')}{' '}
+                  <span className="sj-devise">FCFA</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="sj-tableau-cadre">
+            <table className="table sj-tableau">
               <thead>
                 <tr>
-                  <th className="cot-case">
+                  <th className="sj-case">
                     <input
                       type="checkbox"
                       checked={ecritures.length > 0 && coches.length === ecritures.length}
@@ -408,7 +441,7 @@ const SaisieJournal = () => {
                 )}
                 {!chargement && !ecritures.length && (
                   <tr>
-                    <td colSpan={COLONNES.length + 2} className="cot-vide">
+                    <td colSpan={COLONNES.length + 2} className="sj-vide">
                       Aucune écriture pour {MOIS[Number(mois) - 1]} {exercice}.
                     </td>
                   </tr>
@@ -417,8 +450,8 @@ const SaisieJournal = () => {
                   ecritures.map((e) => {
                     const comptabilisee = e.etat === 'Comptabilisé'
                     return (
-                      <tr key={e.id} className={comptabilisee ? 'cot-fige' : undefined}>
-                        <td className="cot-case">
+                      <tr key={e.id} className={comptabilisee ? 'sj-fige' : undefined}>
+                        <td className="sj-case">
                           <input
                             type="checkbox"
                             checked={coches.includes(e.id)}
@@ -431,7 +464,7 @@ const SaisieJournal = () => {
                             key={c.cle}
                             className={[
                               c.nombre ? 'text-end' : null,
-                              c.nombre && Number(e[c.cle]) < 0 ? 'jc-negatif' : null,
+                              c.nombre && Number(e[c.cle]) < 0 ? 'sj-negatif' : null,
                             ]
                               .filter(Boolean)
                               .join(' ')}
@@ -440,7 +473,7 @@ const SaisieJournal = () => {
                           </td>
                         ))}
                         <td>
-                          <span className={`cot-badge${comptabilisee ? ' cot-badge-ok' : ''}`}>
+                          <span className={`sj-badge${comptabilisee ? ' sj-badge-ok' : ''}`}>
                             {e.etat}
                           </span>
                         </td>
@@ -451,11 +484,11 @@ const SaisieJournal = () => {
             </table>
           </div>
 
-          <footer className="ddb-pagination jc-pagination">
-            <label className="jc-taille">
+          <footer className="sj-pagination">
+            <label className="sj-taille">
               Nombre par page
               <select
-                className="ddb-filtre"
+                className="sj-liste"
                 value={taille}
                 onChange={(e) => setTaille(Number(e.target.value))}
               >
@@ -466,12 +499,12 @@ const SaisieJournal = () => {
                 ))}
               </select>
             </label>
-            <span className="jc-position">
+            <span className="sj-position">
               {nombre === 0
                 ? '0 - 0 / 0'
                 : `${(page - 1) * taille + 1} - ${Math.min(page * taille, nombre)} / ${nombre.toLocaleString('fr-FR')}`}
             </span>
-            <span className="jc-fleches">
+            <span className="sj-pages">
               <button
                 type="button"
                 onClick={() => setPage(1)}

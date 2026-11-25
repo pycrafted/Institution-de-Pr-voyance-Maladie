@@ -14,37 +14,29 @@
  * vues sont chargées à la demande.
  */
 
-import React, { useState } from 'react'
+import React from 'react'
 import { CCard, CCardBody } from '@coreui/react'
 
-import Referentiel, { PastillesStats } from '../donnees-de-base/Referentiel'
+import Referentiel from '../donnees-de-base/Referentiel'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../participants/participants.scss'
+import './ordres-paiement.scss'
 import { ORDRES_PAIEMENT } from './config'
 
-const OrdresPaiement = () => {
-  // Stats (« Total : N ») posées en pastille à côté du titre, comme les autres
-  // pages à onglets ; <Referentiel> les remonte via onStats.
-  const [stats, setStats] = useState(null)
+const OrdresPaiement = () => (
+  <CCard className="ddb-carte">
+    <CCardBody className="p-0">
+      <section className="ddb-contenu ord-page">
+        {/* Même chapeau que les écrans de Comptabilité, titre seul : l'écran
+            n'a ni sous-onglets ni action de page. « Etablir » est dans le pied
+            du panneau, en accent - c'est l'action de la page. */}
+        <header className="ord-chapeau">
+          <h2 className="ord-titre">Edition Lettres Chèques/Ordre de Virement</h2>
+        </header>
 
-  return (
-    <CCard className="ddb-carte">
-      <CCardBody className="p-0">
-        <div className="prt-entete">
-          <div className="prt-titre-ligne">
-            <div className="prt-titre-groupe">
-              <h1 className="prt-titre">Edition Lettres Chèques/Ordre de Virement</h1>
-              <PastillesStats segments={stats?.segments} />
-            </div>
-          </div>
-        </div>
-
-        <section className="ddb-contenu">
-          <Referentiel referentiel={ORDRES_PAIEMENT} onStats={setStats} />
-        </section>
-      </CCardBody>
-    </CCard>
-  )
-}
+        <Referentiel referentiel={ORDRES_PAIEMENT} />
+      </section>
+    </CCardBody>
+  </CCard>
+)
 
 export default OrdresPaiement

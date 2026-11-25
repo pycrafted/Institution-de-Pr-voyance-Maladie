@@ -23,10 +23,10 @@ import { cilPrint } from '@coreui/icons'
 
 import { request } from '../../services/api'
 import { toast } from '../../services/toast'
-import Referentiel, { PastillesStats } from '../donnees-de-base/Referentiel'
+import Referentiel from '../donnees-de-base/Referentiel'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../participants/participants.scss'
 import './traitements.scss'
+import './reglements.scss'
 import ReglementModal from './ReglementModal'
 import ComptabiliserReglementModal from './ComptabiliserReglementModal'
 import EditionModal from './EditionModal'
@@ -54,7 +54,6 @@ const estAcomptabiliser = (f) => Number(f.montantReglement) > 0 && !f.reglementC
 
 const Reglements = () => {
   const [onglet, setOnglet] = useState('soins')
-  const [stats, setStats] = useState(null)
   // Factures en cours de règlement (ouvre ReglementModal), édition, et clé de
   // rafraîchissement (remonte la liste après une action, relâche la sélection).
   const [facturesAregler, setFacturesAregler] = useState(null)
@@ -63,10 +62,6 @@ const Reglements = () => {
   const [rafraichir, setRafraichir] = useState(0)
 
   const courant = ONGLETS.find((o) => o.cle === onglet) || ONGLETS[0]
-  const changerOnglet = (cle) => {
-    setStats(null)
-    setOnglet(cle)
-  }
 
   const rafraichirListe = () => setRafraichir((n) => n + 1)
 
@@ -164,42 +159,44 @@ const Reglements = () => {
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
-        <div className="prt-entete">
-          <div className="prt-titre-ligne">
-            <div className="prt-titre-groupe">
-              <h1 className="prt-titre">Règlements Factures</h1>
-              <PastillesStats segments={stats?.segments} />
-            </div>
-            <button
-              type="button"
-              className="ddb-outil trt-bouton-edition"
-              onClick={() => setEditionOuverte(true)}
-            >
-              <CIcon icon={cilPrint} className="ddb-outil-icone" />
-              Edition
-            </button>
-          </div>
-          <nav className="prt-onglets" aria-label="Sous-onglets des règlements">
+        <section className="ddb-contenu rgl-page">
+          {/* Même chapeau que les écrans de Comptabilité, titre seul : les
+              états imprimés (Factures à Payer / non Payées) se demandent
+              depuis le pied du panneau, devant le rail - comme « Exporter » sur
+              le Journal Central. */}
+          <header className="rgl-chapeau">
+            <h2 className="rgl-titre">Règlements Factures</h2>
+          </header>
+
+          {/* Les deux familles de fournisseurs, en cartes - même forme que sur
+              la page Factures, dont cet écran est la suite. L'état du règlement,
+              lui, reste un filtre de la liste : il est en rail de pastilles au
+              pied du panneau, en bout de ligne, un niveau plus bas. */}
+          <nav className="rgl-cartes" aria-label="Sous-onglets des règlements">
             {ONGLETS.map((o) => (
               <button
                 key={o.cle}
                 type="button"
-                className={`prt-onglet${onglet === o.cle ? ' prt-onglet-actif' : ''}`}
-                onClick={() => changerOnglet(o.cle)}
+                className={`rgl-carte${onglet === o.cle ? ' rgl-carte-active' : ''}`}
+                onClick={() => setOnglet(o.cle)}
+                aria-current={onglet === o.cle ? 'page' : undefined}
               >
-                {o.libelle}
+                <span className="rgl-carte-libelle">{o.libelle}</span>
               </button>
             ))}
           </nav>
-        </div>
 
-        <section className="ddb-contenu">
           {/* `key` : changer d'onglet ou agir en lot remonte le composant, qui
               relit la base et relâche la sélection. */}
           <Referentiel
             key={`${courant.cle}-${rafraichir}`}
             referentiel={referentiel}
-            onStats={setStats}
+            actionsBarre={
+              <button type="button" className="rgl-edition" onClick={() => setEditionOuverte(true)}>
+                <CIcon icon={cilPrint} />
+                Edition
+              </button>
+            }
           />
         </section>
       </CCardBody>

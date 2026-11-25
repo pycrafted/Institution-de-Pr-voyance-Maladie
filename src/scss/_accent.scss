@@ -1,0 +1,32 @@
+// L'accent de l'IPM, et lui seul.
+//
+// **Pourquoi un fichier à part.** Cette valeur doit être lue par la
+// CONFIGURATION de CoreUI (`@use '@coreui/coreui' with ($primary: …)`), tout
+// en haut de `style.scss` - avant la première ligne de la feuille. Une
+// variable déclarée plus bas dans ce même fichier n'y est pas encore
+// disponible, et recopier la valeur dans le `with()` l'exposerait à diverger
+// de celle que lit le reste de l'application. D'où ce module, chargé en
+// premier : un seul endroit décide.
+//
+// **Ce que `$primary` commande chez CoreUI**, et c'est pour cela qu'il doit
+// porter l'accent : la couleur des états d'INTERACTION de tous ses composants
+// - l'anneau de focus (`--cui-focus-ring-color`), l'élément retenu d'un menu
+// déroulant, l'interrupteur enclenché, la case cochée, le bouton principal,
+// la page courante d'une pagination, la couleur des liens. Resté au rouge
+// SAR, tout cela clignotait en rouge sur une application devenue ardoise.
+//
+// **Historique de la valeur.** Rouge SAR `#e52621` jusqu'au 2026-11-24, puis
+// le cuivre `#b85c52`, puis l'ardoise `#344256` le 2026-11-25. Le rouge SAR
+// reste la charte de la SAR et sert encore ailleurs (la sortie, les pastilles
+// de notification, l'écran de chargement) ; il n'est plus la couleur des
+// gestes de cette application.
+//
+// Elle y gagne : l'accent porte du texte blanc sur tous les boutons
+// principaux, et le blanc rend 10,2:1 sur l'ardoise contre 4,5:1 sur le
+// cuivre - où il était tout juste au plancher.
+$accent-ipm: #344256;
+
+// La nuance plus sombre du survol et de l'enfoncement, au même écart de clarté
+// que du temps du cuivre : -6 points dans l'espace TSL (le cuivre allait de
+// 52 % à 46 %, l'ardoise va de 27 % à 21 %).
+$accent-ipm-survol: #293342;

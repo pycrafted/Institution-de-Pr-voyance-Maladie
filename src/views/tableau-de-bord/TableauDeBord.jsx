@@ -283,7 +283,7 @@ const TableauDeBord = () => {
       labels: activite.axes,
       datasets: [
         courbe('Dépenses engagées', activite.engage, p.accent),
-        courbe('Remboursements versés', activite.rembourse, p.neutre),
+        courbe('Remboursements versés', activite.rembourse, p.secondaire),
       ],
     }
   }, [activite])
@@ -447,7 +447,7 @@ const TableauDeBord = () => {
 
   // --- Profil par spécialité : deux populations, mêmes axes ---------------
   const donneesProfil = useMemo(() => {
-    const teintes = [p.accent, p.neutre]
+    const teintes = [p.accent, p.secondaire]
     return {
       labels: PROFIL_SPECIALITES.axes,
       datasets: PROFIL_SPECIALITES.series.map((s, i) => ({
@@ -656,7 +656,7 @@ const TableauDeBord = () => {
             <Legende
               entrees={[
                 { libelle: 'Dépenses engagées', teinte: p.accent },
-                { libelle: 'Remboursements versés', teinte: p.neutre },
+                { libelle: 'Remboursements versés', teinte: p.secondaire },
               ]}
             />
           )}
@@ -797,7 +797,7 @@ const TableauDeBord = () => {
             <Legende
               entrees={PROFIL_SPECIALITES.series.map((s, i) => ({
                 libelle: s.libelle,
-                teinte: [p.accent, p.neutre][i],
+                teinte: [p.accent, p.secondaire][i],
               }))}
             />
             <div className="tdb-figure tdb-figure-pleine">

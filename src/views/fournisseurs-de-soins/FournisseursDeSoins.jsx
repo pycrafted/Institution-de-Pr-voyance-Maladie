@@ -9,11 +9,11 @@
  *                             demande validée rejoint l'onglet précédent
  *
  * Chaque onglet monte le composant <Referentiel /> de « Données de base »
- * plutôt que de réécrire un écran équivalent : même tableau à en-tête noir,
- * même panneau latéral, mêmes gestes. Les feuilles de styles sont importées
- * ici parce que les vues sont chargées à la demande - arriver directement sur
+ * plutôt que de réécrire un écran équivalent : même tableau, même panneau
+ * latéral, mêmes gestes. Les feuilles de styles sont importées ici parce que
+ * les vues sont chargées à la demande - arriver directement sur
  * /fournisseurs-de-soins ne monte pas les autres pages, donc ne charge pas
- * leurs styles. La barre d'onglets est celle de la page Participants.
+ * leurs styles.
  */
 
 import React, { useMemo, useState } from 'react'
@@ -21,7 +21,13 @@ import { CCard, CCardBody } from '@coreui/react'
 
 import Referentiel, { PastillesStats } from '../donnees-de-base/Referentiel'
 import '../donnees-de-base/donnees-de-base.scss'
+// La page ne porte plus l'en-tête ni les onglets de Participants (cf.
+// fournisseurs-de-soins.scss), mais cette feuille marque aussi les champs
+// obligatoires laissés vides des DEUX formulaires de cet écran
+// (`.ddb-formulaire-fournisseurs-de-soins`, `.ddb-formulaire-demandes-agrement`
+// y sont nommés explicitement) : elle reste donc importée.
 import '../participants/participants.scss'
+import './fournisseurs-de-soins.scss'
 import { FOURNISSEURS_DE_SOINS } from './config'
 import { DEMANDES_AGREMENT } from './demandesAgrement'
 
@@ -67,28 +73,32 @@ const FournisseursDeSoins = () => {
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
-        <div className="prt-entete">
-          <div className="prt-titre-ligne">
-            <div className="prt-titre-groupe">
-              <h1 className="prt-titre">Fournisseurs de Soins</h1>
-              <PastillesStats segments={stats?.segments} />
-            </div>
-          </div>
-          <nav className="prt-onglets" aria-label="Sections des fournisseurs de soins">
+        <section className="ddb-contenu fds-page">
+          {/* Le chapeau porte le titre et le total de la vue (« Total
+              Fournisseurs: 411 », le libellé de l'application d'origine), que
+              <Referentiel /> remonte par `onStats`. */}
+          <header className="fds-chapeau">
+            <h1 className="fds-titre">Fournisseurs de Soins</h1>
+            <PastillesStats segments={stats?.segments} />
+          </header>
+
+          {/* Les deux onglets en cartes : ce sont deux états du même dossier -
+              une demande agréée devient un fournisseur - et leurs colonnes ne
+              se ressemblent pas. */}
+          <nav className="fds-cartes" aria-label="Sections des fournisseurs de soins">
             {ONGLETS.map((o) => (
               <button
                 key={o.cle}
                 type="button"
-                className={`prt-onglet${onglet === o.cle ? ' prt-onglet-actif' : ''}`}
+                className={`fds-carte${onglet === o.cle ? ' fds-carte-active' : ''}`}
+                aria-current={onglet === o.cle ? 'page' : undefined}
                 onClick={() => changerOnglet(o.cle)}
               >
-                {o.libelle}
+                <span className="fds-carte-libelle">{o.libelle}</span>
               </button>
             ))}
           </nav>
-        </div>
 
-        <section className="ddb-contenu">
           {/* `key` : changer d'onglet remonte le composant, qui relit la base.
               Un fournisseur tout juste agréé apparaît donc dès qu'on revient
               sur la liste, sans avoir à actualiser la page. */}

@@ -14,12 +14,20 @@ import { CCard, CCardBody } from '@coreui/react'
 
 import Referentiel from '../../donnees-de-base/Referentiel'
 import '../../donnees-de-base/donnees-de-base.scss'
+import './bons-optique.scss'
 import { BONS_OPTIQUE } from './config'
 
 const BonsOptique = () => (
   <CCard className="ddb-carte">
     <CCardBody className="p-0">
-      <section className="ddb-contenu">
+      <section className="ddb-contenu bop-page">
+        {/* Même chapeau que les écrans de Comptabilité et de Traitements. Le
+            titre était rendu par <Referentiel /> lui-même, en petit, au-dessus
+            de la liste ; il devient celui de la page. */}
+        <header className="bop-chapeau">
+          <h2 className="bop-titre">Bons Optique</h2>
+        </header>
+
         <Referentiel referentiel={BONS_OPTIQUE} />
       </section>
     </CCardBody>

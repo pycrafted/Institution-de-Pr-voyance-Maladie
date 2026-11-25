@@ -1,0 +1,45 @@
+// Page « Traitements → Bons d'Achats » (captures 79-80).
+//
+// Refonte du 2026-11-24 : l'écran rejoint le langage de design des pages de
+// Comptabilité et des autres écrans de Traitements. Tout ce qui habille la
+// liste - panneau de filtres, tableau, pagination, bouton de création - vient
+// de `_liste-compta.scss` ; les valeurs, de
+// `comptabilite/_design-compta.scss`.
+//
+// Rien ne lui est propre que son chapeau. Le modal de saisie d'un bon, lui,
+// n'a pas été refait : ses styles restent dans `traitements.scss`.
+
+@use '../comptabilite/design-compta' as c;
+@use 'liste-compta' as l;
+
+// --- Le chapeau -------------------------------------------------------------
+.ba-chapeau {
+  @include c.cpt-chapeau;
+}
+
+.ba-titre {
+  @include c.cpt-titre;
+}
+
+// --- « Ajout Article » ------------------------------------------------------
+// Le raccourci de l'origine vers le catalogue. Il se tient dans le pied du
+// panneau, en tête du groupe, et reste secondaire : l'action de l'écran est de
+// créer un bon, pas un article.
+.ba-ajout-article {
+  @include c.cpt-btn;
+  @include c.cpt-btn-sec;
+}
+
+// --- La liste, dans le langage de la Comptabilité ---------------------------
+// Pas de `$serre` : un bon porte le libellé de son fournisseur, qu'il vaut
+// mieux laisser passer à la ligne que couper.
+.ba-page {
+  @include l.liste-compta;
+}
+
+// --- Écrans étroits ---------------------------------------------------------
+@media (max-width: 680px) {
+  .ba-titre {
+    font-size: 1.45rem;
+  }
+}

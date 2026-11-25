@@ -21,9 +21,9 @@ import { CCard, CCardBody } from '@coreui/react'
 import { cilCalculator, cilList } from '@coreui/icons'
 
 import { request } from '../../services/api'
-import Referentiel, { PastillesStats } from '../donnees-de-base/Referentiel'
+import Referentiel from '../donnees-de-base/Referentiel'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../participants/participants.scss'
+import './factures.scss'
 import FactureDetails from './FactureDetails'
 import { FACTURES_SOINS, FACTURES_DIVERS } from './config'
 
@@ -36,14 +36,7 @@ const Factures = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [onglet, setOnglet] = useState('soins')
-  // Stats de l'onglet actif, posées en pastille à côté du titre (comme Données
-  // de base) ; <Referentiel> les remonte.
-  const [stats, setStats] = useState(null)
   const courant = ONGLETS.find((o) => o.cle === onglet) || ONGLETS[0]
-  const changerOnglet = (cle) => {
-    setStats(null)
-    setOnglet(cle)
-  }
 
   // Action « Traiter la facture » : ouvre la page de traitement. Ajoutée ici
   // (et non dans config.js) car elle a besoin de la navigation.
@@ -81,30 +74,32 @@ const Factures = () => {
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
-        <div className="prt-entete">
-          <div className="prt-titre-ligne">
-            <div className="prt-titre-groupe">
-              <h1 className="prt-titre">Traitements Factures</h1>
-              <PastillesStats segments={stats?.segments} />
-            </div>
-          </div>
-          <nav className="prt-onglets" aria-label="Sous-onglets des factures">
+        <section className="ddb-contenu fct-page">
+          {/* Même chapeau que les écrans de Comptabilité. Le titre y est seul,
+              comme sur le Plan Comptable : la pastille « Total : N » a été
+              retirée, la pagination du tableau disant déjà le compte. */}
+          <header className="fct-chapeau">
+            <h2 className="fct-titre">Traitements Factures</h2>
+          </header>
+
+          {/* Les deux familles de fournisseurs, en cartes - même forme que les
+              familles de comptes de l'Interrogation de Comptes. */}
+          <nav className="fct-cartes" aria-label="Sous-onglets des factures">
             {ONGLETS.map((o) => (
               <button
                 key={o.cle}
                 type="button"
-                className={`prt-onglet${onglet === o.cle ? ' prt-onglet-actif' : ''}`}
-                onClick={() => changerOnglet(o.cle)}
+                className={`fct-carte${onglet === o.cle ? ' fct-carte-active' : ''}`}
+                onClick={() => setOnglet(o.cle)}
+                aria-current={onglet === o.cle ? 'page' : undefined}
               >
-                {o.libelle}
+                <span className="fct-carte-libelle">{o.libelle}</span>
               </button>
             ))}
           </nav>
-        </div>
 
-        <section className="ddb-contenu">
           {/* `key` : changer d'onglet remonte le composant, qui relit la base. */}
-          <Referentiel key={courant.cle} referentiel={referentiel} onStats={setStats} />
+          <Referentiel key={courant.cle} referentiel={referentiel} />
         </section>
       </CCardBody>
     </CCard>

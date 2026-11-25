@@ -60,7 +60,6 @@ import { request } from '../../services/api'
 import { messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../comptabilite/journal-central.scss'
 import './retenues.scss'
 import AppelRetenuesModal from './AppelRetenuesModal'
 import ImporterRetenuesModal from './ImporterRetenuesModal'
@@ -348,33 +347,150 @@ const Retenues = () => {
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
         <section className="ddb-contenu rfm-page">
-          <h2 className="jc-titre">Retenues Frais Médicaux</h2>
+          <header className="rfm-chapeau">
+            <h2 className="rfm-titre">Retenues Frais Médicaux</h2>
+          </header>
 
-          {/* L'en-tête de l'original, mot pour mot : la période et la société
-              nommée en entier, puis les deux totaux. « Total Retenue » reste à
-              0 tant que le fichier de la paie n'est pas importé - c'est le
-              témoin le plus direct de l'état d'avancement. */}
-          <div className="rfm-entete">
-            {campagne ? (
-              <>
-                <p className="rfm-entete-titre">
-                  {MOIS[Number(mois) - 1]} {annee} - {entete.titre} ({entete.participants}{' '}
-                  Participants)
-                </p>
-                <p className="rfm-entete-total">
-                  Total Solde: {montant(entete.totalSolde)} - Total Retenue:{' '}
-                  {montant(entete.totalPaie)}
-                </p>
-              </>
-            ) : (
-              <p className="rfm-entete-vide">
-                {societe
-                  ? `Aucune campagne pour ${societeChoisie?.intitule || societe} en ` +
-                    `${MOIS[Number(mois) - 1]} ${annee}. ` +
-                    '« Appel Retenues » photographie la dette de chaque participant.'
-                  : 'Choisissez une société pour ouvrir sa campagne du mois.'}
-              </p>
-            )}
+          {/* Le panneau de la campagne, dans la forme des écrans de
+              Comptabilité : la campagne se désigne en haut - année, mois,
+              société forment sa clé -, et le pied porte les quatre gestes du
+              circuit, puis les trois filtres d'affichage. */}
+          <div className="rfm-panneau">
+            <div className="rfm-panneau-tete">
+              <p className="rfm-panneau-titre">Campagne</p>
+            </div>
+
+            <div className="rfm-barre">
+              <label className="rfm-champ">
+                <span className="rfm-etiquette">Année</span>
+                <select
+                  className="rfm-saisie"
+                  value={annee}
+                  onChange={(e) => setAnnee(e.target.value)}
+                >
+                  {annees.map((an) => (
+                    <option key={an} value={an}>
+                      {an}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="rfm-champ">
+                <span className="rfm-etiquette">Mois</span>
+                <select
+                  className="rfm-saisie"
+                  value={mois}
+                  onChange={(e) => setMois(e.target.value)}
+                >
+                  {MOIS.map((nom, index) => (
+                    <option key={nom} value={index + 1}>
+                      {nom}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="rfm-champ">
+                <span className="rfm-etiquette">Société</span>
+                <select
+                  className="rfm-saisie"
+                  value={societe}
+                  onChange={(e) => setSociete(e.target.value)}
+                >
+                  <option value="">Société…</option>
+                  {references.societes.map((s) => (
+                    <option key={s.code} value={s.code}>
+                      {s.intitule}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="rfm-panneau-pied">
+              <div className="rfm-actions">
+                <button
+                  type="button"
+                  className="rfm-btn rfm-btn-sec"
+                  onClick={() => setAppelOuvert(true)}
+                  disabled={comptabilise}
+                  title={
+                    comptabilise
+                      ? 'Campagne comptabilisée : elle ne peut plus être relancée.'
+                      : 'Photographier la dette de chaque participant pour ce mois.'
+                  }
+                >
+                  <CIcon icon={cilLoopCircular} />
+                  Appel Retenues
+                </button>
+                <button
+                  type="button"
+                  className="rfm-btn rfm-btn-sec"
+                  onClick={() => fichier.current?.click()}
+                  disabled={!campagne || comptabilise}
+                  title={
+                    comptabilise
+                      ? 'Campagne comptabilisée : ses montants sont figés.'
+                      : campagne
+                        ? 'Charger le fichier de la paie (rubrique 6600).'
+                        : 'Faites d’abord l’appel : l’import n’aurait rien à remplir.'
+                  }
+                >
+                  <CIcon icon={cilCloudDownload} />
+                  Importer Retenues
+                </button>
+                <input
+                  ref={fichier}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  className="d-none"
+                  onChange={choisirFichier}
+                />
+                <BoutonExport
+                  onClick={exporter}
+                  disabled={!toutes.length}
+                  title="Le fichier des soldes qui repart vers la paie."
+                />
+                {/* L'acte qui engage : il pose la pièce au journal RP. Seul
+                    bouton en accent de l'écran, comme « Imprimer » sur
+                    l'Interrogation de Comptes. */}
+                <button
+                  type="button"
+                  className="rfm-btn rfm-btn-primary"
+                  onClick={ouvrirApercu}
+                  disabled={!campagne || comptabilise || !coches.length}
+                  title={
+                    comptabilise
+                      ? 'Campagne déjà comptabilisée.'
+                      : coches.length
+                        ? 'Vérifier les écritures, puis les poser au journal RP.'
+                        : 'Cochez au moins une ligne.'
+                  }
+                >
+                  <CIcon icon={cilCalculator} />
+                  Comptabiliser
+                </button>
+
+                {/* Les trois filtres d'affichage de l'original, en rail - la
+                    même forme que les états des Règlements, et pour la même
+                    raison : c'est un filtre de la liste, pas une action. */}
+                <div className="rfm-segments" role="group" aria-label="Filtrer les lignes">
+                  {FILTRES.map(([cle, libelle]) => (
+                    <button
+                      key={cle}
+                      type="button"
+                      className={`rfm-segment${cle === filtre ? ' rfm-segment-actif' : ''}`}
+                      onClick={() => setFiltre(cle)}
+                    >
+                      {libelle}
+                    </button>
+                  ))}
+                </div>
+                {/* Pas de bouton « Actualiser » : la liste se recharge
+                    d'elle-même au changement de campagne et après chaque action
+                    (appel, import, comptabilisation). Le proposer laissait
+                    croire qu'il fallait y penser. */}
+              </div>
+            </div>
           </div>
 
           {/* Le signalement, et rien de plus : il informe, il n'interdit pas
@@ -394,116 +510,46 @@ const Retenues = () => {
             </p>
           )}
 
-          <div className="rfm-barre">
-            <select className="ddb-filtre" value={annee} onChange={(e) => setAnnee(e.target.value)}>
-              {annees.map((an) => (
-                <option key={an} value={an}>
-                  {an}
-                </option>
-              ))}
-            </select>
-            <select className="ddb-filtre" value={mois} onChange={(e) => setMois(e.target.value)}>
-              {MOIS.map((nom, index) => (
-                <option key={nom} value={index + 1}>
-                  {nom}
-                </option>
-              ))}
-            </select>
-            <select
-              className="ddb-filtre rfm-large"
-              value={societe}
-              onChange={(e) => setSociete(e.target.value)}
-            >
-              <option value="">Société…</option>
-              {references.societes.map((s) => (
-                <option key={s.code} value={s.code}>
-                  {s.intitule}
-                </option>
-              ))}
-            </select>
+          {/* Le bandeau de la campagne, collé au tableau comme sur les écrans
+              de Comptabilité : à gauche ce qu'on regarde, à droite ses totaux.
+              « Total Retenue » reste à 0 tant que le fichier de la paie n'est
+              pas importé - c'est le témoin le plus direct de l'avancement. */}
+          <div className="rfm-bandeau">
+            {campagne ? (
+              <>
+                <p className="rfm-campagne">
+                  {MOIS[Number(mois) - 1]} {annee} - {entete.titre} ({entete.participants}{' '}
+                  Participants)
+                </p>
+                <div className="rfm-totaux">
+                  <div className="rfm-total">
+                    <span className="rfm-total-etiquette">Total Solde</span>
+                    <span className="rfm-total-valeur">
+                      {montant(entete.totalSolde)} <span className="rfm-devise">FCFA</span>
+                    </span>
+                  </div>
+                  <span className="rfm-filet" aria-hidden="true" />
+                  <div className="rfm-total">
+                    <span className="rfm-total-etiquette">Total Retenue</span>
+                    <span className="rfm-total-valeur">
+                      {montant(entete.totalPaie)} <span className="rfm-devise">FCFA</span>
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="rfm-campagne-vide">
+                {societe
+                  ? `Aucune campagne pour ${societeChoisie?.intitule || societe} en ` +
+                    `${MOIS[Number(mois) - 1]} ${annee}. ` +
+                    '« Appel Retenues » photographie la dette de chaque participant.'
+                  : 'Choisissez une société pour ouvrir sa campagne du mois.'}
+              </p>
+            )}
           </div>
 
-          <div className="rfm-barre rfm-barre-boutons">
-            <button
-              type="button"
-              className="rfm-bouton"
-              onClick={() => setAppelOuvert(true)}
-              disabled={comptabilise}
-              title={
-                comptabilise
-                  ? 'Campagne comptabilisée : elle ne peut plus être relancée.'
-                  : 'Photographier la dette de chaque participant pour ce mois.'
-              }
-            >
-              <CIcon icon={cilLoopCircular} className="rfm-icone" />
-              Appel Retenues
-            </button>
-            <button
-              type="button"
-              className="rfm-bouton rfm-bouton-encre"
-              onClick={ouvrirApercu}
-              disabled={!campagne || comptabilise || !coches.length}
-              title={
-                comptabilise
-                  ? 'Campagne déjà comptabilisée.'
-                  : coches.length
-                    ? 'Vérifier les écritures, puis les poser au journal RP.'
-                    : 'Cochez au moins une ligne.'
-              }
-            >
-              <CIcon icon={cilCalculator} className="rfm-icone" />
-              Comptabiliser
-            </button>
-            <BoutonExport
-              onClick={exporter}
-              disabled={!toutes.length}
-              title="Le fichier des soldes qui repart vers la paie."
-            />
-            <button
-              type="button"
-              className="rfm-bouton rfm-bouton-bleu"
-              onClick={() => fichier.current?.click()}
-              disabled={!campagne || comptabilise}
-              title={
-                comptabilise
-                  ? 'Campagne comptabilisée : ses montants sont figés.'
-                  : campagne
-                    ? 'Charger le fichier de la paie (rubrique 6600).'
-                    : 'Faites d’abord l’appel : l’import n’aurait rien à remplir.'
-              }
-            >
-              <CIcon icon={cilCloudDownload} className="rfm-icone" />
-              Importer Retenues
-            </button>
-            <input
-              ref={fichier}
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              className="d-none"
-              onChange={choisirFichier}
-            />
-
-            {/* Les trois filtres d'affichage de l'original, en segments. */}
-            <div className="rfm-segments" role="group" aria-label="Filtrer les lignes">
-              {FILTRES.map(([cle, libelle]) => (
-                <button
-                  key={cle}
-                  type="button"
-                  className={`rfm-segment${cle === filtre ? ' rfm-segment-actif' : ''}`}
-                  onClick={() => setFiltre(cle)}
-                >
-                  {libelle}
-                </button>
-              ))}
-            </div>
-            {/* Pas de bouton « Actualiser » : la liste se recharge d'elle-même
-                au changement de campagne et après chaque action (appel, import,
-                comptabilisation). Le proposer laissait croire qu'il fallait y
-                penser. */}
-          </div>
-
-          <div className="tableau-conteneur rfm-tableau-cadre">
-            <table className="table ddb-tableau rfm-tableau">
+          <div className="rfm-tableau-cadre">
+            <table className="table rfm-tableau">
               <thead>
                 <tr>
                   <th className="rfm-case">
@@ -586,13 +632,14 @@ const Retenues = () => {
             </table>
           </div>
 
-          {/* Le pied de l'original : « Nombre par page 15 » et « 1 - 15 / 179 ». */}
+          {/* Le pied de l'original : « Nombre par page 15 » et « 1 - 15 / 179 ».
+              Les deux restent, dans la forme des écrans de Comptabilité. */}
           {lignes.length > 0 && (
             <div className="rfm-pagination">
               <label className="rfm-par-page">
                 Nombre par page
                 <select
-                  className="ddb-filtre"
+                  className="rfm-saisie"
                   value={parPage}
                   onChange={(e) => setParPage(Number(e.target.value))}
                 >
@@ -606,24 +653,24 @@ const Retenues = () => {
               <span className="rfm-compteur">
                 {premier} - {dernier} / {lignes.length}
               </span>
-              <button
-                type="button"
-                className="rfm-page-bouton"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={pageSure <= 1}
-                aria-label="Page précédente"
-              >
-                <CIcon icon={cilChevronLeft} className="rfm-icone" />
-              </button>
-              <button
-                type="button"
-                className="rfm-page-bouton"
-                onClick={() => setPage((p) => Math.min(pages, p + 1))}
-                disabled={pageSure >= pages}
-                aria-label="Page suivante"
-              >
-                <CIcon icon={cilChevronRight} className="rfm-icone" />
-              </button>
+              <div className="rfm-pages">
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={pageSure <= 1}
+                  aria-label="Page précédente"
+                >
+                  <CIcon icon={cilChevronLeft} className="rfm-icone" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage((p) => Math.min(pages, p + 1))}
+                  disabled={pageSure >= pages}
+                  aria-label="Page suivante"
+                >
+                  <CIcon icon={cilChevronRight} className="rfm-icone" />
+                </button>
+              </div>
             </div>
           )}
         </section>

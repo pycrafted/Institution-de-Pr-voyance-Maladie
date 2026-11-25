@@ -63,6 +63,21 @@ export const LETTRES_GARANTIE = {
   // Barre des Bons de pharmacie (cf. commun.js).
   ...BARRE_DOCUMENTS,
 
+  // --- Ce que la refonte du 2026-11-24 change, APRÈS la barre commune -------
+  // L'ordre compte : ces trois clés défont ce que `BARRE_DOCUMENTS` pose, et
+  // ne le peuvent qu'écrites après lui. Les deux pages sœurs - Bons d'Optique
+  // et LG Hospitalisation - gardent la barre commune telle quelle tant
+  // qu'elles ne sont pas refaites.
+  //
+  // Pas de titre au-dessus de la liste : la page porte le sien, en chapeau.
+  sansTitre: true,
+  // Pas de pastille « Total : N » : la pagination, au pied du tableau, le dit
+  // déjà.
+  sansStats: true,
+  // « Nouvelle lettre » porte l'accent, et un bouton d'accent se tient en BOUT
+  // de groupe, pas au milieu entre deux boutons blancs.
+  creationAvantOutils: false,
+
   // Impression individuelle, comme les bons : la lettre au modèle de
   // l'application d'origine, original et copie, en PDF.
   actionsLigne: [

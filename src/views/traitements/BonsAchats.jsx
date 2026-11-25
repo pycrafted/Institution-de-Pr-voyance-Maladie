@@ -27,16 +27,17 @@ import { cilActionUndo, cilBan, cilLibraryAdd, cilPrint } from '@coreui/icons'
 
 import { basculerActivation } from '../../services/referentiels'
 import { ouvrirPdf } from '../documents/commun'
-import Referentiel, { PastillesStats } from '../donnees-de-base/Referentiel'
+import Referentiel from '../donnees-de-base/Referentiel'
 import '../donnees-de-base/donnees-de-base.scss'
-import '../participants/participants.scss'
+// `traitements.scss` reste nécessaire au modal de saisie d'un bon, qui n'a pas
+// été refait.
 import './traitements.scss'
+import './bons-achats.scss'
 import ArticleAchatModal from './ArticleAchatModal'
 import BonAchatModal from './BonAchatModal'
 import { BONS_ACHATS } from './config'
 
 const BonsAchats = () => {
-  const [stats, setStats] = useState(null)
   const [articleOuvert, setArticleOuvert] = useState(false)
 
   const referentiel = useMemo(
@@ -88,29 +89,29 @@ const BonsAchats = () => {
   return (
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
-        <div className="prt-entete">
-          <div className="prt-titre-ligne">
-            <div className="prt-titre-groupe">
-              <h1 className="prt-titre">
-                Bons d&apos;Achats <span className="ba-sous-titre">(Fournisseurs Divers)</span>
-              </h1>
-              <PastillesStats segments={stats?.segments} />
-            </div>
-            {/* Raccourci de l'origine : créer l'article qui manque sans
-                quitter la commande en cours. */}
-            <button
-              type="button"
-              className="ddb-outil trt-bouton-edition"
-              onClick={() => setArticleOuvert(true)}
-            >
-              <CIcon icon={cilLibraryAdd} className="ddb-outil-icone" />
-              Ajout Article
-            </button>
-          </div>
-        </div>
+        <section className="ddb-contenu ba-page">
+          {/* Même chapeau que les écrans de Comptabilité, titre seul. Le
+              raccourci « Ajout Article » descend dans le pied du panneau, avec
+              les autres actions de l'écran. */}
+          <header className="ba-chapeau">
+            <h2 className="ba-titre">Bons d&apos;Achats</h2>
+          </header>
 
-        <section className="ddb-contenu">
-          <Referentiel referentiel={referentiel} onStats={setStats} />
+          <Referentiel
+            referentiel={referentiel}
+            actionsBarre={
+              /* Raccourci de l'origine : créer l'article qui manque sans
+                 quitter la commande en cours. */
+              <button
+                type="button"
+                className="ba-ajout-article"
+                onClick={() => setArticleOuvert(true)}
+              >
+                <CIcon icon={cilLibraryAdd} />
+                Ajout Article
+              </button>
+            }
+          />
         </section>
       </CCardBody>
 

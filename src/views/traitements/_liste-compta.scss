@@ -1,0 +1,264 @@
+// Habiller `<Referentiel />` dans le langage de design de la Comptabilité.
+//
+// **Pourquoi ce fichier existe.** La liste des écrans de Traitements n'est pas
+// écrite dans ces écrans : elle est rendue par le composant partagé
+// `<Referentiel />`, que TREIZE écrans montent - les quatre pages de
+// Documents, Bons d'Achats, Ordres de Paiement, Règlements, Remboursements,
+// Factures, Données de base, et les trois qui restent à refaire
+// (Participants, Adhérents, Fournisseurs de Soins). Le restyler globalement
+// les changerait tous d'un coup - ce qui est la cible, mais pas une décision à
+// prendre en passant.
+//
+// En attendant, chaque page refaite doit donc le réhabiller POUR ELLE SEULE.
+// Fait page par page, ce travail se recopie et finit par diverger - exactement
+// ce qu'on vient de corriger sur les trois écrans de Comptabilité. D'où ce
+// mixin : une seule écriture, montée sous la classe de chaque page.
+//
+//     .rgl-page { @include l.liste-compta; }
+//
+// Sass l'imbrique, donc tout sort préfixé (`.rgl-page .ddb-tableau`) : les
+// écrans qu'on n'a pas refaits ne bougent pas. Et le jour où `<Referentiel />`
+// prendra ce langage pour lui-même, c'est ce fichier qu'on y versera.
+//
+// Aucune couleur ni graisse n'est décidée ici : tout vient de
+// `comptabilite/_design-compta.scss`, la source unique des deux familles.
+
+@use '../comptabilite/design-compta' as c;
+
+// `$serre` : un tableau à beaucoup de colonnes (les règlements en ont quatorze)
+// se lit mieux en lignes d'un seul tenant, qui défilent, qu'en cellules qui
+// passent à la ligne. Un tableau plus large de colonnes - une facture et son
+// libellé de prestataire - garde le retour à la ligne.
+@mixin liste-compta($serre: false) {
+  // --- Le panneau de filtres -------------------------------------------------
+  // La barre d'outils devient le panneau gris des écrans de Comptabilité : les
+  // filtres en haut, et le groupe de droite dans un pied séparé par un filet.
+  //
+  // Flex et non grille, à dessein. La grille du Journal Central (`cpt-barre`)
+  // compte sur `auto-fit` pour replier les colonnes vides ; or une colonne ne
+  // se replie que si AUCUN élément ne l'occupe, et le pied du panneau, qui doit
+  // traverser toute la largeur, les occupe toutes. La grille gardait donc ses
+  // six colonnes pour quatre champs. En flex, un champ de plus ou de moins ne
+  // change rien : chacun grandit, la ligne est pleine.
+  .ddb-barre-outils {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 1rem;
+    padding: 1.15rem;
+    margin-bottom: 1.75rem;
+    border: 1px solid c.$cpt-bordure;
+    border-radius: 12px;
+    background: c.$cpt-fond-panneau;
+  }
+
+  // `flex: 1 1 190px` : tous les champs partent de la même base et se partagent
+  // également la place qui reste, donc la ligne est pleine sans qu'aucune
+  // largeur ne soit écrite en dur. `min-width: 0` pour qu'un libellé long ne
+  // pousse pas son champ au-delà de sa part, et 190 px de base pour qu'ils
+  // passent à la ligne plutôt que de s'étrangler sur un écran étroit.
+  //
+  // Trois classes dans le sélecteur, et non deux : les largeurs fixes du
+  // composant partagé s'écrivent `.ddb-barre-soulignee .ddb-filtre-groupe`, de
+  // même poids qu'un sélecteur à deux classes. À égalité, c'est l'ordre des
+  // feuilles qui tranche - un détail d'empaquetage sur lequel on ne veut rien
+  // parier. Une classe de plus règle la question.
+  .ddb-barre-outils .ddb-filtre-groupe,
+  .ddb-barre-outils .ddb-recherche-flottante,
+  .ddb-barre-outils .ddb-recherche {
+    flex: 1 1 190px;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  // Le groupe de droite prend la place qu'« Imprimer » tient sur
+  // l'Interrogation de Comptes : le pied du panneau, poussé à droite.
+  //
+  // Le composant partagé le pose en bout de la rangée des filtres
+  // (`.ddb-barre-actions-droite`, un simple `margin-left: auto`).
+  // `flex: 1 0 100%` lui fait prendre toute la largeur, donc une ligne à lui
+  // seul ; `justify-content: flex-end` le renvoie à droite ; et les marges
+  // négatives rendent au filet la largeur entière du panneau - dont ce bloc est
+  // pourtant à l'intérieur, et dont il doit donc annuler le rembourrage pour en
+  // toucher les bords.
+  .ddb-barre-actions {
+    display: flex;
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    margin: 0 -1.15rem -1.15rem;
+    padding: 0.85rem 1.15rem;
+    border-top: 1px solid c.$cpt-bordure;
+  }
+
+  .ddb-filtre-etiquette,
+  .ddb-recherche-libelle {
+    @include c.cpt-etiquette;
+  }
+
+  .ddb-filtre,
+  .ddb-champ,
+  .ddb-recherche-champ {
+    @include c.cpt-controle;
+  }
+
+  .ddb-filtre {
+    @include c.cpt-controle-liste;
+  }
+
+  .ddb-champ,
+  .ddb-recherche-champ,
+  input.ddb-filtre {
+    @include c.cpt-controle-saisie;
+  }
+
+  // Le bouton de création est l'action principale de l'écran qui en a un : il
+  // prend l'accent, comme « Imprimer » sur l'Interrogation de Comptes.
+  .ddb-bouton-nouveau {
+    @include c.cpt-btn;
+    @include c.cpt-btn-primary;
+  }
+
+  .bouton-export {
+    @include c.cpt-bouton-export;
+  }
+
+  // Le bouton d'import (`outils: ['import']`) : seuls les Fournisseurs de
+  // Soins en ont un. Il garde son bleu - entrer des données et en sortir ne
+  // sont pas le même geste, et l'export garde bien son vert -, mais il prend
+  // le gabarit de ces écrans : plus bas, moins arrondi, sans ombre portée.
+  .ddb-outil {
+    height: auto;
+    padding: 0.5rem 0.9rem;
+    border-width: 1px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    box-shadow: none;
+  }
+
+  // La pastille du total de la vue, accolée au titre (« Total Fournisseurs:
+  // 411 », « Total : 12 ») : même ground et même gris que les panneaux, plus
+  // le liseré qui en fait un objet posé à côté du titre.
+  .ddb-stats-pastille {
+    border: 1px solid c.$cpt-bordure;
+    background: c.$cpt-fond-panneau;
+    color: c.$cpt-doux;
+  }
+
+  // --- Le tableau ------------------------------------------------------------
+  .ddb-tableau-conteneur {
+    @include c.cpt-tableau-conteneur;
+
+    // Pas de bandeau de totaux au-dessus, contrairement aux deux grands écrans
+    // de Comptabilité : le cadre se referme donc en haut aussi.
+    border-radius: 12px;
+  }
+
+  .ddb-tableau {
+    @include c.cpt-tableau;
+
+    @if $serre {
+      @include c.cpt-tableau-serre;
+    }
+  }
+
+  .ddb-etat-vide {
+    @include c.cpt-tableau-vide;
+  }
+
+  // Les cases à cocher se cochaient en NOIR (`accent-color` du style partagé),
+  // seul vestige du noir sur ces écrans. Elles prennent l'accent, comme la
+  // ligne retenue et les boutons principaux.
+  .ddb-cellule-case input[type='checkbox'] {
+    accent-color: c.$cpt-accent;
+  }
+
+  // --- La pagination ---------------------------------------------------------
+  .ddb-pied {
+    @include c.cpt-pagination;
+
+    margin-top: 0;
+  }
+
+  // --- Le rail des segments --------------------------------------------------
+  // Les états d'une liste (Toutes · Non Echue · Echue…, ou Tous · Réglé · Non
+  // réglé). Un rail de pastilles, et non des cartes : les cartes sont le niveau
+  // de la page - ses sous-onglets -, le rail n'est qu'un filtre de la liste.
+  // Leur donner la même forme les mettrait sur le même plan.
+  //
+  // `flex: none` : dans le pied du panneau, il garde sa largeur propre au lieu
+  // de s'étirer sur toute la ligne.
+  .ddb-segments {
+    flex: none;
+    flex-wrap: wrap;
+    height: auto;
+    gap: 0.2rem;
+    padding: 0.25rem;
+    border: 1px solid c.$cpt-bordure-forte;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .ddb-segment {
+    padding: 0.4rem 0.8rem;
+    border-radius: 7px;
+    color: c.$cpt-doux;
+    font-size: 0.82rem;
+    font-weight: 600;
+
+    &:hover:not(.ddb-segment-actif) {
+      background: c.$cpt-fond-panneau;
+      color: c.$cpt-encre;
+    }
+  }
+
+  .ddb-segment-actif {
+    background: c.$cpt-accent;
+    color: #fff;
+    box-shadow: none;
+  }
+
+  // --- Les actions de lot ----------------------------------------------------
+  // Pour les écrans qui les posent dans la barre (`actionsLotEnBarre`) au lieu
+  // de les cacher derrière la barre noire de sélection. Elles pâlissent tant
+  // qu'aucune ligne n'est cochée - `cpt-btn` s'en charge -, comme
+  // l'application d'origine.
+  //
+  // Leurs styles partagés les dessinaient pour un fond NOIR (texte blanc,
+  // liseré translucide) : sur le panneau gris, il faut tout reprendre.
+  //
+  // **Le coloris suit la règle des trois écrans de Comptabilité** : un seul
+  // bouton en accent par écran - celui pour lequel l'écran existe -, tout le
+  // reste en secondaire.
+  .ddb-action-lot {
+    @include c.cpt-btn;
+    @include c.cpt-btn-sec;
+
+    // Ces boutons se soulevaient au survol, pas ceux de ces écrans. On les
+    // aligne : des boutons qui bougent à côté d'autres qui ne bougent pas se
+    // verrait plus que la nuance ne vaut.
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
+
+  // L'action de l'écran, en accent plein - la place que tient « Imprimer » sur
+  // l'Interrogation de Comptes. Déclarée APRÈS la règle commune : les deux
+  // sélecteurs pèsent pareil, c'est l'ordre qui tranche.
+  .ddb-action-lot-primaire {
+    @include c.cpt-btn-primary;
+  }
+
+  // Une action qui défait quelque chose vire au rouge d'ALERTE au survol, qui
+  // n'est pas celui de la marque. Elle reste secondaire au repos : une action
+  // destructrice ne s'annonce pas, elle se signale au moment d'agir.
+  .ddb-action-lot-danger:hover:not(:disabled) {
+    border-color: c.$cpt-alerte;
+    background: color-mix(in srgb, #{c.$cpt-alerte} 8%, #fff);
+    color: c.$cpt-alerte;
+  }
+}
