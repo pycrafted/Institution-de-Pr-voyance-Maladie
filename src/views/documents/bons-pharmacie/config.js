@@ -78,9 +78,9 @@ export const BONS_PHARMACIE = {
   //
   // Pas de titre au-dessus de la liste : la page porte le sien, en chapeau.
   sansTitre: true,
-  // Pas de pastille « Total : N » : la pagination, au pied du tableau, le dit
-  // déjà.
-  sansStats: true,
+  // La pastille « Total N » remonte au chapeau de la page (`onStats`), qui la
+  // pose contre son titre - comme Participants et Fournisseurs de soins. Elle
+  // compte la vue SERVEUR : segment retenu et recherche compris.
   // « Nouveau bon » porte l'accent, et un bouton d'accent se tient en BOUT de
   // groupe, pas au milieu entre deux boutons blancs.
   creationAvantOutils: false,

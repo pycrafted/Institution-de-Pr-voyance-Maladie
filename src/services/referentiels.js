@@ -11,6 +11,7 @@
  */
 
 import { request } from './api'
+import { chargerExercices } from './exercices'
 
 // =====================================================================
 // Aiguillage backend
@@ -116,7 +117,13 @@ function charger(cle) {
 }
 
 export async function prechargerReferentiels() {
-  await Promise.all(ESSENTIELS.filter(servrParApi).map((cle) => charger(cle).catch(() => {})))
+  // Les exercices ouverts partent avec les essentiels : les filtres
+  // « Exercice » de presque tous les écrans les attendent, et ils ne
+  // coûtent qu'une requête (cf. services/exercices.js).
+  await Promise.all([
+    chargerExercices(),
+    ...ESSENTIELS.filter(servrParApi).map((cle) => charger(cle).catch(() => {})),
+  ])
   // Le reste, sans le faire attendre : deux à la fois.
   const reste = Object.keys(ENDPOINTS_API).filter((cle) => !ESSENTIELS.includes(cle))
   const suivant = async () => {

@@ -127,13 +127,14 @@ body {
 }
 
 $navbar-hauteur: 4.25rem;
-// La barre des pages, au bas de l'écran.
-$pages-hauteur: 2.9rem;
+// La colonne du menu, à gauche (cf. <AppMenu />).
+$menu-largeur: 15.5rem;
 
 .wrapper {
   width: 100%;
   // La barre supérieure est fixe : sans ce retrait, le haut du contenu
-  // passerait dessous.
+  // passerait dessous. (Le menu, lui, est dans le flux - cf. `.app-gabarit` -
+  // et n'a donc pas besoin qu'on lui réserve sa largeur.)
   padding-top: $navbar-hauteur;
   min-height: 100vh;
   will-change: auto;
@@ -145,21 +146,13 @@ $pages-hauteur: 2.9rem;
   padding-top: 0.75rem !important;
 }
 
-// La barre des pages est une SECONDE barre de navigation, sous la principale
-// (2026-11-24 ; elle était auparavant fixée au bas de l'écran). Le contenu lui
-// laisse sa hauteur en plus de celle du haut, et seulement quand elle est là :
-// le tableau de bord n'a pas de pages, et n'a donc aucune raison de descendre
-// (le drapeau est posé par <AppNavPages />).
-body.app-a-barre-pages .wrapper {
-  padding-top: $navbar-hauteur + $pages-hauteur;
-}
-
 // -----------------------------------------------------------------------------
 // BARRE SUPÉRIEURE - logo, nom de l'institution, utilisateur
 // -----------------------------------------------------------------------------
 .app-navbar {
-  // Fixée en haut, à droite du menu, qui occupe toute la hauteur de l'écran
-  // (cf. DefaultLayout : la barre suit le menu, elle reçoit donc sa largeur).
+  // Fixée en haut, sur toute la largeur : elle passe AU-DESSUS du menu, qui
+  // commence sous elle (cf. `.app-menu`). Le logo garde ainsi sa place de
+  // toujours, au coin haut gauche.
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 1032;
@@ -167,7 +160,11 @@ body.app-a-barre-pages .wrapper {
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding-inline: 1.25rem 1.5rem;
+  // Le logo et le nom s'alignent sur les ENTRÉES du menu, pas sur le bord de
+  // la fenêtre : 1,5 rem de retrait du gabarit + 1 rem de retrait du menu.
+  // Ils tombent donc exactement au-dessus de « Tableau de bord », et la barre
+  // se lit comme le haut de cette colonne plutôt que comme un bandeau à part.
+  padding-inline: 2.5rem 1.5rem;
   background-color: #fff;
   border-bottom: 1px solid $openkm-card-border;
   box-shadow: 0 1px 3px rgba(26, 24, 23, 0.06);
@@ -182,14 +179,245 @@ body.app-a-barre-pages .wrapper {
   text-decoration: none;
 }
 
-// Le logo de l'IPM, seul à gauche de la barre (2026-11-05). Il remplace le
-// nom écrit en toutes lettres, qui prenait la largeur d'une colonne de
-// tableau sur chaque page pour dire une chose qu'on sait déjà.
 .app-navbar-logo {
   height: 42px;
   flex: 0 0 auto;
   object-fit: contain;
 }
+
+// Le nom de l'institution, à côté du logo.
+//
+// Il avait quitté la barre le 2026-11-05 : il y prenait la largeur d'une
+// colonne de tableau, et les cinq sections avaient besoin du centre. Celles-ci
+// sont descendues dans le menu de gauche le 2026-11-26, la barre s'est vidée,
+// et le nom est revenu y tenir sa place.
+//
+// À l'encre et non au gris doux : c'est l'intitulé de l'application, pas une
+// mention de service. Sous 768 px, il s'efface plutôt que de pousser les
+// icônes du compte hors de la barre - le logo suffit alors, et le nom reste
+// dans le titre de l'onglet.
+.app-navbar-nom {
+  min-width: 0;
+  color: $sar-black;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 767.98px) {
+  .app-navbar-nom {
+    display: none;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// RECHERCHE GLOBALE - le centre de la barre
+// -----------------------------------------------------------------------------
+// Elle occupe la place laissée par les cinq sections, parties dans le menu de
+// gauche le 2026-11-26. Ce n'est pas un bouche-trou : chaque écran a sa
+// recherche, aucune ne traversait l'application.
+.app-recherche {
+  position: relative;
+  flex: 1 1 auto;
+  // Elle respire au centre sans s'étaler : au-delà, un champ de 80 rem ne se
+  // lit pas mieux, il éloigne seulement la loupe du texte.
+  max-width: 34rem;
+  min-width: 0;
+  // Centrée dans l'espace libre entre la marque et les actions.
+  margin-inline: auto;
+}
+
+.app-recherche-champ {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.4rem;
+  padding-inline: 0.75rem;
+  border: 1px solid $openkm-card-border;
+  border-radius: 8px;
+  background-color: $openkm-row-hover-bg;
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+
+  &:focus-within {
+    background-color: #fff;
+    border-color: a.$accent-ipm;
+    box-shadow: 0 0 0 3px rgba(52, 66, 86, 0.14);
+  }
+}
+
+.app-recherche-loupe {
+  flex: 0 0 auto;
+  width: 0.95rem;
+  height: 0.95rem;
+  color: $texte-icone;
+}
+
+.app-recherche-saisie {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #1d1b1b;
+  font-size: 0.875rem;
+
+  &::placeholder {
+    color: $texte-doux;
+  }
+
+  // L'anneau est porté par le cadre entier (`:focus-within`), pas par le
+  // champ : un anneau dans un anneau.
+  &:focus {
+    outline: 0;
+  }
+
+  // La croix de Chrome ferait doublon avec notre bouton, qui lui rend aussi
+  // le focus au champ.
+  &::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+.app-recherche-vider {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  border: 0;
+  border-radius: 50%;
+  padding: 0.2rem;
+  background: transparent;
+  color: $texte-doux;
+  cursor: pointer;
+
+  svg {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+
+  &:hover {
+    background-color: rgba(29, 27, 27, 0.08);
+    color: #1d1b1b;
+  }
+}
+
+// Le raccourci clavier, tant que le champ est vide : il s'apprend en le
+// voyant, et s'efface dès qu'il gênerait la lecture de la saisie.
+.app-recherche-raccourci {
+  flex: 0 0 auto;
+  border: 1px solid $openkm-card-border;
+  border-radius: 5px;
+  padding: 0.1rem 0.35rem;
+  background-color: #fff;
+  color: $texte-doux;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+// --- Les résultats ----------------------------------------------------------
+.app-recherche-resultats {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  z-index: 1040;
+  max-height: min(60vh, 32rem);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  padding: 0.4rem;
+  border: 1px solid $openkm-card-border;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 16px 32px -12px rgba(26, 24, 23, 0.22);
+}
+
+.app-recherche-etat {
+  margin: 0;
+  padding: 1rem 0.75rem;
+  color: $texte-doux;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.app-recherche-groupe + .app-recherche-groupe {
+  margin-top: 0.3rem;
+  border-top: 1px solid $openkm-card-border;
+  padding-top: 0.3rem;
+}
+
+.app-recherche-groupe-titre {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0.75rem 0.3rem;
+  color: $texte-doux;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+// Le serveur n'envoie que cinq résultats par famille : ce nombre dit qu'il
+// faut ouvrir l'écran pour voir le reste.
+.app-recherche-groupe-total {
+  color: $texte-doux;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.app-recherche-item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+// Le résultat visé - à la souris comme aux flèches du clavier. Un seul état
+// pour les deux : c'est la même désignation.
+.app-recherche-item-vise {
+  background-color: $openkm-row-hover-bg;
+}
+
+.app-recherche-item-titre {
+  flex: 0 0 auto;
+  color: #1d1b1b;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.app-recherche-item-detail {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: $texte-doux;
+  font-size: 0.78rem;
+  text-align: right;
+}
+
+// (Les pastilles d'en-cours - `.app-encours*` - et l'identité de l'agent -
+// `.app-navbar-agent*` - ont vécu ici quelques minutes le 2026-11-26. La
+// barre venait d'être vidée de ses sections et on cherchait à la remplir ;
+// l'utilisateur les a trouvées inutiles et encombrantes, et c'est la
+// recherche qui occupe désormais cette place. Retirées avec leur composant,
+// `EnCours.jsx`, et leur point d'entrée serveur.)
 
 // --- Zone de droite : utilisateur | outils ---
 .app-navbar-actions {
@@ -314,90 +542,8 @@ body.app-a-barre-pages .wrapper {
 // que l'adresse de l'agent a quitté la barre : retirée le 2026-11-25.)
 
 // -----------------------------------------------------------------------------
-// LES SECTIONS - le premier niveau, au centre de la barre supérieure
+// L'ACCENT DE L'IPM, en variable CSS
 // -----------------------------------------------------------------------------
-//
-// Elles remplacent le menu latéral (2026-11-05). Les écrans de l'IPM sont
-// larges - onze colonnes sur un aperçu d'écritures - et une colonne de
-// navigation prenait 15 % de la largeur en permanence pour une liste qu'on
-// consulte trois fois par jour. La même navigation à l'horizontale rend cette
-// place au tableau, et c'est le gabarit d'OpsDigital.
-.app-sections {
-  // Au centre de la barre supérieure, entre le logo et les trois icônes.
-  // Elle a d'abord eu sa propre rangée sous l'en-tête ; cinq mots n'ont pas
-  // besoin d'une barre à eux, et celle-ci coûtait 3 rem de hauteur sur
-  // chaque écran.
-  flex: 1 1 auto;
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-// La piste défile si l'écran est étroit plutôt que de passer à deux lignes :
-// la hauteur de l'en-tête ne doit pas changer d'une section à l'autre.
-//
-// Le masque est ce qui rend le défilement lisible : sans lui, une section
-// trop longue se coupait en plein mot contre le logo, et « TABLEAU DE BORD »
-// se lisait « DE BORD ». Le dégradé l'efface au lieu de la trancher, ce qui
-// dit aussi qu'il y a quelque chose au-delà du bord.
-.app-sections-piste {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  max-width: 100%;
-  padding-inline: 1rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 1.25rem,
-    #000 calc(100% - 1.25rem),
-    transparent 100%
-  );
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.app-section {
-  flex: 0 0 auto;
-  border-radius: 0.45rem;
-  padding: 0.45rem 1rem;
-  color: $texte-doux;
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-decoration: none;
-  white-space: nowrap;
-  transition:
-    background-color 0.14s ease,
-    color 0.14s ease;
-
-  &:hover {
-    background-color: rgba(29, 27, 27, 0.05);
-    color: $sar-black;
-  }
-
-  // Enfoncée : le geste se voit pendant le clic. Un gris plus marqué que le
-  // survol, et non l'accent - l'accent dit « c'est ici qu'on est », et une
-  // section enfoncée n'est pas encore la section ouverte.
-  &:active {
-    background-color: rgba(29, 27, 27, 0.11);
-  }
-
-  &:focus-visible {
-    outline: 2px solid a.$accent-ipm;
-    outline-offset: -2px;
-  }
-}
-
-// La section ouverte se peint en plein, comme l'onglet actif d'OpsDigital :
-// c'est le seul endroit de l'écran où l'on doit savoir d'un coup d'œil où
-// l'on se trouve.
 //
 // **Accent IPM et non rouge SAR, sur décision de l'utilisateur du
 // 2026-11-24.** J'avais objecté que `$sar-red` (ligne 47) est la charte
@@ -408,192 +554,298 @@ body.app-a-barre-pages .wrapper {
 // Le rouge SAR reste la charte de la SAR, et sert encore ailleurs dans
 // l'application.
 //
-// La VALEUR, elle, vit dans `_accent.scss` : la configuration de CoreUI, tout
-// en haut de ce fichier, doit la lire avant que la feuille ne commence. Son
+// La VALEUR vit dans `_accent.scss` : la configuration de CoreUI, tout en
+// haut de ce fichier, doit la lire avant que la feuille ne commence. Son
 // en-tête porte l'historique de la couleur et dit ce qu'elle commande.
 //
-// Et la même valeur en variable CSS, pour les feuilles qui ne peuvent pas lire
-// celle de Sass : les écrans de Comptabilité l'emploient dans leurs mixins
-// partagés (`views/comptabilite/_design-compta.scss`). Déclarée ici et ici
-// seulement, elle ne peut pas diverger du module.
+// La même valeur est reprise ici en variable CSS, pour les feuilles qui ne
+// peuvent pas lire celle de Sass : les écrans de Comptabilité l'emploient
+// dans leurs mixins partagés (`views/comptabilite/_design-compta.scss`).
+// Déclarée ici et ici seulement, elle ne peut pas diverger du module.
 :root {
   --accent-ipm: #{a.$accent-ipm};
   --accent-ipm-sombre: #{a.$accent-ipm-survol};
 }
 
-.app-section-active {
-  background-color: a.$accent-ipm;
-  color: #fff;
-}
-
-.app-section-active:hover {
-  background-color: a.$accent-ipm-survol;
-  color: #fff;
-}
-
-// Section hors service : elle garde sa place et son intitulé - la voir
-// disparaître laisserait croire à une panne - mais n'est plus un lien.
-.app-section-inerte {
-  flex: 0 0 auto;
-  padding: 0.45rem 1rem;
-  color: rgba(122, 112, 111, 0.45);
-  font-size: 0.82rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: default;
-  user-select: none;
-}
-
 // -----------------------------------------------------------------------------
-// BARRE DES PAGES - le second niveau, au bas de l'écran
+// LE MENU - les cinq sections et leurs pages, en colonne à gauche
 // -----------------------------------------------------------------------------
 //
-// La section se choisit rarement et vit en haut ; la page se change souvent
-// et vit sous la main, au bord de l'écran. « Traitements » porte neuf pages :
-// la piste défile plutôt que de se replier sur deux lignes.
-// Seconde barre de navigation : les pages de la section ouverte, juste sous la
-// barre principale. Elle était au bas de l'écran jusqu'au 2026-11-24 ; la
-// remonter met les deux niveaux de navigation au même endroit, l'un sous
-// l'autre, au lieu de les séparer par toute la hauteur de la page.
-.app-pages {
-  position: fixed;
-  inset: $navbar-hauteur 0 auto 0;
-  z-index: 1031;
-  height: $pages-hauteur;
+// **Retour du menu latéral le 2026-11-26, à la demande du métier.** Entre le
+// 2026-11-05 et cette date, la navigation tenait dans deux barres
+// horizontales : les sections au centre de l'en-tête, les pages dans un
+// bandeau sombre juste en dessous. Le raisonnement d'alors - les écrans de
+// l'IPM sont larges, onze colonnes sur un aperçu d'écritures, et une colonne
+// de navigation prend 15 % de la largeur en permanence - reste exact ; les
+// gens de l'IPM préfèrent néanmoins retrouver les sections à gauche, comme
+// dans l'application d'origine.
+//
+// (Les règles des deux barres - `.app-sections`, `.app-sections-piste`,
+// `.app-section*`, `.app-pages`, `.app-pages-piste`, `.app-page*` - vivaient
+// ici. Plus aucun composant ne les pose : retirées le 2026-11-26 avec leurs
+// deux composants, `AppNavSections` et `AppNavPages`. L'historique du choix
+// des couleurs - pastille pleine en haut, pastille claire sur barre sombre en
+// bas - est dans git, au cas où cette navigation revienne.)
+// Le gabarit : le menu et le contenu, UN seul bloc.
+//
+// Le menu a d'abord été fixé à la fenêtre. Il restait alors en place pendant
+// que la carte défilait, et l'on voyait deux objets distincts se décaler l'un
+// par rapport à l'autre. Dans le flux et en `stretch`, la colonne grise prend
+// exactement la hauteur de la carte : les deux ne font plus qu'un, et tout
+// défile ensemble.
+//
+// Le retrait de la page vit ici (il était sur le conteneur de <AppContent />,
+// où il se serait glissé entre le menu et la carte).
+.app-gabarit {
   display: flex;
   align-items: stretch;
-  // Couleurs inversées par rapport à la barre principale (2026-11-24) : celle
-  // du haut est claire à pastille pleine, celle-ci est pleine à pastille
-  // claire. Les deux niveaux de navigation sont voisins depuis que cette
-  // barre est remontée ; sans ce contraste, on les lisait comme une seule
-  // rangée à deux étages.
+  padding: 1rem 1.5rem;
+  // Sur une page courte - trois lignes dans une nomenclature - la colonne
+  // grise serait un timbre-poste. Elle descend au moins jusqu'au bas de
+  // l'écran : barre supérieure, retrait du corps, retraits du gabarit.
+  min-height: calc(100vh - #{$navbar-hauteur} - 2.75rem);
+}
+
+.app-gabarit-contenu {
+  flex: 1 1 auto;
+  // Sans cela, un tableau large pousse la carte au-delà de l'écran au lieu
+  // de défiler dans son cadre - un enfant de flex ne rétrécit pas sous sa
+  // largeur de contenu tant qu'on ne le lui dit pas.
+  min-width: 0;
+}
+
+// La carte de la page et le menu sont bord à bord : les coins arrondis de son
+// flanc gauche laisseraient voir le fond entre les deux. Ils sont donc mis au
+// carré de ce côté - l'arrondi reste à droite, et l'ensemble se lit comme une
+// seule carte à colonne grise. (Le tableau de bord n'a pas de carte à sa
+// racine ; la règle ne le concerne pas.)
+.app-gabarit-contenu > .container-fluid > .card {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.app-menu {
+  flex: 0 0 $menu-largeur;
+  width: $menu-largeur;
+
+  // La forme d'une carte, arrondie du seul côté qu'on voit : à droite, elle
+  // se marie à la carte du contenu. Le filet qui les sépare est la bordure
+  // GAUCHE de cette carte - en poser un second ici ferait un trait de 2 px.
+  // La bordure est de la couleur du fond : le panneau sombre doit s'arrêter
+  // exactement où s'arrête la carte, sans liseré clair autour de lui.
+  border: 1px solid a.$accent-ipm;
+  border-right: 0;
+  border-radius: 0.75rem 0 0 0.75rem;
+  box-shadow: $ombre-carte;
+
+  // **Le panneau est SOMBRE depuis le 2026-11-26** (#344256, demande de
+  // l'utilisateur). Il portait jusque-là le ground clair du rail des
+  // nomenclatures (#f7f8fa).
   //
-  // Le fond prend l'accent IPM lui-même, pas une couleur à lui : la barre
-  // suivra donc le jour où l'accent changera (`_accent.scss`).
-  // (Elle a eu sa propre couleur pendant quelques heures le 2026-11-25, le
-  // temps que l'ardoise soit étendue à tout l'accent.)
+  // Le fond prend l'accent de l'IPM lui-même, pas une couleur à lui : le
+  // menu suivra donc le jour où l'accent changera (`_accent.scss`). Tout ce
+  // qu'il contient s'inverse en conséquence - libellés blancs retenus, et
+  // l'entrée ouverte en pastille CLAIRE, puisqu'une pastille à l'accent
+  // disparaîtrait dans un fond à l'accent.
+  padding: 1.75rem 1rem;
   background-color: a.$accent-ipm;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 1px 3px rgba(26, 24, 23, 0.18);
 }
 
-.app-pages-piste {
-  display: flex;
-  align-items: stretch;
-  gap: 0.15rem;
-  width: 100%;
-  padding-inline: 1rem;
-  // Centrées, et `safe` n'est pas un détail : avec un simple `center`, une
-  // liste de pages plus large que l'écran déborde des DEUX côtés et la
-  // première page devient inatteignable au défilement. `safe center` centre
-  // tant que ça tient, et repart du bord dès que ça déborde. Le `center` qui
-  // précède sert de repli aux navigateurs qui ignorent `safe`.
-  justify-content: center;
-  justify-content: safe center;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  // Même dégradé qu'en haut : sur un écran étroit, la pastille de la page
-  // ouverte se faisait trancher net contre le bord. Elle s'efface au lieu
-  // d'être coupée, et le fondu dit qu'il reste des pages à dérouler.
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 1rem,
-    #000 calc(100% - 1rem),
-    transparent 100%
-  );
+.app-menu-liste,
+.app-menu-pages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.app-page {
+// Une section et ses pages forment un groupe, séparé du suivant comme les
+// familles du rail l'étaient (1,4 rem) - mais d'un cran plus serré : il y a
+// cinq groupes ici, et ils doivent tenir sans défiler.
+.app-menu-entree + .app-menu-entree {
+  margin-top: 0.9rem;
+}
+
+// L'intitulé d'une section : la pastille arrondie du rail des nomenclatures,
+// retournée pour un panneau sombre - libellé blanc retenu, voile blanc au
+// survol. C'est un `<button>` quand la section se déplie, un lien quand elle
+// n'a pas de pages (« Tableau de bord ») : les deux portent cette classe,
+// d'où la remise à zéro des styles de bouton.
+.app-menu-section {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
-  margin-block: 0.42rem;
-  border-radius: 0.5rem;
-  padding: 0 0.9rem;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  gap: 0.7rem;
+  width: 100%;
+  border: 0;
+  border-radius: 8px;
+  padding: 0.58rem 0.75rem;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: left;
   text-decoration: none;
-  white-space: nowrap;
+  cursor: pointer;
   transition:
-    background-color 0.14s ease,
-    color 0.14s ease;
+    background-color 0.12s ease,
+    color 0.12s ease;
 
-  &:hover {
+  // Sur un panneau sombre, c'est le BLANC qui marque le survol, pas une
+  // couleur - un voile, puis le texte en plein blanc.
+  &:hover:not(.app-menu-section-active) {
     background-color: rgba(255, 255, 255, 0.12);
     color: #fff;
   }
 
-  // Enfoncée : un voile blanc plus franc. Sur une barre sombre, c'est le
-  // blanc qui marque l'appui, pas une couleur.
-  &:active {
-    background-color: rgba(255, 255, 255, 0.24);
+  &:active:not(.app-menu-section-active) {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  // Anneau clavier en blanc : l'accent est la couleur du FOND de ce panneau,
+  // un anneau à l'accent y serait invisible.
+  &:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.85);
+    outline-offset: 1px;
+  }
+
+  .nav-icon {
+    flex: 0 0 auto;
+    width: 1rem;
+    height: 1rem;
+    color: rgba(255, 255, 255, 0.55);
+  }
+}
+
+.app-menu-libelle {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Le chevron du dépliant : il tourne au lieu d'être remplacé par un second
+// dessin - c'est le même objet qui s'ouvre.
+.app-menu-fleche {
+  flex: 0 0 auto;
+  width: 0.65rem;
+  height: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+  transition: transform 0.16s ease;
+}
+
+.app-menu-fleche-ouverte {
+  transform: rotate(180deg);
+}
+
+// « Tableau de bord » quand on y est : pastille CLAIRE à texte sombre. Le
+// panneau porte l'accent, une pastille à l'accent y disparaîtrait ; c'est
+// donc un morceau de panneau retourné, et son texte prend la couleur du fond.
+// Les sections dépliantes, elles, ne se peignent pas - c'est leur PAGE
+// ouverte qui est peinte, et deux pavés pleins l'un sur l'autre se liraient
+// comme deux endroits à la fois.
+.app-menu-section-active {
+  background-color: #fff;
+  color: a.$accent-ipm;
+  font-weight: 600;
+
+  // L'icône ne peut plus être blanche - elle disparaîtrait dans la pastille.
+  .nav-icon {
+    color: a.$accent-ipm;
+    opacity: 0.75;
+  }
+}
+
+// La section dépliée : son intitulé passe au blanc plein, sans fond. De quoi
+// la retrouver d'un coup d'œil dans la colonne sans rivaliser avec sa page.
+.app-menu-section-ouverte {
+  color: #fff;
+  font-weight: 600;
+
+  .nav-icon,
+  .app-menu-fleche {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+// Les pages d'une section, en retrait sous son intitulé - alignées sur le
+// libellé, pas sur l'icône.
+.app-menu-pages {
+  margin-top: 0.15rem;
+  padding-left: 1.7rem;
+}
+
+.app-menu-page {
+  display: block;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+
+  &:hover:not(.app-menu-page-active) {
+    background-color: rgba(255, 255, 255, 0.12);
     color: #fff;
   }
 
-  // Anneau clavier en BLANC, et non à l'accent : l'accent est la couleur du
-  // fond de cette barre, l'anneau y serait invisible.
   &:focus-visible {
     outline: 2px solid rgba(255, 255, 255, 0.85);
-    outline-offset: -2px;
+    outline-offset: 1px;
   }
 }
 
-// La page ouverte : un pavé clair à texte sombre.
-//
-// HISTORIQUE, à lire avant de retoucher. Le métier avait choisi le NOIR le
-// 2026-11-06, après avoir écarté deux états rouges : un filet sous
-// l'intitulé, qui courait au ras du bord bas de l'écran où il se mêlait à la
-// bordure de la barre, puis une pastille rouge pâle, jugée trop proche du
-// rouge de la section ouverte en haut. Le noir tranchait sur le blanc sans
-// rivaliser avec l'accent, qui restait au seul étage des sections.
-//
-// Passé à l'accent IPM le 2026-11-24, puis INVERSÉ le même jour : la barre
-// étant devenue sombre, la pastille passe au clair. C'est l'exact miroir de
-// la barre du haut - claire à pastille pleine - et c'est ce qui distingue les
-// deux niveaux maintenant qu'ils sont l'un sous l'autre.
-//
-// Le texte de la pastille est à la couleur DU FOND de la barre, et non à
-// l'encre (2026-11-24) : la pastille est un morceau de barre retourné. Les
-// autres libellés restent blancs : à la couleur du fond, ils seraient
-// invisibles.
-.app-page-active,
-.app-page-active:hover {
+// La page ouverte : le seul endroit de la colonne peint en plein. C'est elle
+// qui dit où l'on se trouve - pastille claire à texte sombre, miroir du
+// panneau, comme l'entrée de section active.
+.app-menu-page-active {
   background-color: #fff;
   color: a.$accent-ipm;
+  font-weight: 600;
 }
 
-.app-page-inerte {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-  padding: 0 0.85rem;
+// Entrée hors service : elle garde sa place et son intitulé - la voir
+// disparaître laisserait croire à une panne - mais n'est plus un lien.
+.app-menu-inerte {
   color: rgba(255, 255, 255, 0.32);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  white-space: nowrap;
   cursor: default;
   user-select: none;
+
+  &:hover {
+    background-color: transparent;
+    color: rgba(255, 255, 255, 0.32);
+  }
 }
 
-@media (max-width: 575.98px) {
-  .app-section,
-  .app-section-inerte {
-    padding-inline: 0.7rem;
-    font-size: 0.76rem;
+// --- Écrans étroits ---------------------------------------------------------
+// Sous 992 px, la colonne mangerait l'écran : le gabarit s'empile, le menu
+// passe au-dessus du contenu sur toute la largeur.
+@media (max-width: 991.98px) {
+  .app-gabarit {
+    display: block;
+    min-height: 0;
   }
 
-  .app-page,
-  .app-page-inerte {
-    padding-inline: 0.6rem;
-    font-size: 0.72rem;
+  .app-menu {
+    width: auto;
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    // Une carte entière, cette fois : elle n'a plus de voisine à sa droite à
+    // qui se marier.
+    border: 1px solid a.$accent-ipm;
+    border-radius: 0.75rem;
+  }
+
+  .app-gabarit-contenu > .container-fluid > .card {
+    border-radius: 0.75rem;
   }
 }
 

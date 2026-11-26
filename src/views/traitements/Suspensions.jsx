@@ -28,7 +28,7 @@ import {
   CTableRow,
 } from '@coreui/react'
 import { request } from '../../services/api'
-import { EXERCICES, actifs, dateFr } from '../documents/commun'
+import { actifs, dateFr, exercices } from '../documents/commun'
 import { exporterExcel } from '../donnees-de-base/excel'
 import { messageErreur } from '../../services/erreurs'
 import { toast } from '../../services/toast'
@@ -275,7 +275,7 @@ const Suspensions = () => {
                     value={exercice}
                     onChange={(e) => setExercice(e.target.value)}
                   >
-                    {EXERCICES.map((ex) => (
+                    {exercices().map((ex) => (
                       <option key={ex.valeur} value={ex.valeur}>
                         {ex.libelle}
                       </option>

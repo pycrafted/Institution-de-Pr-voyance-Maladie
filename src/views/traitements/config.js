@@ -15,7 +15,7 @@
  * (/api/factures/) : N° interne et montant net posés/calculés par le serveur.
  */
 
-import { EXERCICES, actifs, dateFr } from '../documents/commun'
+import { actifs, dateFr, exercices } from '../documents/commun'
 
 /** États du cycle de vie, dans l'ordre (cf. filtre « État »). */
 export const ETATS_FACTURE = [
@@ -265,7 +265,7 @@ const barreFactures = (champsSupplementaires = []) => ({
       champ: 'exercice',
       etiquette: 'Exercice',
       libelle: 'Tous',
-      options: EXERCICES,
+      options: exercices,
       // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
       // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
       serveur: true,
@@ -514,7 +514,7 @@ const barreReglements = (champsSupplementaires = []) => ({
       champ: 'exercice',
       etiquette: 'Exercice',
       libelle: 'Tous',
-      options: EXERCICES,
+      options: exercices,
       // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
       // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
       serveur: true,
@@ -713,7 +713,7 @@ export const ORDRES_PAIEMENT = {
       champ: 'exercice',
       etiquette: 'Exercice',
       libelle: 'Tous',
-      options: EXERCICES,
+      options: exercices,
       // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
       // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
       serveur: true,
@@ -860,7 +860,7 @@ export const REMBOURSEMENTS = {
       champ: 'exercice',
       etiquette: 'Exercice',
       libelle: 'Tous',
-      options: EXERCICES,
+      options: exercices,
       // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
       // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
       serveur: true,
@@ -1051,7 +1051,7 @@ export const BONS_ACHATS = {
       champ: 'exercice',
       etiquette: 'Année',
       libelle: 'Toutes',
-      options: EXERCICES,
+      options: exercices,
       // Appliqué par le SERVEUR, comme partout où une liste s'accumule.
       serveur: true,
       defaut: () => String(new Date().getFullYear()),

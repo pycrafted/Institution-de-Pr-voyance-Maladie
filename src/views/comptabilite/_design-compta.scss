@@ -75,6 +75,19 @@ $cpt-alerte: #c62828;
   text-wrap: balance;
 }
 
+// Titre et pastille du total côte à côte, dans le chapeau. La pastille est le
+// compte de la vue : elle se tient CONTRE le titre, et le reste du chapeau
+// (bouton, exercice) part à l'autre bout de la ligne - le chapeau répartit ses
+// enfants, ce groupe n'en est qu'un. Posé pour les quatre pages de Documents
+// (2026-11-26), sur le modèle de `.prt-titre-groupe` (Participants).
+@mixin cpt-titre-groupe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
 // L'exercice est sorti des filtres : il commande tout le reste et se change
 // rarement. Étiquette et liste dans un même cadre, comme un seul objet.
 @mixin cpt-exercice {

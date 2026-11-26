@@ -7,6 +7,7 @@
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import BoutonExport from '../../components/BoutonExport'
 import {
   CBadge,
@@ -138,19 +139,35 @@ const predicatSegment = (segments, segment) => {
 }
 
 /**
- * Les stats d'une vue, en pastilles distinctes : « Total Participants: 8 »,
- * « Epoux(se): 6 », « Enfant: 8 »… une par segment (séparés par « - » dans le
+ * Coupe une pastille (« Total Participants: 8 ») en son libellé et son nombre.
+ * Le deux-points n'est pas repris : il sépare dans le texte de la config, mais
+ * à l'écran c'est la couleur et la graisse du nombre qui le détachent du
+ * libellé (2026-11-26). Une pastille sans deux-points passe telle quelle.
+ */
+const couperPastille = (texte) => {
+  const coupe = texte.lastIndexOf(':')
+  if (coupe < 0) return [texte, null]
+  return [texte.slice(0, coupe).trimEnd(), texte.slice(coupe + 1).trim()]
+}
+
+/**
+ * Les stats d'une vue, en pastilles distinctes : « Total Participants 8 »,
+ * « Epoux(se) 6 », « Enfant 8 »… une par segment (séparés par « - » dans le
  * texte fourni par la config). Partagé avec les pages à onglets, qui posent ces
  * pastilles à côté de leur titre.
  */
 export const PastillesStats = ({ segments, className }) =>
   segments && segments.length ? (
     <span className={`ddb-stats-groupe${className ? ` ${className}` : ''}`}>
-      {segments.map((seg, i) => (
-        <span key={i} className="ddb-stats-pastille">
-          {seg}
-        </span>
-      ))}
+      {segments.map((seg, i) => {
+        const [libelle, nombre] = couperPastille(seg)
+        return (
+          <span key={i} className="ddb-stats-pastille">
+            {libelle}
+            {nombre !== null && <strong className="ddb-stats-nombre">{nombre}</strong>}
+          </span>
+        )
+      })}
     </span>
   ) : null
 
@@ -292,7 +309,21 @@ const Referentiel = ({ referentiel, onStats, actionsBarre }) => {
     if (demande && segments?.valeurs.some((s) => s.valeur === demande)) return demande
     return segments?.valeurs[0].valeur || null
   })
-  const [recherche, setRecherche] = useState('')
+  // La recherche part vide, sauf si l'adresse en porte une
+  // (« ?recherche=BPI000002 ») : la recherche globale de la barre du haut
+  // n'ouvre pas de fiche, elle mène à l'écran avec son terme déjà posé.
+  const { search: adresseRecherche } = useLocation()
+  const termeDemande = new URLSearchParams(adresseRecherche).get('recherche') || ''
+  const [recherche, setRecherche] = useState(termeDemande)
+  // Deux recherches de suite sur le même écran ne remontent pas le composant
+  // (même route, seule la requête change) : sans ce rappel, la seconde
+  // n'arriverait jamais dans le champ. On ne le suit que lorsque l'ADRESSE
+  // change - ce que l'utilisateur tape ensuite reste à lui.
+  const [dernierTerme, setDernierTerme] = useState(termeDemande)
+  if (termeDemande !== dernierTerme) {
+    setDernierTerme(termeDemande)
+    if (termeDemande) setRecherche(termeDemande)
+  }
   // Un filtre peut partir d'une valeur (`defaut`) : l'exercice en cours, par
   // exemple, comme l'application d'origine.
   const [filtres, setFiltres] = useState(() =>

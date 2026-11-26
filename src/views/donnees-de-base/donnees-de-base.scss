@@ -42,6 +42,10 @@ $ddb-anneau: 0 0 0 3px rgba(52, 66, 86, 0.22);
 // Lue en variable CSS parce que cette feuille ne peut pas importer la
 // principale ; le repli reste le rouge SAR, la charte d'avant.
 $ddb-focus: var(--accent-ipm, #{$ddb-rouge});
+// L'accent de l'IPM en dur, pour les replis de `var(--accent-ipm, ...)` de
+// cette feuille : elle ne peut pas importer `scss/_accent.scss`, où il vit
+// (`$accent-ipm`). Même valeur - à changer des deux côtés.
+$ddb-accent-repli: #344256;
 // Le rouge d'ALERTE, distinct de l'accent : une erreur de saisie, un champ
 // obligatoire resté vide. Il ne bouge pas quand l'accent change - c'est tout
 // l'intérêt de l'avoir à part. Même valeur que `$cpt-alerte`.
@@ -268,6 +272,9 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
 // de base) ou en tête de la barre d'outils (listes sans titre : participants,
 // fournisseurs, bons, factures, adhérents).
 .ddb-stats-pastille {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
   background-color: #faf3f2;
@@ -275,6 +282,16 @@ $ddb-ombre-bouton: 0 1px 2px rgba(26, 24, 23, 0.05);
   font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+// Le nombre de la pastille : c'est lui qu'on vient lire, il porte donc
+// l'accent de l'IPM et une graisse plus forte que son libellé. Depuis le
+// 2026-11-26, il n'y a plus de deux-points entre les deux - cf. couperPastille
+// (Referentiel.jsx) : le contraste sépare mieux que la ponctuation.
+.ddb-stats-nombre {
+  color: var(--accent-ipm, $ddb-accent-repli);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 // Plusieurs pastilles côte à côte (total + ventilation).

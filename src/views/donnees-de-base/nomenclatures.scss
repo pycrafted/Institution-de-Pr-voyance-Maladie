@@ -17,101 +17,56 @@
 @use '../comptabilite/design-compta' as c;
 @use '../traitements/liste-compta' as l;
 
-// --- La grille : le rail, puis la nomenclature ouverte ----------------------
+// --- La grille : la nomenclature ouverte, pleine largeur --------------------
+// Une seule colonne depuis le 2026-11-26. Le RAIL des nomenclatures tenait la
+// gauche sur 264 px ; les cartes au-dessus de la liste disent la même chose,
+// et la colonne de gauche est redevenue celle du menu de l'application. Deux
+// menus l'un contre l'autre auraient coûté un tiers de la largeur du tableau
+// pour une navigation écrite deux fois.
+//
+// (Les règles du rail - `.ddb-rail`, `.ddb-rail-liste`,
+// `.ddb-rail-famille-titre`, `.ddb-rail-item*` - vivaient ici. Retirées avec
+// lui ; git les garde si la colonne doit revenir.)
 .ddb-grille {
   display: grid;
-  grid-template-columns: 264px minmax(0, 1fr);
-  // La grille (rail + contenu) remplit la carte jusqu'en bas.
+  grid-template-columns: minmax(0, 1fr);
   min-height: calc(100vh - 7rem);
 }
 
-// --- Le rail des nomenclatures ----------------------------------------------
-// Même ground que les panneaux de filtres des autres écrans, et même liseré :
-// le rail est de la famille du panneau, pas une colonne d'une autre couleur.
-.ddb-rail {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  border-right: 1px solid c.$cpt-bordure;
-  padding: 1.75rem 1rem;
-  background-color: c.$cpt-fond-panneau;
+// --- Les nomenclatures en cartes, au-dessus de la liste ---------------------
+// Exactement l'objet des onglets de Fournisseurs de Soins et de Participants :
+// carte à pointe, la retenue à l'accent. Elles doublent le rail - les deux
+// commandent le même état - parce que le rail changera d'emploi ; d'ici là, on
+// navigue par l'un ou par l'autre, indifféremment.
+//
+// Déclarées HORS de `.ndb-page` bien qu'elles y vivent : l'habillage de liste
+// (`liste-compta`) n'a rien à en dire, et une carte n'est pas un élément de
+// liste.
+.ndb-cartes {
+  @include c.cpt-cartes;
 }
 
-.ddb-rail-liste {
-  display: flex;
-  flex-direction: column;
-  gap: 1.4rem;
-  overflow-y: auto;
+.ndb-carte {
+  @include c.cpt-carte;
+
+  // Les huit nomenclatures tiennent sur UNE ligne. Le mixin donne aux cartes
+  // une largeur fixe de 11,5 rem - deux onglets s'en accommodent (Fournisseurs,
+  // Participants), huit débordaient et la dernière tombait seule à la ligne
+  // suivante. Ici elles partent d'une base plus courte et se partagent la
+  // largeur disponible à parts égales : la rangée remplit le bandeau, et
+  // ajouter une neuvième nomenclature resserre les huit autres au lieu de la
+  // rejeter. Sous ~1 100 px (base + gouttières), elles repassent à la ligne
+  // plutôt que de devenir illisibles - `flex-wrap` du mixin reste en place.
+  flex: 1 1 8rem;
 }
 
-.ddb-rail-famille-titre {
-  margin-bottom: 0.45rem;
-  padding: 0 0.75rem;
-  color: c.$cpt-muet;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.ddb-rail-item {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  width: 100%;
-  border: 0;
-  border-radius: 8px;
-  padding: 0.58rem 0.75rem;
-  background: transparent;
-  color: c.$cpt-doux;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: left;
-  transition:
-    background-color 0.12s ease,
-    color 0.12s ease;
-
-  // Le blanc du rail des segments : au survol, l'entrée se détache du panneau
-  // comme une pastille d'état.
-  &:hover:not(.ddb-rail-item-actif) {
-    background-color: #fff;
-    color: c.$cpt-encre;
-  }
-
-  &:focus-visible {
-    outline: 2px solid c.$cpt-accent;
-    outline-offset: 1px;
-  }
-}
-
-// L'entrée ouverte prend l'accent, comme le segment retenu d'une liste. Elle
-// était en NOIR plein, avec son icône en rouge et une ombre portée : le
-// dernier endroit de la section où un élément actif se peignait en noir.
-.ddb-rail-item-actif {
-  background-color: c.$cpt-accent;
-  color: #fff;
-  font-weight: 600;
-
-  // L'icône ne peut plus être rouge - elle disparaîtrait dans le fond. Un
-  // blanc légèrement retenu la met au second plan, derrière le libellé.
-  .ddb-rail-item-icone {
-    color: rgba(255, 255, 255, 0.75);
-  }
-}
-
-.ddb-rail-item-icone {
-  flex: 0 0 auto;
-  width: 1rem;
-  height: 1rem;
-  color: c.$cpt-muet;
-}
-
-.ddb-rail-item-libelle {
-  flex: 1 1 auto;
+.ndb-carte-libelle {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+}
+
+.ndb-carte-active {
+  @include c.cpt-carte-active;
 }
 
 // --- La nomenclature ouverte ------------------------------------------------
@@ -137,22 +92,9 @@
 }
 
 // --- Écrans étroits ---------------------------------------------------------
-// Le rail passe au-dessus de la liste, et ses entrées se rangent en lignes.
 @media (max-width: 991.98px) {
   .ddb-grille {
-    grid-template-columns: minmax(0, 1fr);
     min-height: 0;
-  }
-
-  .ddb-rail {
-    border-right: 0;
-    border-bottom: 1px solid c.$cpt-bordure;
-  }
-
-  .ddb-rail-liste {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.75rem 1.5rem;
   }
 }
 

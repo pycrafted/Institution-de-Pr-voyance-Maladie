@@ -43,7 +43,11 @@ const AppContent = () => {
     // Pleine largeur (`fluid`) et non conteneur plafonné (`lg`) : sur un grand
     // écran, le plafond laissait deux bandes grises vides de part et d'autre de
     // la carte, pendant que les tableaux se tassaient à l'intérieur.
-    <CContainer className="px-4 py-3" fluid>
+    //
+    // Sans retrait (`p-0`) : le `px-4 py-3` qu'il portait est passé au gabarit
+    // (cf. DefaultLayout), qui entoure le menu ET le contenu. Laissé ici, il
+    // se serait glissé ENTRE les deux et les aurait séparés.
+    <CContainer className="p-0" fluid>
       <Suspense fallback={<Chargeur />}>
         <Routes>
           {routes.map((route, idx) => {

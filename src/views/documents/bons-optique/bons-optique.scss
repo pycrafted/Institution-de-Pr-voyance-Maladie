@@ -25,6 +25,10 @@
   @include c.cpt-titre;
 }
 
+.bop-titre-groupe {
+  @include c.cpt-titre-groupe;
+}
+
 // --- La liste, dans le langage de la Comptabilité ---------------------------
 // Pas de `$serre` : trois des onze colonnes portent des noms de personnes et
 // d'opticiens, qu'il vaut mieux laisser passer à la ligne que couper.

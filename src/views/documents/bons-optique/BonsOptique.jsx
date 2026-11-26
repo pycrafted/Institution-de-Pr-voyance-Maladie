@@ -9,29 +9,40 @@
  * vues sont chargées à la demande.
  */
 
-import React from 'react'
+import React, { useState } from 'react'
 import { CCard, CCardBody } from '@coreui/react'
 
-import Referentiel from '../../donnees-de-base/Referentiel'
+import Referentiel, { PastillesStats } from '../../donnees-de-base/Referentiel'
 import '../../donnees-de-base/donnees-de-base.scss'
 import './bons-optique.scss'
 import { BONS_OPTIQUE } from './config'
 
-const BonsOptique = () => (
-  <CCard className="ddb-carte">
-    <CCardBody className="p-0">
-      <section className="ddb-contenu bop-page">
-        {/* Même chapeau que les écrans de Comptabilité et de Traitements. Le
-            titre était rendu par <Referentiel /> lui-même, en petit, au-dessus
-            de la liste ; il devient celui de la page. */}
-        <header className="bop-chapeau">
-          <h2 className="bop-titre">Bons Optique</h2>
-        </header>
+const BonsOptique = () => {
+  // Total de la vue, remonté par <Referentiel /> (`onStats`) : la page le pose
+  // contre son titre, comme Participants et Fournisseurs de soins. Il compte
+  // la vue côté serveur - segment retenu (dont « À valider ») et recherche
+  // compris.
+  const [stats, setStats] = useState(null)
 
-        <Referentiel referentiel={BONS_OPTIQUE} />
-      </section>
-    </CCardBody>
-  </CCard>
-)
+  return (
+    <CCard className="ddb-carte">
+      <CCardBody className="p-0">
+        <section className="ddb-contenu bop-page">
+          {/* Même chapeau que les écrans de Comptabilité et de Traitements. Le
+              titre était rendu par <Referentiel /> lui-même, en petit, au-dessus
+              de la liste ; il devient celui de la page. */}
+          <header className="bop-chapeau">
+            <div className="bop-titre-groupe">
+              <h2 className="bop-titre">Bons Optique</h2>
+              <PastillesStats segments={stats?.segments} />
+            </div>
+          </header>
+
+          <Referentiel referentiel={BONS_OPTIQUE} onStats={setStats} />
+        </section>
+      </CCardBody>
+    </CCard>
+  )
+}
 
 export default BonsOptique

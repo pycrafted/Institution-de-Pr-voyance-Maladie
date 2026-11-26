@@ -35,20 +35,21 @@ export const optionsReferentiel = (cle, ...dejaPortees) =>
     .map((e) => ({ valeur: e.code, libelle: e.libelle }))
 
 /**
- * Exercices proposés : l'année en cours, seule.
+ * Exercices proposés : ceux que la BASE porte, et non une liste écrite ici.
  *
- * On avait ouvert huit années pour remonter l'historique repris de LAMPS
- * (depuis 2019). L'opérationnel ayant été purgé pour repartir à neuf, il n'y a
- * plus rien avant l'exercice courant : on ne propose donc que celui-ci. Pour
- * rouvrir des années passées, remettre `length` à 8 (ou au nombre voulu).
+ * Cette constante a successivement valu « les huit dernières années » puis,
+ * après la purge d'octobre, « l'année en cours, seule ». Les deux mentaient :
+ * la première proposait des années vides, la seconde cachait tout
+ * l'historique repris de LAMPS (2016 à aujourd'hui).
+ *
+ * C'est désormais le serveur qui la calcule sur les données
+ * (`services/exercices.js`). On la réexporte ici parce que tous les écrans de
+ * documents et de traitements la lisent à travers ce module - et c'est une
+ * FONCTION, qu'un descripteur appelle au moment d'ouvrir son filtre : la
+ * liste arrive après le démarrage, une constante l'aurait figée trop tôt.
  */
-export const EXERCICES = (() => {
-  const courant = new Date().getFullYear()
-  return Array.from({ length: 1 }, (_, i) => courant - i).map((an) => ({
-    valeur: String(an),
-    libelle: String(an),
-  }))
-})()
+export { exercices, exerciceCourant } from '../../services/exercices'
+import { exercices } from '../../services/exercices'
 
 /** Intitulé d'un code type (« 2 » → « EPOUSE »), lu dans le référentiel. */
 export const libelleTypeBenef = (code) =>
@@ -169,7 +170,7 @@ export const BARRE_DOCUMENTS = {
       champ: 'exercice',
       etiquette: 'Exercice',
       libelle: 'Tous',
-      options: EXERCICES,
+      options: exercices,
       // Appliqué par le SERVEUR : la liste ne rapatrie qu'un exercice. Sans
       // cela, les bons de pharmacie pèsent 36 Mo et bloquent l'application.
       serveur: true,

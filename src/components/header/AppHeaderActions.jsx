@@ -9,6 +9,11 @@
  * chaque page. Le nom reste accessible - il s'affiche au survol de l'icône du
  * profil, et la fiche est à un clic.
  *
+ * (Le nom et le rôle y ont été réaffichés quelques minutes le 2026-11-26,
+ * pour remplir la barre vidée de ses sections. Retirés aussitôt : la barre
+ * n'avait pas besoin d'être remplie à tout prix, et c'est la recherche qui a
+ * pris cette place.)
+ *
  * Trois cibles à plat, un clic chacune, aucun menu déroulant. La sortie
  * occupe le dernier rang, à l'extrémité de la barre.
  */

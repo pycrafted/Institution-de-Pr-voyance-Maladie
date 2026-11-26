@@ -586,398 +586,410 @@ const TableauDeBord = () => {
   if (!AGREGATS_DISPONIBLES) return <Accueil />
 
   return (
-    <div className="tdb">
-      {/* ---- En-tête de page : titre, période, actions ---------------- */}
-      {/* Le titre est nu, comme « Structure » dans Données de base : la
+    // La page entière dans une carte, comme les vingt-deux autres écrans
+    // (2026-11-26). Le tableau de bord était le seul à poser ses tuiles à nu
+    // sur le fond de page : son flanc gauche ne se mariait donc pas au menu,
+    // qui s'arrête au carré pour épouser la carte de la page.
+    <CCard className="tdb-page">
+      <CCardBody className="p-0">
+        <div className="tdb">
+          {/* ---- En-tête de page : titre, période, actions ---------------- */}
+          {/* Le titre est nu, comme « Structure » dans Données de base : la
           période est dite par le sélecteur juste à côté, la répéter en
           sous-titre serait la dire deux fois. */}
-      <header className="tdb-entete">
-        <h1 className="tdb-titre">Tableau de bord</h1>
+          <header className="tdb-entete">
+            <h1 className="tdb-titre">Tableau de bord</h1>
 
-        {/* Un seul filtre, au-dessus de tout ce qu'il cadre. */}
-        <div className="tdb-segments" role="group" aria-label="Période observée">
-          {PERIODES.map((item) => (
-            <button
-              type="button"
-              key={item.cle}
-              className={`tdb-segment${item.cle === periode ? ' tdb-segment-actif' : ''}`}
-              aria-pressed={item.cle === periode}
-              onClick={() => setPeriode(item.cle)}
-            >
-              {item.libelle}
-            </button>
-          ))}
-        </div>
-      </header>
-
-      {/* ---- Rangée d'indicateurs ------------------------------------- */}
-      <section className="tdb-kpis" aria-label="Indicateurs de tête">
-        {kpis.map((kpi, i) => (
-          <CarteKpi
-            key={kpi.cle}
-            kpi={kpi}
-            icone={ICONES_KPI[i]}
-            comparaison={comparaison}
-            palette={p}
-          />
-        ))}
-      </section>
-
-      {/* ---- Graphique principal -------------------------------------- */}
-      <CCard className="tdb-carte">
-        <CCardBody className="tdb-carte-corps">
-          <EnteteCarte
-            titre="Engagements et remboursements"
-            action={
-              <div className="tdb-segments tdb-segments-fin" role="group" aria-label="Affichage">
+            {/* Un seul filtre, au-dessus de tout ce qu'il cadre. */}
+            <div className="tdb-segments" role="group" aria-label="Période observée">
+              {PERIODES.map((item) => (
                 <button
                   type="button"
-                  className={`tdb-segment${vueActivite === 'graphique' ? ' tdb-segment-actif' : ''}`}
-                  aria-pressed={vueActivite === 'graphique'}
-                  onClick={() => setVueActivite('graphique')}
+                  key={item.cle}
+                  className={`tdb-segment${item.cle === periode ? ' tdb-segment-actif' : ''}`}
+                  aria-pressed={item.cle === periode}
+                  onClick={() => setPeriode(item.cle)}
                 >
-                  Graphique
+                  {item.libelle}
                 </button>
-                <button
-                  type="button"
-                  className={`tdb-segment${vueActivite === 'tableau' ? ' tdb-segment-actif' : ''}`}
-                  aria-pressed={vueActivite === 'tableau'}
-                  onClick={() => setVueActivite('tableau')}
-                >
-                  Tableau
-                </button>
-              </div>
-            }
-          />
-
-          {/* La légende nomme des couleurs : elle n'a plus d'objet dès que la
-              donnée passe en colonnes. */}
-          {vueActivite === 'graphique' && (
-            <Legende
-              entrees={[
-                { libelle: 'Dépenses engagées', teinte: p.accent },
-                { libelle: 'Remboursements versés', teinte: p.secondaire },
-              ]}
-            />
-          )}
-
-          {vueActivite === 'graphique' ? (
-            <Graphique
-              key={`activite-${periode}`}
-              type="line"
-              data={donneesActivite}
-              options={optionsActivite}
-              plugins={greffonsActivite}
-              hauteur={300}
-              aria={`Dépenses engagées et remboursements versés, ${activite.intitule}`}
-            />
-          ) : (
-            // Le jumeau tabulaire du graphique : même donnée, sans couleur.
-            <div className="tableau-conteneur tdb-tableau-conteneur tdb-tableau-jumeau">
-              <table className="tableau tdb-tableau">
-                <thead>
-                  <tr>
-                    <th scope="col">Période</th>
-                    <th scope="col" className="tdb-col-nombre">
-                      Engagé
-                    </th>
-                    <th scope="col" className="tdb-col-nombre">
-                      Remboursé
-                    </th>
-                    <th scope="col" className="tdb-col-nombre">
-                      Reste à charge
-                    </th>
-                    <th scope="col" className="tdb-col-nombre">
-                      Taux
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activite.axes.map((axe, i) => {
-                    const engage = activite.engage[i]
-                    const rembourse = activite.rembourse[i]
-                    return (
-                      <tr key={axe}>
-                        <th scope="row" className="tdb-cellule-titre">
-                          {axe}
-                        </th>
-                        <td className="tdb-col-nombre">{nombreFr(engage)}</td>
-                        <td className="tdb-col-nombre">{nombreFr(rembourse)}</td>
-                        <td className="tdb-col-nombre tdb-cellule-douce">
-                          {nombreFr(Math.round((engage - rembourse) * 10) / 10)}
-                        </td>
-                        <td className="tdb-col-nombre tdb-cellule-douce">
-                          {formaterPourcent((rembourse / engage) * 100)}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+              ))}
             </div>
-          )}
+          </header>
 
-          {/* Pied de carte : les quatre agrégats de la même période. */}
-          <div className="tdb-synthese">
-            {synthese.map((item) => {
-              const part = Math.min(100, (item.valeur / item.cible) * 100)
-              return (
-                <div key={item.cle} className="tdb-synthese-item">
-                  <span className="tdb-synthese-libelle">{item.libelle}</span>
-                  <span className="tdb-synthese-valeur">
-                    {item.cible === 100
-                      ? formaterPourcent(item.valeur)
-                      : formaterEntier(item.valeur)}
-                  </span>
-                  {/* Jauge : la piste est le même graphite éclairci, l'état se
+          {/* ---- Rangée d'indicateurs ------------------------------------- */}
+          <section className="tdb-kpis" aria-label="Indicateurs de tête">
+            {kpis.map((kpi, i) => (
+              <CarteKpi
+                key={kpi.cle}
+                kpi={kpi}
+                icone={ICONES_KPI[i]}
+                comparaison={comparaison}
+                palette={p}
+              />
+            ))}
+          </section>
+
+          {/* ---- Graphique principal -------------------------------------- */}
+          <CCard className="tdb-carte">
+            <CCardBody className="tdb-carte-corps">
+              <EnteteCarte
+                titre="Engagements et remboursements"
+                action={
+                  <div
+                    className="tdb-segments tdb-segments-fin"
+                    role="group"
+                    aria-label="Affichage"
+                  >
+                    <button
+                      type="button"
+                      className={`tdb-segment${vueActivite === 'graphique' ? ' tdb-segment-actif' : ''}`}
+                      aria-pressed={vueActivite === 'graphique'}
+                      onClick={() => setVueActivite('graphique')}
+                    >
+                      Graphique
+                    </button>
+                    <button
+                      type="button"
+                      className={`tdb-segment${vueActivite === 'tableau' ? ' tdb-segment-actif' : ''}`}
+                      aria-pressed={vueActivite === 'tableau'}
+                      onClick={() => setVueActivite('tableau')}
+                    >
+                      Tableau
+                    </button>
+                  </div>
+                }
+              />
+
+              {/* La légende nomme des couleurs : elle n'a plus d'objet dès que la
+              donnée passe en colonnes. */}
+              {vueActivite === 'graphique' && (
+                <Legende
+                  entrees={[
+                    { libelle: 'Dépenses engagées', teinte: p.accent },
+                    { libelle: 'Remboursements versés', teinte: p.secondaire },
+                  ]}
+                />
+              )}
+
+              {vueActivite === 'graphique' ? (
+                <Graphique
+                  key={`activite-${periode}`}
+                  type="line"
+                  data={donneesActivite}
+                  options={optionsActivite}
+                  plugins={greffonsActivite}
+                  hauteur={300}
+                  aria={`Dépenses engagées et remboursements versés, ${activite.intitule}`}
+                />
+              ) : (
+                // Le jumeau tabulaire du graphique : même donnée, sans couleur.
+                <div className="tableau-conteneur tdb-tableau-conteneur tdb-tableau-jumeau">
+                  <table className="tableau tdb-tableau">
+                    <thead>
+                      <tr>
+                        <th scope="col">Période</th>
+                        <th scope="col" className="tdb-col-nombre">
+                          Engagé
+                        </th>
+                        <th scope="col" className="tdb-col-nombre">
+                          Remboursé
+                        </th>
+                        <th scope="col" className="tdb-col-nombre">
+                          Reste à charge
+                        </th>
+                        <th scope="col" className="tdb-col-nombre">
+                          Taux
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activite.axes.map((axe, i) => {
+                        const engage = activite.engage[i]
+                        const rembourse = activite.rembourse[i]
+                        return (
+                          <tr key={axe}>
+                            <th scope="row" className="tdb-cellule-titre">
+                              {axe}
+                            </th>
+                            <td className="tdb-col-nombre">{nombreFr(engage)}</td>
+                            <td className="tdb-col-nombre">{nombreFr(rembourse)}</td>
+                            <td className="tdb-col-nombre tdb-cellule-douce">
+                              {nombreFr(Math.round((engage - rembourse) * 10) / 10)}
+                            </td>
+                            <td className="tdb-col-nombre tdb-cellule-douce">
+                              {formaterPourcent((rembourse / engage) * 100)}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Pied de carte : les quatre agrégats de la même période. */}
+              <div className="tdb-synthese">
+                {synthese.map((item) => {
+                  const part = Math.min(100, (item.valeur / item.cible) * 100)
+                  return (
+                    <div key={item.cle} className="tdb-synthese-item">
+                      <span className="tdb-synthese-libelle">{item.libelle}</span>
+                      <span className="tdb-synthese-valeur">
+                        {item.cible === 100
+                          ? formaterPourcent(item.valeur)
+                          : formaterEntier(item.valeur)}
+                      </span>
+                      {/* Jauge : la piste est le même graphite éclairci, l'état se
                       lit donc sur toute la largeur, pas seulement sur la part
                       remplie. */}
-                  <span
-                    className="tdb-jauge"
-                    style={{ backgroundColor: avecAlpha(p.neutre, 0.16) }}
-                    role="img"
-                    aria-label={`${item.libelle} : ${Math.round(part)} % de la cible`}
-                  >
-                    <span
-                      className="tdb-jauge-part"
-                      style={{ width: `${part}%`, backgroundColor: p.neutre }}
-                    />
-                  </span>
+                      <span
+                        className="tdb-jauge"
+                        style={{ backgroundColor: avecAlpha(p.neutre, 0.16) }}
+                        role="img"
+                        aria-label={`${item.libelle} : ${Math.round(part)} % de la cible`}
+                      >
+                        <span
+                          className="tdb-jauge-part"
+                          style={{ width: `${part}%`, backgroundColor: p.neutre }}
+                        />
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </CCardBody>
+          </CCard>
+
+          {/* ---- Dépenses par type · Répartition des participants ---------- */}
+          <div className="tdb-duo tdb-duo-large">
+            <CCard className="tdb-carte">
+              <CCardBody className="tdb-carte-corps">
+                <EnteteCarte titre="Dépenses par type de prestation" />
+                <Graphique
+                  type="bar"
+                  data={donneesTypes}
+                  options={optionsTypes}
+                  plugins={greffonsTypes}
+                  hauteur={268}
+                  aria="Dépenses par type de prestation, cumul de l’exercice"
+                />
+              </CCardBody>
+            </CCard>
+
+            <CCard className="tdb-carte">
+              <CCardBody className="tdb-carte-corps">
+                <EnteteCarte titre="Répartition des participants" />
+                <div className="tdb-anneau">
+                  <Graphique
+                    type="doughnut"
+                    data={donneesRepartition}
+                    options={optionsRepartition}
+                    hauteur={178}
+                    aria="Répartition des participants par qualité"
+                  />
+                  <Releve
+                    entrees={REPARTITION_PARTICIPANTS.map((r, i) => ({
+                      libelle: r.libelle,
+                      teinte: p.rampe[i],
+                      valeur: formaterEntier(r.valeur),
+                    }))}
+                  />
                 </div>
-              )
-            })}
+              </CCardBody>
+            </CCard>
           </div>
-        </CCardBody>
-      </CCard>
 
-      {/* ---- Dépenses par type · Répartition des participants ---------- */}
-      <div className="tdb-duo tdb-duo-large">
-        <CCard className="tdb-carte">
-          <CCardBody className="tdb-carte-corps">
-            <EnteteCarte titre="Dépenses par type de prestation" />
-            <Graphique
-              type="bar"
-              data={donneesTypes}
-              options={optionsTypes}
-              plugins={greffonsTypes}
-              hauteur={268}
-              aria="Dépenses par type de prestation, cumul de l’exercice"
-            />
-          </CCardBody>
-        </CCard>
+          {/* ---- Profil · Secteurs · Tranches d'âge ------------------------ */}
+          <div className="tdb-trio">
+            <CCard className="tdb-carte">
+              <CCardBody className="tdb-carte-corps">
+                <EnteteCarte titre="Profil de consommation" />
+                <Legende
+                  entrees={PROFIL_SPECIALITES.series.map((s, i) => ({
+                    libelle: s.libelle,
+                    teinte: [p.accent, p.secondaire][i],
+                  }))}
+                />
+                <div className="tdb-figure tdb-figure-pleine">
+                  <Graphique
+                    type="radar"
+                    data={donneesProfil}
+                    options={optionsProfil}
+                    hauteur={310}
+                    aria="Profil de consommation des adhérents et des ayants droit, par spécialité"
+                  />
+                </div>
+              </CCardBody>
+            </CCard>
 
-        <CCard className="tdb-carte">
-          <CCardBody className="tdb-carte-corps">
-            <EnteteCarte titre="Répartition des participants" />
-            <div className="tdb-anneau">
-              <Graphique
-                type="doughnut"
-                data={donneesRepartition}
-                options={optionsRepartition}
-                hauteur={178}
-                aria="Répartition des participants par qualité"
-              />
-              <Releve
-                entrees={REPARTITION_PARTICIPANTS.map((r, i) => ({
-                  libelle: r.libelle,
-                  teinte: p.rampe[i],
-                  valeur: formaterEntier(r.valeur),
-                }))}
-              />
-            </div>
-          </CCardBody>
-        </CCard>
-      </div>
+            <CCard className="tdb-carte">
+              <CCardBody className="tdb-carte-corps">
+                <EnteteCarte titre="Dépenses par secteur" />
+                <div className="tdb-figure">
+                  <Graphique
+                    type="pie"
+                    data={donneesSecteurs}
+                    options={optionsSecteurs}
+                    hauteur={210}
+                    aria="Répartition des dépenses par secteur de soins"
+                  />
+                  <Releve
+                    entrees={DEPENSES_PAR_SECTEUR.map((r, i) => ({
+                      libelle: r.libelle,
+                      teinte: p.rampe[i],
+                      valeur: formaterMontant(r.valeur),
+                    }))}
+                  />
+                </div>
+              </CCardBody>
+            </CCard>
 
-      {/* ---- Profil · Secteurs · Tranches d'âge ------------------------ */}
-      <div className="tdb-trio">
-        <CCard className="tdb-carte">
-          <CCardBody className="tdb-carte-corps">
-            <EnteteCarte titre="Profil de consommation" />
-            <Legende
-              entrees={PROFIL_SPECIALITES.series.map((s, i) => ({
-                libelle: s.libelle,
-                teinte: [p.accent, p.secondaire][i],
-              }))}
-            />
-            <div className="tdb-figure tdb-figure-pleine">
-              <Graphique
-                type="radar"
-                data={donneesProfil}
-                options={optionsProfil}
-                hauteur={310}
-                aria="Profil de consommation des adhérents et des ayants droit, par spécialité"
-              />
-            </div>
-          </CCardBody>
-        </CCard>
+            <CCard className="tdb-carte">
+              <CCardBody className="tdb-carte-corps">
+                <EnteteCarte titre="Consommation par âge" />
+                <div className="tdb-figure">
+                  <Graphique
+                    type="polarArea"
+                    data={donneesAges}
+                    options={optionsAges}
+                    hauteur={210}
+                    aria="Consommation par tranche d’âge des participants"
+                  />
+                  <Releve
+                    entrees={CONSOMMATION_PAR_AGE.map((r, i) => ({
+                      libelle: r.libelle,
+                      teinte: p.rampe[i],
+                      valeur: `${nombreFr(r.valeur)} M`,
+                    }))}
+                  />
+                </div>
+              </CCardBody>
+            </CCard>
+          </div>
 
-        <CCard className="tdb-carte">
-          <CCardBody className="tdb-carte-corps">
-            <EnteteCarte titre="Dépenses par secteur" />
-            <div className="tdb-figure">
-              <Graphique
-                type="pie"
-                data={donneesSecteurs}
-                options={optionsSecteurs}
-                hauteur={210}
-                aria="Répartition des dépenses par secteur de soins"
-              />
-              <Releve
-                entrees={DEPENSES_PAR_SECTEUR.map((r, i) => ({
-                  libelle: r.libelle,
-                  teinte: p.rampe[i],
-                  valeur: formaterMontant(r.valeur),
-                }))}
-              />
-            </div>
-          </CCardBody>
-        </CCard>
+          {/* ---- Fournisseurs · États des dossiers ------------------------- */}
+          <div className="tdb-duo">
+            <CCard className="tdb-carte">
+              <CCardBody className="tdb-carte-corps">
+                <EnteteCarte titre="Principaux fournisseurs de soins" />
+                <ol className="tdb-classement">
+                  {TOP_FOURNISSEURS.map((f) => (
+                    <li key={f.libelle} className="tdb-classement-item">
+                      <div className="tdb-classement-ligne">
+                        <span className="tdb-classement-libelle">{f.libelle}</span>
+                        <span className="tdb-classement-valeur">{formaterMontant(f.valeur)}</span>
+                      </div>
+                      <span
+                        className="tdb-jauge"
+                        style={{ backgroundColor: avecAlpha(p.neutre, 0.16) }}
+                        aria-hidden="true"
+                      >
+                        <span
+                          className="tdb-jauge-part"
+                          style={{
+                            width: `${(f.valeur / maxFournisseur) * 100}%`,
+                            backgroundColor: p.neutre,
+                          }}
+                        />
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </CCardBody>
+            </CCard>
 
-        <CCard className="tdb-carte">
-          <CCardBody className="tdb-carte-corps">
-            <EnteteCarte titre="Consommation par âge" />
-            <div className="tdb-figure">
-              <Graphique
-                type="polarArea"
-                data={donneesAges}
-                options={optionsAges}
-                hauteur={210}
-                aria="Consommation par tranche d’âge des participants"
-              />
-              <Releve
-                entrees={CONSOMMATION_PAR_AGE.map((r, i) => ({
-                  libelle: r.libelle,
-                  teinte: p.rampe[i],
-                  valeur: `${nombreFr(r.valeur)} M`,
-                }))}
-              />
-            </div>
-          </CCardBody>
-        </CCard>
-      </div>
-
-      {/* ---- Fournisseurs · États des dossiers ------------------------- */}
-      <div className="tdb-duo">
-        <CCard className="tdb-carte">
-          <CCardBody className="tdb-carte-corps">
-            <EnteteCarte titre="Principaux fournisseurs de soins" />
-            <ol className="tdb-classement">
-              {TOP_FOURNISSEURS.map((f) => (
-                <li key={f.libelle} className="tdb-classement-item">
-                  <div className="tdb-classement-ligne">
-                    <span className="tdb-classement-libelle">{f.libelle}</span>
-                    <span className="tdb-classement-valeur">{formaterMontant(f.valeur)}</span>
-                  </div>
-                  <span
-                    className="tdb-jauge"
-                    style={{ backgroundColor: avecAlpha(p.neutre, 0.16) }}
-                    aria-hidden="true"
-                  >
-                    <span
-                      className="tdb-jauge-part"
-                      style={{
-                        width: `${(f.valeur / maxFournisseur) * 100}%`,
-                        backgroundColor: p.neutre,
-                      }}
-                    />
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </CCardBody>
-        </CCard>
-
-        <CCard className="tdb-carte">
-          <CCardBody className="tdb-carte-corps">
-            <EnteteCarte titre="Traitement des dossiers" />
-            <ul className="tdb-etats">
-              {ETAT_DOSSIERS.map((e) => (
-                <li key={e.cle} className="tdb-etats-item">
-                  {/* La couleur d'état tient dans l'icône, pas dans la barre :
+            <CCard className="tdb-carte">
+              <CCardBody className="tdb-carte-corps">
+                <EnteteCarte titre="Traitement des dossiers" />
+                <ul className="tdb-etats">
+                  {ETAT_DOSSIERS.map((e) => (
+                    <li key={e.cle} className="tdb-etats-item">
+                      {/* La couleur d'état tient dans l'icône, pas dans la barre :
                       quatre jauges teintées en pleine largeur faisaient le
                       bloc le plus criard de la page pour une information que
                       l'icône et le libellé donnent déjà. */}
-                  <span className="tdb-etats-icone" style={{ color: p.etats[e.cle] }}>
-                    <CIcon icon={ICONES_ETAT[e.cle]} />
-                  </span>
-                  <span className="tdb-etats-libelle">{e.libelle}</span>
-                  <span className="tdb-etats-valeur">{formaterEntier(e.valeur)}</span>
-                  <span
-                    className="tdb-jauge tdb-jauge-fine"
-                    style={{ backgroundColor: avecAlpha(p.neutre, 0.16) }}
-                    aria-hidden="true"
-                  >
-                    <span
-                      className="tdb-jauge-part"
-                      style={{
-                        width: `${(e.valeur / totalDossiers) * 100}%`,
-                        backgroundColor: p.neutre,
-                      }}
-                    />
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </CCardBody>
-        </CCard>
-      </div>
-
-      {/* ---- Derniers remboursements ---------------------------------- */}
-      <CCard className="tdb-carte">
-        <CCardBody className="tdb-carte-corps">
-          <EnteteCarte
-            titre="Derniers remboursements"
-            action={
-              <button type="button" className="tdb-lien">
-                Ouvrir les traitements
-              </button>
-            }
-          />
-          <div className="tableau-conteneur tdb-tableau-conteneur">
-            <table className="tableau tdb-tableau">
-              <thead>
-                <tr>
-                  <th scope="col">Dossier</th>
-                  <th scope="col">Participant</th>
-                  <th scope="col">Fournisseur</th>
-                  <th scope="col">Type</th>
-                  <th scope="col" className="tdb-col-nombre">
-                    Montant
-                  </th>
-                  <th scope="col">État</th>
-                </tr>
-              </thead>
-              <tbody>
-                {DERNIERS_REMBOURSEMENTS.map((r) => (
-                  <tr key={r.dossier}>
-                    <th scope="row" className="tdb-cellule-titre tdb-mono">
-                      {r.dossier}
-                    </th>
-                    <td>{r.participant}</td>
-                    <td className="tdb-cellule-douce">{r.fournisseur}</td>
-                    <td className="tdb-cellule-douce">{r.type}</td>
-                    <td className="tdb-col-nombre">{formaterEntier(r.montant)}</td>
-                    <td>
-                      {/* Pastille + libellé : l'état ne tient jamais à la
-                          seule couleur. */}
-                      <span className="tdb-badge">
-                        <span
-                          className="tdb-badge-point"
-                          style={{ backgroundColor: p.etats[r.etat] }}
-                          aria-hidden="true"
-                        />
-                        {LIBELLES_ETAT[r.etat]}
+                      <span className="tdb-etats-icone" style={{ color: p.etats[e.cle] }}>
+                        <CIcon icon={ICONES_ETAT[e.cle]} />
                       </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <span className="tdb-etats-libelle">{e.libelle}</span>
+                      <span className="tdb-etats-valeur">{formaterEntier(e.valeur)}</span>
+                      <span
+                        className="tdb-jauge tdb-jauge-fine"
+                        style={{ backgroundColor: avecAlpha(p.neutre, 0.16) }}
+                        aria-hidden="true"
+                      >
+                        <span
+                          className="tdb-jauge-part"
+                          style={{
+                            width: `${(e.valeur / totalDossiers) * 100}%`,
+                            backgroundColor: p.neutre,
+                          }}
+                        />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CCardBody>
+            </CCard>
           </div>
-        </CCardBody>
-      </CCard>
-    </div>
+
+          {/* ---- Derniers remboursements ---------------------------------- */}
+          <CCard className="tdb-carte">
+            <CCardBody className="tdb-carte-corps">
+              <EnteteCarte
+                titre="Derniers remboursements"
+                action={
+                  <button type="button" className="tdb-lien">
+                    Ouvrir les traitements
+                  </button>
+                }
+              />
+              <div className="tableau-conteneur tdb-tableau-conteneur">
+                <table className="tableau tdb-tableau">
+                  <thead>
+                    <tr>
+                      <th scope="col">Dossier</th>
+                      <th scope="col">Participant</th>
+                      <th scope="col">Fournisseur</th>
+                      <th scope="col">Type</th>
+                      <th scope="col" className="tdb-col-nombre">
+                        Montant
+                      </th>
+                      <th scope="col">État</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DERNIERS_REMBOURSEMENTS.map((r) => (
+                      <tr key={r.dossier}>
+                        <th scope="row" className="tdb-cellule-titre tdb-mono">
+                          {r.dossier}
+                        </th>
+                        <td>{r.participant}</td>
+                        <td className="tdb-cellule-douce">{r.fournisseur}</td>
+                        <td className="tdb-cellule-douce">{r.type}</td>
+                        <td className="tdb-col-nombre">{formaterEntier(r.montant)}</td>
+                        <td>
+                          {/* Pastille + libellé : l'état ne tient jamais à la
+                          seule couleur. */}
+                          <span className="tdb-badge">
+                            <span
+                              className="tdb-badge-point"
+                              style={{ backgroundColor: p.etats[r.etat] }}
+                              aria-hidden="true"
+                            />
+                            {LIBELLES_ETAT[r.etat]}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CCardBody>
+          </CCard>
+        </div>
+      </CCardBody>
+    </CCard>
   )
 }
 

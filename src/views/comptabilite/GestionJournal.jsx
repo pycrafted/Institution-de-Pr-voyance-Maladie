@@ -37,17 +37,29 @@ import { cilCalculator, cilCheckCircle, cilChevronBottom } from '@coreui/icons'
 
 import { request } from '../../services/api'
 import { messageErreur } from '../../services/erreurs'
+import { exercices } from '../../services/exercices'
 import { toast } from '../../services/toast'
 import { useConfirmation } from '../donnees-de-base/Confirmation'
 
 /** « 1 250 000 » : séparateur de milliers à la française. */
 const montant = (v) => (v === null || v === undefined ? '' : Number(v).toLocaleString('fr-FR'))
 
-/** Huit exercices proposés à la clôture : l'an dernier d'abord, celui qu'on clôt. */
-const EXERCICES = (() => {
-  const precedent = new Date().getFullYear() - 1
-  return Array.from({ length: 8 }, (_, i) => precedent - i)
-})()
+/**
+ * Les exercices proposés à la clôture : ceux que la base porte, l'année en
+ * cours exceptée - on ne clôt pas l'exercice dans lequel on saisit.
+ *
+ * C'étaient « les huit dernières années », qu'elles existent ou non. La liste
+ * vient maintenant du serveur (`services/exercices.js`), calculée sur les
+ * données. S'il n'y a rien à clôturer, on propose quand même l'an dernier :
+ * un sélecteur vide ne dit pas pourquoi il l'est.
+ */
+const exercicesAClore = () => {
+  const courant = String(new Date().getFullYear())
+  const annees = exercices()
+    .map((e) => Number(e.valeur))
+    .filter((an) => String(an) !== courant)
+  return annees.length ? annees : [Number(courant) - 1]
+}
 
 /**
  * La fenêtre « Nouvel exercice » : on choisit l'exercice à clôturer, on relit
@@ -56,7 +68,7 @@ const EXERCICES = (() => {
  * mentir sur ce qui sera posé.
  */
 function NouvelExercice({ visible, onFermer, onGenere }) {
-  const [exercice, setExercice] = useState(EXERCICES[0])
+  const [exercice, setExercice] = useState(() => exercicesAClore()[0])
   const [apercu, setApercu] = useState(null)
   const [chargement, setChargement] = useState(false)
   const [envoi, setEnvoi] = useState(false)
@@ -133,7 +145,7 @@ function NouvelExercice({ visible, onFermer, onGenere }) {
                 value={exercice}
                 onChange={(e) => setExercice(Number(e.target.value))}
               >
-                {EXERCICES.map((an) => (
+                {exercicesAClore().map((an) => (
                   <option key={an} value={an}>
                     {an}
                   </option>

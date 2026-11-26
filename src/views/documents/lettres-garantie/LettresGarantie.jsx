@@ -9,29 +9,39 @@
  * vues sont chargées à la demande.
  */
 
-import React from 'react'
+import React, { useState } from 'react'
 import { CCard, CCardBody } from '@coreui/react'
 
-import Referentiel from '../../donnees-de-base/Referentiel'
+import Referentiel, { PastillesStats } from '../../donnees-de-base/Referentiel'
 import '../../donnees-de-base/donnees-de-base.scss'
 import './lettres-garantie.scss'
 import { LETTRES_GARANTIE } from './config'
 
-const LettresGarantie = () => (
-  <CCard className="ddb-carte">
-    <CCardBody className="p-0">
-      <section className="ddb-contenu lgt-page">
-        {/* Même chapeau que les écrans de Comptabilité et de Traitements. Le
-            titre était rendu par <Referentiel /> lui-même, en petit, au-dessus
-            de la liste ; il devient celui de la page. */}
-        <header className="lgt-chapeau">
-          <h2 className="lgt-titre">Lettres de Garantie</h2>
-        </header>
+const LettresGarantie = () => {
+  // Total de la vue, remonté par <Referentiel /> (`onStats`) : la page le pose
+  // contre son titre, comme Participants et Fournisseurs de soins. Il compte
+  // la vue côté serveur - segment retenu et recherche compris.
+  const [stats, setStats] = useState(null)
 
-        <Referentiel referentiel={LETTRES_GARANTIE} />
-      </section>
-    </CCardBody>
-  </CCard>
-)
+  return (
+    <CCard className="ddb-carte">
+      <CCardBody className="p-0">
+        <section className="ddb-contenu lgt-page">
+          {/* Même chapeau que les écrans de Comptabilité et de Traitements. Le
+              titre était rendu par <Referentiel /> lui-même, en petit, au-dessus
+              de la liste ; il devient celui de la page. */}
+          <header className="lgt-chapeau">
+            <div className="lgt-titre-groupe">
+              <h2 className="lgt-titre">Lettres de Garantie</h2>
+              <PastillesStats segments={stats?.segments} />
+            </div>
+          </header>
+
+          <Referentiel referentiel={LETTRES_GARANTIE} onStats={setStats} />
+        </section>
+      </CCardBody>
+    </CCard>
+  )
+}
 
 export default LettresGarantie

@@ -28,10 +28,22 @@ $tdb-surface-douce: #fef8f7;
 $tdb-rayon: 0.375rem;
 $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
+// La carte qui porte la page, comme sur les vingt-deux autres écrans. Son
+// flanc gauche est mis au carré par le gabarit (cf. `scss/style.scss`) pour
+// se marier au menu : `overflow: hidden` empêche les tuiles de dépasser des
+// coins qui, eux, restent arrondis à droite.
+.tdb-page {
+  overflow: hidden;
+}
+
 .tdb {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  // Le retrait des autres pages (`.ddb-contenu`). Il est posé ici plutôt
+  // qu'en important leur feuille entière pour deux règles.
+  padding: 1.75rem;
+  min-width: 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -108,19 +120,27 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   gap: 1.25rem;
 }
 
-// Quatre tuiles blanches identiques, sans filet coloré ni aplat : ce sont
-// quatre nombres, pas quatre catégories - rien n'a besoin d'être distingué
-// par une teinte. Ce que le gabarit d'origine résolvait en couleur, la
-// disposition le dit déjà.
+// Quatre tuiles identiques, sans filet coloré ni aplat : ce sont quatre
+// nombres, pas quatre catégories - rien n'a besoin d'être distingué par une
+// teinte. Ce que le gabarit d'origine résolvait en couleur, la disposition le
+// dit déjà.
+//
+// Elles étaient BLANCHES sur le fond gris de la page. Depuis le 2026-11-26,
+// la page entière tient dans une carte blanche, comme les vingt-deux autres
+// écrans : une tuile blanche sur une carte blanche ne se détacherait plus de
+// rien. Elles prennent donc le ground des panneaux - celui des panneaux de
+// filtres et des bandeaux de totaux partout ailleurs dans l'application.
 .tdb-kpi {
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
-  background-color: #fff;
+  background-color: c.$cpt-fond-panneau;
   border: 1px solid $tdb-bordure;
   border-radius: 12px;
   padding: 1.15rem 1.3rem;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
 
   &:hover {
     border-color: #d4cbca;
@@ -208,13 +228,21 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 }
 
 // -----------------------------------------------------------------------------
-// Cartes
+// Panneaux
 // -----------------------------------------------------------------------------
 // Même rayon que les panneaux et les tableaux des autres écrans : 12 px.
 // CoreUI pose le sien, plus serré, qu'il faut donc reprendre.
+//
+// Ce sont des `<CCard>` dans le balisage, mais depuis le 2026-11-26 ils ne se
+// lisent plus comme des cartes : la PAGE est la carte, et ce qu'elle porte
+// sont des panneaux, du même ground et du même filet que les panneaux de
+// filtres des autres écrans. L'ombre de CoreUI est retirée pour la même
+// raison - une carte posée sur une carte flotterait au-dessus d'elle.
 .tdb-carte {
+  background-color: c.$cpt-fond-panneau;
   border-color: $tdb-bordure;
   border-radius: 12px;
+  box-shadow: none;
 }
 
 // En colonne : quand deux cartes voisines n'ont pas le même contenu, la plus
@@ -732,10 +760,14 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   flex-direction: column;
   gap: 1.1rem;
   padding: 1.5rem 1.6rem;
-  background-color: #fff;
+  // Le ground des panneaux : la page est une carte blanche depuis le
+  // 2026-11-26, une tuile blanche ne s'y détacherait plus.
+  background-color: c.$cpt-fond-panneau;
   border: 1px solid $tdb-bordure;
   border-radius: 0.75rem;
-  box-shadow: 0 8px 13px -3px rgba(0, 0, 0, 0.07);
+  // Pas d'ombre au repos : une tuile posée sur la carte de la page n'a pas à
+  // flotter au-dessus d'elle. Elle se soulève au survol - c'est un lien, et
+  // c'est là que le relief dit quelque chose.
   color: inherit;
   text-decoration: none;
   transition:
@@ -879,7 +911,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   justify-content: center;
   gap: 0.75rem;
   padding: 4rem 1.5rem;
-  background-color: #fff;
+  background-color: c.$cpt-fond-panneau;
   border: 1px solid $tdb-bordure;
   border-radius: 0.75rem;
   color: $tdb-doux;
@@ -906,7 +938,7 @@ $tdb-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   align-items: center;
   padding: 4rem 1.5rem;
   text-align: center;
-  background-color: #fff;
+  background-color: c.$cpt-fond-panneau;
   border: 1px solid #ece4e3;
   border-radius: 0.75rem;
   box-shadow: 0 8px 13px -3px rgba(0, 0, 0, 0.07);

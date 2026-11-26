@@ -1,20 +1,19 @@
 /**
- * Lecture du menu pour les deux barres de navigation.
+ * Lecture du menu pour la colonne de navigation (<AppMenu />).
  *
  * `_nav.jsx` reste la **seule** source : ajouter une page là-dedans la fait
- * apparaître dans la barre du bas, et créer une section la fait apparaître
- * dans la barre du haut, sans toucher à autre chose. Ce module ne fait que
- * traduire cette liste en quelque chose que deux barres plates savent
- * afficher - il ne décide de rien.
+ * apparaître sous sa section, et créer une section l'ajoute à la colonne,
+ * sans toucher à autre chose. Ce module ne fait que traduire cette liste en
+ * quelque chose qu'une liste plate sait afficher - il ne décide de rien.
  */
 
 /**
- * Les sections de la barre secondaire, dans l'ordre du menu.
+ * Les sections du menu, dans l'ordre.
  *
  * Une entrée simple (« Tableau de bord ») devient une section **sans pages** :
- * elle mène directement à son écran, et la barre du bas reste vide. Une
- * section dépliante devient une section **avec pages**, et sa première page
- * est celle qu'on ouvre quand on clique sur son nom.
+ * elle mène directement à son écran, et ne se déplie pas. Une section
+ * dépliante devient une section **avec pages**, et sa première page est sa
+ * destination par défaut.
  */
 export const sectionsDe = (menu) =>
   menu.map((entree) => {
@@ -55,22 +54,7 @@ export const sectionCourante = (sections, chemin) => {
   return meilleure
 }
 
-/**
- * Ramène l'élément actif d'une piste sous les yeux.
- *
- * Les deux barres défilent horizontalement quand l'écran est étroit, et
- * « Traitements » porte neuf pages : sur un portable, la page ouverte se
- * retrouve hors champ, et il faut la chercher pour savoir où l'on est. On
- * centre donc la piste sur elle à chaque changement de route.
- *
- * On calcule `scrollLeft` plutôt que d'appeler `scrollIntoView` : ce dernier
- * fait aussi défiler la **page**, et la barre étant fixe, cela secouerait le
- * contenu sans raison.
- */
-export const amenerEnVue = (piste, selecteur) => {
-  if (!piste) return
-  const actif = piste.querySelector(selecteur)
-  if (!actif) return
-  const cible = actif.offsetLeft - (piste.clientWidth - actif.offsetWidth) / 2
-  piste.scrollTo({ left: Math.max(0, cible), behavior: 'smooth' })
-}
+// (`amenerEnVue` vivait ici : elle centrait la piste des anciennes barres
+// horizontales sur l'élément actif, qui sortait du champ sur un portable.
+// Retirée le 2026-11-26 avec ces barres - une colonne ne défile pas
+// latéralement.)

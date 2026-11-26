@@ -1,18 +1,19 @@
 /**
  * Page « Données de base ».
  *
- * Ce n'est pas une page mais un conteneur de référentiels : chaque entrée de
- * la liste de gauche est une petite nomenclature (types de prestations,
- * spécialités, journaux…) qui sert de vocabulaire au reste de l'application.
+ * Ce n'est pas une page mais un conteneur de référentiels : chaque carte du
+ * bandeau est une petite nomenclature (types de prestations, spécialités,
+ * journaux…) qui sert de vocabulaire au reste de l'application.
  *
- * La liste est verticale plutôt qu'en onglets défilants : tous les
- * référentiels restent visibles d'un coup d'œil, et la section peut grandir
- * sans que rien ne se cache derrière des flèches.
+ * Les nomenclatures sont en cartes sur une ligne plutôt qu'en onglets
+ * défilants : toutes restent visibles d'un coup d'œil, et une nomenclature de
+ * plus resserre les autres au lieu de se cacher derrière une flèche. Elles
+ * tenaient une colonne à gauche jusqu'au 2026-11-26 ; cette place est
+ * maintenant celle du menu de l'application.
  */
 
 import React, { useMemo, useState } from 'react'
 import { CCard, CCardBody } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
 
 import { FAMILLES, REFERENTIELS } from './config'
 import Referentiel from './Referentiel'
@@ -92,30 +93,33 @@ const DonneesDeBase = () => {
     <CCard className="ddb-carte">
       <CCardBody className="p-0">
         <div className="ddb-grille">
-          {/* ---- Colonne gauche : les référentiels disponibles ---- */}
-          <aside className="ddb-rail">
-            <nav className="ddb-rail-liste">
-              {famillesAffichees.map((famille) => (
-                <div key={famille.cle} className="ddb-rail-famille">
-                  <div className="ddb-rail-famille-titre">{famille.libelle}</div>
-                  {famille.referentiels.map((ref) => (
-                    <button
-                      type="button"
-                      key={ref.cle}
-                      className={`ddb-rail-item${ref.cle === cleActive ? ' ddb-rail-item-actif' : ''}`}
-                      onClick={() => setCleActive(ref.cle)}
-                    >
-                      <CIcon icon={ref.icone} className="ddb-rail-item-icone" />
-                      <span className="ddb-rail-item-libelle">{ref.libelle}</span>
-                    </button>
-                  ))}
-                </div>
-              ))}
-            </nav>
-          </aside>
+          {/* Le RAIL des nomenclatures, qui tenait la colonne de gauche,
+              est parti le 2026-11-26 : les cartes ci-dessous disent la même
+              chose, et le menu de l'application a repris cette place. Deux
+              colonnes à gauche auraient coûté un tiers de la largeur du
+              tableau pour une navigation écrite deux fois. */}
 
-          {/* ---- Colonne droite : le référentiel sélectionné ---- */}
+          {/* ---- Le référentiel sélectionné ---- */}
           <section className="ddb-contenu ndb-page">
+            {/* Les nomenclatures en cartes, au-dessus de la liste, dans la
+                langue des onglets de Fournisseurs de Soins : carte à pointe,
+                la retenue à l'accent. */}
+            <nav className="ndb-cartes" aria-label="Nomenclatures">
+              {famillesAffichees
+                .flatMap((famille) => famille.referentiels)
+                .map((ref) => (
+                  <button
+                    key={ref.cle}
+                    type="button"
+                    className={`ndb-carte${ref.cle === cleActive ? ' ndb-carte-active' : ''}`}
+                    aria-current={ref.cle === cleActive ? 'page' : undefined}
+                    onClick={() => setCleActive(ref.cle)}
+                  >
+                    <span className="ndb-carte-libelle">{ref.libelle}</span>
+                  </button>
+                ))}
+            </nav>
+
             <Referentiel key={referentielActif.cle} referentiel={referentielActif} />
           </section>
         </div>

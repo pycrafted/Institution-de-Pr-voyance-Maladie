@@ -90,11 +90,7 @@ const ApercuPdf = () => {
           s'ouvrait a 250 %, trop gros. Le navigateur applique ce fragment
           par-dessus le reglage inscrit dans le PDF. */}
       {adresse ? (
-        <iframe
-          src={`${adresse}#zoom=150`}
-          title={demande.titre}
-          className="apercu-pdf-cadre"
-        />
+        <iframe src={`${adresse}#zoom=150`} title={demande.titre} className="apercu-pdf-cadre" />
       ) : (
         <div className="apercu-pdf-attente">
           <CSpinner size="sm" />
