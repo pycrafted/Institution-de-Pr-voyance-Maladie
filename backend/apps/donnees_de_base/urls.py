@@ -40,4 +40,7 @@ router.register('structure', StructureEntiteViewSet, basename='structure-entite'
 # Plan Comptable Général (menu Comptabilité, capture 73).
 router.register('plan-comptable', CompteComptableViewSet, basename='compte-comptable')
 
+# Les exercices ouverts : une liste CALCULÉE sur les données, pas un
+# référentiel (cf. exercices.py). Montée à la racine de l'API plutôt que sous
+# `donnees-de-base/` : tous les modules la consomment.
 urlpatterns = router.urls
