@@ -39,6 +39,7 @@ from documents.models import BonOptique, BonPharmacie, LettreGarantie, LettreHos
 from donnees_de_base.lamps import ajouter_arguments, lire, texte
 from donnees_de_base.models import (
     FournisseurDeSoins,
+    FournisseurDivers,
     Specialite,
     TypeBeneficiaire,
     TypePrestation,
@@ -143,6 +144,10 @@ class Command(BaseCommand):
             self.fournisseurs[f.code] = f.id
             self.specialite_du_fournisseur[f.code] = f.specialite_id
 
+        # Les fournisseurs DIVERS (comptes 401xxx) : une facture peut en citer
+        # un dans le même champ `numfourn` qu'un prestataire de soins.
+        self.fournisseurs_divers = {f.code: f.id for f in FournisseurDivers.objects.all()}
+
         # LAMPS désigne un participant par « société-matricule ».
         self.participants, self.nom_participant = {}, {}
         for p in Participant.objects.select_related('adherent').all():
@@ -189,11 +194,21 @@ class Command(BaseCommand):
              typefact, datetrait, datecompta, datereglmt, numreglmt, typereglmt,
              montant_reglmt, acompte, numfourn, codesoc) in lignes:
             code_fournisseur = texte(numfourn, 10)
+            # Le numéro de fournisseur d'une facture désigne SOIT un
+            # prestataire de soins, SOIT un fournisseur divers (un compte
+            # 401xxx du plan comptable) - LAMPS les range dans le même champ.
+            # Sept factures de l'origine citent ainsi 401019 (SIPREX SARL) :
+            # sans ce rattrapage, elles arrivaient sans aucun fournisseur.
+            id_soins = self.fournisseurs.get(code_fournisseur)
+            id_divers = None if id_soins else self.fournisseurs_divers.get(code_fournisseur)
             fiches.append(Facture(
-                type_fournisseur=TYPE_DIVERS if texte(typefact) == 'D' else TYPE_SOINS,
+                type_fournisseur=(
+                    TYPE_DIVERS if texte(typefact) == 'D' or id_divers else TYPE_SOINS
+                ),
                 numero_fournisseur=texte(numfact, 40),
                 adherent_id=self.adherents.get(texte(codesoc, 4)),
-                fournisseur_soins_id=self.fournisseurs.get(code_fournisseur),
+                fournisseur_soins_id=id_soins,
+                fournisseur_divers_id=id_divers,
                 specialite_id=self.specialite_du_fournisseur.get(code_fournisseur),
                 date_facture=datefact,
                 recu_le=daterecep,
